@@ -1,0 +1,6 @@
+*./Assets/Models/Belle/Belle_Interaction_SN.fbx filter=lfs diff=lfs merge=lfs -text
+./Assets/Models/Belle/Belle_Locomotion_SN.fbx filter=lfs diff=lfs merge=lfs -text
+./Assets/Models/Belle/Belle_Interaction_SN.fbx filter=lfs diff=lfs merge=lfs -text
+*./Assets/Models/Belle/Belle_Interaction_SN.fbx !text !filter !merge !diff
+./Assets/Models/Belle/Belle_Locomotion_SN.fbx !text !filter !merge !diff
+./Assets/Models/Belle/Belle_Interaction_SN.fbx !text !filter !merge !diff
