@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon_RP.Runtime
+namespace ArcToon.Runtime
 {
     public struct ArcToonRenderPipelineParams
     {
@@ -18,6 +18,7 @@ namespace ArcToon_RP.Runtime
         {
             renderParams = pipelineParams;
             GraphicsSettings.useScriptableRenderPipelineBatching = pipelineParams.enableSRPBatcher;
+            GraphicsSettings.lightsUseLinearIntensity = true;
         }
         
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
@@ -30,6 +31,12 @@ namespace ArcToon_RP.Runtime
             {
                 renderer.Render(renderContext, cameras[i], renderParams.enableGPUInstancing);
             }
+        }
+
+        public static void ConsumeCommandBuffer(ScriptableRenderContext renderContext, CommandBuffer commandBuffer)
+        {
+            renderContext.ExecuteCommandBuffer(commandBuffer);
+            commandBuffer.Clear();
         }
     }
 }
