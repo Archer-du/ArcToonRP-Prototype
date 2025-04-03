@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon_RP.Runtime
+namespace ArcToon.Runtime
 {
     [CreateAssetMenu(menuName = "Rendering/ArcToon Render Pipeline")]
     public class ArcToonRenderPipelineAsset : RenderPipelineAsset<ArcToonRenderPipelineInstance>

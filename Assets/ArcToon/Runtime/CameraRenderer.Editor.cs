@@ -4,7 +4,7 @@ using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
-namespace ArcToon_RP.Runtime
+namespace ArcToon.Runtime
 {
     public partial class CameraRenderer
     {
@@ -15,13 +15,14 @@ namespace ArcToon_RP.Runtime
 
         
 #if UNITY_EDITOR
-        static ShaderTagId[] legacyShaderTagIds = {
-            new ShaderTagId("Always"),
-            new ShaderTagId("ForwardBase"),
-            new ShaderTagId("PrepassBase"),
-            new ShaderTagId("Vertex"),
-            new ShaderTagId("VertexLMRGBM"),
-            new ShaderTagId("VertexLM")
+        private static ShaderTagId[] legacyShaderTagIds = 
+        {
+            new("Always"),
+            new("ForwardBase"),
+            new("PrepassBase"),
+            new("Vertex"),
+            new("VertexLMRGBM"),
+            new("VertexLM")
         };
         static Material errorMaterial;
         
@@ -29,9 +30,9 @@ namespace ArcToon_RP.Runtime
         
         partial void DrawUnsupportedGeometry() 
         {
-            if (errorMaterial == null) {
-                errorMaterial =
-                    new Material(Shader.Find("Hidden/InternalErrorShader"));
+            if (errorMaterial == null) 
+            {
+                errorMaterial = new Material(Shader.Find("Hidden/InternalErrorShader"));
             }
             RendererListDesc desc = new(legacyShaderTagIds, cullingResults, camera)
             {
@@ -41,18 +42,23 @@ namespace ArcToon_RP.Runtime
             };
             commandBuffer.DrawRendererList(context.CreateRendererList(desc));
         }
-        partial void DrawGizmos() {
-            if (Handles.ShouldRenderGizmos()) {
+        partial void DrawGizmos() 
+        {
+            if (Handles.ShouldRenderGizmos()) 
+            {
                 context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
                 context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
             }
         }
-	    partial void PrepareForSceneWindow() {
-		    if (camera.cameraType == CameraType.SceneView) {
+	    partial void PrepareForSceneWindow() 
+        {
+		    if (camera.cameraType == CameraType.SceneView) 
+            {
 			    ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
 		    }
 	    }
-        partial void PrepareBuffer() {
+        partial void PrepareBuffer() 
+        {
             Profiler.BeginSample("Editor Only");
             commandBuffer.name = sampleName = camera.name;
             Profiler.EndSample();
