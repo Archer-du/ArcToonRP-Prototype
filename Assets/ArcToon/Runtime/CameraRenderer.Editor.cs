@@ -13,9 +13,9 @@ namespace ArcToon.Runtime
         partial void PrepareForSceneWindow();
         partial void PrepareBuffer();
 
-        
+
 #if UNITY_EDITOR
-        private static ShaderTagId[] legacyShaderTagIds = 
+        private static ShaderTagId[] legacyShaderTagIds =
         {
             new("Always"),
             new("ForwardBase"),
@@ -24,16 +24,18 @@ namespace ArcToon.Runtime
             new("VertexLMRGBM"),
             new("VertexLM")
         };
+
         static Material errorMaterial;
-        
+
         private string sampleName { get; set; }
-        
-        partial void DrawUnsupportedGeometry() 
+
+        partial void DrawUnsupportedGeometry()
         {
-            if (errorMaterial == null) 
+            if (errorMaterial == null)
             {
                 errorMaterial = new Material(Shader.Find("Hidden/InternalErrorShader"));
             }
+
             RendererListDesc desc = new(legacyShaderTagIds, cullingResults, camera)
             {
                 sortingCriteria = SortingCriteria.CommonOpaque,
@@ -42,27 +44,30 @@ namespace ArcToon.Runtime
             };
             commandBuffer.DrawRendererList(context.CreateRendererList(desc));
         }
-        partial void DrawGizmos() 
+
+        partial void DrawGizmos()
         {
-            if (Handles.ShouldRenderGizmos()) 
+            if (Handles.ShouldRenderGizmos())
             {
                 context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
                 context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
             }
         }
-	    partial void PrepareForSceneWindow() 
+
+        partial void PrepareForSceneWindow()
         {
-		    if (camera.cameraType == CameraType.SceneView) 
+            if (camera.cameraType == CameraType.SceneView)
             {
-			    ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
-		    }
-	    }
-        partial void PrepareBuffer() 
+                ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
+            }
+        }
+
+        partial void PrepareBuffer()
         {
             Profiler.BeginSample("Editor Only");
             commandBuffer.name = sampleName = camera.name;
             Profiler.EndSample();
-	    }
+        }
 #else
         private string sampleName => bufferName;
 #endif

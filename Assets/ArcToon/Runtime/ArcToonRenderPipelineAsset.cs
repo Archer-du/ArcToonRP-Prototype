@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -9,7 +10,9 @@ namespace ArcToon.Runtime
     {
         public bool enableSRPBatcher;
         public bool enableGPUInstancing;
-        
+
+        [SerializeField] private ShadowSettings shadowSettings;
+
         protected override RenderPipeline CreatePipeline()
         {
             return new ArcToonRenderPipelineInstance(
@@ -17,7 +20,8 @@ namespace ArcToon.Runtime
                 {
                     enableSRPBatcher = enableSRPBatcher,
                     enableGPUInstancing = enableGPUInstancing
-                }
+                },
+                shadowSettings
             );
         }
     }

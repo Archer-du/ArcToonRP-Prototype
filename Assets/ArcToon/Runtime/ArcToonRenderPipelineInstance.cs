@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -9,27 +10,33 @@ namespace ArcToon.Runtime
         public bool enableSRPBatcher;
         public bool enableGPUInstancing;
     }
+
     public class ArcToonRenderPipelineInstance : RenderPipeline
     {
-        private CameraRenderer renderer = new();
+        private CameraRenderer cameraRenderer = new();
 
         private ArcToonRenderPipelineParams renderParams;
-        public ArcToonRenderPipelineInstance(ArcToonRenderPipelineParams pipelineParams)
+
+        private ShadowSettings shadowSettings;
+
+        public ArcToonRenderPipelineInstance(ArcToonRenderPipelineParams pipelineParams, ShadowSettings shadowSettings)
         {
             renderParams = pipelineParams;
+            this.shadowSettings = shadowSettings;
             GraphicsSettings.useScriptableRenderPipelineBatching = pipelineParams.enableSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
         }
-        
+
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
         {
             Render(renderContext, new List<Camera>(cameras));
         }
+
         protected override void Render(ScriptableRenderContext renderContext, List<Camera> cameras)
         {
-            for (int i = 0; i < cameras.Count; i++) 
+            for (int i = 0; i < cameras.Count; i++)
             {
-                renderer.Render(renderContext, cameras[i], renderParams.enableGPUInstancing);
+                cameraRenderer.Render(renderContext, cameras[i], renderParams.enableGPUInstancing, shadowSettings);
             }
         }
 
