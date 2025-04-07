@@ -1,66 +1,73 @@
-﻿using UnityEngine;
+﻿using ArcToon.Runtime.Settings;
+using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
 namespace ArcToon.Runtime
 {
-    public partial class CameraRenderer 
+    public partial class CameraRenderer
     {
+        private const string bufferName = "ArcToon Render Camera";
+
         private ScriptableRenderContext context;
+        public CommandBuffer commandBuffer;
 
         private Camera camera;
-
-        private const string bufferName = "ArcToon Render Camera";
-        
         private CullingResults cullingResults;
-        
-        private Lighting lighting = new();
-        
-        private static ShaderTagId[] shaderTagIds = 
+
+        private Lighting lighting;
+
+        private static ShaderTagId[] shaderTagIds =
         {
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
         };
-        
-        private CommandBuffer commandBuffer = new()
+
+        public CameraRenderer()
         {
-            name = bufferName
-        };
-        
-        public void Render(ScriptableRenderContext context, Camera camera, bool enableInstancing) 
+            commandBuffer = new()
+            {
+                name = bufferName
+            };
+            lighting = new();
+        }
+
+        public void Render(ScriptableRenderContext context, Camera camera, bool enableInstancing,
+            ShadowSettings shadowSettings)
         {
             this.context = context;
             this.camera = camera;
 
+            // 1.editor
             PrepareBuffer();
             PrepareForSceneWindow();
-            if (!Cull()) return;
-            
-            // set up
+
+            if (!Cull(shadowSettings.maxDistance)) return;
+
+            // 2.set up
+            lighting.Setup(context, cullingResults, shadowSettings);
+
             context.SetupCameraProperties(camera);
             var flags = camera.clearFlags;
             commandBuffer.ClearRenderTarget(
                 flags <= CameraClearFlags.Depth,
                 flags <= CameraClearFlags.Color,
-                flags == CameraClearFlags.Color ?
-                    camera.backgroundColor.linear : Color.clear);
-            lighting.Setup(context, cullingResults);
-            ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
-            
-            commandBuffer.BeginSample(sampleName);
+                flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
 
+            // 3.render
             DrawVisibleGeometry(enableInstancing);
             DrawUnsupportedGeometry();
             DrawGizmos();
-            
-            commandBuffer.EndSample(sampleName);
-            
-            // submit
+
+            // 4.clean up
+            lighting.CleanUp();
+
+            // 5.submit
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
             context.Submit();
         }
 
-        private void DrawVisibleGeometry(bool enableInstancing) 
+        private void DrawVisibleGeometry(bool enableInstancing)
         {
             // render opaque
             RendererListDesc desc = new(shaderTagIds, cullingResults, camera)
@@ -70,12 +77,12 @@ namespace ArcToon.Runtime
             };
             var renderParams = RendererListDesc.ConvertToParameters(desc);
             renderParams.drawSettings.enableInstancing = enableInstancing;
-            
+
             commandBuffer.DrawRendererList(context.CreateRendererList(ref renderParams));
-            
+
             // render skybox
             commandBuffer.DrawRendererList(context.CreateSkyboxRendererList(camera));
-            
+
             // render transparent
             var sortingSettings = new SortingSettings(camera)
             {
@@ -88,13 +95,15 @@ namespace ArcToon.Runtime
             commandBuffer.DrawRendererList(context.CreateRendererList(ref renderParams));
         }
 
-        private bool Cull() 
+        private bool Cull(float maxShadowDistance)
         {
-            if (camera.TryGetCullingParameters(out ScriptableCullingParameters p)) 
+            if (camera.TryGetCullingParameters(out ScriptableCullingParameters p))
             {
+                p.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
                 cullingResults = context.Cull(ref p);
                 return true;
             }
+
             return false;
         }
     }

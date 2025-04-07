@@ -7,22 +7,26 @@
 #include "Surface.hlsl"
 #include "Light/DirectionalLight.hlsl"
 
-struct BRDF {
+struct BRDF
+{
     float3 diffuse;
     float3 specular;
     float roughness;
 };
 
-float OneMinusReflectivity (float metallic) {
+float OneMinusReflectivity(float metallic)
+{
     float range = 1.0 - MIN_REFLECTIVITY;
     return range - metallic * range;
 }
 
-BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false) {
+BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false)
+{
     BRDF brdf;
     float reflectivity = OneMinusReflectivity(surface.metallic);
     brdf.diffuse = surface.color * reflectivity;
-    if (applyAlphaToDiffuse) {
+    if (applyAlphaToDiffuse)
+    {
         brdf.diffuse *= surface.alpha;
     }
     // TODO: energy conservation
@@ -34,7 +38,8 @@ BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false) {
 }
 
 // reference: com.unity.render-pipelines.universal/ShaderLibrary/BRDF.hlsl
-float SpecularStrength(Surface surface, BRDF brdf, DirectionalLight light) {
+float SpecularStrength(Surface surface, BRDF brdf, DirectionalLight light)
+{
     float3 h = SafeNormalize(light.direction + surface.viewDirection);
     float nh2 = Square(saturate(dot(surface.normal, h)));
     float lh2 = Square(saturate(dot(light.direction, h)));
@@ -44,8 +49,19 @@ float SpecularStrength(Surface surface, BRDF brdf, DirectionalLight light) {
     return r2 / (d2 * max(0.1, lh2) * normalization);
 }
 
-float3 DirectBRDF(Surface surface, BRDF brdf, DirectionalLight light) {
+float3 DirectBRDF(Surface surface, BRDF brdf, DirectionalLight light)
+{
     return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
+}
+
+float3 DirectBRDFDebugSpecular(Surface surface, BRDF brdf, DirectionalLight light)
+{
+    return SpecularStrength(surface, brdf, light) * brdf.specular;
+}
+
+float3 DirectBRDFDebugDiffuse(Surface surface, BRDF brdf, DirectionalLight light)
+{
+    return brdf.diffuse;
 }
 
 #endif

@@ -1,66 +1,88 @@
 ﻿using System;
+using ArcToon.Runtime.Settings;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime
 {
-    public class Lighting {
-
+    public class Lighting
+    {
         private const string bufferName = "Lighting";
 
-        private CommandBuffer commandBuffer = new CommandBuffer {
-            name = bufferName
-        };
-	
+        private ScriptableRenderContext context;
+        public CommandBuffer commandBuffer;
         private CullingResults cullingResults;
+
+        private ShadowRenderer shadowRenderer;
 
         private const int maxDirLightCount = 4;
 
         private static int dirLightCountId = Shader.PropertyToID("_DirectionalLightCount");
         private static int dirLightColorsId = Shader.PropertyToID("_DirectionalLightColors");
         private static int dirLightDirectionsId = Shader.PropertyToID("_DirectionalLightDirections");
+        private static int dirLightShadowDataId = Shader.PropertyToID("_DirectionalLightShadowData");
 
         private static Vector4[] dirLightColors = new Vector4[maxDirLightCount];
         private static Vector4[] dirLightDirections = new Vector4[maxDirLightCount];
-        
-        public void Setup(ScriptableRenderContext context, CullingResults cullingResults) 
+        private static Vector4[] dirLightShadowData = new Vector4[maxDirLightCount];
+
+        public Lighting()
         {
+            commandBuffer = new CommandBuffer()
+            {
+                name = bufferName,
+            };
+            shadowRenderer = new ShadowRenderer();
+        }
+
+        public void Setup(ScriptableRenderContext context, CullingResults cullingResults,
+            ShadowSettings shadowSettings)
+        {
+            this.context = context;
             this.cullingResults = cullingResults;
 
-            SetupLights();
-            
+            shadowRenderer.Setup(context, commandBuffer, cullingResults, shadowSettings);
+            CollectLightData();
+            shadowRenderer.Render();
+
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
         }
-        private void SetupLights() 
-        {
-            commandBuffer.BeginSample(bufferName);
 
+        public void CleanUp()
+        {
+            shadowRenderer.CleanUp();
+            ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
+        }
+
+        private void CollectLightData()
+        {
             NativeArray<VisibleLight> visibleLights = cullingResults.visibleLights;
-            
+
             int dirLightCount = 0;
-            for (int i = 0; i < visibleLights.Length; i++) 
+            for (int i = 0; i < visibleLights.Length; i++)
             {
                 switch (visibleLights[i].lightType)
                 {
                     case LightType.Directional when dirLightCount < maxDirLightCount:
                         dirLightCount++;
-                        SetupDirectionalLight(i, visibleLights[i]);
+                        ReserveDirectionalLightData(i, visibleLights[i]);
                         break;
                 }
             }
+
             commandBuffer.SetGlobalInt(dirLightCountId, visibleLights.Length);
             commandBuffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
             commandBuffer.SetGlobalVectorArray(dirLightDirectionsId, dirLightDirections);
-            
-            commandBuffer.EndSample(bufferName);
-
+            commandBuffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
         }
-        private void SetupDirectionalLight(int index, in VisibleLight visibleLight) 
+
+        private void ReserveDirectionalLightData(int index, in VisibleLight visibleLight)
         {
             dirLightColors[index] = visibleLight.finalColor;
             // local z in world space
             dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
+            dirLightShadowData[index] = shadowRenderer.ReserveDirectionalShadowData(visibleLight.light, index);
         }
     }
 }

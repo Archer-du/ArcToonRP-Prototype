@@ -4,40 +4,41 @@ using UnityEngine.Rendering;
 
 namespace ArcToon.Editor.GUI
 {
-    public class CustomShaderGUI : ShaderGUI 
+    public class CustomShaderGUI : ShaderGUI
     {
         private MaterialEditor editor;
         private Object[] materials;
         private MaterialProperty[] properties;
-        
-        bool Clipping 
+
+        bool Clipping
         {
             set => SetProperty("_Clipping", "_CLIPPING", value);
         }
 
-        bool PremultiplyAlpha 
+        bool PremultiplyAlpha
         {
             set => SetProperty("_PremulAlpha", "_PREMULTIPLY_ALPHA", value);
         }
 
-        BlendMode SrcBlend 
+        BlendMode SrcBlend
         {
             set => SetProperty("_SrcBlend", (float)value);
         }
 
-        BlendMode DstBlend 
+        BlendMode DstBlend
         {
             set => SetProperty("_DstBlend", (float)value);
         }
 
-        bool ZWrite 
+        bool ZWrite
         {
             set => SetProperty("_ZWrite", value ? 1f : 0f);
         }
-        
-        RenderQueue RenderQueue 
+
+        RenderQueue RenderQueue
         {
-            set {
+            set
+            {
                 foreach (var o in materials)
                 {
                     var material = (Material)o;
@@ -45,47 +46,50 @@ namespace ArcToon.Editor.GUI
                 }
             }
         }
-        
+
         bool showPresets;
-        
-        public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] materialProperties) 
+
+        public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] materialProperties)
         {
             base.OnGUI(materialEditor, materialProperties);
             editor = materialEditor;
             materials = materialEditor.targets;
             properties = materialProperties;
-            
+
             EditorGUILayout.Space();
             showPresets = EditorGUILayout.Foldout(showPresets, "Presets", true);
-            if (showPresets) {
+            if (showPresets)
+            {
                 OpaquePreset();
                 AlphaClipPreset();
                 FadePreset();
                 TransparentPreset();
             }
         }
-        
-        bool SetProperty(string name, float value) 
+
+        bool SetProperty(string name, float value)
         {
             var property = FindProperty(name, properties, false);
-            if (property != null) {
+            if (property != null)
+            {
                 property.floatValue = value;
                 return true;
             }
+
             return false;
         }
-        
-        void SetProperty(string name, string keyword, bool value) 
+
+        void SetProperty(string name, string keyword, bool value)
         {
             if (SetProperty(name, value ? 1f : 0f))
             {
                 SetKeyword(keyword, value);
             }
         }
-        
-        void SetKeyword(string keyword, bool enabled) 
+
+        void SetKeyword(string keyword, bool enabled)
         {
-            if (enabled) 
+            if (enabled)
             {
                 foreach (var obj in materials)
                 {
@@ -93,7 +97,7 @@ namespace ArcToon.Editor.GUI
                     material.EnableKeyword(keyword);
                 }
             }
-            else 
+            else
             {
                 foreach (var obj in materials)
                 {
@@ -103,19 +107,20 @@ namespace ArcToon.Editor.GUI
             }
         }
 
-        bool PresetButton(string name) 
+        bool PresetButton(string name)
         {
-            if (GUILayout.Button(name)) 
+            if (GUILayout.Button(name))
             {
                 editor.RegisterPropertyChangeUndo(name);
                 return true;
             }
+
             return false;
         }
-        
-        void OpaquePreset() 
+
+        void OpaquePreset()
         {
-            if (PresetButton("Opaque")) 
+            if (PresetButton("Opaque"))
             {
                 Clipping = false;
                 PremultiplyAlpha = false;
@@ -125,10 +130,10 @@ namespace ArcToon.Editor.GUI
                 RenderQueue = RenderQueue.Geometry;
             }
         }
-        
-        void AlphaClipPreset() 
+
+        void AlphaClipPreset()
         {
-            if (PresetButton("AlphaClip")) 
+            if (PresetButton("AlphaClip"))
             {
                 Clipping = true;
                 PremultiplyAlpha = false;
@@ -138,10 +143,10 @@ namespace ArcToon.Editor.GUI
                 RenderQueue = RenderQueue.AlphaTest;
             }
         }
-        
-        void FadePreset() 
+
+        void FadePreset()
         {
-            if (PresetButton("Fade")) 
+            if (PresetButton("Fade"))
             {
                 Clipping = false;
                 PremultiplyAlpha = false;
@@ -151,12 +156,12 @@ namespace ArcToon.Editor.GUI
                 RenderQueue = RenderQueue.Transparent;
             }
         }
-        
+
         void TransparentPreset()
         {
             if (FindProperty("_PremulAlpha", properties, false) == null)
                 return;
-            if (PresetButton("Transparent")) 
+            if (PresetButton("Transparent"))
             {
                 Clipping = false;
                 PremultiplyAlpha = true;
