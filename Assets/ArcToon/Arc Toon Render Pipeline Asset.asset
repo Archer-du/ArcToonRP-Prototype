@@ -15,12 +15,14 @@ MonoBehaviour:
   enableSRPBatcher: 0
   enableGPUInstancing: 1
   shadowSettings:
-    directionalShadowCascade:
+    directionalCascade:
       atlasSize: 4096
+      filterMode: 3
+      blendMode: 2
       cascadeCount: 4
       cascadeRatio1: 0.1
       cascadeRatio2: 0.25
       cascadeRatio3: 0.5
-      cascadeFade: 0.05
-    maxDistance: 200
-    distanceFade: 0.05
+      edgeFade: 0.2
+    maxDistance: 100
+    distanceFade: 0.1

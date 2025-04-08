@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Settings;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -34,12 +35,25 @@ namespace ArcToon.Runtime
         private static Vector4[] cascadeData = new Vector4[maxCascades];
         private static Matrix4x4[] dirShadowVPMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
 
+        private static string[] directionalFilterKeywords =
+        {
+            "_DIRECTIONAL_PCF3",
+            "_DIRECTIONAL_PCF5",
+            "_DIRECTIONAL_PCF7",
+        };
+
+        private static string[] cascadeBlendKeywords =
+        {
+            "_CASCADE_BLEND_SOFT",
+            "_CASCADE_BLEND_DITHER"
+        };
+
         private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
         private static int dirShadowVPMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
         private static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
         private static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
         private static int cascadeDataId = Shader.PropertyToID("_CascadeData");
-        private static int shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
+        private static int shadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize");
         private static int shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
 
         public void Setup(ScriptableRenderContext context, CommandBuffer commandBuffer, CullingResults cullingResults,
@@ -72,7 +86,7 @@ namespace ArcToon.Runtime
                     };
                 return new Vector3(
                     light.shadowStrength,
-                    settings.directionalShadowCascade.cascadeCount * ShadowedDirectionalLightCount++,
+                    settings.directionalCascade.cascadeCount * ShadowedDirectionalLightCount++,
                     light.shadowNormalBias
                 );
             }
@@ -98,7 +112,7 @@ namespace ArcToon.Runtime
 
         void RenderDirectionalShadows()
         {
-            int atlasSize = (int)settings.directionalShadowCascade.atlasSize;
+            int atlasSize = (int)settings.directionalCascade.atlasSize;
             commandBuffer.GetTemporaryRT(dirShadowAtlasId, atlasSize, atlasSize,
                 32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
             commandBuffer.SetRenderTarget(
@@ -107,7 +121,7 @@ namespace ArcToon.Runtime
             );
             commandBuffer.ClearRenderTarget(true, false, Color.clear);
             // TODO: config
-            int tiles = ShadowedDirectionalLightCount * settings.directionalShadowCascade.cascadeCount;
+            int tiles = ShadowedDirectionalLightCount * settings.directionalCascade.cascadeCount;
             int split = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
             int tileSize = atlasSize / split;
             for (int i = 0; i < ShadowedDirectionalLightCount; i++)
@@ -115,14 +129,21 @@ namespace ArcToon.Runtime
                 RenderDirectionalShadowSplitTile(i, split, tileSize);
             }
 
-            // for lighting calculation
-            commandBuffer.SetGlobalInt(cascadeCountId, settings.directionalShadowCascade.cascadeCount);
+            // for shadow receiver lighting calculation
+            commandBuffer.SetGlobalInt(cascadeCountId, settings.directionalCascade.cascadeCount);
             commandBuffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
             commandBuffer.SetGlobalVectorArray(cascadeDataId, cascadeData);
             commandBuffer.SetGlobalMatrixArray(dirShadowVPMatricesId, dirShadowVPMatrices);
-            float f = 1f - settings.directionalShadowCascade.cascadeFade;
+            float f = 1f - settings.directionalCascade.edgeFade;
             commandBuffer.SetGlobalVector(shadowDistanceFadeId,
                 new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade, 1f / (1f - f * f))
+            );
+            commandBuffer.SetGlobalVector(shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize));
+            SetKeywords(
+                directionalFilterKeywords, (int)settings.directionalCascade.filterMode - 1
+            );
+            SetKeywords(
+                cascadeBlendKeywords, (int)settings.directionalCascade.blendMode - 1
             );
         }
 
@@ -130,9 +151,10 @@ namespace ArcToon.Runtime
         {
             DirectionalLightShadowData lightShadowData = directionalLightShadowData[shadowedLightIndex];
             var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex);
-            int cascadeCount = settings.directionalShadowCascade.cascadeCount;
-            Vector3 ratios = settings.directionalShadowCascade.CascadeRatios;
+            int cascadeCount = settings.directionalCascade.cascadeCount;
+            Vector3 ratios = settings.directionalCascade.CascadeRatios;
             int tileOffset = shadowedLightIndex * cascadeCount;
+            float cullingFactor = Mathf.Max(0f, 1 - settings.directionalCascade.edgeFade);
             for (int i = 0; i < cascadeCount; i++)
             {
                 cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
@@ -148,8 +170,9 @@ namespace ArcToon.Runtime
                     // for performance: compare the square distance from the sphere's center with a surface fragment square radius
                     SetCascadeData(i, splitData.cullingSphere, tileSize);
                 }
-
+                splitData.shadowCascadeBlendCullingFactor = cullingFactor;
                 shadowSettings.splitData = splitData;
+                
                 int tileIndex = tileOffset + i;
                 dirShadowVPMatrices[tileIndex] = ConvertToAtlasMatrix(
                     projectionMatrix * viewMatrix,
@@ -174,11 +197,13 @@ namespace ArcToon.Runtime
         void SetCascadeData(int shadowedLightIndex, Vector4 cullingSphere, float tileSize)
         {
             float texelSize = 2f * cullingSphere.w / tileSize;
+            float filterSize = texelSize * ((float)settings.directionalCascade.filterMode + 1f);
+            cullingSphere.w -= filterSize;
             cullingSphere.w *= cullingSphere.w;
             cascadeCullingSpheres[shadowedLightIndex] = cullingSphere;
             cascadeData[shadowedLightIndex] = new Vector4(
                 1f / cullingSphere.w,
-                texelSize * 1.4142136f
+                filterSize * 1.4142136f
             );
         }
 
@@ -206,6 +231,21 @@ namespace ArcToon.Runtime
             m.m22 = 0.5f * (m.m22 + m.m32);
             m.m23 = 0.5f * (m.m23 + m.m33);
             return m;
+        }
+
+        void SetKeywords(string[] keywords, int enabledIndex)
+        {
+            for (int i = 0; i < keywords.Length; i++)
+            {
+                if (i == enabledIndex)
+                {
+                    commandBuffer.EnableShaderKeyword(keywords[i]);
+                }
+                else
+                {
+                    commandBuffer.DisableShaderKeyword(keywords[i]);
+                }
+            }
         }
 
         public void CleanUp()

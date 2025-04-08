@@ -67,6 +67,7 @@ float4 SimplelitPassFragment(Varyings input) : SV_TARGET
     surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
     surface.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+    surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
 
     #if defined(_PREMULTIPLY_ALPHA)
     BRDF brdf = GetBRDF(surface, true);
@@ -74,7 +75,7 @@ float4 SimplelitPassFragment(Varyings input) : SV_TARGET
     BRDF brdf = GetBRDF(surface);
     #endif
     float3 finalColor = GetLighting(surface, brdf);
-
+    
     return float4(finalColor.rgb, surface.alpha);
 }
 
