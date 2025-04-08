@@ -35,6 +35,11 @@ namespace ArcToon.Editor.GUI
             set => SetProperty("_ZWrite", value ? 1f : 0f);
         }
 
+        CullMode CullMode
+        {
+            set => SetProperty("_Cull", (float)value);
+        }
+
         RenderQueue RenderQueue
         {
             set
@@ -47,10 +52,32 @@ namespace ArcToon.Editor.GUI
             }
         }
 
+        enum ShadowMode
+        {
+            On,
+            Clip,
+            Dither,
+            Off
+        }
+
+        ShadowMode Shadows
+        {
+            set
+            {
+                if (SetProperty("_Shadows", (float)value))
+                {
+                    SetKeyword("_SHADOWS_CLIP", value == ShadowMode.Clip);
+                    SetKeyword("_SHADOWS_DITHER", value == ShadowMode.Dither);
+                }
+            }
+        }
+
         bool showPresets;
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] materialProperties)
         {
+            EditorGUI.BeginChangeCheck();
+
             base.OnGUI(materialEditor, materialProperties);
             editor = materialEditor;
             materials = materialEditor.targets;
@@ -64,6 +91,11 @@ namespace ArcToon.Editor.GUI
                 AlphaClipPreset();
                 FadePreset();
                 TransparentPreset();
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                UpdateShadowCasterPass();
             }
         }
 
@@ -127,7 +159,9 @@ namespace ArcToon.Editor.GUI
                 SrcBlend = BlendMode.One;
                 DstBlend = BlendMode.Zero;
                 ZWrite = true;
+                CullMode = CullMode.Back;
                 RenderQueue = RenderQueue.Geometry;
+                Shadows = ShadowMode.On;
             }
         }
 
@@ -140,7 +174,9 @@ namespace ArcToon.Editor.GUI
                 SrcBlend = BlendMode.One;
                 DstBlend = BlendMode.Zero;
                 ZWrite = true;
+                CullMode = CullMode.Off;
                 RenderQueue = RenderQueue.AlphaTest;
+                Shadows = ShadowMode.Clip;
             }
         }
 
@@ -154,6 +190,7 @@ namespace ArcToon.Editor.GUI
                 DstBlend = BlendMode.OneMinusSrcAlpha;
                 ZWrite = false;
                 RenderQueue = RenderQueue.Transparent;
+                Shadows = ShadowMode.Dither;
             }
         }
 
@@ -169,6 +206,22 @@ namespace ArcToon.Editor.GUI
                 DstBlend = BlendMode.OneMinusSrcAlpha;
                 ZWrite = false;
                 RenderQueue = RenderQueue.Transparent;
+                Shadows = ShadowMode.Dither;
+            }
+        }
+
+
+        void UpdateShadowCasterPass()
+        {
+            MaterialProperty property = FindProperty("_Shadows", properties, false);
+            if (property == null || property.hasMixedValue)
+                return;
+
+            bool enabled = property.floatValue < (float)ShadowMode.Off;
+            foreach (var o in materials)
+            {
+                var m = (Material)o;
+                m.SetShaderPassEnabled("ShadowCaster", enabled);
             }
         }
     }
