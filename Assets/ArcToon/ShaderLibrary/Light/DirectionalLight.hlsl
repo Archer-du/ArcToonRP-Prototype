@@ -6,6 +6,7 @@
 #include "../Shadow.hlsl"
 #include "../GI.hlsl"
 
+// cpu: PerLightDataDirectional struct
 CBUFFER_START(_CustomLight)
     int _DirectionalLightCount;
     float4 _DirectionalLightColors[MAX_DIRECTIONAL_LIGHT_COUNT];
@@ -47,6 +48,7 @@ DirectionalLightShadowData GetDirectionalLightShadowData(int lightIndex, Cascade
 float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, CascadeShadowData cascade,
                                    Surface surface)
 {
+    if (directional.strength <= 0) return 1.0;
     float3 normalBias = surface.normal * _CascadeData[cascade.offset].y * directional.slopeScaleBias;
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex],
                              float4(surface.position + normalBias, 1.0)).xyz;
@@ -65,6 +67,7 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
 
 float GetBakedShadow(ShadowMask mask, int channel, float strength)
 {
+    if (strength <= 0) return 1.0;
     float shadow = 1.0;
     if (mask.alwaysMode || mask.distanceMode)
     {
@@ -88,18 +91,18 @@ float GetDirectionalShadowAttenuation(DirectionalLightShadowData directional, Ca
     // return 1.0;
     // #endif
     float realtimeShadow = GetDirectionalRealtimeShadow(directional, cascade, surface);
-    float attenuation = realtimeShadow;
+    float attenuation;
     float fade = FadedStrength(surface.linearDepth, _ShadowDistanceFade.x, _ShadowDistanceFade.y) * cascade.
         rangeFade;
     if (gi.shadowMask.alwaysMode)
     {
-        float bakedShadow = GetBakedShadow(gi.shadowMask, directional.shadowMaskChannel, directional.strength);
-        realtimeShadow = lerp(1.0, realtimeShadow, fade);
-        attenuation = min(bakedShadow, realtimeShadow);
+        // TODO:
+        float bakedShadow = GetBakedShadow(gi.shadowMask, directional.shadowMaskChannel, abs(directional.strength));
+        attenuation = MixBakedAndRealtimeShadow(bakedShadow, realtimeShadow, fade);
     }
     else if (gi.shadowMask.distanceMode)
     {
-        float bakedShadow = GetBakedShadow(gi.shadowMask, directional.shadowMaskChannel, directional.strength);
+        float bakedShadow = GetBakedShadow(gi.shadowMask, directional.shadowMaskChannel, abs(directional.strength));
         attenuation = MixBakedAndRealtimeShadow(bakedShadow, realtimeShadow, fade);
     }
     else
@@ -119,7 +122,7 @@ DirectionalLight GetDirectionalLight(int lightIndex, Surface surface, CascadeSha
     return light;
 }
 
-DirectionalLight GetDirectionalLightCascadeCullingSphere(int lightIndex, Surface surface,
+DirectionalLight GetDirectionalLightDebugCascadeCullingSphere(int lightIndex, Surface surface,
                                                          CascadeShadowData cascadeShadowData)
 {
     DirectionalLight light;

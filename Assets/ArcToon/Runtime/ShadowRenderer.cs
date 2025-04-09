@@ -21,19 +21,15 @@ namespace ArcToon.Runtime
 
         private int ShadowedDirectionalLightCount;
 
-        struct DirectionalLightShadowData
+        struct ShadowMapDataDirectional
         {
             public int visibleLightIndex;
             public float slopeScaleBias;
             public float nearPlaneOffset;
         }
 
-        private DirectionalLightShadowData[] directionalLightShadowData =
-            new DirectionalLightShadowData[maxShadowedDirectionalLightCount];
-
-        private static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
-        private static Vector4[] cascadeData = new Vector4[maxCascades];
-        private static Matrix4x4[] dirShadowVPMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
+        private ShadowMapDataDirectional[] shadowMapDataDirectionals =
+            new ShadowMapDataDirectional[maxShadowedDirectionalLightCount];
 
         private static string[] directionalFilterKeywords =
         {
@@ -56,6 +52,10 @@ namespace ArcToon.Runtime
 
         private bool useShadowMask;
 
+        private static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
+        private static Vector4[] cascadeData = new Vector4[maxCascades];
+        private static Matrix4x4[] dirShadowVPMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
+        
         private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
         private static int dirShadowVPMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
         private static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
@@ -78,24 +78,38 @@ namespace ArcToon.Runtime
             useShadowMask = false;
         }
 
-        public Vector4 ReserveDirectionalShadowData(Light light, int visibleLightIndex)
+        // TODO: optimize
+        public struct PerLightShadowDataDirectional
+        {
+            public float strength;
+            public float cascadeIndex;
+            public float normalBias;
+            public float maskChannel;
+        }
+        
+        public Vector4 ReservePerLightShadowDataDirectional(Light light, int visibleLightIndex)
         {
             if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount &&
-                light.shadows != LightShadows.None &&
-                light.shadowStrength > 0f &&
-                cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)
-               )
+                light.shadows != LightShadows.None && light.shadowStrength > 0f)
             {
                 float maskChannel = -1;
                 LightBakingOutput lightBaking = light.bakingOutput;
-                if (lightBaking is { lightmapBakeType: LightmapBakeType.Mixed, mixedLightingMode: MixedLightingMode.Shadowmask })
+                if (lightBaking is
+                    { lightmapBakeType: LightmapBakeType.Mixed, mixedLightingMode: MixedLightingMode.Shadowmask })
                 {
                     useShadowMask = true;
                     maskChannel = lightBaking.occlusionMaskChannel;
                 }
 
-                directionalLightShadowData[ShadowedDirectionalLightCount] =
-                    new DirectionalLightShadowData
+                // When the maximum shadow distance is exceeded, only baked shadows are used
+                if (!cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
+                {
+                    // a trick to only sample baked shadow
+                    return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
+                }
+
+                shadowMapDataDirectionals[ShadowedDirectionalLightCount] =
+                    new ShadowMapDataDirectional
                     {
                         visibleLightIndex = visibleLightIndex,
                         // TODO: interpreting light settings differently than their original purpose, use additional data instead
@@ -127,8 +141,8 @@ namespace ArcToon.Runtime
                 );
             }
 
-            SetKeywords(shadowMaskKeywords, useShadowMask ? 
-                QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
+            SetKeywords(shadowMaskKeywords,
+                useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
         }
 
         void RenderDirectionalShadows()
@@ -170,7 +184,7 @@ namespace ArcToon.Runtime
 
         void RenderDirectionalShadowSplitTile(int shadowedLightIndex, int split, int tileSize)
         {
-            DirectionalLightShadowData lightShadowData = directionalLightShadowData[shadowedLightIndex];
+            ShadowMapDataDirectional lightShadowData = shadowMapDataDirectionals[shadowedLightIndex];
             var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex);
             int cascadeCount = settings.directionalCascade.cascadeCount;
             Vector3 ratios = settings.directionalCascade.CascadeRatios;

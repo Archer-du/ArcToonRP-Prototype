@@ -43,7 +43,7 @@ namespace ArcToon.Runtime
             this.cullingResults = cullingResults;
 
             shadowRenderer.Setup(context, commandBuffer, cullingResults, shadowSettings);
-            CollectLightData();
+            CollectPerLightData();
             shadowRenderer.Render();
 
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
@@ -55,7 +55,7 @@ namespace ArcToon.Runtime
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
         }
 
-        private void CollectLightData()
+        private void CollectPerLightData()
         {
             NativeArray<VisibleLight> visibleLights = cullingResults.visibleLights;
 
@@ -66,7 +66,7 @@ namespace ArcToon.Runtime
                 {
                     case LightType.Directional when dirLightCount < maxDirLightCount:
                         dirLightCount++;
-                        ReserveDirectionalLightData(i, visibleLights[i]);
+                        ReservePerLightDataDirectional(i, visibleLights[i]);
                         break;
                 }
             }
@@ -77,12 +77,12 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalVectorArray(dirLightShadowDataId, dirLightShadowData);
         }
 
-        private void ReserveDirectionalLightData(int index, in VisibleLight visibleLight)
+        private void ReservePerLightDataDirectional(int index, in VisibleLight visibleLight)
         {
             dirLightColors[index] = visibleLight.finalColor;
             // local z in world space
             dirLightDirections[index] = -visibleLight.localToWorldMatrix.GetColumn(2);
-            dirLightShadowData[index] = shadowRenderer.ReserveDirectionalShadowData(visibleLight.light, index);
+            dirLightShadowData[index] = shadowRenderer.ReservePerLightShadowDataDirectional(visibleLight.light, index);
         }
     }
 }
