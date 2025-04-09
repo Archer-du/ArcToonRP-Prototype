@@ -78,7 +78,10 @@ namespace ArcToon.Runtime
             var renderParams = RendererListDesc.ConvertToParameters(desc);
             renderParams.drawSettings.enableInstancing = enableInstancing;
             renderParams.drawSettings.perObjectData = 
-                PerObjectData.Lightmaps | PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume;
+                PerObjectData.Lightmaps | PerObjectData.ShadowMask | 
+                PerObjectData.LightProbe | PerObjectData.OcclusionProbe | 
+                PerObjectData.LightProbeProxyVolume |
+                PerObjectData.OcclusionProbeProxyVolume;
 
             commandBuffer.DrawRendererList(context.CreateRendererList(ref renderParams));
 

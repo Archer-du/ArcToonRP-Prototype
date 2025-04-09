@@ -24,7 +24,9 @@ CBUFFER_START(UnityPerDraw)
     float4x4 unity_ProbeVolumeWorldToObject;
     float4 unity_ProbeVolumeSizeInv;
     float4 unity_ProbeVolumeMin;
+    float4 unity_ProbesOcclusion;
 
+// TODO: inside cbuffer?
     bool4 unity_MetaFragmentControl;
     float unity_OneOverOutputBoost;
     float unity_MaxOutputValue;

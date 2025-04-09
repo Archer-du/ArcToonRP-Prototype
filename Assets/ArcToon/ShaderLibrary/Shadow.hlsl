@@ -33,6 +33,12 @@ CBUFFER_START(_CustomShadows)
     float4 _ShadowDistanceFade;
 CBUFFER_END
 
+struct ShadowMask
+{
+    bool alwaysMode;
+    bool distanceMode;
+    float4 shadows;
+};
 
 struct CascadeShadowData
 {
@@ -71,10 +77,10 @@ CascadeShadowData GetCascadeShadowData(Surface surface)
         cascade.rangeFade = 0.0;
     }
     #if defined(_CASCADE_BLEND_DITHER)
-        else if (cascade.blend < surface.dither)
-        {
-            i += 1;
-        }
+    else if (cascade.blend < surface.dither)
+    {
+        i += 1;
+    }
     #endif
 
     cascade.offset = i;
@@ -91,19 +97,19 @@ float SampleDirectionalShadowAtlas(float3 positionSTS)
 float FilterDirectionalShadow(float3 positionSTS)
 {
     #if defined(DIRECTIONAL_FILTER_SETUP)
-        float weights[DIRECTIONAL_FILTER_SAMPLES];
-        float2 positions[DIRECTIONAL_FILTER_SAMPLES];
-        float4 size = _ShadowAtlasSize.yyxx;
-        DIRECTIONAL_FILTER_SETUP(size, positionSTS.xy, weights, positions);
-        float shadow = 0;
-        for (int i = 0; i < DIRECTIONAL_FILTER_SAMPLES; i++) {
-            shadow += weights[i] * SampleDirectionalShadowAtlas(
-                float3(positions[i].xy, positionSTS.z)
-            );
-        }
-        return shadow;
+    float weights[DIRECTIONAL_FILTER_SAMPLES];
+    float2 positions[DIRECTIONAL_FILTER_SAMPLES];
+    float4 size = _ShadowAtlasSize.yyxx;
+    DIRECTIONAL_FILTER_SETUP(size, positionSTS.xy, weights, positions);
+    float shadow = 0;
+    for (int i = 0; i < DIRECTIONAL_FILTER_SAMPLES; i++) {
+        shadow += weights[i] * SampleDirectionalShadowAtlas(
+            float3(positions[i].xy, positionSTS.z)
+        );
+    }
+    return shadow;
     #else
-        return SampleDirectionalShadowAtlas(positionSTS);
+    return SampleDirectionalShadowAtlas(positionSTS);
     #endif
 }
 
