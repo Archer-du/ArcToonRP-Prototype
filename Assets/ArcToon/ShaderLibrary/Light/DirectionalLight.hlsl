@@ -49,10 +49,10 @@ float GetDirectionalShadowAttenuation(DirectionalLightShadowData directional, Ca
     float shadow = FilterDirectionalShadow(positionSTS);
     #if defined(_CASCADE_BLEND_SOFT)
         // cascade shadow blend
-        normalBias = surface.normal * _CascadeData[cascade.cascadeOffset + 1].y * directional.slopeScaleBias;
+        normalBias = surface.normal * _CascadeData[cascade.offset + 1].y * directional.slopeScaleBias;
         positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1],
                           float4(surface.position + normalBias, 1.0)).xyz;
-        shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, cascade.cascadeBlend);
+        shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, cascade.blend);
     #endif
     // farther than max distance but still inside the last culling sphere
     float attenuation =
@@ -76,7 +76,7 @@ DirectionalLight GetDirectionalLight(int lightIndex, Surface surface, CascadeSha
     return light;
 }
 
-DirectionalLight GetDirectionalLightDebug(int lightIndex, Surface surface, CascadeShadowData cascadeShadowData)
+DirectionalLight GetDirectionalLightCascadeCullingSphere(int lightIndex, Surface surface, CascadeShadowData cascadeShadowData)
 {
     DirectionalLight light;
     light.color = _DirectionalLightColors[lightIndex].rgb;

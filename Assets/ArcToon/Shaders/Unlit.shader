@@ -3,7 +3,7 @@
     Properties
     {
         _BaseMap ("Texture", 2D) = "white" {}
-        _BaseColor ("Color", Color) = (1.0, 1.0, 1.0, 1.0)
+        [HDR] _BaseColor ("Color", Color) = (1.0, 1.0, 1.0, 1.0)
 
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
@@ -11,13 +11,16 @@
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
 
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-        
+
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-        
+
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
     }
     SubShader
     {
+        HLSLINCLUDE
+        #include "UnlitInput.hlsl"
+        ENDHLSL
         Pass
         {
             Blend [_SrcBlend] [_DstBlend]

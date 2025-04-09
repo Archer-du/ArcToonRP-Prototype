@@ -20,9 +20,20 @@
         
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+        
+        [NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
+		[HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
+        
+        // for hard-coded unity capacity
+        [HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
+		[HideInInspector] _Color("Color for Lightmap", Color) = (0.5, 0.5, 0.5, 1.0)
     }
     SubShader
     {
+        HLSLINCLUDE
+		#include "SimpleLitInput.hlsl"
+		ENDHLSL
+
         Pass
         {
             Tags
@@ -39,6 +50,7 @@
             #pragma multi_compile_instancing
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
+            #pragma multi_compile _ LIGHTMAP_ON
 
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _PREMULTIPLY_ALPHA
@@ -72,6 +84,25 @@
 
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "Meta"
+            }
+
+            Cull Off
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            
+            #include "MetaPass.hlsl"
+            
+            #pragma vertex MetaPassVertex
+            #pragma fragment MetaPassFragment
             ENDHLSL
         }
     }

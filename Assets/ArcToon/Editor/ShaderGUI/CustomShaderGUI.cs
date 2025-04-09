@@ -83,6 +83,8 @@ namespace ArcToon.Editor.GUI
             materials = materialEditor.targets;
             properties = materialProperties;
 
+            BakedEmission();
+
             EditorGUILayout.Space();
             showPresets = EditorGUILayout.Foldout(showPresets, "Presets", true);
             if (showPresets)
@@ -96,6 +98,7 @@ namespace ArcToon.Editor.GUI
             if (EditorGUI.EndChangeCheck())
             {
                 UpdateShadowCasterPass();
+                CopyLightMappingProperties();
             }
         }
 
@@ -222,6 +225,40 @@ namespace ArcToon.Editor.GUI
             {
                 var m = (Material)o;
                 m.SetShaderPassEnabled("ShadowCaster", enabled);
+            }
+        }
+
+        void BakedEmission()
+        {
+            EditorGUI.BeginChangeCheck();
+            editor.LightmapEmissionProperty();
+            if (EditorGUI.EndChangeCheck())
+            {
+                foreach (var o in editor.targets)
+                {
+                    var m = (Material)o;
+                    m.globalIlluminationFlags &=
+                        ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+                }
+            }
+        }
+
+
+        void CopyLightMappingProperties()
+        {
+            MaterialProperty mainTex = FindProperty("_MainTex", properties, false);
+            MaterialProperty baseMap = FindProperty("_BaseMap", properties, false);
+            if (mainTex != null && baseMap != null)
+            {
+                mainTex.textureValue = baseMap.textureValue;
+                mainTex.textureScaleAndOffset = baseMap.textureScaleAndOffset;
+            }
+
+            MaterialProperty color = FindProperty("_Color", properties, false);
+            MaterialProperty baseColor = FindProperty("_BaseColor", properties, false);
+            if (color != null && baseColor != null)
+            {
+                color.colorValue = baseColor.colorValue;
             }
         }
     }

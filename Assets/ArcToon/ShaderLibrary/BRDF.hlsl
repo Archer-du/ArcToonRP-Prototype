@@ -54,14 +54,4 @@ float3 DirectBRDF(Surface surface, BRDF brdf, DirectionalLight light)
     return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
 }
 
-float3 DirectBRDFDebugSpecular(Surface surface, BRDF brdf, DirectionalLight light)
-{
-    return SpecularStrength(surface, brdf, light) * brdf.specular;
-}
-
-float3 DirectBRDFDebugDiffuse(Surface surface, BRDF brdf, DirectionalLight light)
-{
-    return brdf.diffuse;
-}
-
 #endif
