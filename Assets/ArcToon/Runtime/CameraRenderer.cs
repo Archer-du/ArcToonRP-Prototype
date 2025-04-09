@@ -57,13 +57,13 @@ namespace ArcToon.Runtime
             // 3.render
             DrawVisibleGeometry(enableInstancing);
             DrawUnsupportedGeometry();
-            DrawGizmos();
 
             // 4.clean up
             lighting.CleanUp();
 
             // 5.submit
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
+            DrawGizmos();
             context.Submit();
         }
 
@@ -77,6 +77,8 @@ namespace ArcToon.Runtime
             };
             var renderParams = RendererListDesc.ConvertToParameters(desc);
             renderParams.drawSettings.enableInstancing = enableInstancing;
+            renderParams.drawSettings.perObjectData = 
+                PerObjectData.Lightmaps | PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume;
 
             commandBuffer.DrawRendererList(context.CreateRendererList(ref renderParams));
 
