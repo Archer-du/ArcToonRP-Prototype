@@ -40,6 +40,7 @@ Varyings SimplelitPassVertex(Attributes input)
 float4 SimplelitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
+    ClipLOD(input.positionCS.xy, unity_LODFade.x);
     float4 color = GetColor(input.baseUV);
 
     #if defined(_CLIPPING)
