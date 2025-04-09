@@ -48,6 +48,14 @@ namespace ArcToon.Runtime
             "_CASCADE_BLEND_DITHER"
         };
 
+        private static string[] shadowMaskKeywords =
+        {
+            "_SHADOW_MASK_ALWAYS",
+            "_SHADOW_MASK_DISTANCE"
+        };
+
+        private bool useShadowMask;
+
         private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
         private static int dirShadowVPMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
         private static int cascadeCountId = Shader.PropertyToID("_CascadeCount");
@@ -66,9 +74,11 @@ namespace ArcToon.Runtime
             this.settings = settings;
 
             ShadowedDirectionalLightCount = 0;
+
+            useShadowMask = false;
         }
 
-        public Vector3 ReserveDirectionalShadowData(Light light, int visibleLightIndex)
+        public Vector4 ReserveDirectionalShadowData(Light light, int visibleLightIndex)
         {
             if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount &&
                 light.shadows != LightShadows.None &&
@@ -76,6 +86,14 @@ namespace ArcToon.Runtime
                 cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b)
                )
             {
+                float maskChannel = -1;
+                LightBakingOutput lightBaking = light.bakingOutput;
+                if (lightBaking is { lightmapBakeType: LightmapBakeType.Mixed, mixedLightingMode: MixedLightingMode.Shadowmask })
+                {
+                    useShadowMask = true;
+                    maskChannel = lightBaking.occlusionMaskChannel;
+                }
+
                 directionalLightShadowData[ShadowedDirectionalLightCount] =
                     new DirectionalLightShadowData
                     {
@@ -84,14 +102,14 @@ namespace ArcToon.Runtime
                         slopeScaleBias = light.shadowBias,
                         nearPlaneOffset = light.shadowNearPlane,
                     };
-                return new Vector3(
+                return new Vector4(
                     light.shadowStrength,
                     settings.directionalCascade.cascadeCount * ShadowedDirectionalLightCount++,
-                    light.shadowNormalBias
+                    light.shadowNormalBias, maskChannel
                 );
             }
 
-            return Vector3.zero;
+            return new Vector4(0f, 0f, 0f, -1f);
         }
 
         public void Render()
@@ -108,6 +126,9 @@ namespace ArcToon.Runtime
                     32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap
                 );
             }
+
+            SetKeywords(shadowMaskKeywords, useShadowMask ? 
+                QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
         }
 
         void RenderDirectionalShadows()
@@ -170,9 +191,10 @@ namespace ArcToon.Runtime
                     // for performance: compare the square distance from the sphere's center with a surface fragment square radius
                     SetCascadeData(i, splitData.cullingSphere, tileSize);
                 }
+
                 splitData.shadowCascadeBlendCullingFactor = cullingFactor;
                 shadowSettings.splitData = splitData;
-                
+
                 int tileIndex = tileOffset + i;
                 dirShadowVPMatrices[tileIndex] = ConvertToAtlasMatrix(
                     projectionMatrix * viewMatrix,
