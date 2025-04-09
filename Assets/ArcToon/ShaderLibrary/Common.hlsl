@@ -38,4 +38,12 @@ float FadedStrength(float distance, float scale, float fade)
     return saturate((1.0 - distance * scale) * fade);
 }
 
+void ClipLOD(float2 positionCS, float fade)
+{
+    #if defined(LOD_FADE_CROSSFADE)
+    float dither = InterleavedGradientNoise(positionCS.xy, 0);;
+    clip((fade < 0 ? fade + 1 : fade) - dither);
+    #endif
+}
+
 #endif

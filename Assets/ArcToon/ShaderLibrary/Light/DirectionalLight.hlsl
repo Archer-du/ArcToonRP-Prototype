@@ -87,9 +87,9 @@ float MixBakedAndRealtimeShadow(float bakedShadow, float realtimeShadow, float f
 float GetDirectionalShadowAttenuation(DirectionalLightShadowData directional, CascadeShadowData cascade,
                                       Surface surface, GI gi)
 {
-    // #if !defined(_RECEIVE_SHADOWS)
-    // return 1.0;
-    // #endif
+    #if !defined(_RECEIVE_SHADOWS)
+    return 1.0;
+    #endif
     float realtimeShadow = GetDirectionalRealtimeShadow(directional, cascade, surface);
     float attenuation;
     float fade = FadedStrength(surface.linearDepth, _ShadowDistanceFade.x, _ShadowDistanceFade.y) * cascade.
