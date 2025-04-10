@@ -30,6 +30,8 @@ CBUFFER_START(UnityPerDraw)
     bool4 unity_MetaFragmentControl;
     float unity_OneOverOutputBoost;
     float unity_MaxOutputValue;
+
+    float4 unity_SpecCube0_HDR;
 CBUFFER_END
 
 float4x4 unity_MatrixVP;

@@ -18,7 +18,7 @@ float3 GetLighting(Surface surface, BRDF brdf, DirectionalLight light)
 float3 GetLighting(Surface surface, BRDF brdf, GI gi)
 {
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
-    float3 color = gi.diffuse * brdf.diffuse;
+    float3 color = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
     for (int i = 0; i < GetDirectionalLightCount(); i++)
     {
         DirectionalLight light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
@@ -27,7 +27,7 @@ float3 GetLighting(Surface surface, BRDF brdf, GI gi)
     return color;
 }
 
-float3 GetLightingRealtime(Surface surface, BRDF brdf, GI gi)
+float3 GetLightingDirect(Surface surface, BRDF brdf, GI gi)
 {
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
     float3 color = 0;
@@ -41,7 +41,7 @@ float3 GetLightingRealtime(Surface surface, BRDF brdf, GI gi)
 
 float3 GetLightingIndirect(Surface surface, BRDF brdf, GI gi)
 {
-    return gi.diffuse * brdf.diffuse;
+    return IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
 }
 
 float3 GetLightingDebug(Surface surface, BRDF brdf, GI gi)
