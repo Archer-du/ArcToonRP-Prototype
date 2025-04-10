@@ -40,9 +40,10 @@ Varyings ShadowCasterPassVertex(Attributes input)
 void ShadowCasterPassFragment(Varyings input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    float4 base = GetColor(input.baseUV);
+    InputConfig config = GetInputConfig(input.baseUV);
+    float4 base = GetColor(config);
     #if defined(_SHADOWS_CLIP)
-    clip(base.a - GetAlphaClip(input.baseUV));
+    clip(base.a - GetAlphaClip(config));
     #elif defined(_SHADOWS_DITHER)
     float dither = InterleavedGradientNoise(input.positionCS.xy, 0);
     clip(base.a - dither);

@@ -81,7 +81,8 @@ namespace ArcToon.Runtime
                 PerObjectData.Lightmaps | PerObjectData.ShadowMask | 
                 PerObjectData.LightProbe | PerObjectData.OcclusionProbe | 
                 PerObjectData.LightProbeProxyVolume |
-                PerObjectData.OcclusionProbeProxyVolume;
+                PerObjectData.OcclusionProbeProxyVolume |
+                PerObjectData.ReflectionProbes;
 
             commandBuffer.DrawRendererList(context.CreateRendererList(ref renderParams));
 

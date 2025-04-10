@@ -5,6 +5,7 @@
 
 #include "../Shadow.hlsl"
 #include "../GI.hlsl"
+#include "LightType.hlsl"
 
 // cpu: PerLightDataDirectional struct
 CBUFFER_START(_CustomLight)
@@ -14,12 +15,6 @@ CBUFFER_START(_CustomLight)
     float4 _DirectionalLightShadowData[MAX_DIRECTIONAL_LIGHT_COUNT];
 CBUFFER_END
 
-struct DirectionalLight
-{
-    float3 color;
-    float3 direction;
-    float attenuation;
-};
 
 // Structure used to obtain shadow attenuation
 struct DirectionalLightShadowData
@@ -49,7 +44,7 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
                                    Surface surface)
 {
     if (directional.strength <= 0) return 1.0;
-    float3 normalBias = surface.normal * _CascadeData[cascade.offset].y * directional.slopeScaleBias;
+    float3 normalBias = surface.interpolatedNormal * _CascadeData[cascade.offset].y * directional.slopeScaleBias;
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex],
                              float4(surface.position + normalBias, 1.0)).xyz;
     float shadow = FilterDirectionalShadow(positionSTS);
