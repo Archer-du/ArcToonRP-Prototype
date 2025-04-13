@@ -11,7 +11,7 @@ namespace ArcToon.Runtime
         public bool enableGPUInstancing;
     }
 
-    public class ArcToonRenderPipelineInstance : RenderPipeline
+    public partial class ArcToonRenderPipelineInstance : RenderPipeline
     {
         private CameraRenderer cameraRenderer = new();
 
@@ -25,6 +25,8 @@ namespace ArcToon.Runtime
             this.shadowSettings = shadowSettings;
             GraphicsSettings.useScriptableRenderPipelineBatching = pipelineParams.enableSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
+            
+            InitializeForEditor();
         }
 
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)

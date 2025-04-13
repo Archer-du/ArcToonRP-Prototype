@@ -1,11 +1,12 @@
 ﻿#ifndef ARCTOON_LIGHT_TYPE_INCLUDED
 #define ARCTOON_LIGHT_TYPE_INCLUDED
 
-struct DirectionalLight
+struct Light
 {
     float3 color;
     float3 direction;
-    float attenuation;
+    float shadowAttenuation;
+    float distanceAttenuation;
 };
 
 #endif

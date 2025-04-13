@@ -4,13 +4,14 @@
 #include "../BRDF.hlsl"
 #include "../GI.hlsl"
 #include "DirectionalLight.hlsl"
+#include "SpotLight.hlsl"
 
-float3 IncomingLight(Surface surface, DirectionalLight light)
+float3 IncomingLight(Surface surface, Light light)
 {
-    return saturate(dot(surface.normal, light.direction) * light.attenuation) * light.color;
+    return saturate(dot(surface.normal, light.direction) * light.shadowAttenuation * light.distanceAttenuation) * light.color;
 }
 
-float3 GetLighting(Surface surface, BRDF brdf, DirectionalLight light)
+float3 GetLighting(Surface surface, BRDF brdf, Light light)
 {
     return IncomingLight(surface, light) * DirectBRDF(surface, brdf, light);
 }
@@ -21,7 +22,13 @@ float3 GetLighting(Surface surface, BRDF brdf, GI gi)
     float3 color = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
     for (int i = 0; i < GetDirectionalLightCount(); i++)
     {
-        DirectionalLight light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
+        Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
+        color += GetLighting(surface, brdf, light);
+    }
+
+    for (int j = 0; j < GetSpotLightCount(); j++)
+    {
+        Light light = GetSpotLight(j, surface, cascadeShadowData, gi);
         color += GetLighting(surface, brdf, light);
     }
     return color;
@@ -33,7 +40,13 @@ float3 GetLightingDirect(Surface surface, BRDF brdf, GI gi)
     float3 color = 0;
     for (int i = 0; i < GetDirectionalLightCount(); i++)
     {
-        DirectionalLight light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
+        Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
+        color += GetLighting(surface, brdf, light);
+    }
+
+    for (int j = 0; j < GetSpotLightCount(); j++)
+    {
+        Light light = GetSpotLight(j, surface, cascadeShadowData, gi);
         color += GetLighting(surface, brdf, light);
     }
     return color;
@@ -50,7 +63,7 @@ float3 GetLightingDebug(Surface surface, BRDF brdf, GI gi)
     float3 color = 0;
     for (int i = 0; i < GetDirectionalLightCount(); i++)
     {
-        DirectionalLight light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
+        Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
         color += GetLighting(surface, brdf, light);
         // color += brdf.specular;
         // color += brdf.diffuse;
