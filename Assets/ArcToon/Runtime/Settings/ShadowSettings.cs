@@ -62,6 +62,20 @@ namespace ArcToon.Runtime.Settings
             blendMode = CascadeBlendMode.Hard
         };
 
+        [System.Serializable]
+        public struct PointSpot
+        {
+            public MapSize atlasSize;
+
+            public FilterMode filterMode;
+        }
+
+        public PointSpot pointSpot = new()
+        {
+            atlasSize = MapSize._1024,
+            filterMode = FilterMode.PCF2x2
+        };
+
 
         [Min(0.001f)] public float maxDistance = 100f;
 
