@@ -40,6 +40,19 @@ namespace ArcToon.Runtime
         private static Vector4[] spotLightDirections = new Vector4[maxSpotLightCount];
         private static Vector4[] spotLightSpotAngles = new Vector4[maxSpotLightCount];
         private static Vector4[] spotLightShadowData = new Vector4[maxSpotLightCount];
+        
+        private const int maxPointLightCount = 16;
+
+        private static int pointLightCountId = Shader.PropertyToID("_PointLightCount");
+        private static int pointLightColorsId = Shader.PropertyToID("_PointLightColors");
+        private static int pointLightPositionsId = Shader.PropertyToID("_PointLightPositions");
+        private static int pointLightDirectionsId = Shader.PropertyToID("_PointLightDirections");
+        private static int pointLightShadowDataId = Shader.PropertyToID("_PointLightShadowData");
+
+        private static Vector4[] pointLightColors = new Vector4[maxPointLightCount];
+        private static Vector4[] pointLightPositions = new Vector4[maxPointLightCount];
+        private static Vector4[] pointLightDirections = new Vector4[maxPointLightCount];
+        private static Vector4[] pointLightShadowData = new Vector4[maxPointLightCount];
 
         public Lighting()
         {
@@ -75,6 +88,7 @@ namespace ArcToon.Runtime
 
             int dirLightCount = 0;
             int spotLightCount = 0;
+            int pointLightCount = 0;
             for (int i = 0; i < visibleLights.Length; i++)
             {
                 switch (visibleLights[i].lightType)
@@ -85,13 +99,13 @@ namespace ArcToon.Runtime
                     case LightType.Spot when spotLightCount < maxSpotLightCount:
                         ReservePerLightDataSpot(spotLightCount++, i, visibleLights[i]);
                         break;
-                    // case LightType.Point when spotLightCount < maxSpotLightCount:
-                    //     ReservePerLightDataPoint(spotLightCount++, i, visibleLights[i]);
-                    //     break;
+                    case LightType.Point when pointLightCount < maxPointLightCount:
+                        ReservePerLightDataPoint(pointLightCount++, i, visibleLights[i]);
+                        break;
                 }
             }
 
-            commandBuffer.SetGlobalInt(dirLightCountId, visibleLights.Length);
+            commandBuffer.SetGlobalInt(dirLightCountId, dirLightCount);
             if (dirLightCount > 0)
             {
                 commandBuffer.SetGlobalVectorArray(dirLightColorsId, dirLightColors);
@@ -108,6 +122,16 @@ namespace ArcToon.Runtime
                 commandBuffer.SetGlobalVectorArray(spotLightSpotAnglesId, spotLightSpotAngles);
                 commandBuffer.SetGlobalVectorArray(spotLightShadowDataId, spotLightShadowData);
             }
+            
+            commandBuffer.SetGlobalInt(pointLightCountId, pointLightCount);
+            if (pointLightCount > 0)
+            {
+                commandBuffer.SetGlobalVectorArray(pointLightColorsId, pointLightColors);
+                commandBuffer.SetGlobalVectorArray(pointLightPositionsId, pointLightPositions);
+                commandBuffer.SetGlobalVectorArray(pointLightDirectionsId, pointLightDirections);
+                // commandBuffer.SetGlobalVectorArray(spotLightSpotAnglesId, spotLightSpotAngles);
+                commandBuffer.SetGlobalVectorArray(pointLightShadowDataId, pointLightShadowData);
+            }
         }
 
         private void ReservePerLightDataDirectional(int directionalLightIndex, int visibleLightIndex, in VisibleLight visibleLight)
@@ -119,15 +143,15 @@ namespace ArcToon.Runtime
                 shadowRenderer.ReservePerLightShadowDataDirectional(visibleLight.light, visibleLightIndex);
         }
 
-        private void ReservePerLightDataPoint(int otherLightIndex, int visibleLightIndex, in VisibleLight visibleLight)
+        private void ReservePerLightDataPoint(int pointLightIndex, int visibleLightIndex, in VisibleLight visibleLight)
         {
-            // spotLightColors[otherLightIndex] = visibleLight.finalColor;
-            // Vector4 position = visibleLight.localToWorldMatrix.GetColumn(3);
-            // position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
-            // spotLightPositions[otherLightIndex] = position;
-            // spotLightSpotAngles[otherLightIndex] = new Vector4(0f, 1f);
-            // otherLightShadowData[otherLightIndex] = 
-            //     shadowRenderer.ReservePerLightShadowDataPointSpot(visibleLight.light, visibleLightIndex);
+            pointLightColors[pointLightIndex] = visibleLight.finalColor;
+            Vector4 position = visibleLight.localToWorldMatrix.GetColumn(3);
+            position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
+            pointLightPositions[pointLightIndex] = position;
+            pointLightDirections[pointLightIndex] = -visibleLight.localToWorldMatrix.GetColumn(2);
+            pointLightShadowData[pointLightIndex] = 
+                shadowRenderer.ReservePerLightShadowDataPoint(visibleLight.light, visibleLightIndex);
         }
         
         private void ReservePerLightDataSpot(int spotLightIndex, int visibleLightIndex, in VisibleLight visibleLight)

@@ -63,19 +63,32 @@ namespace ArcToon.Runtime.Settings
         };
 
         [System.Serializable]
-        public struct PointSpot
+        public struct SpotShadow
         {
             public MapSize atlasSize;
 
             public FilterMode filterMode;
         }
 
-        public PointSpot pointSpot = new()
+        [FormerlySerializedAs("pointSpot")] public SpotShadow spotShadow = new()
         {
             atlasSize = MapSize._1024,
             filterMode = FilterMode.PCF2x2
         };
 
+        [System.Serializable]
+        public struct PointShadow
+        {
+            public MapSize atlasSize;
+
+            public FilterMode filterMode;
+        }
+
+        public PointShadow pointShadow = new()
+        {
+            atlasSize = MapSize._1024,
+            filterMode = FilterMode.PCF2x2
+        };
 
         [Min(0.001f)] public float maxDistance = 100f;
 

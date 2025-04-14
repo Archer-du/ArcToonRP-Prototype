@@ -66,9 +66,9 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
 float GetDirectionalShadowAttenuation(DirectionalLightShadowData directional, CascadeShadowData cascade,
                                       Surface surface, GI gi)
 {
-    #if !defined(_RECEIVE_SHADOWS)
-    return 1.0;
-    #endif
+    // #if !defined(_RECEIVE_SHADOWS)
+    // return 1.0;
+    // #endif
     float realtimeShadow = GetDirectionalRealtimeShadow(directional, cascade, surface);
     float attenuation;
     // farther than max distance but still inside the last culling sphere
