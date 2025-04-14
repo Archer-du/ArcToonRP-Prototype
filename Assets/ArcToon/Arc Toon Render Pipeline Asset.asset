@@ -24,8 +24,11 @@ MonoBehaviour:
       cascadeRatio2: 0.25
       cascadeRatio3: 0.5
       edgeFade: 0.1
-    pointSpot:
+    spotShadow:
       atlasSize: 8192
-      filterMode: 0
+      filterMode: 3
+    pointShadow:
+      atlasSize: 8192
+      filterMode: 3
     maxDistance: 50
     distanceFade: 0.1

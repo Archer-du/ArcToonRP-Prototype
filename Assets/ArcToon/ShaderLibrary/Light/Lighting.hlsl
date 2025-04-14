@@ -5,6 +5,7 @@
 #include "../GI.hlsl"
 #include "DirectionalLight.hlsl"
 #include "SpotLight.hlsl"
+#include "PointLight.hlsl"
 
 float3 IncomingLight(Surface surface, Light light)
 {
@@ -31,6 +32,12 @@ float3 GetLighting(Surface surface, BRDF brdf, GI gi)
         Light light = GetSpotLight(j, surface, cascadeShadowData, gi);
         color += GetLighting(surface, brdf, light);
     }
+
+    for (int j = 0; j < GetPointLightCount(); j++)
+    {
+        Light light = GetPointLight(j, surface, cascadeShadowData, gi);
+        color += GetLighting(surface, brdf, light);
+    }
     return color;
 }
 
@@ -47,6 +54,12 @@ float3 GetLightingDirect(Surface surface, BRDF brdf, GI gi)
     for (int j = 0; j < GetSpotLightCount(); j++)
     {
         Light light = GetSpotLight(j, surface, cascadeShadowData, gi);
+        color += GetLighting(surface, brdf, light);
+    }
+
+    for (int j = 0; j < GetPointLightCount(); j++)
+    {
+        Light light = GetPointLight(j, surface, cascadeShadowData, gi);
         color += GetLighting(surface, brdf, light);
     }
     return color;

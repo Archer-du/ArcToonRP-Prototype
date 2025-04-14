@@ -1,5 +1,5 @@
-﻿#ifndef ARCTOON_OTHER_LIGHT_INCLUDED
-#define ARCTOON_OTHER_LIGHT_INCLUDED
+﻿#ifndef ARCTOON_SPOT_LIGHT_INCLUDED
+#define ARCTOON_SPOT_LIGHT_INCLUDED
 
 #define MAX_SPOT_LIGHT_COUNT 64
 
@@ -7,7 +7,7 @@
 #include "../GI.hlsl"
 #include "LightType.hlsl"
 
-CBUFFER_START(_CustomOtherLight)
+CBUFFER_START(_CustomSpotLight)
     int _SpotLightCount;
     float4 _SpotLightColors[MAX_SPOT_LIGHT_COUNT];
     float4 _SpotLightPositions[MAX_SPOT_LIGHT_COUNT];
@@ -55,7 +55,7 @@ float GetSpotRealtimeShadow(SpotShadowData spot, CascadeShadowData cascade,
     float3 normalBias = surface.interpolatedNormal * (distanceToLightPlane * _SpotShadowTiles[spot.tileIndex].w);
     float4 positionSTS = mul(_SpotShadowMatrices[spot.tileIndex],
         float4(surface.position + normalBias, 1.0));
-    float shadow = FilterPointSpotShadow(positionSTS.xyz / positionSTS.w,
+    float shadow = FilterSpotShadow(positionSTS.xyz / positionSTS.w,
         _SpotShadowTiles[spot.tileIndex].xyz);
     shadow = lerp(1.0, shadow, spot.shadowStrength);
     return shadow;
@@ -69,6 +69,7 @@ float GetSpotShadowAttenuation(SpotShadowData pointSpot, CascadeShadowData casca
     // #endif
     float realtimeShadow = GetSpotRealtimeShadow(pointSpot, cascade, surface);
     float attenuation;
+    // TODO:
     float fade = FadedStrength(surface.linearDepth, _ShadowDistanceFade.x, _ShadowDistanceFade.y) * cascade.
         rangeFade;
     if (gi.shadowMask.alwaysMode)
@@ -105,8 +106,8 @@ Light GetSpotLight(int index, Surface surface, CascadeShadowData cascade, GI gi)
         spotAngles.x + spotAngles.y));
     light.distanceAttenuation = spotAttenuation * rangeAttenuation / distanceSqr;
     
-    SpotShadowData otherShadowData = GetSpotLightShadowData(index);
-    light.shadowAttenuation = GetSpotShadowAttenuation(otherShadowData, cascade, surface, gi);
+    SpotShadowData spotShadowData = GetSpotLightShadowData(index);
+    light.shadowAttenuation = GetSpotShadowAttenuation(spotShadowData, cascade, surface, gi);
     return light;
 }
 
