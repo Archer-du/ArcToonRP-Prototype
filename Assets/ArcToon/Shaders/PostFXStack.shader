@@ -101,6 +101,17 @@
 
         Pass
         {
+            Name "Color Grading Only"
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex DefaultPassVertex
+            #pragma fragment ColorGradingOnlyPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
             Name "Tone Mapping Reinhard"
 
             HLSLPROGRAM
