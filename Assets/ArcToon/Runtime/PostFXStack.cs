@@ -43,6 +43,11 @@ namespace ArcToon.Runtime
             BloomAdditiveFinal,
             BloomScatter,
             BloomScatterFinal,
+            
+            ToneMappingReinhard,
+            ToneMappingNeutral,
+            ToneMappingACES,
+            
             Copy
         }
 
@@ -94,9 +99,12 @@ namespace ArcToon.Runtime
 
             commandBuffer.BeginSample("Post Processing");
 
-            // Draw(frameBufferId, BuiltinRenderTextureType.CameraTarget, Pass.Copy);
-            DoBloom(frameBufferId);
+            RenderTargetIdentifier RTID = frameBufferId;
+            RTID = DoBloom(RTID);
+            RTID = DoToneMapping(RTID);
 
+            Draw(RTID, BuiltinRenderTextureType.CameraTarget, Pass.Copy);
+            
             commandBuffer.EndSample("Post Processing");
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
         }
@@ -108,7 +116,7 @@ namespace ArcToon.Runtime
                 dstRT, RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             commandBuffer.DrawProcedural(
-                Matrix4x4.identity, settings.PostProcessMaterial, (int)pass,
+                Matrix4x4.identity, settings.PostProcessStackMaterial, (int)pass,
                 MeshTopology.Triangles, 3
             );
         }
@@ -123,11 +131,9 @@ namespace ArcToon.Runtime
         private int bloomScaleId = Shader.PropertyToID("_BloomScale");
         private int bloomScatterId = Shader.PropertyToID("_BloomScatter");
 
-        void DoBloom(int srcframeBufferId)
+        RenderTargetIdentifier DoBloom(RenderTargetIdentifier srcframeBufferId)
         {
             PostFXSettings.BloomSettings bloomSettings = settings.Bloom;
-
-            commandBuffer.BeginSample("Bloom");
 
             // skip
             if (bloomSettings.maxIterations == 0 ||
@@ -135,11 +141,10 @@ namespace ArcToon.Runtime
                 camera.pixelWidth < bloomSettings.downscaleLimit * 4 ||
                 bloomSettings.intensity <= 0f)
             {
-                Draw(srcframeBufferId, BuiltinRenderTextureType.CameraTarget, Pass.Copy);
-                commandBuffer.EndSample("Bloom");
-                return;
+                return srcframeBufferId;
             }
 
+            commandBuffer.BeginSample("Bloom");
             RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
 
             // knee curve prefilter
@@ -198,6 +203,7 @@ namespace ArcToon.Runtime
                 commandBuffer.SetGlobalFloat(bloomScatterId, bloomSettings.scatter);
                 finalScale = bloomSettings.scatter;
             }
+
             for (i -= 1; i > 0; i--)
             {
                 commandBuffer.SetGlobalTexture(fxSource2Id, tmpId + 1);
@@ -210,10 +216,17 @@ namespace ArcToon.Runtime
 
             commandBuffer.SetGlobalTexture(fxSource2Id, srcframeBufferId);
             commandBuffer.SetGlobalFloat(bloomScaleId, finalScale);
-            Draw(srcId, BuiltinRenderTextureType.CameraTarget, finalPass);
+            int resultBufferId = Shader.PropertyToID("_BloomResultBuffer");
+            commandBuffer.GetTemporaryRT(
+                resultBufferId, camera.pixelWidth, camera.pixelHeight, 0,
+                FilterMode.Bilinear, format
+            );
+            Draw(srcId, resultBufferId, finalPass);
             commandBuffer.ReleaseTemporaryRT(srcId);
 
             commandBuffer.EndSample("Bloom");
+
+            return resultBufferId;
         }
 
         public Vector4 GetKneeCurveData(PostFXSettings.BloomSettings bloomSettings)
@@ -225,6 +238,28 @@ namespace ArcToon.Runtime
             thresholdData.w = 1f / (4 * thresholdData.y + 0.00001f);
             thresholdData.y -= thresholdData.x;
             return thresholdData;
+        }
+
+
+        // ToneMapping ------------------------------
+        RenderTargetIdentifier DoToneMapping(RenderTargetIdentifier srcBufferId)
+        {
+            RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+            var mode = settings.ToneMapping.mode;
+            Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingReinhard + (int)mode;
+            
+            commandBuffer.BeginSample("Tone Mapping");
+
+            int resultBufferId = Shader.PropertyToID("_ToneMappingResultBuffer");
+            commandBuffer.GetTemporaryRT(
+                resultBufferId, camera.pixelWidth, camera.pixelHeight, 0,
+                FilterMode.Bilinear, format
+            );
+            Draw(srcBufferId, resultBufferId, pass);
+            
+            commandBuffer.EndSample("Tone Mapping");
+
+            return resultBufferId;
         }
 
         public CameraClearFlags GetClearFlags()

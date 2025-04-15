@@ -12,14 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7718d500c61b43c6bb2964434f16bd17, type: 3}
   m_Name: Arc Toon Post FX Settings
   m_EditorClassIdentifier: 
-  postProcessShader: {fileID: 4800000, guid: 561909e82a69453d98483b380fdbdbfb, type: 3}
   bloom:
     mode: 1
-    scatter: 0.65
-    maxIterations: 1
+    scatter: 0.5
+    maxIterations: 2
     downscaleLimit: 50
     threshold: 1
     thresholdKnee: 0.25
     intensity: 1
     fadeFireflies: 1
-    bicubicUpsampling: 0
+    bicubicUpsampling: 1
+  toneMapping:
+    mode: 2
+  postProcessStackShader: {fileID: 4800000, guid: 561909e82a69453d98483b380fdbdbfb, type: 3}
