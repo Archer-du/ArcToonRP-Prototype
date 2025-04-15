@@ -1,6 +1,7 @@
 ﻿using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
+using static ArcToon.Runtime.Settings.PostFXSettings;
 
 namespace ArcToon.Runtime
 {
@@ -43,11 +44,12 @@ namespace ArcToon.Runtime
             BloomAdditiveFinal,
             BloomScatter,
             BloomScatterFinal,
-            
+
+            ColorGradingOnly,
             ToneMappingReinhard,
             ToneMappingNeutral,
             ToneMappingACES,
-            
+
             Copy
         }
 
@@ -101,10 +103,10 @@ namespace ArcToon.Runtime
 
             RenderTargetIdentifier RTID = frameBufferId;
             RTID = DoBloom(RTID);
-            RTID = DoToneMapping(RTID);
+            RTID = DoColorGradingToneMapping(RTID);
 
             Draw(RTID, BuiltinRenderTextureType.CameraTarget, Pass.Copy);
-            
+
             commandBuffer.EndSample("Post Processing");
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
         }
@@ -242,12 +244,18 @@ namespace ArcToon.Runtime
 
 
         // ToneMapping ------------------------------
-        RenderTargetIdentifier DoToneMapping(RenderTargetIdentifier srcBufferId)
+        RenderTargetIdentifier DoColorGradingToneMapping(RenderTargetIdentifier srcBufferId)
         {
+            ConfigureColorAdjustments();
+            ConfigureWhiteBalance();
+            ConfigureSplitToning();
+            ConfigureChannelMixer();
+            ConfigureShadowsMidtonesHighlights();
+
             RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
             var mode = settings.ToneMapping.mode;
-            Pass pass = mode < 0 ? Pass.Copy : Pass.ToneMappingReinhard + (int)mode;
-            
+            Pass pass = Pass.ColorGradingOnly + (int)mode;
+
             commandBuffer.BeginSample("Tone Mapping");
 
             int resultBufferId = Shader.PropertyToID("_ToneMappingResultBuffer");
@@ -256,11 +264,77 @@ namespace ArcToon.Runtime
                 FilterMode.Bilinear, format
             );
             Draw(srcBufferId, resultBufferId, pass);
-            
+
             commandBuffer.EndSample("Tone Mapping");
 
             return resultBufferId;
         }
+
+        private int colorAdjustmentDataId = Shader.PropertyToID("_ColorAdjustmentData");
+        private int colorFilterId = Shader.PropertyToID("_ColorFilter");
+
+        void ConfigureColorAdjustments()
+        {
+            ColorAdjustmentsSettings colorAdjustments = settings.ColorAdjustments;
+            commandBuffer.SetGlobalVector(colorAdjustmentDataId, new Vector4(
+                Mathf.Pow(2f, colorAdjustments.postExposure),
+                colorAdjustments.contrast * 0.01f + 1f,
+                colorAdjustments.hueShift * (1f / 360f),
+                colorAdjustments.saturation * 0.01f + 1f
+            ));
+            commandBuffer.SetGlobalColor(colorFilterId, colorAdjustments.colorFilter.linear);
+        }
+
+        private int whiteBalanceId = Shader.PropertyToID("_WhiteBalance");
+
+        void ConfigureWhiteBalance()
+        {
+            WhiteBalanceSettings whiteBalance = settings.WhiteBalance;
+            commandBuffer.SetGlobalVector(whiteBalanceId, ColorUtils.ColorBalanceToLMSCoeffs(
+                whiteBalance.temperature, whiteBalance.tint
+            ));
+        }
+
+        private int splitToningShadowsId = Shader.PropertyToID("_SplitToningShadows");
+        private int splitToningHighlightsId = Shader.PropertyToID("_SplitToningHighlights");
+
+        void ConfigureSplitToning()
+        {
+            SplitToningSettings splitToning = settings.SplitToning;
+            Color splitColor = splitToning.shadows;
+            splitColor.a = splitToning.balance * 0.01f;
+            commandBuffer.SetGlobalColor(splitToningShadowsId, splitColor);
+            commandBuffer.SetGlobalColor(splitToningHighlightsId, splitToning.highlights);
+        }
+
+        private int channelMixerRedId = Shader.PropertyToID("_ChannelMixerRed");
+        private int channelMixerGreenId = Shader.PropertyToID("_ChannelMixerGreen");
+        private int channelMixerBlueId = Shader.PropertyToID("_ChannelMixerBlue");
+
+        void ConfigureChannelMixer()
+        {
+            ChannelMixerSettings channelMixer = settings.ChannelMixer;
+            commandBuffer.SetGlobalVector(channelMixerRedId, channelMixer.red);
+            commandBuffer.SetGlobalVector(channelMixerGreenId, channelMixer.green);
+            commandBuffer.SetGlobalVector(channelMixerBlueId, channelMixer.blue);
+        }
+
+        private int smhShadowsId = Shader.PropertyToID("_SMHShadows");
+        private int smhMidtonesId = Shader.PropertyToID("_SMHMidtones");
+        private int smhHighlightsId = Shader.PropertyToID("_SMHHighlights");
+        private int smhRangeId = Shader.PropertyToID("_SMHRange");
+
+        void ConfigureShadowsMidtonesHighlights()
+        {
+            ShadowsMidtonesHighlightsSettings smh = settings.ShadowsMidtonesHighlights;
+            commandBuffer.SetGlobalColor(smhShadowsId, smh.shadows.linear);
+            commandBuffer.SetGlobalColor(smhMidtonesId, smh.midtones.linear);
+            commandBuffer.SetGlobalColor(smhHighlightsId, smh.highlights.linear);
+            commandBuffer.SetGlobalVector(smhRangeId, new Vector4(
+                smh.shadowsStart, smh.shadowsEnd, smh.highlightsStart, smh.highLightsEnd
+            ));
+        }
+
 
         public CameraClearFlags GetClearFlags()
         {
