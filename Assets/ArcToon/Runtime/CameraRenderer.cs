@@ -17,11 +17,14 @@ namespace ArcToon.Runtime
 
         private Lighting lighting;
 
+        private PostFXStack postFXStack;
+
         private static ShaderTagId[] shaderTagIds =
         {
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
         };
+
 
         public CameraRenderer()
         {
@@ -30,41 +33,54 @@ namespace ArcToon.Runtime
                 name = bufferName
             };
             lighting = new();
+            postFXStack = new();
         }
 
         public void Render(ScriptableRenderContext context, Camera camera, bool enableInstancing,
-            ShadowSettings shadowSettings)
+            ShadowSettings shadowSettings, PostFXSettings postFXSettings)
         {
             this.context = context;
             this.camera = camera;
 
-            // 1.editor
+            // editor
             PrepareBuffer();
             PrepareForSceneWindow();
 
             if (!Cull(shadowSettings.maxDistance)) return;
 
-            // 2.set up
             lighting.Setup(context, cullingResults, shadowSettings);
 
             context.SetupCameraProperties(camera);
-            var flags = camera.clearFlags;
+            postFXStack.Setup(context, commandBuffer, camera, postFXSettings);
+            var flags = postFXStack.GetClearFlags();
+            
             commandBuffer.ClearRenderTarget(
                 flags <= CameraClearFlags.Depth,
                 flags <= CameraClearFlags.Color,
                 flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
 
-            // 3.render
+            // render
             DrawVisibleGeometry(enableInstancing);
             DrawUnsupportedGeometry();
-
-            // 4.clean up
-            lighting.CleanUp();
-
-            // 5.submit
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
-            DrawGizmos();
+            
+            // post processing
+            DrawGizmosBeforeFX();
+            postFXStack.Render();
+            DrawGizmosAfterFX();
+            ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
+
+            // clean up
+            Cleanup();
+
+            // submit
             context.Submit();
+        }
+
+        void Cleanup()
+        {
+            lighting.CleanUp();
+            postFXStack.CleanUp();
         }
 
         private void DrawVisibleGeometry(bool enableInstancing)
@@ -77,9 +93,9 @@ namespace ArcToon.Runtime
             };
             var renderParams = RendererListDesc.ConvertToParameters(desc);
             renderParams.drawSettings.enableInstancing = enableInstancing;
-            renderParams.drawSettings.perObjectData = 
-                PerObjectData.Lightmaps | PerObjectData.ShadowMask | 
-                PerObjectData.LightProbe | PerObjectData.OcclusionProbe | 
+            renderParams.drawSettings.perObjectData =
+                PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+                PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
                 PerObjectData.LightProbeProxyVolume |
                 PerObjectData.OcclusionProbeProxyVolume |
                 PerObjectData.ReflectionProbes;

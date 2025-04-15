@@ -18,11 +18,14 @@ namespace ArcToon.Runtime
         private ArcToonRenderPipelineParams renderParams;
 
         private ShadowSettings shadowSettings;
-
-        public ArcToonRenderPipelineInstance(ArcToonRenderPipelineParams pipelineParams, ShadowSettings shadowSettings)
+        private PostFXSettings postFXSettings;
+        
+        public ArcToonRenderPipelineInstance(ArcToonRenderPipelineParams pipelineParams, 
+            ShadowSettings shadowSettings, PostFXSettings postFXSettings)
         {
             renderParams = pipelineParams;
             this.shadowSettings = shadowSettings;
+            this.postFXSettings = postFXSettings;
             GraphicsSettings.useScriptableRenderPipelineBatching = pipelineParams.enableSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
             
@@ -38,7 +41,9 @@ namespace ArcToon.Runtime
         {
             for (int i = 0; i < cameras.Count; i++)
             {
-                cameraRenderer.Render(renderContext, cameras[i], renderParams.enableGPUInstancing, shadowSettings);
+                cameraRenderer.Render(renderContext, cameras[i], 
+                    renderParams.enableGPUInstancing, 
+                    shadowSettings, postFXSettings);
             }
         }
 
