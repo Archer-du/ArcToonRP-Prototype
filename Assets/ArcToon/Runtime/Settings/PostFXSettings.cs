@@ -12,6 +12,16 @@ namespace ArcToon.Runtime.Settings
         [System.Serializable]
         public struct BloomSettings
         {
+            public enum Mode
+            {
+                Additive,
+                Scattering
+            }
+
+            public Mode mode;
+
+            [Range(0.05f, 0.95f)] public float scatter;
+
             [Range(0f, 16f)] public int maxIterations;
 
             [Min(1f)] public int downscaleLimit;
@@ -21,7 +31,7 @@ namespace ArcToon.Runtime.Settings
             [Range(0f, 1f)] public float thresholdKnee;
 
             [Min(0f)] public float intensity;
-            
+
             public bool fadeFireflies;
 
             public bool bicubicUpsampling;
