@@ -38,7 +38,10 @@ namespace ArcToon.Runtime
             postFXStack = new();
         }
 
-        public void Render(ScriptableRenderContext context, Camera camera, bool enableInstancing, bool allowHDR,
+        public void Render(ScriptableRenderContext context, Camera camera, 
+            bool enableInstancing, 
+            bool allowHDR,
+            int colorLUTResolution,
             ShadowSettings shadowSettings, PostFXSettings postFXSettings)
         {
             this.context = context;
@@ -54,7 +57,7 @@ namespace ArcToon.Runtime
             lighting.Setup(context, cullingResults, shadowSettings);
 
             context.SetupCameraProperties(camera);
-            postFXStack.Setup(context, commandBuffer, camera, postFXSettings, useHDR);
+            postFXStack.Setup(context, commandBuffer, camera, postFXSettings, useHDR, colorLUTResolution);
             var flags = postFXStack.GetClearFlags();
             
             commandBuffer.ClearRenderTarget(

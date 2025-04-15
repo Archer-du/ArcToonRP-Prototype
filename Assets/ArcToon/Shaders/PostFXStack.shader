@@ -112,34 +112,45 @@
 
         Pass
         {
-            Name "Tone Mapping Reinhard"
+            Name "Color Grading Reinhard"
 
             HLSLPROGRAM
             #pragma target 3.5
             #pragma vertex DefaultPassVertex
-            #pragma fragment ToneMappingReinhardPassFragment
+            #pragma fragment ColorGradingReinhardPassFragment
             ENDHLSL
         }
 
         Pass
         {
-            Name "Tone Mapping Neutral"
+            Name "Color Grading Neutral"
 
             HLSLPROGRAM
             #pragma target 3.5
             #pragma vertex DefaultPassVertex
-            #pragma fragment ToneMappingNeutralPassFragment
+            #pragma fragment ColorGradingNeutralPassFragment
             ENDHLSL
         }
 
         Pass
         {
-            Name "Tone Mapping ACES"
+            Name "Color Grading ACES"
 
             HLSLPROGRAM
             #pragma target 3.5
             #pragma vertex DefaultPassVertex
-            #pragma fragment ToneMappingACESPassFragment
+            #pragma fragment ColorGradingACESPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "Color Grading LUT Apply"
+
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex DefaultPassVertex
+            #pragma fragment ColorGradingFinalPassFragment
             ENDHLSL
         }
 
