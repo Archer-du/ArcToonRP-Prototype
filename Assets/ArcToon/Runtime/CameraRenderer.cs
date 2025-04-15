@@ -19,6 +19,8 @@ namespace ArcToon.Runtime
 
         private PostFXStack postFXStack;
 
+        private bool useHDR;
+
         private static ShaderTagId[] shaderTagIds =
         {
             new("SRPDefaultUnlit"),
@@ -36,11 +38,12 @@ namespace ArcToon.Runtime
             postFXStack = new();
         }
 
-        public void Render(ScriptableRenderContext context, Camera camera, bool enableInstancing,
+        public void Render(ScriptableRenderContext context, Camera camera, bool enableInstancing, bool allowHDR,
             ShadowSettings shadowSettings, PostFXSettings postFXSettings)
         {
             this.context = context;
             this.camera = camera;
+            this.useHDR = allowHDR && camera.allowHDR;;
 
             // editor
             PrepareBuffer();
@@ -51,7 +54,7 @@ namespace ArcToon.Runtime
             lighting.Setup(context, cullingResults, shadowSettings);
 
             context.SetupCameraProperties(camera);
-            postFXStack.Setup(context, commandBuffer, camera, postFXSettings);
+            postFXStack.Setup(context, commandBuffer, camera, postFXSettings, useHDR);
             var flags = postFXStack.GetClearFlags();
             
             commandBuffer.ClearRenderTarget(

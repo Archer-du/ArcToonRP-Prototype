@@ -9,6 +9,7 @@ namespace ArcToon.Runtime
     {
         public bool enableSRPBatcher;
         public bool enableGPUInstancing;
+        public bool allowHDR;
     }
 
     public partial class ArcToonRenderPipelineInstance : RenderPipeline
@@ -43,6 +44,7 @@ namespace ArcToon.Runtime
             {
                 cameraRenderer.Render(renderContext, cameras[i], 
                     renderParams.enableGPUInstancing, 
+                    renderParams.allowHDR, 
                     shadowSettings, postFXSettings);
             }
         }

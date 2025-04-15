@@ -16,7 +16,8 @@ MonoBehaviour:
   bloom:
     maxIterations: 1
     downscaleLimit: 1
-    threshold: 0.8
-    thresholdKnee: 0.8
+    threshold: 1
+    thresholdKnee: 0.25
     intensity: 1
+    fadeFireflies: 1
     bicubicUpsampling: 1

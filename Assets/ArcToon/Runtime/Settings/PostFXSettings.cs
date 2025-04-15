@@ -21,6 +21,8 @@ namespace ArcToon.Runtime.Settings
             [Range(0f, 1f)] public float thresholdKnee;
 
             [Min(0f)] public float intensity;
+            
+            public bool fadeFireflies;
 
             public bool bicubicUpsampling;
         }
