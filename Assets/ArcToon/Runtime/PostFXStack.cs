@@ -14,6 +14,8 @@ namespace ArcToon.Runtime
 
         PostFXSettings settings;
 
+        private bool useHDR;
+
         public bool IsActive
         {
             get
@@ -34,6 +36,7 @@ namespace ArcToon.Runtime
         enum Pass
         {
             BloomPrefilter,
+            BloomPrefilterFireflies,
             BloomHorizontal,
             BloomVertical,
             BloomCombine,
@@ -50,19 +53,22 @@ namespace ArcToon.Runtime
         }
 
         public void Setup(ScriptableRenderContext context, CommandBuffer commandBuffer, Camera camera,
-            PostFXSettings settings)
+            PostFXSettings settings, bool useHDR)
         {
             this.context = context;
             this.commandBuffer = commandBuffer;
             this.camera = camera;
             this.settings = settings;
+            this.useHDR = useHDR;
+            
             ApplySceneViewState();
 
             if (IsActive)
             {
                 commandBuffer.GetTemporaryRT(
                     frameBufferId, camera.pixelWidth, camera.pixelHeight,
-                    32, FilterMode.Bilinear, RenderTextureFormat.Default
+                    32, FilterMode.Bilinear, useHDR ?
+                        RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
                 );
                 commandBuffer.SetRenderTarget(
                     frameBufferId,
@@ -120,7 +126,6 @@ namespace ArcToon.Runtime
 
             commandBuffer.BeginSample("Bloom");
 
-            commandBuffer.SetGlobalVector(bloomThresholdId, GetKneeCurveData(bloomSettings));
             // skip
             if (bloomSettings.maxIterations == 0 ||
                 camera.pixelHeight < bloomSettings.downscaleLimit * 4 || camera.pixelWidth < bloomSettings.downscaleLimit * 4 ||
@@ -131,13 +136,18 @@ namespace ArcToon.Runtime
                 return;
             }
             
+            RenderTextureFormat format = useHDR ?
+                RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+            
             // knee curve prefilter
-            RenderTextureFormat format = RenderTextureFormat.Default;
+            commandBuffer.SetGlobalVector(bloomThresholdId, GetKneeCurveData(bloomSettings));
             int width = camera.pixelWidth / 2, height = camera.pixelHeight / 2;
             commandBuffer.GetTemporaryRT(
                 bloomPrefilterId, width, height, 0, FilterMode.Bilinear, format
             );
-            Draw(srcframeBufferId, bloomPrefilterId, Pass.BloomPrefilter);
+            Draw(srcframeBufferId, bloomPrefilterId, 
+                bloomSettings.fadeFireflies ?
+                Pass.BloomPrefilterFireflies : Pass.BloomPrefilter);
             width /= 2;
             height /= 2;
             
@@ -170,7 +180,6 @@ namespace ArcToon.Runtime
             commandBuffer.ReleaseTemporaryRT(bloomPrefilterId);
             commandBuffer.ReleaseTemporaryRT(srcId - 1);
             commandBuffer.SetGlobalFloat(bloomBucibicUpsamplingId, bloomSettings.bicubicUpsampling ? 1f : 0f);
-            // commandBuffer.SetGlobalFloat(bloomIntensityId, 1f);
             tmpId -= 4;
             for (i -= 1; i > 0; i--)
             {

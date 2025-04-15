@@ -97,7 +97,7 @@ float4 SimplelitPassFragment(Varyings input) : SV_TARGET
     BRDF brdf = GetBRDF(surface);
     #endif
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
-    float3 finalColor = GetLightingDirect(surface, brdf, gi);
+    float3 finalColor = GetLighting(surface, brdf, gi);
     finalColor += GetEmission(config);
     
     return float4(finalColor.rgb, surface.alpha);

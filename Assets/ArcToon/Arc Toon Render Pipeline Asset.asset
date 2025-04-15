@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enableSRPBatcher: 0
   enableGPUInstancing: 1
+  allowHDR: 1
   shadowSettings:
     directionalCascade:
       atlasSize: 8192
@@ -30,6 +31,6 @@ MonoBehaviour:
     pointShadow:
       atlasSize: 8192
       filterMode: 3
-    maxDistance: 50
+    maxDistance: 200
     distanceFade: 0.1
   postFXSettings: {fileID: 11400000, guid: 5f31e115cdc74ac43a07d8833f409e0d, type: 2}
