@@ -68,7 +68,8 @@ float4 _PostFXSource2_TexelSize;
 
 bool _BloomBicubicUpsampling;
 float4 _BloomThreshold;
-float _BloomIntensity;
+float _BloomScale;
+float _BloomScatter;
 
 float4 SampleSource2(float2 screenUV)
 {
@@ -153,7 +154,7 @@ float4 BloomPrefilterFirefliesPassFragment(Varyings input) : SV_TARGET
     return float4(finalColor, 1.0);
 }
 
-float4 BloomCombinePassFragment(Varyings input) : SV_TARGET
+float4 BloomAdditiveCombinePassFragment(Varyings input) : SV_TARGET
 {
     float3 lowRes;
     if (_BloomBicubicUpsampling)
@@ -165,7 +166,54 @@ float4 BloomCombinePassFragment(Varyings input) : SV_TARGET
         lowRes = SampleSource(input.screenUV).rgb;
     }
     float3 highRes = SampleSource2(input.screenUV).rgb;
-    return float4(lowRes * _BloomIntensity + highRes, 1.0);
+    return float4(lowRes + highRes, 1.0);
+}
+
+float4 BloomAdditiveCombineFinalPassFragment(Varyings input) : SV_TARGET
+{
+    float3 lowRes;
+    if (_BloomBicubicUpsampling)
+    {
+        lowRes = GetSourceBicubic(input.screenUV).rgb;
+    }
+    else
+    {
+        lowRes = SampleSource(input.screenUV).rgb;
+    }
+    float3 highRes = SampleSource2(input.screenUV).rgb;
+    return float4(lowRes * _BloomScale + highRes, 1.0);
+}
+
+float4 BloomScatterCombinePassFragment(Varyings input) : SV_TARGET
+{
+    float3 lowRes;
+    if (_BloomBicubicUpsampling)
+    {
+        lowRes = GetSourceBicubic(input.screenUV).rgb;
+    }
+    else
+    {
+        lowRes = SampleSource(input.screenUV).rgb;
+    }
+    float3 highRes = SampleSource2(input.screenUV).rgb;
+    return float4(lerp(highRes, lowRes, _BloomScatter), 1.0);
+}
+
+float4 BloomScatterCombineFinalPassFragment(Varyings input) : SV_TARGET
+{
+    float3 lowRes;
+    if (_BloomBicubicUpsampling)
+    {
+        lowRes = GetSourceBicubic(input.screenUV).rgb;
+    }
+    else
+    {
+        lowRes = SampleSource(input.screenUV).rgb;
+    }
+    float3 highRes = SampleSource2(input.screenUV).rgb;
+    // lowRes - filtered highRes, energy conservation
+    lowRes += highRes - KneeCurveFilter(highRes);
+    return float4(lerp(highRes, lowRes, _BloomScatter), 1.0);
 }
 
 #endif

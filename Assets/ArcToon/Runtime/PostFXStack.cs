@@ -39,7 +39,10 @@ namespace ArcToon.Runtime
             BloomPrefilterFireflies,
             BloomHorizontal,
             BloomVertical,
-            BloomCombine,
+            BloomAdditive,
+            BloomAdditiveFinal,
+            BloomScatter,
+            BloomScatterFinal,
             Copy
         }
 
@@ -60,15 +63,14 @@ namespace ArcToon.Runtime
             this.camera = camera;
             this.settings = settings;
             this.useHDR = useHDR;
-            
+
             ApplySceneViewState();
 
             if (IsActive)
             {
                 commandBuffer.GetTemporaryRT(
                     frameBufferId, camera.pixelWidth, camera.pixelHeight,
-                    32, FilterMode.Bilinear, useHDR ?
-                        RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
+                    32, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
                 );
                 commandBuffer.SetRenderTarget(
                     frameBufferId,
@@ -118,7 +120,8 @@ namespace ArcToon.Runtime
         private int bloomPrefilterId = Shader.PropertyToID("_BloomPrefilter");
         private int bloomThresholdId = Shader.PropertyToID("_BloomThreshold");
         private int bloomBucibicUpsamplingId = Shader.PropertyToID("_BloomBicubicUpsampling");
-        private int bloomIntensityId = Shader.PropertyToID("_BloomIntensity");
+        private int bloomScaleId = Shader.PropertyToID("_BloomScale");
+        private int bloomScatterId = Shader.PropertyToID("_BloomScatter");
 
         void DoBloom(int srcframeBufferId)
         {
@@ -128,29 +131,28 @@ namespace ArcToon.Runtime
 
             // skip
             if (bloomSettings.maxIterations == 0 ||
-                camera.pixelHeight < bloomSettings.downscaleLimit * 4 || camera.pixelWidth < bloomSettings.downscaleLimit * 4 ||
+                camera.pixelHeight < bloomSettings.downscaleLimit * 4 ||
+                camera.pixelWidth < bloomSettings.downscaleLimit * 4 ||
                 bloomSettings.intensity <= 0f)
             {
                 Draw(srcframeBufferId, BuiltinRenderTextureType.CameraTarget, Pass.Copy);
                 commandBuffer.EndSample("Bloom");
                 return;
             }
-            
-            RenderTextureFormat format = useHDR ?
-                RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
-            
+
+            RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+
             // knee curve prefilter
             commandBuffer.SetGlobalVector(bloomThresholdId, GetKneeCurveData(bloomSettings));
             int width = camera.pixelWidth / 2, height = camera.pixelHeight / 2;
             commandBuffer.GetTemporaryRT(
                 bloomPrefilterId, width, height, 0, FilterMode.Bilinear, format
             );
-            Draw(srcframeBufferId, bloomPrefilterId, 
-                bloomSettings.fadeFireflies ?
-                Pass.BloomPrefilterFireflies : Pass.BloomPrefilter);
+            Draw(srcframeBufferId, bloomPrefilterId,
+                bloomSettings.fadeFireflies ? Pass.BloomPrefilterFireflies : Pass.BloomPrefilter);
             width /= 2;
             height /= 2;
-            
+
             // down sample
             int srcId = bloomPrefilterId;
             int tmpId = bloomPyramidId;
@@ -181,18 +183,34 @@ namespace ArcToon.Runtime
             commandBuffer.ReleaseTemporaryRT(srcId - 1);
             commandBuffer.SetGlobalFloat(bloomBucibicUpsamplingId, bloomSettings.bicubicUpsampling ? 1f : 0f);
             tmpId -= 4;
+            Pass combinePass, finalPass;
+            float finalScale;
+            if (bloomSettings.mode == PostFXSettings.BloomSettings.Mode.Additive)
+            {
+                combinePass = Pass.BloomAdditive;
+                finalPass = Pass.BloomAdditiveFinal;
+                finalScale = bloomSettings.intensity;
+            }
+            else
+            {
+                combinePass = Pass.BloomScatter;
+                finalPass = Pass.BloomScatterFinal;
+                commandBuffer.SetGlobalFloat(bloomScatterId, bloomSettings.scatter);
+                finalScale = bloomSettings.scatter;
+            }
             for (i -= 1; i > 0; i--)
             {
                 commandBuffer.SetGlobalTexture(fxSource2Id, tmpId + 1);
-                Draw(srcId, tmpId, Pass.BloomCombine);
+                Draw(srcId, tmpId, combinePass);
                 commandBuffer.ReleaseTemporaryRT(srcId);
                 commandBuffer.ReleaseTemporaryRT(tmpId + 1);
                 srcId = tmpId;
                 tmpId -= 2;
             }
+
             commandBuffer.SetGlobalTexture(fxSource2Id, srcframeBufferId);
-            commandBuffer.SetGlobalFloat(bloomIntensityId, bloomSettings.intensity);
-            Draw(srcId, BuiltinRenderTextureType.CameraTarget, Pass.BloomCombine);
+            commandBuffer.SetGlobalFloat(bloomScaleId, finalScale);
+            Draw(srcId, BuiltinRenderTextureType.CameraTarget, finalPass);
             commandBuffer.ReleaseTemporaryRT(srcId);
 
             commandBuffer.EndSample("Bloom");
