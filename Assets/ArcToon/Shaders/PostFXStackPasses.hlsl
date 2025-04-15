@@ -216,4 +216,30 @@ float4 BloomScatterCombineFinalPassFragment(Varyings input) : SV_TARGET
     return float4(lerp(highRes, lowRes, _BloomScatter), 1.0);
 }
 
+
+float4 ToneMappingReinhardPassFragment(Varyings input) : SV_TARGET
+{
+    float4 color = SampleSource(input.screenUV);
+    // for precision
+    color.rgb = min(color.rgb, 100.0);
+    color.rgb /= color.rgb + 1.0;
+    return color;
+}
+
+float4 ToneMappingNeutralPassFragment(Varyings input) : SV_TARGET
+{
+    float4 color = SampleSource(input.screenUV);
+    color.rgb = min(color.rgb, 100.0);
+    color.rgb = NeutralTonemap(color.rgb);
+    return color;
+}
+
+float4 ToneMappingACESPassFragment(Varyings input) : SV_TARGET
+{
+    float4 color = SampleSource(input.screenUV);
+    color.rgb = min(color.rgb, 100.0);
+    color.rgb = AcesTonemap(unity_to_ACES(color.rgb));
+    return color;
+}
+
 #endif
