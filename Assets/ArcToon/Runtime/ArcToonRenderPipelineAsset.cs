@@ -11,6 +11,15 @@ namespace ArcToon.Runtime
         [SerializeField] bool enableGPUInstancing;
         [SerializeField] bool allowHDR = true;
 
+        public enum ColorLUTResolution
+        {
+            _16 = 16,
+            _32 = 32,
+            _64 = 64
+        }
+
+        [SerializeField] ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
+        
         [SerializeField] ShadowSettings shadowSettings;
         [SerializeField] PostFXSettings postFXSettings;
 
@@ -22,6 +31,7 @@ namespace ArcToon.Runtime
                     enableSRPBatcher = enableSRPBatcher,
                     enableGPUInstancing = enableGPUInstancing,
                     allowHDR = allowHDR,
+                    colorLUTResolution = (int)colorLUTResolution,
                 },
                 shadowSettings, postFXSettings
             );

@@ -15,6 +15,7 @@ MonoBehaviour:
   enableSRPBatcher: 0
   enableGPUInstancing: 1
   allowHDR: 1
+  colorLUTResolution: 64
   shadowSettings:
     directionalCascade:
       atlasSize: 8192

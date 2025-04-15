@@ -16,6 +16,7 @@ namespace ArcToon.Runtime
         PostFXSettings settings;
 
         private bool useHDR;
+        private int colorLUTResolution;
 
         public bool IsActive
         {
@@ -46,9 +47,10 @@ namespace ArcToon.Runtime
             BloomScatterFinal,
 
             ColorGradingOnly,
-            ToneMappingReinhard,
-            ToneMappingNeutral,
-            ToneMappingACES,
+            ColorGradingReinhard,
+            ColorGradingNeutral,
+            ColorGradingACES,
+            ColorGradingFinal,
 
             Copy
         }
@@ -63,13 +65,16 @@ namespace ArcToon.Runtime
         }
 
         public void Setup(ScriptableRenderContext context, CommandBuffer commandBuffer, Camera camera,
-            PostFXSettings settings, bool useHDR)
+            PostFXSettings settings,
+            bool useHDR,
+            int colorLUTResolution)
         {
             this.context = context;
             this.commandBuffer = commandBuffer;
             this.camera = camera;
             this.settings = settings;
             this.useHDR = useHDR;
+            this.colorLUTResolution = colorLUTResolution;
 
             ApplySceneViewState();
 
@@ -88,11 +93,6 @@ namespace ArcToon.Runtime
 
         public void CleanUp()
         {
-            if (IsActive)
-            {
-                commandBuffer.ReleaseTemporaryRT(frameBufferId);
-                ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
-            }
         }
 
         public void Render()
@@ -101,7 +101,7 @@ namespace ArcToon.Runtime
 
             commandBuffer.BeginSample("Post Processing");
 
-            RenderTargetIdentifier RTID = frameBufferId;
+            int RTID = frameBufferId;
             RTID = DoBloom(RTID);
             RTID = DoColorGradingToneMapping(RTID);
 
@@ -133,9 +133,9 @@ namespace ArcToon.Runtime
         private int bloomScaleId = Shader.PropertyToID("_BloomScale");
         private int bloomScatterId = Shader.PropertyToID("_BloomScatter");
 
-        RenderTargetIdentifier DoBloom(RenderTargetIdentifier srcframeBufferId)
+        int DoBloom(int srcBufferId)
         {
-            PostFXSettings.BloomSettings bloomSettings = settings.Bloom;
+            BloomSettings bloomSettings = settings.Bloom;
 
             // skip
             if (bloomSettings.maxIterations == 0 ||
@@ -143,7 +143,7 @@ namespace ArcToon.Runtime
                 camera.pixelWidth < bloomSettings.downscaleLimit * 4 ||
                 bloomSettings.intensity <= 0f)
             {
-                return srcframeBufferId;
+                return srcBufferId;
             }
 
             commandBuffer.BeginSample("Bloom");
@@ -155,7 +155,7 @@ namespace ArcToon.Runtime
             commandBuffer.GetTemporaryRT(
                 bloomPrefilterId, width, height, 0, FilterMode.Bilinear, format
             );
-            Draw(srcframeBufferId, bloomPrefilterId,
+            Draw(srcBufferId, bloomPrefilterId,
                 bloomSettings.fadeFireflies ? Pass.BloomPrefilterFireflies : Pass.BloomPrefilter);
             width /= 2;
             height /= 2;
@@ -216,7 +216,7 @@ namespace ArcToon.Runtime
                 tmpId -= 2;
             }
 
-            commandBuffer.SetGlobalTexture(fxSource2Id, srcframeBufferId);
+            commandBuffer.SetGlobalTexture(fxSource2Id, srcBufferId);
             commandBuffer.SetGlobalFloat(bloomScaleId, finalScale);
             int resultBufferId = Shader.PropertyToID("_BloomResultBuffer");
             commandBuffer.GetTemporaryRT(
@@ -226,12 +226,13 @@ namespace ArcToon.Runtime
             Draw(srcId, resultBufferId, finalPass);
             commandBuffer.ReleaseTemporaryRT(srcId);
 
+            commandBuffer.ReleaseTemporaryRT(srcBufferId);
             commandBuffer.EndSample("Bloom");
 
             return resultBufferId;
         }
 
-        public Vector4 GetKneeCurveData(PostFXSettings.BloomSettings bloomSettings)
+        public Vector4 GetKneeCurveData(BloomSettings bloomSettings)
         {
             Vector4 thresholdData;
             thresholdData.x = Mathf.GammaToLinearSpace(bloomSettings.threshold);
@@ -244,8 +245,14 @@ namespace ArcToon.Runtime
 
 
         // ToneMapping ------------------------------
-        RenderTargetIdentifier DoColorGradingToneMapping(RenderTargetIdentifier srcBufferId)
+        private int colorGradingLUTId = Shader.PropertyToID("_ColorGradingLUT");
+        private int colorGradingLUTParametersId = Shader.PropertyToID("_ColorGradingLUTParameters");
+        private int colorGradingLUTInLogCId = Shader.PropertyToID("_ColorGradingLUTInLogC");
+
+        int DoColorGradingToneMapping(int srcBufferId)
         {
+            commandBuffer.BeginSample("Tone Mapping");
+
             ConfigureColorAdjustments();
             ConfigureWhiteBalance();
             ConfigureSplitToning();
@@ -253,18 +260,36 @@ namespace ArcToon.Runtime
             ConfigureShadowsMidtonesHighlights();
 
             RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
+            // render LUT
+            int lutHeight = colorLUTResolution;
+            int lutWidth = lutHeight * lutHeight;
+            commandBuffer.GetTemporaryRT(
+                colorGradingLUTId, lutWidth, lutHeight, 0,
+                FilterMode.Bilinear, RenderTextureFormat.DefaultHDR
+            );
             var mode = settings.ToneMapping.mode;
             Pass pass = Pass.ColorGradingOnly + (int)mode;
+            commandBuffer.SetGlobalVector(colorGradingLUTParametersId,
+                new Vector4(lutHeight, 0.5f / lutWidth, 0.5f / lutHeight, lutHeight / (lutHeight - 1f))
+            );
+            commandBuffer.SetGlobalFloat(
+                colorGradingLUTInLogCId, useHDR && pass != Pass.ColorGradingOnly ? 1f : 0f
+            );
+            Draw(srcBufferId, colorGradingLUTId, pass);
 
-            commandBuffer.BeginSample("Tone Mapping");
-
+            // apply LUT
             int resultBufferId = Shader.PropertyToID("_ToneMappingResultBuffer");
             commandBuffer.GetTemporaryRT(
                 resultBufferId, camera.pixelWidth, camera.pixelHeight, 0,
                 FilterMode.Bilinear, format
             );
-            Draw(srcBufferId, resultBufferId, pass);
+            commandBuffer.SetGlobalVector(colorGradingLUTParametersId,
+                new Vector4(1f / lutWidth, 1f / lutHeight, lutHeight - 1f)
+            );
+            Draw(srcBufferId, resultBufferId, Pass.ColorGradingFinal);
+            commandBuffer.ReleaseTemporaryRT(colorGradingLUTId);
 
+            commandBuffer.ReleaseTemporaryRT(srcBufferId);
             commandBuffer.EndSample("Tone Mapping");
 
             return resultBufferId;
