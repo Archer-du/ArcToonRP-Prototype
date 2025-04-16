@@ -27,9 +27,10 @@ namespace ArcToon.Runtime
         [SerializeField] private CameraBufferSettings cameraBufferSettings = new()
         {
             allowHDR = true,
+            renderScale = 1f
         };
         // not editable
-        [FormerlySerializedAs("copyFinalShader")] [SerializeField] private Shader cameraCopyShader;
+        [SerializeField] private Shader cameraCopyShader;
 
         protected override RenderPipeline CreatePipeline()
         {

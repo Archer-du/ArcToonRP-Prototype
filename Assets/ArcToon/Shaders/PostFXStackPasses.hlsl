@@ -25,7 +25,8 @@ float4 SampleSource(float2 screenUV)
     return SAMPLE_TEXTURE2D_LOD(_PostFXSource, sampler_linear_clamp, screenUV, 0);
 }
 
-float4 GetSourceBicubic(float2 screenUV)
+// TODO: extract
+float4 SampleSourceBicubic(float2 screenUV)
 {
     return SampleTexture2DBicubic(
         TEXTURE2D_ARGS(_PostFXSource, sampler_linear_clamp), screenUV,
@@ -160,7 +161,7 @@ float4 BloomAdditiveCombinePassFragment(Varyings input) : SV_TARGET
     float3 lowRes;
     if (_BloomBicubicUpsampling)
     {
-        lowRes = GetSourceBicubic(input.screenUV).rgb;
+        lowRes = SampleSourceBicubic(input.screenUV).rgb;
     }
     else
     {
@@ -175,7 +176,7 @@ float4 BloomAdditiveCombineFinalPassFragment(Varyings input) : SV_TARGET
     float3 lowRes;
     if (_BloomBicubicUpsampling)
     {
-        lowRes = GetSourceBicubic(input.screenUV).rgb;
+        lowRes = SampleSourceBicubic(input.screenUV).rgb;
     }
     else
     {
@@ -190,7 +191,7 @@ float4 BloomScatterCombinePassFragment(Varyings input) : SV_TARGET
     float3 lowRes;
     if (_BloomBicubicUpsampling)
     {
-        lowRes = GetSourceBicubic(input.screenUV).rgb;
+        lowRes = SampleSourceBicubic(input.screenUV).rgb;
     }
     else
     {
@@ -205,7 +206,7 @@ float4 BloomScatterCombineFinalPassFragment(Varyings input) : SV_TARGET
     float3 lowRes;
     if (_BloomBicubicUpsampling)
     {
-        lowRes = GetSourceBicubic(input.screenUV).rgb;
+        lowRes = SampleSourceBicubic(input.screenUV).rgb;
     }
     else
     {

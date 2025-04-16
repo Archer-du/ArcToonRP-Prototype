@@ -11,7 +11,13 @@ namespace ArcToon.Runtime.Settings
 
         public bool copyDepth, copyDepthReflection;
         public bool copyColor, copyColorReflection;
+
+        [Range(0.1f, 2f)] public float renderScale;
         
+        public enum BicubicRescalingMode { Off, UpOnly, UpAndDown }
+        
+        public BicubicRescalingMode bicubicRescalingMode;
+
         [Serializable]
         public struct FXAASettings
         {

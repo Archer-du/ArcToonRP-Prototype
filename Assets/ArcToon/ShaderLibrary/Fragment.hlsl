@@ -6,6 +6,8 @@
 TEXTURE2D(_CameraDepthTexture);
 TEXTURE2D(_CameraColorTexture);
 
+float4 _CameraBufferSize;
+
 struct Fragment
 {
     float2 positionSS;
@@ -31,7 +33,7 @@ Fragment GetFragment(float4 positionSS)
 {
     Fragment fragment;
     fragment.positionSS = positionSS.xy;
-    fragment.screenUV = fragment.positionSS / _ScreenParams.xy;
+    fragment.screenUV = fragment.positionSS * _CameraBufferSize.xy;
     fragment.linearDepth = IsOrthographicCamera() ? OrthographicDepthBufferToLinear(positionSS.z) : positionSS.w;
     float bufferDepth = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, sampler_point_clamp, fragment.screenUV, 0);
     fragment.bufferLinearDepth = IsOrthographicCamera()
