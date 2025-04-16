@@ -164,5 +164,18 @@
             #pragma fragment CopyPassFragment
             ENDHLSL
         }
+
+        Pass
+        {
+            Name "Copy Final"
+
+            Blend [_FinalSrcBlend] [_FinalDstBlend]
+            
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex DefaultPassVertex
+            #pragma fragment CopyPassFragment
+            ENDHLSL
+        }
     }
 }

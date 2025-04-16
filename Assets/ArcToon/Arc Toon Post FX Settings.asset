@@ -16,7 +16,7 @@ MonoBehaviour:
     mode: 1
     scatter: 0.5
     maxIterations: 2
-    downscaleLimit: 50
+    downscaleLimit: 10
     threshold: 1
     thresholdKnee: 0.25
     intensity: 1

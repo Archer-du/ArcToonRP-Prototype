@@ -1,11 +1,12 @@
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 namespace ArcToon.Runtime
 {
     [CreateAssetMenu(menuName = "Rendering/ArcToon Render Pipeline")]
-    public class ArcToonRenderPipelineAsset : RenderPipelineAsset<ArcToonRenderPipelineInstance>
+    public partial class ArcToonRenderPipelineAsset : RenderPipelineAsset<ArcToonRenderPipelineInstance>
     {
         [SerializeField] bool enableSRPBatcher;
         [SerializeField] bool enableGPUInstancing;
@@ -19,9 +20,11 @@ namespace ArcToon.Runtime
         }
 
         [SerializeField] ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
-        
-        [SerializeField] ShadowSettings shadowSettings;
-        [SerializeField] PostFXSettings postFXSettings;
+
+        [FormerlySerializedAs("shadowSettings")] [SerializeField] ShadowSettings GlobalShadowSettings;
+        [FormerlySerializedAs("postFXSettings")] [SerializeField] PostFXSettings globalPostFXSettings;
+
+        [SerializeField] private CameraBufferSettings cameraBufferSettings;
 
         protected override RenderPipeline CreatePipeline()
         {
@@ -33,7 +36,7 @@ namespace ArcToon.Runtime
                     allowHDR = allowHDR,
                     colorLUTResolution = (int)colorLUTResolution,
                 },
-                shadowSettings, postFXSettings
+                GlobalShadowSettings, globalPostFXSettings, cameraBufferSettings
             );
         }
     }

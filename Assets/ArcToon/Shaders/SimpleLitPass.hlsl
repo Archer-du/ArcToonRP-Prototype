@@ -100,7 +100,7 @@ float4 SimplelitPassFragment(Varyings input) : SV_TARGET
     float3 finalColor = GetLighting(surface, brdf, gi);
     finalColor += GetEmission(config);
     
-    return float4(finalColor.rgb, surface.alpha);
+    return float4(finalColor.rgb, GetFinalAlpha(surface.alpha));
 }
 
 #endif

@@ -22,6 +22,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
     UNITY_DEFINE_INSTANCED_PROP(float, _DetailNormalScale)
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+    UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)
     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
     UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
@@ -131,6 +132,11 @@ float GetOcclusion(InputConfig input)
     float occlusion = GetMODSMask(input).g;
     occlusion = lerp(1.0, occlusion, strength);
     return occlusion;
+}
+
+float GetFinalAlpha(float alpha)
+{
+    return INPUT_PROP(_ZWrite) ? 1.0 : alpha;
 }
 
 #endif

@@ -1,4 +1,5 @@
-﻿using ArcToon.Runtime.Settings;
+﻿using ArcToon.Runtime.Overrides;
+using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
@@ -8,6 +9,8 @@ namespace ArcToon.Runtime
     public partial class CameraRenderer
     {
         private const string bufferName = "ArcToon Render Camera";
+
+        static CameraSettings defaultCameraSettings = new();
 
         private ScriptableRenderContext context;
         public CommandBuffer commandBuffer;
@@ -20,6 +23,7 @@ namespace ArcToon.Runtime
         private PostFXStack postFXStack;
 
         private bool useHDR;
+        private bool useScaledRendering;
 
         private static ShaderTagId[] shaderTagIds =
         {
@@ -27,6 +31,7 @@ namespace ArcToon.Runtime
             new("SimpleLit"),
         };
 
+        Vector2Int bufferSize;
 
         public CameraRenderer()
         {
@@ -38,15 +43,24 @@ namespace ArcToon.Runtime
             postFXStack = new();
         }
 
-        public void Render(ScriptableRenderContext context, Camera camera, 
-            bool enableInstancing, 
+        public void Render(ScriptableRenderContext context, Camera camera,
+            bool enableInstancing,
             bool allowHDR,
             int colorLUTResolution,
-            ShadowSettings shadowSettings, PostFXSettings postFXSettings)
+            ShadowSettings shadowSettings, PostFXSettings postFXSettings, CameraBufferSettings cameraBufferSettings)
         {
             this.context = context;
             this.camera = camera;
-            this.useHDR = allowHDR && camera.allowHDR;;
+            this.useHDR = allowHDR && camera.allowHDR;
+            
+            var customCameraData = camera.GetComponent<ArcToonAdditiveCameraData>();
+            CameraSettings cameraSettings =
+                customCameraData ? customCameraData.Settings : defaultCameraSettings;
+
+            if (cameraSettings.overridePostFX)
+            {
+                postFXSettings = cameraSettings.postFXSettings;
+            }
 
             // editor
             PrepareBuffer();
@@ -57,9 +71,13 @@ namespace ArcToon.Runtime
             lighting.Setup(context, cullingResults, shadowSettings);
 
             context.SetupCameraProperties(camera);
-            postFXStack.Setup(context, commandBuffer, camera, postFXSettings, useHDR, colorLUTResolution);
+            postFXStack.Setup(context, commandBuffer, camera,
+                postFXSettings,
+                useHDR,
+                colorLUTResolution,
+                cameraSettings.finalBlendMode);
             var flags = postFXStack.GetClearFlags();
-            
+
             commandBuffer.ClearRenderTarget(
                 flags <= CameraClearFlags.Depth,
                 flags <= CameraClearFlags.Color,
@@ -69,7 +87,7 @@ namespace ArcToon.Runtime
             DrawVisibleGeometry(enableInstancing);
             DrawUnsupportedGeometry();
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
-            
+
             // post processing
             DrawGizmosBeforeFX();
             postFXStack.Render();

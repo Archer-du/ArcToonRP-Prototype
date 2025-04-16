@@ -19,15 +19,17 @@ namespace ArcToon.Runtime
 
         private ArcToonRenderPipelineParams renderParams;
 
-        private ShadowSettings shadowSettings;
-        private PostFXSettings postFXSettings;
-        
+        private ShadowSettings globalShadowSettings;
+        private PostFXSettings globalPostFXSettings;
+        private CameraBufferSettings cameraBufferSettings;
+
         public ArcToonRenderPipelineInstance(ArcToonRenderPipelineParams pipelineParams, 
-            ShadowSettings shadowSettings, PostFXSettings postFXSettings)
+            ShadowSettings globalShadowSettings, PostFXSettings globalPostFXSettings, CameraBufferSettings cameraBufferSettings)
         {
             renderParams = pipelineParams;
-            this.shadowSettings = shadowSettings;
-            this.postFXSettings = postFXSettings;
+            this.globalShadowSettings = globalShadowSettings;
+            this.globalPostFXSettings = globalPostFXSettings;
+            this.cameraBufferSettings = cameraBufferSettings;
             GraphicsSettings.useScriptableRenderPipelineBatching = pipelineParams.enableSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
             
@@ -47,7 +49,7 @@ namespace ArcToon.Runtime
                     renderParams.enableGPUInstancing, 
                     renderParams.allowHDR, 
                     renderParams.colorLUTResolution,
-                    shadowSettings, postFXSettings);
+                    globalShadowSettings, globalPostFXSettings, cameraBufferSettings);
             }
         }
 
