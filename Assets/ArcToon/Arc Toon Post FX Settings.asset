@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bloom:
     mode: 1
+    ignoreRenderScale: 1
     scatter: 0.5
     maxIterations: 2
     downscaleLimit: 10

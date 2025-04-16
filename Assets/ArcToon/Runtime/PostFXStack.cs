@@ -33,7 +33,8 @@ namespace ArcToon.Runtime
             }
         }
 
-        
+        Vector2Int bufferSize;
+
         private int fxSourceId = Shader.PropertyToID("_PostFXSource");
         private int fxSource2Id = Shader.PropertyToID("_PostFXSource2");
 
@@ -68,6 +69,7 @@ namespace ArcToon.Runtime
         }
 
         public void Setup(ScriptableRenderContext context, CommandBuffer commandBuffer, Camera camera,
+            Vector2Int bufferSize,
             PostFXSettings settings,
             bool useHDR,
             int colorLUTResolution,
@@ -80,6 +82,7 @@ namespace ArcToon.Runtime
             this.useHDR = useHDR;
             this.colorLUTResolution = colorLUTResolution;
             this.fxaaSettings = fxaaSettings;
+            this.bufferSize = bufferSize;
 
             ApplySceneViewState();
         }
@@ -95,6 +98,7 @@ namespace ArcToon.Runtime
             {
                 return rawFrameBufferId;
             }
+
             commandBuffer.BeginSample("Post Processing");
 
             int RTID = rawFrameBufferId;
@@ -133,11 +137,22 @@ namespace ArcToon.Runtime
         int DoBloom(int srcBufferId)
         {
             BloomSettings bloomSettings = settings.Bloom;
+            int bufferWidth, bufferHeight;
+            if (bloomSettings.ignoreRenderScale)
+            {
+                bufferWidth = camera.pixelWidth;
+                bufferHeight = camera.pixelHeight;
+            }
+            else
+            {
+                bufferWidth = bufferSize.x;
+                bufferHeight = bufferSize.y;
+            }
 
             // skip
             if (bloomSettings.maxIterations == 0 ||
-                camera.pixelHeight < bloomSettings.downscaleLimit * 4 ||
-                camera.pixelWidth < bloomSettings.downscaleLimit * 4 ||
+                bufferHeight < bloomSettings.downscaleLimit * 4 ||
+                bufferWidth < bloomSettings.downscaleLimit * 4 ||
                 bloomSettings.intensity <= 0f)
             {
                 return srcBufferId;
@@ -148,7 +163,7 @@ namespace ArcToon.Runtime
 
             // knee curve prefilter
             commandBuffer.SetGlobalVector(bloomThresholdId, GetKneeCurveData(bloomSettings));
-            int width = camera.pixelWidth / 2, height = camera.pixelHeight / 2;
+            int width = bufferWidth / 2, height = bufferHeight / 2;
             commandBuffer.GetTemporaryRT(
                 bloomPrefilterId, width, height, 0, FilterMode.Bilinear, format
             );
@@ -217,7 +232,7 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalFloat(bloomScaleId, finalScale);
             int resultBufferId = Shader.PropertyToID("_BloomResultBuffer");
             commandBuffer.GetTemporaryRT(
-                resultBufferId, camera.pixelWidth, camera.pixelHeight, 0,
+                resultBufferId, bufferWidth, bufferHeight, 0,
                 FilterMode.Bilinear, format
             );
             Draw(srcId, resultBufferId, finalPass);
@@ -277,7 +292,7 @@ namespace ArcToon.Runtime
             // apply LUT
             int resultBufferId = Shader.PropertyToID("_ToneMappingResultBuffer");
             commandBuffer.GetTemporaryRT(
-                resultBufferId, camera.pixelWidth, camera.pixelHeight, 0,
+                resultBufferId, bufferSize.x, bufferSize.y, 0,
                 FilterMode.Bilinear, format
             );
             commandBuffer.SetGlobalVector(colorGradingLUTParametersId,

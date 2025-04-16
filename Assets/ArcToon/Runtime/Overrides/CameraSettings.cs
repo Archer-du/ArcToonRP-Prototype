@@ -1,5 +1,6 @@
 ﻿using System;
 using ArcToon.Runtime.Settings;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Overrides
@@ -13,19 +14,42 @@ namespace ArcToon.Runtime.Overrides
             public BlendMode source, destination;
         }
 
+        public enum RenderScaleMode
+        {
+            Inherit,
+            Multiply,
+            Override
+        }
+
+        public RenderScaleMode renderScaleMode = RenderScaleMode.Inherit;
+
+        [Range(0.1f, 2f)] public float renderScale = 1f;
+
         public bool copyDepth = true;
         public bool copyColor = true;
-        
+
         public bool overridePostFX = false;
 
         public PostFXSettings postFXSettings = default;
-        
+
         public FinalBlendMode finalBlendMode = new FinalBlendMode
         {
             source = BlendMode.One,
             destination = BlendMode.Zero
         };
-        
+
         public bool allowFXAA = false;
+
+        public float GetRenderScale(float globalRenderScale)
+        {
+            float scale = renderScaleMode switch
+            {
+                RenderScaleMode.Inherit => globalRenderScale,
+                RenderScaleMode.Override => renderScale,
+                RenderScaleMode.Multiply => globalRenderScale * renderScale,
+                _ => 1
+            };
+            return scale;
+        }
     }
 }

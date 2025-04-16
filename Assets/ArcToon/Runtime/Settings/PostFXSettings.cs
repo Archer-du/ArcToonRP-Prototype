@@ -18,6 +18,8 @@ namespace ArcToon.Runtime.Settings
 
             public Mode mode;
 
+            public bool ignoreRenderScale;
+            
             [Range(0.05f, 0.95f)] public float scatter;
 
             [Range(0f, 16f)] public int maxIterations;
