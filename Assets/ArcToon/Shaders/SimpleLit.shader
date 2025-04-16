@@ -56,7 +56,7 @@
             {
                 "LightMode" = "SimpleLit"
             }
-            Blend [_SrcBlend] [_DstBlend]
+            Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite [_ZWrite]
             Cull [_Cull]
 

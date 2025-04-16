@@ -57,6 +57,9 @@ Varyings DefaultPassVertex(uint vertexID : SV_VertexID)
 // Post Processors --------------------
 
 // copy -------------------------------
+float _FinalSrcBlend;
+float _FinalDstBlend;
+
 float4 CopyPassFragment(Varyings input) : SV_TARGET
 {
     return SampleSource(input.screenUV);
@@ -180,8 +183,8 @@ float4 BloomAdditiveCombineFinalPassFragment(Varyings input) : SV_TARGET
     {
         lowRes = SampleSource(input.screenUV).rgb;
     }
-    float3 highRes = SampleSource2(input.screenUV).rgb;
-    return float4(lowRes * _BloomScale + highRes, 1.0);
+    float4 highRes = SampleSource2(input.screenUV);
+    return float4(lowRes * _BloomScale + highRes.rgb, highRes.a);
 }
 
 float4 BloomScatterCombinePassFragment(Varyings input) : SV_TARGET
@@ -210,10 +213,10 @@ float4 BloomScatterCombineFinalPassFragment(Varyings input) : SV_TARGET
     {
         lowRes = SampleSource(input.screenUV).rgb;
     }
-    float3 highRes = SampleSource2(input.screenUV).rgb;
+    float4 highRes = SampleSource2(input.screenUV);
     // lowRes - filtered highRes, energy conservation
-    lowRes += highRes - KneeCurveFilter(highRes);
-    return float4(lerp(highRes, lowRes, _BloomScatter), 1.0);
+    lowRes += highRes.rgb - KneeCurveFilter(highRes.rgb);
+    return float4(lerp(highRes.rgb, lowRes, _BloomScatter), highRes.a);
 }
 
 // tone mapping -------------------------------
