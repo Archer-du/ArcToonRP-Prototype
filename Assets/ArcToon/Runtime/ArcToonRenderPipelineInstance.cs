@@ -9,13 +9,12 @@ namespace ArcToon.Runtime
     {
         public bool enableSRPBatcher;
         public bool enableGPUInstancing;
-        public bool allowHDR;
         public int colorLUTResolution;
     }
 
     public partial class ArcToonRenderPipelineInstance : RenderPipeline
     {
-        private CameraRenderer cameraRenderer = new();
+        private CameraRenderer cameraRenderer;
 
         private ArcToonRenderPipelineParams renderParams;
 
@@ -23,16 +22,19 @@ namespace ArcToon.Runtime
         private PostFXSettings globalPostFXSettings;
         private CameraBufferSettings cameraBufferSettings;
 
-        public ArcToonRenderPipelineInstance(ArcToonRenderPipelineParams pipelineParams, 
-            ShadowSettings globalShadowSettings, PostFXSettings globalPostFXSettings, CameraBufferSettings cameraBufferSettings)
+        public ArcToonRenderPipelineInstance(ArcToonRenderPipelineParams pipelineParams,
+            ShadowSettings globalShadowSettings, PostFXSettings globalPostFXSettings,
+            CameraBufferSettings cameraBufferSettings,
+            Shader cameraCopyShader)
         {
+            cameraRenderer = new CameraRenderer(cameraCopyShader);
             renderParams = pipelineParams;
             this.globalShadowSettings = globalShadowSettings;
             this.globalPostFXSettings = globalPostFXSettings;
             this.cameraBufferSettings = cameraBufferSettings;
             GraphicsSettings.useScriptableRenderPipelineBatching = pipelineParams.enableSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
-            
+
             InitializeForEditor();
         }
 
@@ -45,12 +47,18 @@ namespace ArcToon.Runtime
         {
             for (int i = 0; i < cameras.Count; i++)
             {
-                cameraRenderer.Render(renderContext, cameras[i], 
-                    renderParams.enableGPUInstancing, 
-                    renderParams.allowHDR, 
+                cameraRenderer.Render(renderContext, cameras[i],
+                    renderParams.enableGPUInstancing,
                     renderParams.colorLUTResolution,
                     globalShadowSettings, globalPostFXSettings, cameraBufferSettings);
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            DisposeForEditor();
+            cameraRenderer.Dispose();
         }
 
         public static void ConsumeCommandBuffer(ScriptableRenderContext renderContext, CommandBuffer commandBuffer)

@@ -17,7 +17,7 @@ struct Attributes
 
 struct Varyings
 {
-    float4 positionCS : SV_POSITION;
+    float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
     float3 normalWS : VAR_NORMAL;
     #if defined(_NORMAL_MAP)
@@ -38,7 +38,7 @@ Varyings SimplelitPassVertex(Attributes input)
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input, output);
     output.positionWS = TransformObjectToWorld(input.positionOS);
-    output.positionCS = TransformWorldToHClip(output.positionWS);
+    output.positionCS_SS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     #if defined(_NORMAL_MAP)
     output.tangentWS = float4(TransformObjectToWorldDir(input.tangentOS.xyz), input.tangentOS.w);
@@ -53,9 +53,10 @@ Varyings SimplelitPassVertex(Attributes input)
 float4 SimplelitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    ClipLOD(input.positionCS.xy, unity_LODFade.x);
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
     
-    InputConfig config = GetInputConfig(input.baseUV);
+    ClipLOD(config.fragment, unity_LODFade.x);
+    
     #if defined(_MASK_MAP)
     config.useMODSMask = true;
     #endif
@@ -89,7 +90,7 @@ float4 SimplelitPassFragment(Varyings input) : SV_TARGET
     surface.smoothness = GetSmoothness(config);
     surface.fresnelStrength = GetFresnel(config);
     surface.occlusion = GetOcclusion(config);
-    surface.dither = InterleavedGradientNoise(input.positionCS.xy, 0);
+    surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
 
     #if defined(_PREMULTIPLY_ALPHA)
     BRDF brdf = GetBRDF(surface, true);
@@ -99,7 +100,6 @@ float4 SimplelitPassFragment(Varyings input) : SV_TARGET
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     float3 finalColor = GetLighting(surface, brdf, gi);
     finalColor += GetEmission(config);
-    
     return float4(finalColor.rgb, GetFinalAlpha(surface.alpha));
 }
 

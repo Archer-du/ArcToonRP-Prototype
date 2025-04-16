@@ -1,5 +1,6 @@
 ﻿using ArcToon.Runtime.Overrides;
 using ArcToon.Runtime.Settings;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
@@ -31,9 +32,25 @@ namespace ArcToon.Runtime
             new("SimpleLit"),
         };
 
+        bool useIntermediateBuffer;
+
+        private static int colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment");
+        private static int depthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment");
+
+        bool useDepthTexture;
+        bool useColorTexture;
+        private static int cameraDepthTextureId = Shader.PropertyToID("_CameraDepthTexture");
+        private static int cameraColorTextureId = Shader.PropertyToID("_CameraColorTexture");
+
+        private static int SourceTextureId = Shader.PropertyToID("_SourceTexture");
+
         Vector2Int bufferSize;
 
-        public CameraRenderer()
+        private Material cameraCopyMaterial;
+
+        private Texture2D missingCameraTexture;
+
+        public CameraRenderer(Shader cameraCopyShader)
         {
             commandBuffer = new()
             {
@@ -41,61 +58,102 @@ namespace ArcToon.Runtime
             };
             lighting = new();
             postFXStack = new();
+            cameraCopyMaterial = CoreUtils.CreateEngineMaterial(cameraCopyShader);
+            missingCameraTexture = new Texture2D(1, 1)
+            {
+                hideFlags = HideFlags.HideAndDontSave,
+                name = "Missing Camera Texture"
+            };
+            missingCameraTexture.SetPixel(0, 0, Color.white * 0.5f);
+            missingCameraTexture.Apply(true, true);
+        }
+
+        public void Setup()
+        {
         }
 
         public void Render(ScriptableRenderContext context, Camera camera,
             bool enableInstancing,
-            bool allowHDR,
             int colorLUTResolution,
-            ShadowSettings shadowSettings, PostFXSettings postFXSettings, CameraBufferSettings cameraBufferSettings)
+            ShadowSettings shadowSettings, PostFXSettings postFXSettings, CameraBufferSettings bufferSettings)
         {
-            this.context = context;
-            this.camera = camera;
-            this.useHDR = allowHDR && camera.allowHDR;
-            
+            // access settings
             var customCameraData = camera.GetComponent<ArcToonAdditiveCameraData>();
             CameraSettings cameraSettings =
                 customCameraData ? customCameraData.Settings : defaultCameraSettings;
-
             if (cameraSettings.overridePostFX)
             {
                 postFXSettings = cameraSettings.postFXSettings;
             }
 
-            // editor
+            this.context = context;
+            this.camera = camera;
+            this.useHDR = bufferSettings.allowHDR && camera.allowHDR;
+            if (camera.cameraType == CameraType.Reflection)
+            {
+                useDepthTexture = bufferSettings.copyDepthReflection;
+                useColorTexture = bufferSettings.copyColorReflection;
+            }
+            else
+            {
+                useDepthTexture = bufferSettings.copyDepth && cameraSettings.copyDepth;
+                useColorTexture = bufferSettings.copyColor && cameraSettings.copyColor;
+            }
+
+            useIntermediateBuffer = useDepthTexture || useColorTexture;
+
+            // editor only
             PrepareBuffer();
             PrepareForSceneWindow();
 
+            // cull
             if (!Cull(shadowSettings.maxDistance)) return;
 
+            // set up light data & render shadow maps
             lighting.Setup(context, cullingResults, shadowSettings);
 
+            // set up camera data
             context.SetupCameraProperties(camera);
-            postFXStack.Setup(context, commandBuffer, camera,
+            commandBuffer.SetGlobalTexture(cameraDepthTextureId, missingCameraTexture);
+            commandBuffer.SetGlobalTexture(cameraColorTextureId, missingCameraTexture);
+
+            // set up post FX stacks
+            bufferSettings.fxaaSettings.enabled &= cameraSettings.allowFXAA;
+            postFXStack.Setup(
+                context, commandBuffer, camera,
                 postFXSettings,
                 useHDR,
                 colorLUTResolution,
-                cameraSettings.finalBlendMode);
-            var flags = postFXStack.GetClearFlags();
+                bufferSettings.fxaaSettings
+            );
+            useIntermediateBuffer |= postFXStack.IsActive;
 
-            commandBuffer.ClearRenderTarget(
-                flags <= CameraClearFlags.Depth,
-                flags <= CameraClearFlags.Color,
-                flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
+            // set up render target
 
-            // render
+            SetupRenderTargets();
+
+            // main render loop ------------------------------------
+            // render geometry
             DrawVisibleGeometry(enableInstancing);
             DrawUnsupportedGeometry();
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
 
             // post processing
             DrawGizmosBeforeFX();
-            postFXStack.Render();
+            int finalBufferId = postFXStack.Render(colorAttachmentId);
             DrawGizmosAfterFX();
+
+            if (useIntermediateBuffer)
+            {
+                CopyFinal(finalBufferId, cameraSettings.finalBlendMode);
+            }
+
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
+            // main render loop end --------------------------------
 
             // clean up
             Cleanup();
+            ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
 
             // submit
             context.Submit();
@@ -105,6 +163,54 @@ namespace ArcToon.Runtime
         {
             lighting.CleanUp();
             postFXStack.CleanUp();
+            if (useIntermediateBuffer)
+            {
+                commandBuffer.ReleaseTemporaryRT(colorAttachmentId);
+                commandBuffer.ReleaseTemporaryRT(depthAttachmentId);
+            }
+
+            if (useDepthTexture)
+            {
+                commandBuffer.ReleaseTemporaryRT(cameraDepthTextureId);
+            }
+
+            if (useColorTexture)
+            {
+                commandBuffer.ReleaseTemporaryRT(cameraColorTextureId);
+            }
+        }
+
+        public void Dispose()
+        {
+            CoreUtils.Destroy(cameraCopyMaterial);
+        }
+
+        private void SetupRenderTargets()
+        {
+            if (useIntermediateBuffer)
+            {
+                commandBuffer.GetTemporaryRT(
+                    colorAttachmentId, camera.pixelWidth, camera.pixelHeight,
+                    0, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
+                );
+                commandBuffer.GetTemporaryRT(
+                    depthAttachmentId, camera.pixelWidth, camera.pixelHeight,
+                    32, FilterMode.Point, RenderTextureFormat.Depth
+                );
+                commandBuffer.SetRenderTarget(
+                    colorAttachmentId,
+                    RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                    depthAttachmentId,
+                    RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
+                );
+            }
+            // else use default
+
+            var flags = GetClearFlags();
+            commandBuffer.ClearRenderTarget(
+                flags <= CameraClearFlags.Depth,
+                flags <= CameraClearFlags.Color,
+                flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
         }
 
         private void DrawVisibleGeometry(bool enableInstancing)
@@ -128,6 +234,10 @@ namespace ArcToon.Runtime
 
             // render skybox
             commandBuffer.DrawRendererList(context.CreateSkyboxRendererList(camera));
+            if (useColorTexture || useDepthTexture)
+            {
+                CopyCameraAttachmentBuffer();
+            }
 
             // render transparent
             var sortingSettings = new SortingSettings(camera)
@@ -151,6 +261,106 @@ namespace ArcToon.Runtime
             }
 
             return false;
+        }
+
+        static bool copyTextureSupported = SystemInfo.copyTextureSupport > CopyTextureSupport.None;
+
+        void CopyCameraAttachmentBuffer()
+        {
+            if (useDepthTexture)
+            {
+                commandBuffer.GetTemporaryRT(
+                    cameraDepthTextureId, camera.pixelWidth, camera.pixelHeight,
+                    32, FilterMode.Point, RenderTextureFormat.Depth
+                );
+                if (copyTextureSupported)
+                {
+                    commandBuffer.CopyTexture(depthAttachmentId, cameraDepthTextureId);
+                }
+                else
+                {
+                    CopyCameraTexture(depthAttachmentId, cameraDepthTextureId, CopyChannel.DepthAttachment);
+                }
+            }
+
+            if (useColorTexture)
+            {
+                commandBuffer.GetTemporaryRT(
+                    cameraColorTextureId, camera.pixelWidth, camera.pixelHeight,
+                    0, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
+                );
+                if (copyTextureSupported)
+                {
+                    commandBuffer.CopyTexture(colorAttachmentId, cameraColorTextureId);
+                }
+                else
+                {
+                    CopyCameraTexture(depthAttachmentId, cameraDepthTextureId, CopyChannel.ColorAttachment);
+                }
+            }
+            // reset
+            commandBuffer.SetRenderTarget(
+                colorAttachmentId,
+                RenderBufferLoadAction.Load, RenderBufferStoreAction.Store,
+                depthAttachmentId,
+                RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
+            );
+        }
+
+        enum CopyChannel
+        {
+            DepthAttachment = 1,
+            ColorAttachment = 2,
+        }
+        void CopyCameraTexture(int srcBufferId, RenderTargetIdentifier dstBufferId, CopyChannel channel)
+        {
+            commandBuffer.SetGlobalTexture(SourceTextureId, srcBufferId);
+            commandBuffer.SetRenderTarget(
+                dstBufferId,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
+            );
+            commandBuffer.DrawProcedural(
+                Matrix4x4.identity, cameraCopyMaterial, (int)channel,
+                MeshTopology.Triangles, 3
+            );
+        }
+
+        private int finalSrcBlendId = Shader.PropertyToID("_FinalSrcBlend");
+        private int finalDstBlendId = Shader.PropertyToID("_FinalDstBlend");
+        static Rect fullViewRect = new Rect(0f, 0f, 1f, 1f);
+
+        void CopyFinal(int srcBufferId, CameraSettings.FinalBlendMode finalBlendMode)
+        {
+            commandBuffer.BeginSample("Copy Final");
+
+            commandBuffer.SetGlobalFloat(finalSrcBlendId, (float)finalBlendMode.source);
+            commandBuffer.SetGlobalFloat(finalDstBlendId, (float)finalBlendMode.destination);
+            commandBuffer.SetGlobalTexture(SourceTextureId, srcBufferId);
+            commandBuffer.SetRenderTarget(
+                BuiltinRenderTextureType.CameraTarget,
+                finalBlendMode.destination == BlendMode.Zero && camera.rect == fullViewRect
+                    ? RenderBufferLoadAction.DontCare
+                    : RenderBufferLoadAction.Load,
+                RenderBufferStoreAction.Store
+            );
+            commandBuffer.SetViewport(camera.pixelRect);
+            commandBuffer.DrawProcedural(
+                Matrix4x4.identity, cameraCopyMaterial, 0,
+                MeshTopology.Triangles, 3
+            );
+            commandBuffer.ReleaseTemporaryRT(srcBufferId);
+            commandBuffer.EndSample("Copy Final");
+        }
+
+        public CameraClearFlags GetClearFlags()
+        {
+            var flags = camera.clearFlags;
+            if (postFXStack.IsActive && flags > CameraClearFlags.Color)
+            {
+                flags = CameraClearFlags.Color;
+            }
+
+            return flags;
         }
     }
 }

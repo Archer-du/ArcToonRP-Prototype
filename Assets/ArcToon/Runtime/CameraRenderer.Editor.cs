@@ -48,19 +48,16 @@ namespace ArcToon.Runtime
             commandBuffer.DrawRendererList(context.CreateRendererList(desc));
         }
 
-        partial void DrawGizmos()
-        {
-            if (Handles.ShouldRenderGizmos())
-            {
-                context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
-                context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
-            }
-        }
-
         partial void DrawGizmosBeforeFX()
         {
             if (Handles.ShouldRenderGizmos())
             {
+                if (useIntermediateBuffer)
+                {
+                    CopyCameraTexture(depthAttachmentId, BuiltinRenderTextureType.CameraTarget, 
+                        CopyChannel.DepthAttachment);
+                }
+
                 context.DrawGizmos(camera, GizmoSubset.PreImageEffects);
             }
         }
@@ -69,6 +66,12 @@ namespace ArcToon.Runtime
         {
             if (Handles.ShouldRenderGizmos())
             {
+                if (postFXStack.IsActive)
+                {
+                    CopyCameraTexture(depthAttachmentId, BuiltinRenderTextureType.CameraTarget, 
+                        CopyChannel.DepthAttachment);
+                }
+
                 context.DrawGizmos(camera, GizmoSubset.PostImageEffects);
             }
         }

@@ -1,7 +1,8 @@
 ﻿using System;
+using ArcToon.Runtime.Settings;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Settings
+namespace ArcToon.Runtime.Overrides
 {
     [Serializable]
     public class CameraSettings
@@ -12,6 +13,9 @@ namespace ArcToon.Runtime.Settings
             public BlendMode source, destination;
         }
 
+        public bool copyDepth = true;
+        public bool copyColor = true;
+        
         public bool overridePostFX = false;
 
         public PostFXSettings postFXSettings = default;
@@ -21,5 +25,7 @@ namespace ArcToon.Runtime.Settings
             source = BlendMode.One,
             destination = BlendMode.Zero
         };
+        
+        public bool allowFXAA = false;
     }
 }
