@@ -9,17 +9,18 @@ namespace ArcToon.Runtime
     {
         partial void InitializeForEditor();
 
+        partial void DisposeForEditor();
+        
 #if UNITY_EDITOR
         partial void InitializeForEditor()
         {
             Lightmapping.SetDelegate(lightsDelegate);
         }
 
-        protected override void Dispose(bool disposing)
+	    partial void DisposeForEditor() 
         {
-            base.Dispose(disposing);
-            Lightmapping.ResetDelegate();
-        }
+		    Lightmapping.ResetDelegate();
+	    }
 
         static Lightmapping.RequestLightsDelegate lightsDelegate =
             (Light[] lights, NativeArray<LightDataGI> output) =>

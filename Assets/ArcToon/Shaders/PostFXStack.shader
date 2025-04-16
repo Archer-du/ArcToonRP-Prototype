@@ -177,5 +177,20 @@
             #pragma fragment CopyPassFragment
             ENDHLSL
         }
+
+		Pass {
+			Name "FXAA"
+
+			Blend [_FinalSrcBlend] [_FinalDstBlend]
+			
+			HLSLPROGRAM
+				#pragma target 3.5
+				
+				#include "AA/FXAAPass.hlsl"
+				
+				#pragma vertex DefaultPassVertex
+				#pragma fragment FXAAPassFragment
+			ENDHLSL
+		}
     }
 }

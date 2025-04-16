@@ -1,4 +1,5 @@
-﻿using ArcToon.Runtime.Settings;
+﻿using ArcToon.Runtime.Overrides;
+using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
 using static ArcToon.Runtime.Settings.PostFXSettings;
@@ -14,10 +15,10 @@ namespace ArcToon.Runtime
         Camera camera;
 
         PostFXSettings settings;
+        CameraBufferSettings.FXAASettings fxaaSettings;
 
         private bool useHDR;
         private int colorLUTResolution;
-        CameraSettings.FinalBlendMode finalBlendMode;
 
         public bool IsActive
         {
@@ -32,11 +33,9 @@ namespace ArcToon.Runtime
             }
         }
 
-        private int frameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
+        
         private int fxSourceId = Shader.PropertyToID("_PostFXSource");
         private int fxSource2Id = Shader.PropertyToID("_PostFXSource2");
-
-        static Rect fullViewRect = new Rect(0f, 0f, 1f, 1f);
 
         enum Pass
         {
@@ -53,7 +52,7 @@ namespace ArcToon.Runtime
             ColorGradingReinhard,
             ColorGradingNeutral,
             ColorGradingACES,
-            ColorGradingFinal,
+            ColorGradingApply,
 
             Copy,
             CopyFinal
@@ -72,7 +71,7 @@ namespace ArcToon.Runtime
             PostFXSettings settings,
             bool useHDR,
             int colorLUTResolution,
-            CameraSettings.FinalBlendMode blendMode)
+            CameraBufferSettings.FXAASettings fxaaSettings)
         {
             this.context = context;
             this.commandBuffer = commandBuffer;
@@ -80,43 +79,32 @@ namespace ArcToon.Runtime
             this.settings = settings;
             this.useHDR = useHDR;
             this.colorLUTResolution = colorLUTResolution;
-            this.finalBlendMode = blendMode;
+            this.fxaaSettings = fxaaSettings;
 
             ApplySceneViewState();
-
-            if (IsActive)
-            {
-                commandBuffer.GetTemporaryRT(
-                    frameBufferId, camera.pixelWidth, camera.pixelHeight,
-                    32, FilterMode.Bilinear, useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default
-                );
-                commandBuffer.SetRenderTarget(
-                    frameBufferId,
-                    RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
-                );
-            }
         }
 
         public void CleanUp()
         {
+            if (!IsActive) return;
         }
 
-        public void Render()
+        public int Render(int rawFrameBufferId)
         {
-            if (!IsActive) return;
-
+            if (!IsActive)
+            {
+                return rawFrameBufferId;
+            }
             commandBuffer.BeginSample("Post Processing");
 
-            int RTID = frameBufferId;
+            int RTID = rawFrameBufferId;
             RTID = DoBloom(RTID);
             RTID = DoColorGradingToneMapping(RTID);
 
-            commandBuffer.BeginSample("Copy Final");
-            DrawFinal(RTID);
-            commandBuffer.EndSample("Copy Final");
-
             commandBuffer.EndSample("Post Processing");
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
+
+            return RTID;
         }
 
         void Draw(RenderTargetIdentifier srcRT, RenderTargetIdentifier dstRT, Pass pass)
@@ -128,28 +116,6 @@ namespace ArcToon.Runtime
             );
             commandBuffer.DrawProcedural(
                 Matrix4x4.identity, settings.PostProcessStackMaterial, (int)pass,
-                MeshTopology.Triangles, 3
-            );
-        }
-
-        private int finalSrcBlendId = Shader.PropertyToID("_FinalSrcBlend");
-        private int finalDstBlendId = Shader.PropertyToID("_FinalDstBlend");
-
-        void DrawFinal(RenderTargetIdentifier srcRT)
-        {
-            commandBuffer.SetGlobalFloat(finalSrcBlendId, (float)finalBlendMode.source);
-            commandBuffer.SetGlobalFloat(finalDstBlendId, (float)finalBlendMode.destination);
-            commandBuffer.SetGlobalTexture(fxSourceId, srcRT);
-            commandBuffer.SetRenderTarget(
-                BuiltinRenderTextureType.CameraTarget,
-                finalBlendMode.destination == BlendMode.Zero && camera.rect == fullViewRect
-                    ? RenderBufferLoadAction.DontCare
-                    : RenderBufferLoadAction.Load,
-                RenderBufferStoreAction.Store
-            );
-            commandBuffer.SetViewport(camera.pixelRect);
-            commandBuffer.DrawProcedural(
-                Matrix4x4.identity, settings.PostProcessStackMaterial, (int)Pass.CopyFinal,
                 MeshTopology.Triangles, 3
             );
         }
@@ -317,7 +283,7 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalVector(colorGradingLUTParametersId,
                 new Vector4(1f / lutWidth, 1f / lutHeight, lutHeight - 1f)
             );
-            Draw(srcBufferId, resultBufferId, Pass.ColorGradingFinal);
+            Draw(srcBufferId, resultBufferId, Pass.ColorGradingApply);
             commandBuffer.ReleaseTemporaryRT(colorGradingLUTId);
 
             commandBuffer.ReleaseTemporaryRT(srcBufferId);
@@ -389,18 +355,6 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalVector(smhRangeId, new Vector4(
                 smh.shadowsStart, smh.shadowsEnd, smh.highlightsStart, smh.highLightsEnd
             ));
-        }
-
-
-        public CameraClearFlags GetClearFlags()
-        {
-            var flags = camera.clearFlags;
-            if (flags > CameraClearFlags.Color)
-            {
-                flags = CameraClearFlags.Color;
-            }
-
-            return flags;
         }
     }
 }

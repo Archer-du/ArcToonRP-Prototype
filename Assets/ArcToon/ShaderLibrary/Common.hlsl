@@ -10,7 +10,6 @@
 #define UNITY_PREV_MATRIX_I_M unity_prev_MatrixIM
 #define UNITY_MATRIX_P glstate_matrix_projection
 
-
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
@@ -23,6 +22,11 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
+
+SAMPLER(sampler_linear_clamp);
+SAMPLER(sampler_point_clamp);
+
+#include "Fragment.hlsl"
 
 float Square(float v)
 {
@@ -39,10 +43,10 @@ float FadedStrength(float distance, float scale, float fade)
     return saturate((1.0 - distance * scale) * fade);
 }
 
-void ClipLOD(float2 positionCS, float fade)
+void ClipLOD(Fragment fragment, float fade)
 {
     #if defined(LOD_FADE_CROSSFADE)
-    float dither = InterleavedGradientNoise(positionCS.xy, 0);;
+    float dither = InterleavedGradientNoise(fragment.positionSS.xy, 0);;
     clip((fade < 0 ? fade + 1 : fade) - dither);
     #endif
 }

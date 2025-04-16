@@ -10,7 +10,7 @@ namespace ArcToon.Runtime
     {
         [SerializeField] bool enableSRPBatcher;
         [SerializeField] bool enableGPUInstancing;
-        [SerializeField] bool allowHDR = true;
+        [SerializeField] bool enablePostProcessing = true;
 
         public enum ColorLUTResolution
         {
@@ -21,10 +21,15 @@ namespace ArcToon.Runtime
 
         [SerializeField] ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
 
-        [FormerlySerializedAs("shadowSettings")] [SerializeField] ShadowSettings GlobalShadowSettings;
+        [FormerlySerializedAs("GlobalShadowSettings")] [SerializeField] ShadowSettings globalShadowSettings;
         [FormerlySerializedAs("postFXSettings")] [SerializeField] PostFXSettings globalPostFXSettings;
 
-        [SerializeField] private CameraBufferSettings cameraBufferSettings;
+        [SerializeField] private CameraBufferSettings cameraBufferSettings = new()
+        {
+            allowHDR = true,
+        };
+        // not editable
+        [FormerlySerializedAs("copyFinalShader")] [SerializeField] private Shader cameraCopyShader;
 
         protected override RenderPipeline CreatePipeline()
         {
@@ -33,10 +38,12 @@ namespace ArcToon.Runtime
                 {
                     enableSRPBatcher = enableSRPBatcher,
                     enableGPUInstancing = enableGPUInstancing,
-                    allowHDR = allowHDR,
                     colorLUTResolution = (int)colorLUTResolution,
                 },
-                GlobalShadowSettings, globalPostFXSettings, cameraBufferSettings
+                globalShadowSettings, 
+                enablePostProcessing ? globalPostFXSettings : null, 
+                cameraBufferSettings,
+                cameraCopyShader
             );
         }
     }
