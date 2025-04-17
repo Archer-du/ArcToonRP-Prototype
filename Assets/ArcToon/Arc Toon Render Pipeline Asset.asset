@@ -40,7 +40,7 @@ MonoBehaviour:
     copyDepth: 1
     copyDepthReflection: 0
     copyColor: 1
-    copyColorReflection: 1
+    copyColorReflection: 0
     renderScale: 1.25
     bicubicRescalingMode: 1
     fxaaSettings:
