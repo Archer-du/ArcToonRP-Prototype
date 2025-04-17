@@ -1,9 +1,11 @@
 ﻿using ArcToon.Runtime.Overrides;
+using ArcToon.Runtime.Passes;
 using ArcToon.Runtime.Settings;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
+using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime
 {
@@ -16,7 +18,7 @@ namespace ArcToon.Runtime
         private ScriptableRenderContext context;
         public CommandBuffer commandBuffer;
 
-        private Camera camera;
+        public Camera camera;
         private CullingResults cullingResults;
 
         private Lighting lighting;
@@ -24,7 +26,7 @@ namespace ArcToon.Runtime
         private PostFXStack postFXStack;
 
         private bool useHDR;
-        
+
         private bool useScaledRendering;
         public const float renderScaleMin = 0.1f, renderScaleMax = 2f;
 
@@ -34,13 +36,13 @@ namespace ArcToon.Runtime
             new("SimpleLit"),
         };
 
-        bool useIntermediateBuffer;
+        public bool useIntermediateBuffer;
 
         Vector2Int bufferSize;
         private static int bufferSizeId = Shader.PropertyToID("_CameraBufferSize");
 
-        private static int colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment");
-        private static int depthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment");
+        public static int colorAttachmentId = Shader.PropertyToID("_CameraColorAttachment");
+        public static int depthAttachmentId = Shader.PropertyToID("_CameraDepthAttachment");
 
         bool useDepthTexture;
         bool useColorTexture;
@@ -66,6 +68,7 @@ namespace ArcToon.Runtime
             public float subpixelBlending;
             public CameraBufferSettings.FXAASettings.Quality quality;
         }
+
         public CameraRenderer(Shader cameraCopyShader)
         {
             commandBuffer = new()
@@ -84,66 +87,45 @@ namespace ArcToon.Runtime
             missingCameraTexture.Apply(true, true);
         }
 
-        public void Setup()
-        {
-        }
-
-        public void Render(ScriptableRenderContext context, Camera camera,
+        // temp
+        public bool enableInstancing;
+        public int colorLUTResolution;
+        public ShadowSettings shadowSettings;
+        public PostFXSettings postFXSettings;
+        public CameraBufferSettings bufferSettings;
+        public CameraSettings cameraSettings;
+        public void Setup(ScriptableRenderContext context, Camera camera,
             bool enableInstancing,
             int colorLUTResolution,
-            ShadowSettings shadowSettings, PostFXSettings postFXSettings, CameraBufferSettings bufferSettings)
+            ShadowSettings shadowSettings, 
+            PostFXSettings postFXSettings, 
+            CameraBufferSettings bufferSettings)
         {
-            // access settings
-            var customCameraData = camera.GetComponent<ArcToonAdditiveCameraData>();
-            CameraSettings cameraSettings =
-                customCameraData ? customCameraData.Settings : defaultCameraSettings;
-            if (cameraSettings.overridePostFX)
-            {
-                postFXSettings = cameraSettings.postFXSettings;
-            }
-
+            // general
             this.context = context;
             this.camera = camera;
-            bicubicRescalingMode = bufferSettings.bicubicRescalingMode;
+            // temp
+            this.enableInstancing = enableInstancing;
+            this.colorLUTResolution = colorLUTResolution;
+            
+            // settings
+            this.shadowSettings = shadowSettings;
+            this.cameraSettings = camera.TryGetComponent<ArcToonAdditiveCameraData>(out var cameraData) ? 
+                cameraData.Settings : defaultCameraSettings;
+            this.postFXSettings = cameraSettings.overridePostFX ? cameraSettings.postFXSettings : postFXSettings;
+            this.bufferSettings = bufferSettings;
+            
+            Configuration();
+        }
+
+        private void Configuration()
+        {
             useHDR = bufferSettings.allowHDR && camera.allowHDR;
+
             float renderScale = cameraSettings.GetRenderScale(bufferSettings.renderScale);
             renderScale = Mathf.Clamp(renderScale, renderScaleMin, renderScaleMax);
             useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
-
-            if (camera.cameraType == CameraType.Reflection)
-            {
-                useDepthTexture = bufferSettings.copyDepthReflection;
-                useColorTexture = bufferSettings.copyColorReflection;
-            }
-            else
-            {
-                useDepthTexture = bufferSettings.copyDepth && cameraSettings.copyDepth;
-                useColorTexture = bufferSettings.copyColor && cameraSettings.copyColor;
-            }
-            useIntermediateBuffer = useScaledRendering ||
-                                    useDepthTexture || useColorTexture;
-            // TODO: buffer settings translate
-            FXAARuntimeConfig fxaaConfig = new FXAARuntimeConfig
-            {
-                enabled = bufferSettings.fxaaSettings.enabled && cameraSettings.allowFXAA,
-                keepAlpha = cameraSettings.keepAlpha,
-                fixedThreshold = bufferSettings.fxaaSettings.fixedThreshold,
-                relativeThreshold = bufferSettings.fxaaSettings.relativeThreshold,
-                subpixelBlending = bufferSettings.fxaaSettings.subpixelBlending,
-                quality = bufferSettings.fxaaSettings.quality,
-            };
-
-            // editor only
-            PrepareBuffer();
-            PrepareForSceneWindow();
-
-            // cull
-            if (!Cull(shadowSettings.maxDistance)) return;
-
-            // set up light data & render shadow maps
-            lighting.Setup(context, cullingResults, shadowSettings);
-
-            // set up camera data
+            bicubicRescalingMode = bufferSettings.bicubicRescalingMode;
             if (useScaledRendering)
             {
                 bufferSize.x = (int)(camera.pixelWidth * renderScale);
@@ -154,6 +136,42 @@ namespace ArcToon.Runtime
                 bufferSize.x = camera.pixelWidth;
                 bufferSize.y = camera.pixelHeight;
             }
+            
+            if (camera.cameraType == CameraType.Reflection)
+            {
+                useDepthTexture = bufferSettings.copyDepthReflection;
+                useColorTexture = bufferSettings.copyColorReflection;
+            }
+            else
+            {
+                useDepthTexture = bufferSettings.copyDepth && cameraSettings.copyDepth;
+                useColorTexture = bufferSettings.copyColor && cameraSettings.copyColor;
+            }
+            
+            // TODO: buffer settings translate
+            FXAARuntimeConfig fxaaConfig = new FXAARuntimeConfig
+            {
+                enabled = bufferSettings.fxaaSettings.enabled && cameraSettings.allowFXAA,
+                keepAlpha = cameraSettings.keepAlpha,
+                fixedThreshold = bufferSettings.fxaaSettings.fixedThreshold,
+                relativeThreshold = bufferSettings.fxaaSettings.relativeThreshold,
+                subpixelBlending = bufferSettings.fxaaSettings.subpixelBlending,
+                quality = bufferSettings.fxaaSettings.quality,
+            };
+            postFXStack.Setup(
+                context, commandBuffer, camera,
+                bufferSize,
+                postFXSettings,
+                useHDR,
+                colorLUTResolution,
+                fxaaConfig
+            );
+            useIntermediateBuffer = useScaledRendering || useDepthTexture || useColorTexture || postFXStack.IsActive;
+        }
+
+        public void RenderSetup()
+        {
+            // set up render target
             commandBuffer.SetGlobalVector(bufferSizeId, new Vector4(
                 1f / bufferSize.x, 1f / bufferSize.y,
                 bufferSize.x, bufferSize.y
@@ -161,30 +179,32 @@ namespace ArcToon.Runtime
             context.SetupCameraProperties(camera);
             commandBuffer.SetGlobalTexture(cameraDepthTextureId, missingCameraTexture);
             commandBuffer.SetGlobalTexture(cameraColorTextureId, missingCameraTexture);
-
-            // set up post FX stacks
-            postFXStack.Setup(
-                context, commandBuffer, camera,
-                bufferSize, 
-                postFXSettings,
-                useHDR,
-                colorLUTResolution,
-                fxaaConfig
-            );
-            useIntermediateBuffer |= postFXStack.IsActive;
-
-            // set up render target
             SetupRenderTargets();
+        }
+        // temp
+        public int finalBufferId;
+        public void Render(RenderGraph renderGraph)
+        {
+            // editor only
+            PrepareBuffer();
+            PrepareForSceneWindow();
 
+            // cull
+            if (!Cull(shadowSettings.maxDistance)) return;
+
+            // set up light data & render shadow maps
+            lighting.Setup(context, cullingResults, shadowSettings);
+
+            RenderSetup();
             // main render loop ------------------------------------
             // render geometry
             DrawVisibleGeometry(enableInstancing);
-            DrawUnsupportedGeometry();
+            // DrawUnsupportedGeometry();
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
 
             // post processing
             DrawGizmosBeforeFX();
-            int finalBufferId = postFXStack.Render(colorAttachmentId);
+            finalBufferId = postFXStack.Render(colorAttachmentId);
             DrawGizmosAfterFX();
 
             if (useIntermediateBuffer)
@@ -194,6 +214,29 @@ namespace ArcToon.Runtime
 
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
             // main render loop end --------------------------------
+            
+            var renderGraphParameters = new RenderGraphParameters
+            {
+                commandBuffer = CommandBufferPool.Get(),
+                currentFrameIndex = Time.frameCount,
+                executionName = "Render Camera",
+                scriptableRenderContext = context
+            };
+            // renderGraph.BeginRecording(renderGraphParameters);
+            // using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
+            // {
+            //     LightingPass.Record(renderGraph, lighting, cullingResults, shadowSettings);
+            //     SetupPass.Record(renderGraph, this);
+            //     VisibleGeometryPass.Record(renderGraph, this, enableInstancing);
+            //     UnsupportedPass.Record(renderGraph, this);
+            //     PostFXPass.Record(renderGraph, this, postFXStack);
+            //     GizmosPass.Record(renderGraph, this);
+            //     if (useIntermediateBuffer)
+            //     {
+            //         CopyFinalPass.Record(renderGraph, this, cameraSettings.finalBlendMode);
+            //     }
+            // }
+            // renderGraph.EndRecordingAndExecute();
 
             // clean up
             Cleanup();
@@ -201,6 +244,7 @@ namespace ArcToon.Runtime
 
             // submit
             context.Submit();
+            CommandBufferPool.Release(renderGraphParameters.commandBuffer);
         }
 
         void Cleanup()
@@ -257,7 +301,7 @@ namespace ArcToon.Runtime
                 flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
         }
 
-        private void DrawVisibleGeometry(bool enableInstancing)
+        public void DrawVisibleGeometry(bool enableInstancing)
         {
             // render opaque
             RendererListDesc desc = new(shaderTagIds, cullingResults, camera)
@@ -352,13 +396,13 @@ namespace ArcToon.Runtime
             );
         }
 
-        enum CopyChannel
+        public enum CopyChannel
         {
             DepthAttachment = 1,
             ColorAttachment = 2,
         }
 
-        void CopyCameraTexture(int srcBufferId, RenderTargetIdentifier dstBufferId, CopyChannel channel)
+        public void CopyCameraTexture(int srcBufferId, RenderTargetIdentifier dstBufferId, CopyChannel channel)
         {
             commandBuffer.SetGlobalTexture(SourceTextureId, srcBufferId);
             commandBuffer.SetRenderTarget(
@@ -376,7 +420,7 @@ namespace ArcToon.Runtime
         private int _CopyBicubicId = Shader.PropertyToID("_CopyBicubic");
         static Rect fullViewRect = new Rect(0f, 0f, 1f, 1f);
 
-        void CopyFinal(int srcBufferId, CameraSettings.FinalBlendMode finalBlendMode)
+        public void CopyFinal(int srcBufferId, CameraSettings.FinalBlendMode finalBlendMode)
         {
             commandBuffer.BeginSample("Copy Final");
 

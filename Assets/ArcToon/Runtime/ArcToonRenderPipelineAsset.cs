@@ -6,7 +6,7 @@ using UnityEngine.Serialization;
 namespace ArcToon.Runtime
 {
     [CreateAssetMenu(menuName = "Rendering/ArcToon Render Pipeline")]
-    public partial class ArcToonRenderPipelineAsset : RenderPipelineAsset<ArcToonRenderPipelineInstance>
+    public class ArcToonRenderPipelineAsset : RenderPipelineAsset<ArcToonRenderPipelineInstance>
     {
         [SerializeField] bool enableSRPBatcher;
         [SerializeField] bool enableGPUInstancing;
