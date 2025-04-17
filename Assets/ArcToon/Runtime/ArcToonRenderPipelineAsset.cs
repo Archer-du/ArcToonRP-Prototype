@@ -21,14 +21,24 @@ namespace ArcToon.Runtime
 
         [SerializeField] ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
 
-        [FormerlySerializedAs("GlobalShadowSettings")] [SerializeField] ShadowSettings globalShadowSettings;
-        [FormerlySerializedAs("postFXSettings")] [SerializeField] PostFXSettings globalPostFXSettings;
+        [FormerlySerializedAs("GlobalShadowSettings")] [SerializeField]
+        ShadowSettings globalShadowSettings;
+
+        [FormerlySerializedAs("postFXSettings")] [SerializeField]
+        PostFXSettings globalPostFXSettings;
 
         [SerializeField] private CameraBufferSettings cameraBufferSettings = new()
         {
             allowHDR = true,
-            renderScale = 1f
+            renderScale = 1f,
+            fxaaSettings = new CameraBufferSettings.FXAASettings
+            {
+                fixedThreshold = 0.0833f,
+                relativeThreshold = 0.166f,
+                subpixelBlending = 0.75f,
+            }
         };
+
         // not editable
         [SerializeField] private Shader cameraCopyShader;
 
@@ -41,8 +51,8 @@ namespace ArcToon.Runtime
                     enableGPUInstancing = enableGPUInstancing,
                     colorLUTResolution = (int)colorLUTResolution,
                 },
-                globalShadowSettings, 
-                enablePostProcessing ? globalPostFXSettings : null, 
+                globalShadowSettings,
+                enablePostProcessing ? globalPostFXSettings : null,
                 cameraBufferSettings,
                 cameraCopyShader
             );
