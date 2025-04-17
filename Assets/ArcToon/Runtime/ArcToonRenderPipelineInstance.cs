@@ -2,6 +2,7 @@
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime
 {
@@ -14,6 +15,8 @@ namespace ArcToon.Runtime
 
     public partial class ArcToonRenderPipelineInstance : RenderPipeline
     {
+        readonly RenderGraph renderGraph = new("Arc Toon Render Graph");
+        
         private CameraRenderer cameraRenderer;
 
         private ArcToonRenderPipelineParams renderParams;
@@ -47,11 +50,13 @@ namespace ArcToon.Runtime
         {
             for (int i = 0; i < cameras.Count; i++)
             {
-                cameraRenderer.Render(renderContext, cameras[i],
+                cameraRenderer.Setup(renderContext, cameras[i],
                     renderParams.enableGPUInstancing,
                     renderParams.colorLUTResolution,
                     globalShadowSettings, globalPostFXSettings, cameraBufferSettings);
+                cameraRenderer.Render(renderGraph);
             }
+            renderGraph.EndFrame();
         }
 
         protected override void Dispose(bool disposing)
@@ -59,6 +64,7 @@ namespace ArcToon.Runtime
             base.Dispose(disposing);
             DisposeForEditor();
             cameraRenderer.Dispose();
+            renderGraph.Cleanup();
         }
 
         public static void ConsumeCommandBuffer(ScriptableRenderContext renderContext, CommandBuffer commandBuffer)

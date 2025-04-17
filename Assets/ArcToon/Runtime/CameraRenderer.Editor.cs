@@ -12,7 +12,6 @@ namespace ArcToon.Runtime
         partial void DrawGizmosBeforeFX();
 
         partial void DrawGizmosAfterFX();
-        partial void DrawUnsupportedGeometry();
         partial void PrepareForSceneWindow();
         partial void PrepareBuffer();
 
@@ -32,7 +31,7 @@ namespace ArcToon.Runtime
 
         private string sampleName { get; set; }
 
-        partial void DrawUnsupportedGeometry()
+        public void DrawUnsupportedGeometry()
         {
             if (errorMaterial == null)
             {
