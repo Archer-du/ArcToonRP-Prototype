@@ -388,7 +388,7 @@ namespace ArcToon.Runtime
 
         void RenderPointShadowMap()
         {
-            int atlasSize = (int)settings.directionalCascade.atlasSize;
+            int atlasSize = (int)settings.pointShadow.atlasSize;
             pointAtlasSizes.x = pointAtlasSizes.y = 1f / atlasSize;
             pointAtlasSizes.z = pointAtlasSizes.w = atlasSize;
 
