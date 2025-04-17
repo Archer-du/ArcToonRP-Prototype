@@ -41,8 +41,12 @@ MonoBehaviour:
     copyDepthReflection: 0
     copyColor: 1
     copyColorReflection: 1
-    renderScale: 1.35
-    bicubicRescalingMode: 0
+    renderScale: 1.25
+    bicubicRescalingMode: 1
     fxaaSettings:
-      enabled: 0
+      enabled: 1
+      fixedThreshold: 0.0338
+      relativeThreshold: 0.084
+      subpixelBlending: 1
+      quality: 1
   cameraCopyShader: {fileID: 4800000, guid: 5e1244f6dc0e4188b048fe07a152b6e2, type: 3}

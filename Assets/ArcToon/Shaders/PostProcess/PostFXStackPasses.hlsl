@@ -2,37 +2,14 @@
 #define ARCTOON_POST_FX_PASSES_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Filtering.hlsl"
 
-#include "../ShaderLibrary/Input/UnityInput.hlsl"
-
-TEXTURE2D(_PostFXSource);
-float4 _PostFXSource_TexelSize;
+#include "PostFXStackInput.hlsl"
 
 struct Varyings
 {
     float4 positionCS_SS : SV_POSITION;
     float2 screenUV : VAR_SCREEN_UV;
 };
-
-float4 GetSourceTexelSize()
-{
-    return _PostFXSource_TexelSize;
-}
-
-float4 SampleSource(float2 screenUV)
-{
-    return SAMPLE_TEXTURE2D_LOD(_PostFXSource, sampler_linear_clamp, screenUV, 0);
-}
-
-// TODO: extract
-float4 SampleSourceBicubic(float2 screenUV)
-{
-    return SampleTexture2DBicubic(
-        TEXTURE2D_ARGS(_PostFXSource, sampler_linear_clamp), screenUV,
-        _PostFXSource_TexelSize.zwxy, 1.0, 0.0
-    );
-}
 
 Varyings DefaultPassVertex(uint vertexID : SV_VertexID)
 {
@@ -56,18 +33,12 @@ Varyings DefaultPassVertex(uint vertexID : SV_VertexID)
 // Post Processors --------------------
 
 // copy -------------------------------
-float _FinalSrcBlend;
-float _FinalDstBlend;
-
 float4 CopyPassFragment(Varyings input) : SV_TARGET
 {
     return SampleSource(input.screenUV);
 }
 
 // bloom -------------------------------
-TEXTURE2D(_PostFXSource2);
-float4 _PostFXSource2_TexelSize;
-
 bool _BloomBicubicUpsampling;
 float4 _BloomThreshold;
 float _BloomScale;
@@ -368,6 +339,9 @@ float4 ColorGradingFinalPassFragment(Varyings input) : SV_TARGET
 {
     float4 color = SampleSource(input.screenUV);
     color.rgb = ApplyColorGradingLUT(color.rgb);
+    #if defined(FXAA_ALPHA_CONTAINS_LUMA)
+    color.a = sqrt(Luminance(color.rgb));
+    #endif
     return color;
 }
 

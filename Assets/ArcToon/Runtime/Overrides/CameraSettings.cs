@@ -38,7 +38,10 @@ namespace ArcToon.Runtime.Overrides
             destination = BlendMode.Zero
         };
 
+        // FXAA
         public bool allowFXAA = false;
+        
+        public bool keepAlpha = false;
 
         public float GetRenderScale(float globalRenderScale)
         {

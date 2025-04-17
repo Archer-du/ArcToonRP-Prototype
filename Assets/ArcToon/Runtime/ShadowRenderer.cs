@@ -577,6 +577,7 @@ namespace ArcToon.Runtime
             return m;
         }
 
+        // TODO: extract
         void SetKeywords(string[] keywords, int enabledIndex)
         {
             for (int i = 0; i < keywords.Length; i++)

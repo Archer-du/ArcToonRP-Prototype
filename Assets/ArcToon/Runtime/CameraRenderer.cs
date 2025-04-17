@@ -56,6 +56,16 @@ namespace ArcToon.Runtime
 
         private CameraBufferSettings.BicubicRescalingMode bicubicRescalingMode;
 
+        // TODO: move
+        public struct FXAARuntimeConfig
+        {
+            public bool enabled;
+            public bool keepAlpha;
+            public float fixedThreshold;
+            public float relativeThreshold;
+            public float subpixelBlending;
+            public CameraBufferSettings.FXAASettings.Quality quality;
+        }
         public CameraRenderer(Shader cameraCopyShader)
         {
             commandBuffer = new()
@@ -95,7 +105,7 @@ namespace ArcToon.Runtime
             this.context = context;
             this.camera = camera;
             bicubicRescalingMode = bufferSettings.bicubicRescalingMode;
-            this.useHDR = bufferSettings.allowHDR && camera.allowHDR;
+            useHDR = bufferSettings.allowHDR && camera.allowHDR;
             float renderScale = cameraSettings.GetRenderScale(bufferSettings.renderScale);
             renderScale = Mathf.Clamp(renderScale, renderScaleMin, renderScaleMax);
             useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
@@ -110,9 +120,18 @@ namespace ArcToon.Runtime
                 useDepthTexture = bufferSettings.copyDepth && cameraSettings.copyDepth;
                 useColorTexture = bufferSettings.copyColor && cameraSettings.copyColor;
             }
-
             useIntermediateBuffer = useScaledRendering ||
                                     useDepthTexture || useColorTexture;
+            // TODO: buffer settings translate
+            FXAARuntimeConfig fxaaConfig = new FXAARuntimeConfig
+            {
+                enabled = bufferSettings.fxaaSettings.enabled && cameraSettings.allowFXAA,
+                keepAlpha = cameraSettings.keepAlpha,
+                fixedThreshold = bufferSettings.fxaaSettings.fixedThreshold,
+                relativeThreshold = bufferSettings.fxaaSettings.relativeThreshold,
+                subpixelBlending = bufferSettings.fxaaSettings.subpixelBlending,
+                quality = bufferSettings.fxaaSettings.quality,
+            };
 
             // editor only
             PrepareBuffer();
@@ -144,14 +163,13 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalTexture(cameraColorTextureId, missingCameraTexture);
 
             // set up post FX stacks
-            bufferSettings.fxaaSettings.enabled &= cameraSettings.allowFXAA;
             postFXStack.Setup(
                 context, commandBuffer, camera,
                 bufferSize, 
                 postFXSettings,
                 useHDR,
                 colorLUTResolution,
-                bufferSettings.fxaaSettings
+                fxaaConfig
             );
             useIntermediateBuffer |= postFXStack.IsActive;
 

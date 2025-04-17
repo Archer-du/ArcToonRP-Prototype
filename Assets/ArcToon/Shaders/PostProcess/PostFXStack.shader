@@ -7,8 +7,9 @@
         ZWrite Off
 
         HLSLINCLUDE
-        #include "../ShaderLibrary/Common.hlsl"
+        #include "../../ShaderLibrary/Common.hlsl"
         #include "PostFXStackPasses.hlsl"
+        #pragma multi_compile _ FXAA_ALPHA_CONTAINS_LUMA
         ENDHLSL
 
         Pass
@@ -167,30 +168,18 @@
 
         Pass
         {
-            Name "Copy Final"
+            Name "FXAA"
 
-            Blend [_FinalSrcBlend] [_FinalDstBlend]
-            
             HLSLPROGRAM
             #pragma target 3.5
+
+            #pragma multi_compile _ FXAA_QUALITY_MEDIUM FXAA_QUALITY_LOW
+            
+            #include "AA/FXAAPass.hlsl"
+
             #pragma vertex DefaultPassVertex
-            #pragma fragment CopyPassFragment
+            #pragma fragment FXAAPassFragment
             ENDHLSL
         }
-
-		Pass {
-			Name "FXAA"
-
-			Blend [_FinalSrcBlend] [_FinalDstBlend]
-			
-			HLSLPROGRAM
-				#pragma target 3.5
-				
-				#include "AA/FXAAPass.hlsl"
-				
-				#pragma vertex DefaultPassVertex
-				#pragma fragment FXAAPassFragment
-			ENDHLSL
-		}
     }
 }

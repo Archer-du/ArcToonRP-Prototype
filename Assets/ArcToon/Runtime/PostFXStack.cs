@@ -15,7 +15,7 @@ namespace ArcToon.Runtime
         Camera camera;
 
         PostFXSettings settings;
-        CameraBufferSettings.FXAASettings fxaaSettings;
+        CameraRenderer.FXAARuntimeConfig fxaaConfig;
 
         private bool useHDR;
         private int colorLUTResolution;
@@ -56,7 +56,8 @@ namespace ArcToon.Runtime
             ColorGradingApply,
 
             Copy,
-            CopyFinal
+
+            FXAA,
         }
 
         public PostFXStack()
@@ -73,7 +74,7 @@ namespace ArcToon.Runtime
             PostFXSettings settings,
             bool useHDR,
             int colorLUTResolution,
-            CameraBufferSettings.FXAASettings fxaaSettings)
+            CameraRenderer.FXAARuntimeConfig fxaaConfig)
         {
             this.context = context;
             this.commandBuffer = commandBuffer;
@@ -81,10 +82,19 @@ namespace ArcToon.Runtime
             this.settings = settings;
             this.useHDR = useHDR;
             this.colorLUTResolution = colorLUTResolution;
-            this.fxaaSettings = fxaaSettings;
+            this.fxaaConfig = fxaaConfig;
             this.bufferSize = bufferSize;
 
             ApplySceneViewState();
+
+            if (fxaaConfig.keepAlpha)
+            {
+                commandBuffer.DisableShaderKeyword("FXAA_ALPHA_CONTAINS_LUMA");
+            }
+            else
+            {
+                commandBuffer.EnableShaderKeyword("FXAA_ALPHA_CONTAINS_LUMA");
+            }
         }
 
         public void CleanUp()
@@ -104,6 +114,7 @@ namespace ArcToon.Runtime
             int RTID = rawFrameBufferId;
             RTID = DoBloom(RTID);
             RTID = DoColorGradingToneMapping(RTID);
+            RTID = DoAntiAliasing(RTID);
 
             commandBuffer.EndSample("Post Processing");
             ArcToonRenderPipelineInstance.ConsumeCommandBuffer(context, commandBuffer);
@@ -271,7 +282,6 @@ namespace ArcToon.Runtime
             ConfigureChannelMixer();
             ConfigureShadowsMidtonesHighlights();
 
-            RenderTextureFormat format = useHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.Default;
             // render LUT
             int lutHeight = colorLUTResolution;
             int lutWidth = lutHeight * lutHeight;
@@ -293,7 +303,7 @@ namespace ArcToon.Runtime
             int resultBufferId = Shader.PropertyToID("_ToneMappingResultBuffer");
             commandBuffer.GetTemporaryRT(
                 resultBufferId, bufferSize.x, bufferSize.y, 0,
-                FilterMode.Bilinear, format
+                FilterMode.Bilinear, RenderTextureFormat.Default
             );
             commandBuffer.SetGlobalVector(colorGradingLUTParametersId,
                 new Vector4(1f / lutWidth, 1f / lutHeight, lutHeight - 1f)
@@ -370,6 +380,57 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalVector(smhRangeId, new Vector4(
                 smh.shadowsStart, smh.shadowsEnd, smh.highlightsStart, smh.highLightsEnd
             ));
+        }
+
+        // Anti-Aliasing ------------------------------
+
+        int fxaaParamsId = Shader.PropertyToID("_FXAAParams");
+        private Vector4 fxaaParams;
+
+        const string
+            fxaaQualityLowKeyword = "FXAA_QUALITY_LOW",
+            fxaaQualityMediumKeyword = "FXAA_QUALITY_MEDIUM";
+
+        int DoAntiAliasing(int srcBufferId)
+        {
+            if (!fxaaConfig.enabled) return srcBufferId;
+
+            commandBuffer.BeginSample("Anti-Aliasing");
+
+            int resultBufferId = Shader.PropertyToID("_AntiAliasingResultBuffer");
+            commandBuffer.GetTemporaryRT(
+                resultBufferId, bufferSize.x, bufferSize.y, 0,
+                FilterMode.Bilinear, RenderTextureFormat.Default
+            );
+            ConfigureFXAA();
+            Draw(srcBufferId, resultBufferId, Pass.FXAA);
+
+            commandBuffer.ReleaseTemporaryRT(srcBufferId);
+            commandBuffer.EndSample("Anti-Aliasing");
+
+            return resultBufferId;
+        }
+
+        void ConfigureFXAA()
+        {
+            if (fxaaConfig.quality == CameraBufferSettings.FXAASettings.Quality.Low)
+            {
+                commandBuffer.EnableShaderKeyword(fxaaQualityLowKeyword);
+                commandBuffer.DisableShaderKeyword(fxaaQualityMediumKeyword);
+            }
+            else if (fxaaConfig.quality == CameraBufferSettings.FXAASettings.Quality.Medium)
+            {
+                commandBuffer.DisableShaderKeyword(fxaaQualityLowKeyword);
+                commandBuffer.EnableShaderKeyword(fxaaQualityMediumKeyword);
+            }
+            else
+            {
+                commandBuffer.DisableShaderKeyword(fxaaQualityLowKeyword);
+                commandBuffer.DisableShaderKeyword(fxaaQualityMediumKeyword);
+            }
+            fxaaParams = new Vector4(fxaaConfig.fixedThreshold, fxaaConfig.relativeThreshold,
+                fxaaConfig.subpixelBlending);
+            commandBuffer.SetGlobalVector(fxaaParamsId, fxaaParams);
         }
     }
 }
