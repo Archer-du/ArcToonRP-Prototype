@@ -70,8 +70,7 @@ float GetSpotShadowAttenuation(SpotShadowData pointSpot, CascadeShadowData casca
     float realtimeShadow = GetSpotRealtimeShadow(pointSpot, cascade, surface);
     float attenuation;
     // TODO:
-    float fade = FadedStrength(surface.linearDepth, _ShadowDistanceFade.x, _ShadowDistanceFade.y) * cascade.
-        rangeFade;
+    float fade = FadedStrength(surface.linearDepth, _ShadowDistanceFade.x, _ShadowDistanceFade.y) * cascade.rangeFade;
     if (gi.shadowMask.alwaysMode)
     {
         // TODO:

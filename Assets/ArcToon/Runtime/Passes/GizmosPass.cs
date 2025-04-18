@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using ArcToon.Runtime.Data;
 using UnityEditor;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -8,31 +9,51 @@ namespace ArcToon.Runtime.Passes
     public class GizmosPass
     {
 #if UNITY_EDITOR
-        CameraRenderer renderer;
+        static readonly ProfilingSampler sampler = new("Gizmos");
+
+        bool requiresDepthCopy;
+
+        CameraAttachmentCopier copier;
+
+        TextureHandle depthAttachment;
 
         void Render(RenderGraphContext context)
         {
-            if (renderer.useIntermediateBuffer)
+            CommandBuffer buffer = context.cmd;
+            ScriptableRenderContext renderContext = context.renderContext;
+            if (requiresDepthCopy)
             {
-                renderer.CopyCameraTexture(CameraRenderer.depthAttachmentId, BuiltinRenderTextureType.CameraTarget,
-                    CameraRenderer.CopyChannel.DepthAttachment);
-                // renderer.ExecuteBuffer();
+                copier.Copy(buffer, depthAttachment, BuiltinRenderTextureType.CameraTarget,
+                    CameraAttachmentCopier.CopyChannel.DepthAttachment);
             }
 
-            context.renderContext.DrawGizmos(renderer.camera, GizmoSubset.PreImageEffects);
-            context.renderContext.DrawGizmos(renderer.camera, GizmoSubset.PostImageEffects);
+            renderContext.ExecuteCommandBuffer(buffer);
+            buffer.Clear();
+
+            renderContext.DrawGizmos(copier.Camera, GizmoSubset.PreImageEffects);
+            renderContext.DrawGizmos(copier.Camera, GizmoSubset.PostImageEffects);
         }
 #endif
         [Conditional("UNITY_EDITOR")]
-        public static void Record(RenderGraph renderGraph, CameraRenderer renderer)
+        public static void Record(RenderGraph renderGraph,
+            bool useIntermediateBuffer,
+            in CameraAttachmentTextureData textureData,
+            CameraAttachmentCopier copier)
         {
 #if UNITY_EDITOR
             if (Handles.ShouldRenderGizmos())
             {
-                using RenderGraphBuilder builder =
-                    renderGraph.AddRenderPass("Gizmos", out GizmosPass gizmosPass);
-                gizmosPass.renderer = renderer;
-                builder.SetRenderFunc<GizmosPass>((pass, context) => pass.Render(context));
+                using RenderGraphBuilder builder = renderGraph.AddRenderPass(
+                    sampler.name, out GizmosPass pass, sampler);
+                
+                pass.requiresDepthCopy = useIntermediateBuffer;
+                pass.copier = copier;
+                if (useIntermediateBuffer)
+                {
+                    pass.depthAttachment = builder.ReadTexture(textureData.depthAttachment);
+                }
+                
+                builder.SetRenderFunc<GizmosPass>(static (pass, context) => pass.Render(context));
             }
 #endif
         }

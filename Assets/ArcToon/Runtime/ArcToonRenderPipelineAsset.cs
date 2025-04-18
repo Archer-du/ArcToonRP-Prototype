@@ -9,17 +9,7 @@ namespace ArcToon.Runtime
     public class ArcToonRenderPipelineAsset : RenderPipelineAsset<ArcToonRenderPipelineInstance>
     {
         [SerializeField] bool enableSRPBatcher;
-        [SerializeField] bool enableGPUInstancing;
         [SerializeField] bool enablePostProcessing = true;
-
-        public enum ColorLUTResolution
-        {
-            _16 = 16,
-            _32 = 32,
-            _64 = 64
-        }
-
-        [SerializeField] ColorLUTResolution colorLUTResolution = ColorLUTResolution._32;
 
         [FormerlySerializedAs("GlobalShadowSettings")] [SerializeField]
         ShadowSettings globalShadowSettings;
@@ -45,16 +35,11 @@ namespace ArcToon.Runtime
         protected override RenderPipeline CreatePipeline()
         {
             return new ArcToonRenderPipelineInstance(
-                new ArcToonRenderPipelineParams
-                {
-                    enableSRPBatcher = enableSRPBatcher,
-                    enableGPUInstancing = enableGPUInstancing,
-                    colorLUTResolution = (int)colorLUTResolution,
-                },
                 globalShadowSettings,
                 enablePostProcessing ? globalPostFXSettings : null,
                 cameraBufferSettings,
-                cameraCopyShader
+                cameraCopyShader,
+                enableSRPBatcher
             );
         }
     }

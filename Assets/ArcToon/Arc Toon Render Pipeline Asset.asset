@@ -13,9 +13,7 @@ MonoBehaviour:
   m_Name: Arc Toon Render Pipeline Asset
   m_EditorClassIdentifier: 
   enableSRPBatcher: 1
-  enableGPUInstancing: 1
   enablePostProcessing: 1
-  colorLUTResolution: 64
   globalShadowSettings:
     directionalCascade:
       atlasSize: 8192
@@ -27,12 +25,12 @@ MonoBehaviour:
       cascadeRatio3: 0.5
       edgeFade: 0.1
     spotShadow:
-      atlasSize: 8192
+      atlasSize: 4096
       filterMode: 3
     pointShadow:
       atlasSize: 8192
       filterMode: 3
-    maxDistance: 200
+    maxDistance: 100
     distanceFade: 0.1
   globalPostFXSettings: {fileID: 11400000, guid: 5f31e115cdc74ac43a07d8833f409e0d, type: 2}
   cameraBufferSettings:
@@ -48,5 +46,5 @@ MonoBehaviour:
       fixedThreshold: 0.0338
       relativeThreshold: 0.084
       subpixelBlending: 1
-      quality: 1
+      quality: 2
   cameraCopyShader: {fileID: 4800000, guid: 5e1244f6dc0e4188b048fe07a152b6e2, type: 3}
