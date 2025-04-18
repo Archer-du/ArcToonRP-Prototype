@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -19,7 +20,7 @@ namespace ArcToon.Runtime.Settings
             public Mode mode;
 
             public bool ignoreRenderScale;
-            
+
             [Range(0.05f, 0.95f)] public float scatter;
 
             [Range(0f, 16f)] public int maxIterations;
@@ -140,9 +141,22 @@ namespace ArcToon.Runtime.Settings
             }
 
             public Mode mode;
+
+            public enum ColorLUTResolution
+            {
+                _16 = 16,
+                _32 = 32,
+                _64 = 64
+            }
+
+            [SerializeField] public ColorLUTResolution colorLUTResolution;
         }
 
-        [SerializeField] ToneMappingSettings toneMapping;
+        [SerializeField] ToneMappingSettings toneMapping = new()
+        {
+            colorLUTResolution = ToneMappingSettings.ColorLUTResolution._64
+        };
+
         public ToneMappingSettings ToneMapping => toneMapping;
 
 
@@ -164,6 +178,18 @@ namespace ArcToon.Runtime.Settings
 
                 return postProcessStackMaterial;
             }
+        }
+
+        public static bool AreApplicableTo(Camera camera)
+        {
+#if UNITY_EDITOR
+            if (camera.cameraType == CameraType.SceneView &&
+                !SceneView.currentDrawingSceneView.sceneViewState.showImageEffects)
+            {
+                return false;
+            }
+#endif
+            return camera.cameraType <= CameraType.SceneView;
         }
     }
 }

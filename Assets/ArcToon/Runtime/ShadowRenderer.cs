@@ -1,25 +1,62 @@
-﻿using ArcToon.Runtime.Settings;
+﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Settings;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime
 {
     public class ShadowRenderer
     {
-        private const string bufferName = "Shadows";
+        public TextureHandle directionalAtlas;
+        public TextureHandle spotAtlas;
+        public TextureHandle pointAtlas;
+
+        public ShadowTextureData GetRenderTextures(
+            RenderGraph renderGraph,
+            RenderGraphBuilder builder)
+        {
+            int atlasSize = (int)settings.directionalCascade.atlasSize;
+            var desc = new TextureDesc(atlasSize, atlasSize)
+            {
+                depthBufferBits = DepthBits.Depth32,
+                isShadowMap = true,
+                name = "Directional Shadow Atlas"
+            };
+            directionalAtlas = shadowedDirectionalLightCount > 0
+                ? builder.WriteTexture(renderGraph.CreateTexture(desc))
+                : renderGraph.defaultResources.defaultShadowTexture;
+
+            atlasSize = (int)settings.spotShadow.atlasSize;
+            desc.width = desc.height = atlasSize;
+            desc.name = "Spot Shadow Atlas";
+            spotAtlas = shadowedSpotLightCount > 0
+                ? builder.WriteTexture(renderGraph.CreateTexture(desc))
+                : renderGraph.defaultResources.defaultShadowTexture;
+
+            atlasSize = (int)settings.pointShadow.atlasSize;
+            desc.width = desc.height = atlasSize;
+            desc.name = "Point Shadow Atlas";
+            pointAtlas = shadowedPointLightCount > 0
+                ? builder.WriteTexture(renderGraph.CreateTexture(desc))
+                : renderGraph.defaultResources.defaultShadowTexture;
+
+            return new ShadowTextureData(directionalAtlas, spotAtlas, pointAtlas);
+        }
+
+        public CommandBuffer commandBuffer;
 
         private ScriptableRenderContext context;
-        public CommandBuffer commandBuffer;
 
         private CullingResults cullingResults;
 
         private ShadowSettings settings;
 
-        private static string[] shadowMaskKeywords =
+        static readonly GlobalKeyword[] shadowMaskKeywords =
         {
-            "_SHADOW_MASK_ALWAYS",
-            "_SHADOW_MASK_DISTANCE"
+            GlobalKeyword.Create("_SHADOW_MASK_ALWAYS"),
+            GlobalKeyword.Create("_SHADOW_MASK_DISTANCE"),
         };
 
         private bool useShadowMask;
@@ -34,6 +71,7 @@ namespace ArcToon.Runtime
             public float slopeScaleBias;
             public float nearPlaneOffset;
         }
+
         Vector4 directionalAtlasSizes;
         private static int directionalShadowAtlasSizeId = Shader.PropertyToID("_DirectionalShadowAtlasSize");
 
@@ -43,14 +81,14 @@ namespace ArcToon.Runtime
         private ShadowMapDataDirectional[] shadowMapDataDirectionals =
             new ShadowMapDataDirectional[maxShadowedDirectionalLightCount];
 
-        private static string[] directionalFilterKeywords =
+        static readonly GlobalKeyword[] directionalFilterKeywords =
         {
-            "_DIRECTIONAL_PCF3",
-            "_DIRECTIONAL_PCF5",
-            "_DIRECTIONAL_PCF7",
+            GlobalKeyword.Create("_DIRECTIONAL_PCF3"),
+            GlobalKeyword.Create("_DIRECTIONAL_PCF5"),
+            GlobalKeyword.Create("_DIRECTIONAL_PCF7"),
         };
 
-        private static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
+        private static int dirShadowAtlasID = Shader.PropertyToID("_DirectionalShadowAtlas");
 
         private static Matrix4x4[] dirShadowVPMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
         private static int dirShadowVPMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
@@ -64,10 +102,10 @@ namespace ArcToon.Runtime
         private static int cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres");
         private static int cascadeDataId = Shader.PropertyToID("_CascadeData");
 
-        private static string[] cascadeBlendKeywords =
+        static readonly GlobalKeyword[] cascadeBlendKeywords =
         {
-            "_CASCADE_BLEND_SOFT",
-            "_CASCADE_BLEND_DITHER"
+            GlobalKeyword.Create("_CASCADE_BLEND_SOFT"),
+            GlobalKeyword.Create("_CASCADE_BLEND_DITHER"),
         };
 
 
@@ -79,6 +117,7 @@ namespace ArcToon.Runtime
             public float normalBias;
             public float nearPlaneOffset;
         }
+
         Vector4 spotAtlasSizes;
         private static int spotShadowAtlasSizeId = Shader.PropertyToID("_SpotShadowAtlasSize");
 
@@ -88,14 +127,14 @@ namespace ArcToon.Runtime
         private ShadowMapDataSpot[] shadowMapDataSpots =
             new ShadowMapDataSpot[maxShadowedSpotLightCount];
 
-        static string[] spotFilterKeywords =
+        static GlobalKeyword[] spotFilterKeywords =
         {
-            "_SPOT_PCF3",
-            "_SPOT_PCF5",
-            "_SPOT_PCF7",
+            GlobalKeyword.Create("_SPOT_PCF3"),
+            GlobalKeyword.Create("_SPOT_PCF5"),
+            GlobalKeyword.Create("_SPOT_PCF7"),
         };
 
-        private static int spotShadowAtlasId = Shader.PropertyToID("_SpotShadowAtlas");
+        private static int spotShadowAtlasID = Shader.PropertyToID("_SpotShadowAtlas");
 
         private static Matrix4x4[] spotShadowMatrices = new Matrix4x4[maxShadowedSpotLightCount];
         private static int spotShadowVPMatricesId = Shader.PropertyToID("_SpotShadowMatrices");
@@ -112,6 +151,7 @@ namespace ArcToon.Runtime
             public float normalBias;
             public float nearPlaneOffset;
         }
+
         Vector4 pointAtlasSizes;
         private static int pointShadowAtlasSizeId = Shader.PropertyToID("_PointShadowAtlasSize");
 
@@ -121,47 +161,32 @@ namespace ArcToon.Runtime
         private ShadowMapDataPoint[] shadowMapDataPoints =
             new ShadowMapDataPoint[maxShadowedPointLightCount];
 
-        static string[] pointFilterKeywords =
+        static GlobalKeyword[] pointFilterKeywords =
         {
-            "_POINT_PCF3",
-            "_POINT_PCF5",
-            "_POINT_PCF7",
+            GlobalKeyword.Create("_POINT_PCF3"),
+            GlobalKeyword.Create("_POINT_PCF5"),
+            GlobalKeyword.Create("_POINT_PCF7"),
         };
 
-        private static int pointShadowAtlasId = Shader.PropertyToID("_PointShadowAtlas");
+        private static int pointShadowAtlasID = Shader.PropertyToID("_PointShadowAtlas");
 
         private static Matrix4x4[] pointShadowMatrices = new Matrix4x4[maxShadowedPointLightCount * 6];
         private static int pointShadowVPMatricesId = Shader.PropertyToID("_PointShadowMatrices");
-        
+
         private static Vector4[] pointShadowTileData = new Vector4[maxShadowedPointLightCount * 6];
         private static int pointShadowTileDataId = Shader.PropertyToID("_PointShadowTiles");
 
 
-        public void Setup(ScriptableRenderContext context, CommandBuffer commandBuffer, CullingResults cullingResults,
+        public void Setup(CullingResults cullingResults,
             ShadowSettings settings
         )
         {
-            this.context = context;
-            this.commandBuffer = commandBuffer;
             this.cullingResults = cullingResults;
             this.settings = settings;
 
             shadowedDirectionalLightCount = shadowedSpotLightCount = shadowedPointLightCount = 0;
 
             useShadowMask = false;
-        }
-        
-        public void CleanUp()
-        {
-            commandBuffer.ReleaseTemporaryRT(dirShadowAtlasId);
-            if (shadowedSpotLightCount > 0)
-            {
-                commandBuffer.ReleaseTemporaryRT(spotShadowAtlasId);
-            }
-            if (shadowedPointLightCount > 0)
-            {
-                commandBuffer.ReleaseTemporaryRT(pointShadowAtlasId);
-            }
         }
 
         public Vector4 ReservePerLightShadowDataDirectional(Light light, int visibleLightIndex)
@@ -275,38 +300,29 @@ namespace ArcToon.Runtime
         }
 
 
-        public void RenderShadowMap()
+        public void RenderShadowMap(RenderGraphContext context)
         {
+            commandBuffer = context.cmd;
+            this.context = context.renderContext;
+
             if (shadowedDirectionalLightCount > 0)
             {
                 RenderDirectionalShadowMap();
-            }
-            else
-            {
-                // for capability
-                commandBuffer.GetTemporaryRT(
-                    dirShadowAtlasId, 1, 1,
-                    32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap
-                );
             }
 
             if (shadowedSpotLightCount > 0)
             {
                 RenderSpotShadowMap();
             }
-            else
-            {
-                commandBuffer.SetGlobalTexture(spotShadowAtlasId, dirShadowAtlasId);
-            }
 
             if (shadowedPointLightCount > 0)
             {
                 RenderPointShadowMap();
             }
-            else
-            {
-                commandBuffer.SetGlobalTexture(pointShadowAtlasId, dirShadowAtlasId);
-            }
+
+            commandBuffer.SetGlobalTexture(dirShadowAtlasID, directionalAtlas);
+            commandBuffer.SetGlobalTexture(spotShadowAtlasID, spotAtlas);
+            commandBuffer.SetGlobalTexture(pointShadowAtlasID, pointAtlas);
 
             SetKeywords(shadowMaskKeywords,
                 useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
@@ -325,10 +341,8 @@ namespace ArcToon.Runtime
             directionalAtlasSizes.x = directionalAtlasSizes.y = 1f / atlasSize;
             directionalAtlasSizes.z = directionalAtlasSizes.w = atlasSize;
 
-            commandBuffer.GetTemporaryRT(dirShadowAtlasId, atlasSize, atlasSize,
-                32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
             commandBuffer.SetRenderTarget(
-                dirShadowAtlasId,
+                directionalAtlas,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             commandBuffer.ClearRenderTarget(true, false, Color.clear);
@@ -341,7 +355,7 @@ namespace ArcToon.Runtime
             {
                 RenderDirectionalShadowSplitTile(i, split, tileSize);
             }
-            
+
             commandBuffer.SetGlobalVector(directionalShadowAtlasSizeId, directionalAtlasSizes);
             commandBuffer.SetGlobalMatrixArray(dirShadowVPMatricesId, dirShadowVPMatrices);
             commandBuffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
@@ -361,10 +375,8 @@ namespace ArcToon.Runtime
             spotAtlasSizes.x = spotAtlasSizes.y = 1f / atlasSize;
             spotAtlasSizes.z = spotAtlasSizes.w = atlasSize;
 
-            commandBuffer.GetTemporaryRT(spotShadowAtlasId, atlasSize, atlasSize,
-                32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
             commandBuffer.SetRenderTarget(
-                spotShadowAtlasId,
+                spotAtlas,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             commandBuffer.ClearRenderTarget(true, false, Color.clear);
@@ -377,6 +389,7 @@ namespace ArcToon.Runtime
             {
                 RenderSpotShadowSplitTile(i, split, tileSize);
             }
+
             commandBuffer.SetGlobalVector(spotShadowAtlasSizeId, spotAtlasSizes);
             commandBuffer.SetGlobalMatrixArray(spotShadowVPMatricesId, spotShadowMatrices);
             commandBuffer.SetGlobalVectorArray(spotShadowTileDataId, spotShadowTileData);
@@ -392,10 +405,8 @@ namespace ArcToon.Runtime
             pointAtlasSizes.x = pointAtlasSizes.y = 1f / atlasSize;
             pointAtlasSizes.z = pointAtlasSizes.w = atlasSize;
 
-            commandBuffer.GetTemporaryRT(pointShadowAtlasId, atlasSize, atlasSize,
-                32, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
             commandBuffer.SetRenderTarget(
-                pointShadowAtlasId,
+                pointAtlas,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             commandBuffer.ClearRenderTarget(true, false, Color.clear);
@@ -408,6 +419,7 @@ namespace ArcToon.Runtime
             {
                 RenderPointShadowSplitTile(i, split, tileSize);
             }
+
             commandBuffer.SetGlobalVector(pointShadowAtlasSizeId, pointAtlasSizes);
             commandBuffer.SetGlobalMatrixArray(pointShadowVPMatricesId, pointShadowMatrices);
             commandBuffer.SetGlobalVectorArray(pointShadowTileDataId, pointShadowTileData);
@@ -474,7 +486,7 @@ namespace ArcToon.Runtime
             float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
             Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
             float tileScale = 1f / split;
-            
+
             spotShadowTileData[tileIndex] = GetTileData(offset, tileScale, normalBiasScale, spotAtlasSizes.x);
             spotShadowMatrices[tileIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, offset, tileScale);
 
@@ -510,7 +522,7 @@ namespace ArcToon.Runtime
 
                 int tileIndex = tileOffset + i;
                 Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
-                
+
                 pointShadowTileData[tileIndex] = GetTileData(offset, tileScale, normalBiasScale, pointAtlasSizes.x);
                 pointShadowMatrices[tileIndex] = ConvertToAtlasMatrix(projectionMatrix * viewMatrix, offset, tileScale);
 
@@ -578,20 +590,12 @@ namespace ArcToon.Runtime
         }
 
         // TODO: extract
-        void SetKeywords(string[] keywords, int enabledIndex)
+        void SetKeywords(GlobalKeyword[] keywords, int enabledIndex)
         {
             for (int i = 0; i < keywords.Length; i++)
             {
-                if (i == enabledIndex)
-                {
-                    commandBuffer.EnableShaderKeyword(keywords[i]);
-                }
-                else
-                {
-                    commandBuffer.DisableShaderKeyword(keywords[i]);
-                }
+                commandBuffer.SetKeyword(keywords[i], i == enabledIndex);
             }
         }
-
     }
 }

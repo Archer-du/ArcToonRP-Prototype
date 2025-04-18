@@ -1,20 +1,34 @@
-﻿using UnityEngine.Rendering.RenderGraphModule;
+﻿using ArcToon.Runtime.Data;
+using UnityEngine;
+using UnityEngine.Experimental.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
+
 namespace ArcToon.Runtime.Passes
 {
     public class PostFXPass
     {
-        PostFXStack postFXStack;
+        static readonly ProfilingSampler sampler = new("Post FX");
 
-        int Render(RenderGraphContext context) =>
-            postFXStack.Render(CameraRenderer.colorAttachmentId);
+        TextureHandle colorAttachment;
 
-        public static void Record(RenderGraph renderGraph, CameraRenderer renderer, PostFXStack postFXStack)
+        PostFXStack stack;
+
+        public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
+            PostFXStack stack,
+            int colorLUTResolution,
+            in TextureHandle srcHandle, 
+            bool usePostFX)
         {
-            using RenderGraphBuilder builder =
-                renderGraph.AddRenderPass("Post FX", out PostFXPass postFXPass);
-            postFXPass.postFXStack = postFXStack;
-            builder.SetRenderFunc<PostFXPass>((pass, context) => renderer.finalBufferId = pass.Render(context));
+            if (!usePostFX) return srcHandle;
+            using (new RenderGraphProfilingScope(renderGraph, sampler))
+            {
+                TextureHandle handle = srcHandle;
+                handle = BloomPass.Record(renderGraph, camera, stack, handle);
+                handle = ColorGradingPass.Record(renderGraph, stack, colorLUTResolution, handle);
+                handle = AntiAliasingPass.Record(renderGraph, stack, handle);
+                return handle;
+            }
         }
     }
 }

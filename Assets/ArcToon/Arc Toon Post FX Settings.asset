@@ -19,7 +19,7 @@ MonoBehaviour:
     maxIterations: 2
     downscaleLimit: 10
     threshold: 1
-    thresholdKnee: 0.25
+    thresholdKnee: 1
     intensity: 1
     fadeFireflies: 1
     bicubicUpsampling: 1
@@ -50,4 +50,5 @@ MonoBehaviour:
     highLightsEnd: 1
   toneMapping:
     mode: 3
+    colorLUTResolution: 64
   postProcessStackShader: {fileID: 4800000, guid: 561909e82a69453d98483b380fdbdbfb, type: 3}
