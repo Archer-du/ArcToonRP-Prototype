@@ -15,14 +15,14 @@ namespace ArcToon.Runtime.Buffers
         public ShadowCascadeBufferData(
             Vector4 cullingSphere,
             float tileSize,
-            ShadowSettings.FilterMode filterMode)
+            float filterSize)
         {
             float texelSize = 2f * cullingSphere.w / tileSize;
-            float filterSize = texelSize * ((float)filterMode + 1f);
-            cullingSphere.w -= filterSize;
+            float scaledSize = texelSize * filterSize;
+            cullingSphere.w -= scaledSize;
             cullingSphere.w *= cullingSphere.w;
             this.cullingSphere = cullingSphere;
-            data = new Vector4(1f / cullingSphere.w, filterSize * 1.4142136f);
+            data = new Vector4(1f / cullingSphere.w, scaledSize * 1.4142136f);
         }
     }
 }

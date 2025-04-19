@@ -3,38 +3,32 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
 
-#if defined(_DIRECTIONAL_PCF3)
+#if defined(_PCF3X3)
     #define DIRECTIONAL_FILTER_SAMPLES 4
-    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
-#elif defined(_DIRECTIONAL_PCF5)
-    #define DIRECTIONAL_FILTER_SAMPLES 9
-    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
-#elif defined(_DIRECTIONAL_PCF7)
-    #define DIRECTIONAL_FILTER_SAMPLES 16
-    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
-#endif
-
-#if defined(_SPOT_PCF3)
     #define SPOT_FILTER_SAMPLES 4
-    #define SPOT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
-#elif defined(_SPOT_PCF5)
-    #define SPOT_FILTER_SAMPLES 9
-    #define SPOT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
-#elif defined(_SPOT_PCF7)
-    #define SPOT_FILTER_SAMPLES 16
-    #define SPOT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
-#endif
-
-#if defined(_POINT_PCF3)
     #define POINT_FILTER_SAMPLES 4
+
+    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
+    #define SPOT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
     #define POINT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
-#elif defined(_POINT_PCF5)
+#elif defined(_PCF5X5)
+    #define DIRECTIONAL_FILTER_SAMPLES 9
+    #define SPOT_FILTER_SAMPLES 9
     #define POINT_FILTER_SAMPLES 9
+
+    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
+    #define SPOT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
     #define POINT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
-#elif defined(_POINT_PCF7)
+#elif defined(_PCF7X7)
+    #define DIRECTIONAL_FILTER_SAMPLES 16
+    #define SPOT_FILTER_SAMPLES 16
     #define POINT_FILTER_SAMPLES 16
+
+    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
+    #define SPOT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
     #define POINT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
 #endif
+
 
 #include "Surface.hlsl"
 #include "Common.hlsl"
@@ -79,6 +73,10 @@ StructuredBuffer<SpotShadowBufferData> _SpotShadowData;
 
 struct PointShadowBufferData
 {
+    // x: tile border start x
+    // y: tile border start y
+    // z: tile border length
+    // w: shadow normal bias scale
     float4 tileData;
     float4x4 shadowMatrix;
 };
@@ -95,7 +93,7 @@ struct ShadowMask
 struct CascadeShadowData
 {
     int offset;
-    float blend;
+    float softBlend;
     float rangeFade;
 };
 
@@ -104,7 +102,7 @@ CascadeShadowData GetCascadeShadowData(Surface surface)
     CascadeShadowData cascade;
     int i;
     cascade.rangeFade = 1.0;
-    cascade.blend = 1.0;
+    cascade.softBlend = 1.0;
     for (i = 0; i < _CascadeCount; i++)
     {
         ShadowCascadeBufferData bufferData = _ShadowCascadeData[i];
@@ -118,7 +116,7 @@ CascadeShadowData GetCascadeShadowData(Surface surface)
             }
             else
             {
-                cascade.blend *= fade;
+                cascade.softBlend *= fade;
             }
             break;
         }
@@ -128,8 +126,8 @@ CascadeShadowData GetCascadeShadowData(Surface surface)
     {
         cascade.rangeFade = 0.0;
     }
-    #if defined(_CASCADE_BLEND_DITHER)
-    else if (cascade.blend < surface.dither)
+    #if !defined(_CASCADE_BLEND_SOFT)
+    else if (cascade.softBlend < surface.dither)
     {
         i += 1;
     }

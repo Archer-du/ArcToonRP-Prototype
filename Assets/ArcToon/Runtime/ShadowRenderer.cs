@@ -27,7 +27,7 @@ namespace ArcToon.Runtime
             RenderGraph renderGraph,
             RenderGraphBuilder builder)
         {
-            int atlasSize = (int)settings.directionalCascade.atlasSize;
+            int atlasSize = (int)settings.directionalCascadeShadow.atlasSize;
             var desc = new TextureDesc(atlasSize, atlasSize)
             {
                 depthBufferBits = DepthBits.Depth32,
@@ -107,7 +107,13 @@ namespace ArcToon.Runtime
         private static int shadowDistanceFadeID = Shader.PropertyToID("_ShadowDistanceFade");
         private static int shadowPancakingID = Shader.PropertyToID("_ShadowPancaking");
 
-
+        static readonly GlobalKeyword[] filterKeywords =
+        {
+            GlobalKeyword.Create("_PCF3X3"),
+            GlobalKeyword.Create("_PCF5X5"),
+            GlobalKeyword.Create("_PCF7X7"),
+        };
+        
         // ----------------- directional shadow -----------------
 
         private static Matrix4x4[] directionalShadowVPMatrices =
@@ -120,13 +126,6 @@ namespace ArcToon.Runtime
 
         private const int maxShadowedDirectionalLightCount = 4;
         private int shadowedDirectionalLightCount;
-
-        static readonly GlobalKeyword[] directionalFilterKeywords =
-        {
-            GlobalKeyword.Create("_DIRECTIONAL_PCF3"),
-            GlobalKeyword.Create("_DIRECTIONAL_PCF5"),
-            GlobalKeyword.Create("_DIRECTIONAL_PCF7"),
-        };
 
         private static int dirShadowAtlasID = Shader.PropertyToID("_DirectionalShadowAtlas");
 
@@ -143,7 +142,6 @@ namespace ArcToon.Runtime
         static readonly GlobalKeyword[] cascadeBlendKeywords =
         {
             GlobalKeyword.Create("_CASCADE_BLEND_SOFT"),
-            GlobalKeyword.Create("_CASCADE_BLEND_DITHER"),
         };
 
 
@@ -162,14 +160,6 @@ namespace ArcToon.Runtime
         private int shadowedSpotLightCount;
 
 
-        static GlobalKeyword[] spotFilterKeywords =
-        {
-            GlobalKeyword.Create("_SPOT_PCF3"),
-            GlobalKeyword.Create("_SPOT_PCF5"),
-            GlobalKeyword.Create("_SPOT_PCF7"),
-        };
-
-
         // ----------------- point shadow -----------------
         private static readonly PointShadowBufferData[] pointShadowData =
             new PointShadowBufferData[maxShadowedPointLightCount * 6];
@@ -183,14 +173,6 @@ namespace ArcToon.Runtime
 
         private const int maxShadowedPointLightCount = 2;
         private int shadowedPointLightCount;
-
-        static GlobalKeyword[] pointFilterKeywords =
-        {
-            GlobalKeyword.Create("_POINT_PCF3"),
-            GlobalKeyword.Create("_POINT_PCF5"),
-            GlobalKeyword.Create("_POINT_PCF7"),
-        };
-
 
         public void Setup(CullingResults cullingResults,
             ShadowSettings settings
@@ -246,7 +228,7 @@ namespace ArcToon.Runtime
                     };
                 return new Vector4(
                     light.shadowStrength,
-                    shadowedDirectionalLightIndex * settings.directionalCascade.cascadeCount,
+                    shadowedDirectionalLightIndex * settings.directionalCascadeShadow.cascadeCount,
                     light.shadowNormalBias, maskChannel
                 );
             }
@@ -377,20 +359,22 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalTexture(spotShadowAtlasID, spotAtlas);
             commandBuffer.SetGlobalTexture(pointShadowAtlasID, pointAtlas);
 
+            SetKeywords(filterKeywords, (int)settings.filterQuality - 1);
+            
             SetKeywords(shadowMaskKeywords,
                 useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
 
             commandBuffer.SetGlobalInt(cascadeCountId,
-                shadowedDirectionalLightCount > 0 ? settings.directionalCascade.cascadeCount : -1);
+                shadowedDirectionalLightCount > 0 ? settings.directionalCascadeShadow.cascadeCount : -1);
 
-            float f = 1f - settings.directionalCascade.edgeFade;
+            float f = 1f - settings.directionalCascadeShadow.edgeFade;
             commandBuffer.SetGlobalVector(shadowDistanceFadeID,
                 new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade, 1f / (1f - f * f)));
         }
 
         void RenderDirectionalShadowMap()
         {
-            int atlasSize = (int)settings.directionalCascade.atlasSize;
+            int atlasSize = (int)settings.directionalCascadeShadow.atlasSize;
             directionalAtlasSizes.x = directionalAtlasSizes.y = 1f / atlasSize;
             directionalAtlasSizes.z = directionalAtlasSizes.w = atlasSize;
 
@@ -401,7 +385,7 @@ namespace ArcToon.Runtime
             commandBuffer.ClearRenderTarget(true, false, Color.clear);
             commandBuffer.SetGlobalFloat(shadowPancakingID, 1f);
             // TODO: config
-            int tiles = shadowedDirectionalLightCount * settings.directionalCascade.cascadeCount;
+            int tiles = shadowedDirectionalLightCount * settings.directionalCascadeShadow.cascadeCount;
             int split = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
             int tileSize = atlasSize / split;
             for (int i = 0; i < shadowedDirectionalLightCount; i++)
@@ -412,17 +396,13 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalVector(directionalShadowAtlasSizeID, directionalAtlasSizes);
             commandBuffer.SetBufferData(
                 cascadeShadowDataHandle, cascadeShadowData,
-                0, 0, settings.directionalCascade.cascadeCount);
+                0, 0, settings.directionalCascadeShadow.cascadeCount);
 
             commandBuffer.SetBufferData(
                 directionalShadowMatricesHandle, directionalShadowVPMatrices,
-                0, 0, shadowedDirectionalLightCount * settings.directionalCascade.cascadeCount);
-
+                0, 0, shadowedDirectionalLightCount * settings.directionalCascadeShadow.cascadeCount);
             SetKeywords(
-                directionalFilterKeywords, (int)settings.directionalCascade.filterMode - 1
-            );
-            SetKeywords(
-                cascadeBlendKeywords, (int)settings.directionalCascade.blendMode - 1
+                cascadeBlendKeywords, (int)settings.directionalCascadeShadow.blendMode - 1
             );
         }
 
@@ -450,10 +430,6 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalVector(spotShadowAtlasSizeID, spotAtlasSizes);
             commandBuffer.SetBufferData(spotShadowDataHandle, spotShadowData,
                 0, 0, tiles);
-
-            SetKeywords(
-                spotFilterKeywords, (int)settings.spotShadow.filterMode - 1
-            );
         }
 
         void RenderPointShadowMap()
@@ -480,20 +456,16 @@ namespace ArcToon.Runtime
             commandBuffer.SetGlobalVector(pointShadowAtlasSizeID, pointAtlasSizes);
             commandBuffer.SetBufferData(pointShadowDataHandle, pointShadowData,
                 0, 0, tiles);
-
-            SetKeywords(
-                pointFilterKeywords, (int)settings.pointShadow.filterMode - 1
-            );
         }
 
         void RenderDirectionalShadowSplitTile(int shadowedDirectionalLightIndex, int split, int tileSize)
         {
             ShadowMapDataDirectional lightShadowData = shadowMapDataDirectionals[shadowedDirectionalLightIndex];
             var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex);
-            int cascadeCount = settings.directionalCascade.cascadeCount;
-            Vector3 ratios = settings.directionalCascade.CascadeRatios;
+            int cascadeCount = settings.directionalCascadeShadow.cascadeCount;
+            Vector3 ratios = settings.directionalCascadeShadow.CascadeRatios;
             int tileOffset = shadowedDirectionalLightIndex * cascadeCount;
-            float cullingFactor = Mathf.Max(0f, 1 - settings.directionalCascade.edgeFade);
+            float cullingFactor = Mathf.Max(0f, 1 - settings.directionalCascadeShadow.edgeFade);
             float tileScale = 1.0f / split;
             for (int i = 0; i < cascadeCount; i++)
             {
@@ -515,7 +487,7 @@ namespace ArcToon.Runtime
                     // for performance: compare the square distance from the sphere's center with a surface fragment square radius
                     cascadeShadowData[i] = new ShadowCascadeBufferData(
                         splitData.cullingSphere,
-                        tileSize, settings.directionalCascade.filterMode);
+                        tileSize, settings.filterSize);
                 }
 
                 directionalShadowVPMatrices[tileIndex] =
@@ -542,7 +514,7 @@ namespace ArcToon.Runtime
 
             // m00 = \frac{cot\frac{FOV}{2}}{Aspect} (Aspect = 1 in case of shadow map)
             float texelSize = 2f / (tileSize * projectionMatrix.m00);
-            float filterSize = texelSize * ((float)settings.spotShadow.filterMode + 1f);
+            float filterSize = texelSize * settings.filterSize;
             float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
             Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
             float tileScale = 1f / split;
@@ -564,7 +536,7 @@ namespace ArcToon.Runtime
             int tileOffset = shadowedPointLightIndex * 6;
             // m00 = \frac{cot\frac{FOV}{2}}{Aspect} (Aspect = 1, cot\frac{FOV}{2} = 1 in case of point shadow map)
             float texelSize = 2f / tileSize;
-            float filterSize = texelSize * ((float)settings.pointShadow.filterMode + 1f);
+            float filterSize = texelSize * settings.filterSize;
             float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
             float tileScale = 1.0f / split;
             float fovBias = Mathf.Atan(1f + normalBiasScale + filterSize) * Mathf.Rad2Deg * 2f - 90f;
