@@ -57,6 +57,13 @@ namespace ArcToon.Runtime
             renderScale = Mathf.Clamp(renderScale, renderScaleMin, renderScaleMax);
             bool useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
             var bicubicRescalingMode = bufferSettings.bicubicRescalingMode;
+#if UNITY_EDITOR
+            if (camera.cameraType == CameraType.SceneView)
+            {
+                ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
+                useScaledRendering = false;
+            }
+#endif
             Vector2Int bufferSize = default;
             if (useScaledRendering)
             {
@@ -86,13 +93,6 @@ namespace ArcToon.Runtime
                 useColorTexture = bufferSettings.copyColor && cameraSettings.copyColor;
             }
 
-#if UNITY_EDITOR
-            if (camera.cameraType == CameraType.SceneView)
-            {
-                ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
-                useScaledRendering = false;
-            }
-#endif
             // post fx
             bool hasActivePostFX =
                 postFXSettings != null && PostFXSettings.AreApplicableTo(camera);
@@ -135,18 +135,18 @@ namespace ArcToon.Runtime
             renderGraph.BeginRecording(renderGraphParameters);
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
             {
-                var shadowData = LightingPass.Record(renderGraph, cullingResults, shadowSettings);
+                var lightData = LightingPass.Record(renderGraph, cullingResults, shadowSettings);
 
                 var textureData = SetupPass.Record(renderGraph, camera,
                     useIntermediateBuffer, useColorTexture, useDepthTexture, useHDR, bufferSize);
 
-                OpaquePass.Record(renderGraph, camera, cullingResults, textureData, shadowData);
+                OpaquePass.Record(renderGraph, camera, cullingResults, textureData, lightData);
 
                 SkyboxPass.Record(renderGraph, camera, cullingResults, textureData);
 
                 CopyAttachmentPass.Record(renderGraph, useColorTexture, useDepthTexture, textureData, copier);
 
-                TransparentPass.Record(renderGraph, camera, cullingResults, textureData, shadowData);
+                TransparentPass.Record(renderGraph, camera, cullingResults, textureData, lightData);
 
                 UnsupportedPass.Record(renderGraph, camera, cullingResults);
 

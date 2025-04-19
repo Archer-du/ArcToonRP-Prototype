@@ -61,7 +61,7 @@
             Cull [_Cull]
 
             HLSLPROGRAM
-            #pragma target 3.5
+            #pragma target 4.5
 
             #pragma multi_compile_instancing
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
@@ -97,7 +97,7 @@
             Cull [_Cull]
 
             HLSLPROGRAM
-            #pragma target 3.5
+            #pragma target 4.5
 
             #pragma multi_compile_instancing
 

@@ -26,7 +26,7 @@ namespace ArcToon.Runtime.Passes
         }
 
         public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults,
-            in CameraAttachmentTextureData textureData, in ShadowTextureData shadowData)
+            in CameraAttachmentTextureData textureData, in LightDataHandles lightData)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out OpaquePass pass, sampler);
@@ -44,9 +44,17 @@ namespace ArcToon.Runtime.Passes
                 }));
             builder.ReadWriteTexture(textureData.colorAttachment);
             builder.ReadWriteTexture(textureData.depthAttachment);
-            builder.ReadTexture(shadowData.directionalAtlas);
-            builder.ReadTexture(shadowData.spotAtlas);
-            builder.ReadTexture(shadowData.pointAtlas);
+            builder.ReadTexture(lightData.shadowMapHandles.directionalAtlas);
+            builder.ReadTexture(lightData.shadowMapHandles.spotAtlas);
+            builder.ReadTexture(lightData.shadowMapHandles.pointAtlas);
+            
+            builder.ReadBuffer(lightData.directionalLightDataHandle);
+            builder.ReadBuffer(lightData.spotLightDataHandle);
+            builder.ReadBuffer(lightData.pointLightDataHandle);
+            builder.ReadBuffer(lightData.shadowMapHandles.cascadeShadowDataHandle);
+            builder.ReadBuffer(lightData.shadowMapHandles.directionalShadowMatricesHandle);
+            builder.ReadBuffer(lightData.shadowMapHandles.spotShadowDataHandle);
+            builder.ReadBuffer(lightData.shadowMapHandles.pointShadowDataHandle);
 
             builder.SetRenderFunc<OpaquePass>(static (pass, context) => pass.Render(context));
         }

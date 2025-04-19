@@ -27,15 +27,15 @@ float3 GetLighting(Surface surface, BRDF brdf, GI gi)
         color += GetLighting(surface, brdf, light);
     }
 
-    for (int j = 0; j < GetSpotLightCount(); j++)
+    for (int i = 0; i < GetSpotLightCount(); i++)
     {
-        Light light = GetSpotLight(j, surface, cascadeShadowData, gi);
+        Light light = GetSpotLight(i, surface, cascadeShadowData, gi);
         color += GetLighting(surface, brdf, light);
     }
 
-    for (int j = 0; j < GetPointLightCount(); j++)
+    for (int i = 0; i < GetPointLightCount(); i++)
     {
-        Light light = GetPointLight(j, surface, cascadeShadowData, gi);
+        Light light = GetPointLight(i, surface, cascadeShadowData, gi);
         color += GetLighting(surface, brdf, light);
     }
     return color;
