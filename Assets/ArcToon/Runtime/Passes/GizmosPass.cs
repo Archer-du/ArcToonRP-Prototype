@@ -11,8 +11,6 @@ namespace ArcToon.Runtime.Passes
 #if UNITY_EDITOR
         static readonly ProfilingSampler sampler = new("Gizmos");
 
-        bool requiresDepthCopy;
-
         CameraAttachmentCopier copier;
 
         TextureHandle depthAttachment;
@@ -21,7 +19,7 @@ namespace ArcToon.Runtime.Passes
         {
             CommandBuffer buffer = context.cmd;
             ScriptableRenderContext renderContext = context.renderContext;
-            copier.Copy(buffer, depthAttachment, BuiltinRenderTextureType.CameraTarget,
+            copier.CopyCameraTexture(buffer, depthAttachment, BuiltinRenderTextureType.CameraTarget,
                 CameraAttachmentCopier.CopyChannel.DepthAttachment);
 
             renderContext.ExecuteCommandBuffer(buffer);
