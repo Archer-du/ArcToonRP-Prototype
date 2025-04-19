@@ -17,7 +17,7 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light)
     return IncomingLight(surface, light) * DirectBRDF(surface, brdf, light);
 }
 
-float3 GetLighting(Surface surface, BRDF brdf, GI gi)
+float3 GetLighting(Fragment fragment, Surface surface, BRDF brdf, GI gi)
 {
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
     float3 color = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
@@ -27,63 +27,31 @@ float3 GetLighting(Surface surface, BRDF brdf, GI gi)
         color += GetLighting(surface, brdf, light);
     }
 
-    for (int i = 0; i < GetSpotLightCount(); i++)
+    ForwardPlusTile tile = GetForwardPlusTile(fragment.screenUV);
+    int firstLightIndex = tile.GetFirstLightIndexInTile();
+
+    int spotLightCount = tile.GetSpotLightCount();
+    for (int i = 0; i < spotLightCount; i++)
     {
-        Light light = GetSpotLight(i, surface, cascadeShadowData, gi);
+        int spotLightIndex = tile.GetLightIndex(firstLightIndex + i);
+        Light light = GetSpotLight(spotLightIndex, surface, cascadeShadowData, gi);
+        color += GetLighting(surface, brdf, light);
+    }
+    firstLightIndex += spotLightCount;
+    int pointLightCount = tile.GetPointLightCount();
+    for (int i = 0; i < pointLightCount; i++)
+    {
+        int pointLightIndex = tile.GetLightIndex(firstLightIndex + i);
+        Light light = GetPointLight(pointLightIndex, surface, cascadeShadowData, gi);
         color += GetLighting(surface, brdf, light);
     }
 
-    for (int i = 0; i < GetPointLightCount(); i++)
-    {
-        Light light = GetPointLight(i, surface, cascadeShadowData, gi);
-        color += GetLighting(surface, brdf, light);
-    }
-    return color;
-}
-
-float3 GetLightingDirect(Surface surface, BRDF brdf, GI gi)
-{
-    CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
-    float3 color = 0;
-    for (int i = 0; i < GetDirectionalLightCount(); i++)
-    {
-        Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
-        color += GetLighting(surface, brdf, light);
-    }
-
-    for (int j = 0; j < GetSpotLightCount(); j++)
-    {
-        Light light = GetSpotLight(j, surface, cascadeShadowData, gi);
-        color += GetLighting(surface, brdf, light);
-    }
-
-    for (int j = 0; j < GetPointLightCount(); j++)
-    {
-        Light light = GetPointLight(j, surface, cascadeShadowData, gi);
-        color += GetLighting(surface, brdf, light);
-    }
     return color;
 }
 
 float3 GetLightingIndirect(Surface surface, BRDF brdf, GI gi)
 {
     return IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
-}
-
-float3 GetLightingDebug(Surface surface, BRDF brdf, GI gi)
-{
-    CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
-    float3 color = 0;
-    for (int i = 0; i < GetDirectionalLightCount(); i++)
-    {
-        Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
-        color += GetLighting(surface, brdf, light);
-        // color += brdf.specular;
-        // color += brdf.diffuse;
-        // color += SpecularStrength(surface, brdf, light);
-    }
-    return gi.diffuse;
-    return color;
 }
 
 

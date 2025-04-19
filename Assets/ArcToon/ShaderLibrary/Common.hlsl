@@ -27,6 +27,7 @@ SAMPLER(sampler_linear_clamp);
 SAMPLER(sampler_point_clamp);
 
 #include "Fragment.hlsl"
+#include "ForwardPlus.hlsl"
 
 float Square(float v)
 {

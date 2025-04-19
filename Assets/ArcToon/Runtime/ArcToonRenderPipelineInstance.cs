@@ -10,21 +10,15 @@ namespace ArcToon.Runtime
     {
         readonly RenderGraph renderGraph = new("Arc Toon Render Graph");
         
+        readonly ArcToonRenderPipelineSettings settings;
+        
         private CameraRenderer cameraRenderer;
 
-        private ShadowSettings globalShadowSettings;
-        private PostFXSettings globalPostFXSettings;
-        private CameraBufferSettings cameraBufferSettings;
-
-        public ArcToonRenderPipelineInstance(ShadowSettings globalShadowSettings, PostFXSettings globalPostFXSettings,
-            CameraBufferSettings cameraBufferSettings,
-            Shader cameraCopyShader, bool enableSRPBatcher)
+        public ArcToonRenderPipelineInstance(ArcToonRenderPipelineSettings settings)
         {
-            cameraRenderer = new CameraRenderer(cameraCopyShader);
-            this.globalShadowSettings = globalShadowSettings;
-            this.globalPostFXSettings = globalPostFXSettings;
-            this.cameraBufferSettings = cameraBufferSettings;
-            GraphicsSettings.useScriptableRenderPipelineBatching = enableSRPBatcher;
+            this.settings = settings;
+            cameraRenderer = new CameraRenderer(settings.cameraCopyShader);
+            GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
 
             InitializeForEditor();
@@ -39,8 +33,7 @@ namespace ArcToon.Runtime
         {
             for (int i = 0; i < cameras.Count; i++)
             {
-                cameraRenderer.Render(renderGraph, renderContext, cameras[i],
-                    globalShadowSettings, globalPostFXSettings, cameraBufferSettings);
+                cameraRenderer.Render(renderGraph, renderContext, cameras[i], settings);
             }
             renderGraph.EndFrame();
         }
