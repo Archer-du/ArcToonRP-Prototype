@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using ArcToon.Runtime.Buffers;
 using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
 using Unity.Collections;
@@ -17,36 +18,9 @@ namespace ArcToon.Runtime.Passes
 
 
         // directional light
-
         int directionalLightCount;
 
         private const int maxDirectionalLightCount = 4;
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct DirectionalLightBufferData
-        {
-            public const int stride = 4 * 4 * 3;
-
-            public Vector4 color;
-
-            public Vector4 direction;
-
-            // x: shadow strength
-            // y: shadow map tile index
-            // z: shadow slope scale bias
-            // w: shadow mask channel
-            public Vector4 shadowData;
-
-            public static DirectionalLightBufferData GenerateStructuredData(in VisibleLight visibleLight, Light light,
-                Vector4 shadowData)
-            {
-                DirectionalLightBufferData data;
-                data.color = visibleLight.finalColor;
-                data.direction = -visibleLight.localToWorldMatrix.GetColumn(2);
-                data.shadowData = shadowData;
-                return data;
-            }
-        }
 
         private static readonly DirectionalLightBufferData[] directionalLightData =
             new DirectionalLightBufferData[maxDirectionalLightCount];
@@ -62,40 +36,6 @@ namespace ArcToon.Runtime.Passes
 
         private const int maxSpotLightCount = 64;
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct SpotLightBufferData
-        {
-            public const int stride = 4 * 4 * 5;
-
-            public Vector4 color;
-            public Vector4 position;
-            public Vector4 direction;
-
-            public Vector4 spotAngle;
-
-            // x: shadow strength
-            // y: shadow map tile index
-            // z: shadow slope scale bias
-            // w: shadow mask channel
-            public Vector4 shadowData;
-
-            public static SpotLightBufferData GenerateStructuredData(in VisibleLight visibleLight, Light light,
-                Vector4 shadowData)
-            {
-                SpotLightBufferData data;
-                data.color = visibleLight.finalColor;
-                data.position = visibleLight.localToWorldMatrix.GetColumn(3);
-                data.position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
-                data.direction = -visibleLight.localToWorldMatrix.GetColumn(2);
-                float innerCos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * light.innerSpotAngle);
-                float outerCos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * visibleLight.spotAngle);
-                float angleRangeInv = 1f / Mathf.Max(innerCos - outerCos, 0.001f);
-                data.spotAngle = new Vector4(angleRangeInv, -outerCos * angleRangeInv);
-                data.shadowData = shadowData;
-                return data;
-            }
-        }
-
         private static readonly SpotLightBufferData[] spotLightData = new SpotLightBufferData[maxSpotLightCount];
 
         private static int spotLightCountID = Shader.PropertyToID("_SpotLightCount");
@@ -108,35 +48,6 @@ namespace ArcToon.Runtime.Passes
         int pointLightCount;
 
         private const int maxPointLightCount = 16;
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct PointLightBufferData
-        {
-            public const int stride = 4 * 4 * 4;
-
-            public Vector4 color;
-            public Vector4 position;
-
-            public Vector4 direction;
-
-            // x: shadow strength
-            // y: shadow map tile index
-            // z: shadow slope scale bias
-            // w: shadow mask channel
-            public Vector4 shadowData;
-
-            public static PointLightBufferData GenerateStructuredData(in VisibleLight visibleLight, Light light,
-                Vector4 shadowData)
-            {
-                PointLightBufferData data;
-                data.color = visibleLight.finalColor;
-                data.position = visibleLight.localToWorldMatrix.GetColumn(3);
-                data.position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
-                data.direction = Vector4.zero;
-                data.shadowData = shadowData;
-                return data;
-            }
-        }
 
         private static readonly PointLightBufferData[] pointLightData = new PointLightBufferData[maxPointLightCount];
 
@@ -180,18 +91,21 @@ namespace ArcToon.Runtime.Passes
                 renderGraph.CreateBuffer(new BufferDesc(maxSpotLightCount, SpotLightBufferData.stride)
                 {
                     name = "Spot Light Data",
+                    target = GraphicsBuffer.Target.Structured
                 })
             );
             pass.pointLightDataHandle = builder.WriteBuffer(
                 renderGraph.CreateBuffer(new BufferDesc(maxPointLightCount, PointLightBufferData.stride)
                 {
                     name = "Point Light Data",
+                    target = GraphicsBuffer.Target.Structured
                 })
             );
             pass.directionalLightDataHandle = builder.WriteBuffer(
                 renderGraph.CreateBuffer(new BufferDesc(maxDirectionalLightCount, DirectionalLightBufferData.stride)
                 {
                     name = "Directional Light Data",
+                    target = GraphicsBuffer.Target.Structured
                 })
             );
 
