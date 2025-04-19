@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using ArcToon.Runtime.Buffers;
 using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
 using Unity.Collections;
@@ -41,6 +42,7 @@ namespace ArcToon.Runtime
                 renderGraph.CreateBuffer(new BufferDesc(maxCascades, ShadowCascadeBufferData.stride)
                 {
                     name = "Shadow Cascades",
+                    target = GraphicsBuffer.Target.Structured
                 })
             );
 
@@ -48,6 +50,7 @@ namespace ArcToon.Runtime
                 renderGraph.CreateBuffer(new BufferDesc(maxShadowedDirectionalLightCount * maxCascades, 4 * 16)
                 {
                     name = "Directional Shadow Matrices",
+                    target = GraphicsBuffer.Target.Structured
                 })
             );
 
@@ -62,6 +65,7 @@ namespace ArcToon.Runtime
                 renderGraph.CreateBuffer(new BufferDesc(maxShadowedSpotLightCount, SpotShadowBufferData.stride)
                 {
                     name = "Spot Shadow Data",
+                    target = GraphicsBuffer.Target.Structured
                 })
             );
 
@@ -76,6 +80,7 @@ namespace ArcToon.Runtime
                 renderGraph.CreateBuffer(new BufferDesc(maxShadowedPointLightCount * 6, PointShadowBufferData.stride)
                 {
                     name = "Point Shadow Data",
+                    target = GraphicsBuffer.Target.Structured
                 })
             );
 
@@ -125,28 +130,6 @@ namespace ArcToon.Runtime
 
         private static int dirShadowAtlasID = Shader.PropertyToID("_DirectionalShadowAtlas");
 
-        [StructLayout(LayoutKind.Sequential)]
-        struct ShadowCascadeBufferData
-        {
-            public const int stride = 4 * 4 * 2;
-
-            public Vector4 cullingSphere;
-            public Vector4 data;
-
-            public ShadowCascadeBufferData(
-                Vector4 cullingSphere,
-                float tileSize,
-                ShadowSettings.FilterMode filterMode)
-            {
-                float texelSize = 2f * cullingSphere.w / tileSize;
-                float filterSize = texelSize * ((float)filterMode + 1f);
-                cullingSphere.w -= filterSize;
-                cullingSphere.w *= cullingSphere.w;
-                this.cullingSphere = cullingSphere;
-                data = new Vector4(1f / cullingSphere.w, filterSize * 1.4142136f);
-            }
-        }
-
         private static readonly ShadowCascadeBufferData[] cascadeShadowData =
             new ShadowCascadeBufferData[maxCascades];
 
@@ -165,28 +148,6 @@ namespace ArcToon.Runtime
 
 
         // ----------------- spot shadow -----------------
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct SpotShadowBufferData
-        {
-            public const int stride = 4 * 4 + 4 * 16;
-
-            public Vector4 tileData;
-
-            public Matrix4x4 shadowMatrix;
-
-            public SpotShadowBufferData(Vector2 offset, float scale, float normalBiasScale, float oneDivideAtlasSize,
-                Matrix4x4 matrix)
-            {
-                float halfTexelSize = oneDivideAtlasSize * 0.5f;
-                tileData.x = offset.x * scale + halfTexelSize;
-                tileData.y = offset.y * scale + halfTexelSize;
-                tileData.z = scale - halfTexelSize - halfTexelSize;
-                tileData.w = normalBiasScale;
-                shadowMatrix = matrix;
-            }
-        }
-
         private static readonly SpotShadowBufferData[] spotShadowData =
             new SpotShadowBufferData[maxShadowedSpotLightCount];
 
@@ -210,28 +171,6 @@ namespace ArcToon.Runtime
 
 
         // ----------------- point shadow -----------------
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct PointShadowBufferData
-        {
-            public const int stride = 4 * 4 + 4 * 16;
-
-            public Vector4 tileData;
-
-            public Matrix4x4 shadowMatrix;
-
-            public PointShadowBufferData(Vector2 offset, float scale, float normalBiasScale, float oneDivideAtlasSize,
-                Matrix4x4 matrix)
-            {
-                float border = oneDivideAtlasSize * 0.5f;
-                tileData.x = offset.x * scale + border;
-                tileData.y = offset.y * scale + border;
-                tileData.z = scale - border - border;
-                tileData.w = normalBiasScale;
-                shadowMatrix = matrix;
-            }
-        }
-
         private static readonly PointShadowBufferData[] pointShadowData =
             new PointShadowBufferData[maxShadowedPointLightCount * 6];
 
