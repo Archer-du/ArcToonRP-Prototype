@@ -140,7 +140,8 @@ namespace ArcToon.Runtime
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
             {
                 var lightData = LightingPass.Record(renderGraph, cullingResults, bufferSize, shadowSettings,
-                    forwardPlusSettings);
+                    forwardPlusSettings,
+                    context);
 
                 var textureData = SetupPass.Record(renderGraph, camera,
                     useColorTexture, useDepthTexture, useHDR, bufferSize);

@@ -124,7 +124,8 @@ namespace ArcToon.Runtime.Passes
         public static LightDataHandles Record(RenderGraph renderGraph, CullingResults cullingResults,
             Vector2Int attachmentSize,
             ShadowSettings shadowSettings,
-            ForwardPlusSettings forwardPlusSettings)
+            ForwardPlusSettings forwardPlusSettings,
+            ScriptableRenderContext context)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out LightingPass pass, sampler);
@@ -163,7 +164,7 @@ namespace ArcToon.Runtime.Passes
             return new LightDataHandles(pass.directionalLightDataHandle, pass.spotLightDataHandle,
                 pass.pointLightDataHandle,
                 pass.forwardPlusTileBufferHandle,
-                pass.shadowRenderer.GetShadowMapHandles(renderGraph, builder));
+                pass.shadowRenderer.GetShadowMapHandles(renderGraph, builder, context));
         }
 
         public void Setup(CullingResults cullingResults, Vector2Int attachmentSize,
