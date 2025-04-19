@@ -36,12 +36,6 @@
     #define POINT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
 #endif
 
-#define MAX_CASCADE_COUNT 4
-
-#define MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT 4
-#define MAX_SHADOWED_SPOT_LIGHT_COUNT 16
-#define MAX_SHADOWED_POINT_LIGHT_COUNT 2
-
 #include "Surface.hlsl"
 #include "Common.hlsl"
 
@@ -53,22 +47,43 @@ TEXTURE2D_SHADOW(_PointShadowAtlas);
 SAMPLER_CMP(SHADOW_SAMPLER);
 
 CBUFFER_START(_CustomShadows)
-    float4x4 _DirectionalShadowMatrices[MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT * MAX_CASCADE_COUNT];
-    float4x4 _SpotShadowMatrices[MAX_SHADOWED_SPOT_LIGHT_COUNT];
-    float4x4 _PointShadowMatrices[MAX_SHADOWED_POINT_LIGHT_COUNT * 6];
-
     float4 _DirectionalShadowAtlasSize;
     float4 _SpotShadowAtlasSize;
     float4 _PointShadowAtlasSize;
 
     float4 _ShadowDistanceFade;
     int _CascadeCount;
-
-    float4 _SpotShadowTiles[MAX_SHADOWED_SPOT_LIGHT_COUNT];
-    float4 _PointShadowTiles[MAX_SHADOWED_POINT_LIGHT_COUNT * 6];
-    float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
-    float4 _CascadeData[MAX_CASCADE_COUNT];
 CBUFFER_END
+
+struct ShadowCascadeBufferData
+{
+    float4 cullingSphere;
+    float4 data;
+};
+
+StructuredBuffer<ShadowCascadeBufferData> _ShadowCascadeData;
+
+StructuredBuffer<float4x4> _DirectionalShadowMatrices;
+
+struct SpotShadowBufferData
+{
+    // x: tile border start x
+    // y: tile border start y
+    // z: tile border length
+    // w: shadow normal bias scale
+    float4 tileData;
+    float4x4 shadowMatrix;
+};
+
+StructuredBuffer<SpotShadowBufferData> _SpotShadowData;
+
+struct PointShadowBufferData
+{
+    float4 tileData;
+    float4x4 shadowMatrix;
+};
+
+StructuredBuffer<PointShadowBufferData> _PointShadowData;
 
 struct ShadowMask
 {
@@ -92,11 +107,11 @@ CascadeShadowData GetCascadeShadowData(Surface surface)
     cascade.blend = 1.0;
     for (i = 0; i < _CascadeCount; i++)
     {
-        float4 sphere = _CascadeCullingSpheres[i];
-        float distanceSqr = DistanceSquared(surface.position, sphere.xyz);
-        if (distanceSqr < sphere.w)
+        ShadowCascadeBufferData bufferData = _ShadowCascadeData[i];
+        float distanceSqr = DistanceSquared(surface.position, bufferData.cullingSphere.xyz);
+        if (distanceSqr < bufferData.cullingSphere.w)
         {
-            float fade = FadedStrength(distanceSqr, _CascadeData[i].x, _ShadowDistanceFade.z);
+            float fade = FadedStrength(distanceSqr, bufferData.data.x, _ShadowDistanceFade.z);
             if (i == _CascadeCount - 1)
             {
                 cascade.rangeFade *= fade;
