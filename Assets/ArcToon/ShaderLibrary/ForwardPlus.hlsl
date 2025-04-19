@@ -13,7 +13,7 @@ struct ForwardPlusTile
     int2 coordinates;
 
     int index;
-	
+
     int GetTileDataSize()
     {
         return asint(_ForwardPlusTileSettings.w);
@@ -38,7 +38,12 @@ struct ForwardPlusTile
     {
         return _ForwardPlusTileData[GetHeaderIndex()];
     }
-    
+
+    int GetLightCount()
+    {
+        return GetSpotLightCount() + GetPointLightCount();
+    }
+
     int GetFirstLightIndexInTile()
     {
         return GetHeaderIndex() + 1;
@@ -47,6 +52,23 @@ struct ForwardPlusTile
     int GetLightIndex(int lightIndexInTile)
     {
         return _ForwardPlusTileData[lightIndexInTile];
+    }
+
+    // debug
+    bool IsMinimumEdgePixel(float2 screenUV)
+    {
+        float2 startUV = coordinates / _ForwardPlusTileSettings.xy;
+        return any(screenUV - startUV < (1.0 / _ScreenParams.xy));
+    }
+
+    int GetMaxLightsPerTile()
+    {
+        return GetTileDataSize() - 1;
+    }
+
+    int2 GetScreenSize()
+    {
+        return int2(round(_CameraBufferSize.zw / _ForwardPlusTileSettings.xy));
     }
 };
 

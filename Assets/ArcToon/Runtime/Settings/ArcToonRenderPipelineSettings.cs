@@ -27,5 +27,6 @@ namespace ArcToon.Runtime.Settings
         public PostFXSettings globalPostFXSettings;
 
         public Shader cameraCopyShader;
+        public Shader cameraDebugShader;
     }
 }

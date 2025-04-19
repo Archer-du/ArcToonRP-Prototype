@@ -110,7 +110,8 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.SetGlobalVector(forwardPlusTileSettingsID,
                 new Vector4(screenUVToTileCoordinates.x, screenUVToTileCoordinates.y,
                     asfloat(tileCount.x),
-                    asfloat(tileDataSize))
+                    asfloat(tileDataSize)
+                )
             );
 
             context.renderContext.ExecuteCommandBuffer(commandBuffer);

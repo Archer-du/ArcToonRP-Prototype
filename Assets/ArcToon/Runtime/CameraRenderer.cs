@@ -17,15 +17,17 @@ namespace ArcToon.Runtime
 
         private Material cameraCopyMaterial;
         
-        public CameraRenderer(Shader cameraCopyShader)
+        public CameraRenderer(Shader cameraCopyShader, Shader cameraDebuggerShader)
         {
             postFXStack = new();
             cameraCopyMaterial = CoreUtils.CreateEngineMaterial(cameraCopyShader);
+            CameraDebugger.Initialize(cameraDebuggerShader);
         }
 
         public void Dispose()
         {
             CoreUtils.Destroy(cameraCopyMaterial);
+            CameraDebugger.Cleanup();
         }
 
         // TODO: move
@@ -43,7 +45,7 @@ namespace ArcToon.Runtime
             ArcToonRenderPipelineSettings settings)
         {
             CameraBufferSettings bufferSettings = settings.cameraBufferSettings;
-            PostFXSettings postFXSettings = settings.globalPostFXSettings;
+            PostFXSettings postFXSettings = settings.enablePostProcessing ? settings.globalPostFXSettings : null;
             ShadowSettings shadowSettings = settings.globalShadowSettings;
             
             // settings
@@ -156,6 +158,8 @@ namespace ArcToon.Runtime
                     postFXSettings ? (int)postFXSettings.ToneMapping.colorLUTResolution : 0, textureData.colorAttachment, hasActivePostFX);
 
                 CopyFinalPass.Record(renderGraph, cameraSettings.finalBlendMode, bicubicSampling, texture, copier);
+                
+                DebugPass.Record(renderGraph, camera, lightData);
                 
                 GizmosPass.Record(renderGraph, useIntermediateBuffer, textureData, copier);
             }
