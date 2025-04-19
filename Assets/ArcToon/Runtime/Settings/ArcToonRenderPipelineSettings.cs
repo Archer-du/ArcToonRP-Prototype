@@ -25,6 +25,11 @@ namespace ArcToon.Runtime.Settings
         public bool enablePostProcessing = true;
 
         public PostFXSettings globalPostFXSettings;
+        
+        public ForwardPlusSettings forwardPlusSettings = new()
+        {
+            maxLightsPerTile = 30,
+        };
 
         public Shader cameraCopyShader;
         public Shader cameraDebugShader;

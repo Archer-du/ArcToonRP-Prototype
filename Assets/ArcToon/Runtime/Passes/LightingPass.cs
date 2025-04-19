@@ -22,9 +22,8 @@ namespace ArcToon.Runtime.Passes
 
         BufferHandle forwardPlusTileBufferHandle;
 
-        private const int maxLightCountPerTile = 30;
-        private const int tileDataSize = maxLightCountPerTile + 2;
-        private const int tileScreenPixelSize = 64;
+        private int maxLightCountPerTile;
+        private int tileDataSize;
 
         Vector2 screenUVToTileCoordinates;
 
@@ -124,12 +123,13 @@ namespace ArcToon.Runtime.Passes
 
         public static LightDataHandles Record(RenderGraph renderGraph, CullingResults cullingResults,
             Vector2Int attachmentSize,
-            ShadowSettings shadowSettings)
+            ShadowSettings shadowSettings,
+            ForwardPlusSettings forwardPlusSettings)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out LightingPass pass, sampler);
 
-            pass.Setup(cullingResults, attachmentSize, shadowSettings);
+            pass.Setup(cullingResults, attachmentSize, shadowSettings, forwardPlusSettings);
             pass.spotLightDataHandle = builder.WriteBuffer(
                 renderGraph.CreateBuffer(new BufferDesc(maxSpotLightCount, SpotLightBufferData.stride)
                 {
@@ -152,7 +152,7 @@ namespace ArcToon.Runtime.Passes
                 })
             );
             pass.forwardPlusTileBufferHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(pass.TileCount * tileDataSize, 4)
+                renderGraph.CreateBuffer(new BufferDesc(pass.TileCount * pass.tileDataSize, 4)
                 {
                     name = "Forward+ Tiles",
                 }));
@@ -167,9 +167,12 @@ namespace ArcToon.Runtime.Passes
         }
 
         public void Setup(CullingResults cullingResults, Vector2Int attachmentSize,
-            ShadowSettings shadowSettings)
+            ShadowSettings shadowSettings, ForwardPlusSettings forwardPlusSettings)
         {
             this.cullingResults = cullingResults;
+            
+            maxLightCountPerTile = forwardPlusSettings.maxLightsPerTile;
+            tileDataSize = maxLightCountPerTile + 2;
 
             shadowRenderer.Setup(cullingResults, shadowSettings);
 
@@ -179,8 +182,10 @@ namespace ArcToon.Runtime.Passes
             pointLightBounds = new NativeArray<float4>(maxPointLightCount,
                 Allocator.TempJob,
                 NativeArrayOptions.UninitializedMemory);
-            screenUVToTileCoordinates.x = attachmentSize.x / (float)tileScreenPixelSize;
-            screenUVToTileCoordinates.y = attachmentSize.y / (float)tileScreenPixelSize;
+            float tileScreenPixelSize = forwardPlusSettings.tileSize <= 0 ?
+                64f : (float)forwardPlusSettings.tileSize;
+            screenUVToTileCoordinates.x = attachmentSize.x / tileScreenPixelSize;
+            screenUVToTileCoordinates.y = attachmentSize.y / tileScreenPixelSize;
             tileCount.x = Mathf.CeilToInt(screenUVToTileCoordinates.x);
             tileCount.y = Mathf.CeilToInt(screenUVToTileCoordinates.y);
 

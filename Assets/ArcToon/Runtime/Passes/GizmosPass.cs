@@ -21,11 +21,8 @@ namespace ArcToon.Runtime.Passes
         {
             CommandBuffer buffer = context.cmd;
             ScriptableRenderContext renderContext = context.renderContext;
-            if (requiresDepthCopy)
-            {
-                copier.Copy(buffer, depthAttachment, BuiltinRenderTextureType.CameraTarget,
-                    CameraAttachmentCopier.CopyChannel.DepthAttachment);
-            }
+            copier.Copy(buffer, depthAttachment, BuiltinRenderTextureType.CameraTarget,
+                CameraAttachmentCopier.CopyChannel.DepthAttachment);
 
             renderContext.ExecuteCommandBuffer(buffer);
             buffer.Clear();
@@ -36,7 +33,6 @@ namespace ArcToon.Runtime.Passes
 #endif
         [Conditional("UNITY_EDITOR")]
         public static void Record(RenderGraph renderGraph,
-            bool useIntermediateBuffer,
             in CameraAttachmentTextureData textureData,
             CameraAttachmentCopier copier)
         {
@@ -46,12 +42,8 @@ namespace ArcToon.Runtime.Passes
                 using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                     sampler.name, out GizmosPass pass, sampler);
                 
-                pass.requiresDepthCopy = useIntermediateBuffer;
                 pass.copier = copier;
-                if (useIntermediateBuffer)
-                {
-                    pass.depthAttachment = builder.ReadTexture(textureData.depthAttachment);
-                }
+                pass.depthAttachment = builder.ReadTexture(textureData.depthAttachment);
                 
                 builder.SetRenderFunc<GizmosPass>(static (pass, context) => pass.Render(context));
             }

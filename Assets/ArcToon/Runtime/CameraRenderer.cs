@@ -16,7 +16,7 @@ namespace ArcToon.Runtime
         private PostFXStack postFXStack;
 
         private Material cameraCopyMaterial;
-        
+
         public CameraRenderer(Shader cameraCopyShader, Shader cameraDebuggerShader)
         {
             postFXStack = new();
@@ -47,7 +47,8 @@ namespace ArcToon.Runtime
             CameraBufferSettings bufferSettings = settings.cameraBufferSettings;
             PostFXSettings postFXSettings = settings.enablePostProcessing ? settings.globalPostFXSettings : null;
             ShadowSettings shadowSettings = settings.globalShadowSettings;
-            
+            ForwardPlusSettings forwardPlusSettings = settings.forwardPlusSettings;
+
             // settings
             var additiveCameraData = camera.GetComponent<ArcToonAdditiveCameraData>();
             var cameraSettings = additiveCameraData ? additiveCameraData.Settings : defaultCameraSettings;
@@ -78,6 +79,7 @@ namespace ArcToon.Runtime
                 bufferSize.x = camera.pixelWidth;
                 bufferSize.y = camera.pixelHeight;
             }
+
             bool bicubicSampling =
                 bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||
                 bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpOnly &&
@@ -99,9 +101,7 @@ namespace ArcToon.Runtime
             // post fx
             bool hasActivePostFX =
                 postFXSettings != null && PostFXSettings.AreApplicableTo(camera);
-            // TODO: always true
-            bool useIntermediateBuffer = useScaledRendering || useDepthTexture || useColorTexture || hasActivePostFX;
-            
+
             // TODO: buffer settings translate
             FXAARuntimeConfig fxaaConfig = new FXAARuntimeConfig
             {
@@ -139,10 +139,11 @@ namespace ArcToon.Runtime
             renderGraph.BeginRecording(renderGraphParameters);
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
             {
-                var lightData = LightingPass.Record(renderGraph, cullingResults, bufferSize, shadowSettings);
+                var lightData = LightingPass.Record(renderGraph, cullingResults, bufferSize, shadowSettings,
+                    forwardPlusSettings);
 
                 var textureData = SetupPass.Record(renderGraph, camera,
-                    useIntermediateBuffer, useColorTexture, useDepthTexture, useHDR, bufferSize);
+                    useColorTexture, useDepthTexture, useHDR, bufferSize);
 
                 OpaquePass.Record(renderGraph, camera, cullingResults, textureData, lightData);
 
@@ -155,14 +156,16 @@ namespace ArcToon.Runtime
                 UnsupportedPass.Record(renderGraph, camera, cullingResults);
 
                 var texture = PostFXPass.Record(renderGraph, camera, postFXStack,
-                    postFXSettings ? (int)postFXSettings.ToneMapping.colorLUTResolution : 0, textureData.colorAttachment, hasActivePostFX);
+                    postFXSettings ? (int)postFXSettings.ToneMapping.colorLUTResolution : 0,
+                    textureData.colorAttachment, hasActivePostFX);
 
                 CopyFinalPass.Record(renderGraph, cameraSettings.finalBlendMode, bicubicSampling, texture, copier);
-                
+
                 DebugPass.Record(renderGraph, camera, lightData);
-                
-                GizmosPass.Record(renderGraph, useIntermediateBuffer, textureData, copier);
+
+                GizmosPass.Record(renderGraph, textureData, copier);
             }
+
             renderGraph.EndRecordingAndExecute();
             // submit
             context.ExecuteCommandBuffer(renderGraphParameters.commandBuffer);

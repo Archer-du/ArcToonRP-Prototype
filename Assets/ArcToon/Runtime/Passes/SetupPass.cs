@@ -10,8 +10,6 @@ namespace ArcToon.Runtime.Passes
     {
         static readonly ProfilingSampler sampler = new("Setup");
 
-        bool useIntermediateAttachments;
-
         TextureHandle colorAttachment, depthAttachment;
 
         Vector2Int attachmentSize;
@@ -27,15 +25,12 @@ namespace ArcToon.Runtime.Passes
             // set up render target
             context.renderContext.SetupCameraProperties(camera);
             CommandBuffer commandBuffer = context.cmd;
-            if (useIntermediateAttachments)
-            {
-                commandBuffer.SetRenderTarget(
-                    colorAttachment,
-                    RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                    depthAttachment,
-                    RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
-                );
-            }
+            commandBuffer.SetRenderTarget(
+                colorAttachment,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                depthAttachment,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
+            );
 
             commandBuffer.ClearRenderTarget(
                 clearFlags <= CameraClearFlags.Depth,
@@ -53,7 +48,6 @@ namespace ArcToon.Runtime.Passes
 
         public static CameraAttachmentTextureData Record(
             RenderGraph renderGraph, Camera camera,
-            bool useIntermediateAttachments,
             bool copyColor,
             bool copyDepth,
             bool useHDR,
@@ -62,43 +56,33 @@ namespace ArcToon.Runtime.Passes
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out SetupPass pass, sampler);
 
-            pass.useIntermediateAttachments = useIntermediateAttachments;
             pass.attachmentSize = attachmentSize;
             pass.camera = camera;
             pass.clearFlags = camera.clearFlags;
-            TextureHandle colorAttachment, depthAttachment;
             TextureHandle colorCopy = default, depthCopy = default;
-            if (useIntermediateAttachments)
+            if (pass.clearFlags > CameraClearFlags.Color)
             {
-                if (pass.clearFlags > CameraClearFlags.Color)
-                {
-                    pass.clearFlags = CameraClearFlags.Color;
-                }
-
-                var desc = new TextureDesc(attachmentSize.x, attachmentSize.y)
-                {
-                    colorFormat = SystemInfo.GetGraphicsFormat(useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
-                    name = "Color Attachment Buffer",
-                };
-                colorAttachment = pass.colorAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
-                if (copyColor)
-                {
-                    desc.name = "Color Copy";
-                    colorCopy = renderGraph.CreateTexture(desc);
-                }
-                desc.depthBufferBits = DepthBits.Depth32;
-                desc.name = "Depth Attachment Buffer";
-                depthAttachment = pass.depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
-                if (copyDepth)
-                {
-                    desc.name = "Depth Copy";
-                    depthCopy = renderGraph.CreateTexture(desc);
-                }
+                pass.clearFlags = CameraClearFlags.Color;
             }
-            else
+
+            var desc = new TextureDesc(attachmentSize.x, attachmentSize.y)
             {
-                colorAttachment = depthAttachment = pass.colorAttachment = pass.depthAttachment =
-                    builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
+                colorFormat = SystemInfo.GetGraphicsFormat(useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
+                name = "Color Attachment Buffer",
+            };
+            var colorAttachment = pass.colorAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
+            if (copyColor)
+            {
+                desc.name = "Color Copy";
+                colorCopy = renderGraph.CreateTexture(desc);
+            }
+            desc.depthBufferBits = DepthBits.Depth32;
+            desc.name = "Depth Attachment Buffer";
+            var depthAttachment = pass.depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
+            if (copyDepth)
+            {
+                desc.name = "Depth Copy";
+                depthCopy = renderGraph.CreateTexture(desc);
             }
 
             // disable pass culling
