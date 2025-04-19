@@ -16,7 +16,7 @@ namespace ArcToon.Runtime
         private PostFXStack postFXStack;
 
         private Material cameraCopyMaterial;
-
+        
         public CameraRenderer(Shader cameraCopyShader)
         {
             postFXStack = new();
@@ -40,11 +40,12 @@ namespace ArcToon.Runtime
         }
 
         public void Render(RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
-            ShadowSettings shadowSettings,
-            PostFXSettings postFXSettings,
-            CameraBufferSettings bufferSettings
-        )
+            ArcToonRenderPipelineSettings settings)
         {
+            CameraBufferSettings bufferSettings = settings.cameraBufferSettings;
+            PostFXSettings postFXSettings = settings.globalPostFXSettings;
+            ShadowSettings shadowSettings = settings.globalShadowSettings;
+            
             // settings
             var additiveCameraData = camera.GetComponent<ArcToonAdditiveCameraData>();
             var cameraSettings = additiveCameraData ? additiveCameraData.Settings : defaultCameraSettings;
@@ -96,6 +97,7 @@ namespace ArcToon.Runtime
             // post fx
             bool hasActivePostFX =
                 postFXSettings != null && PostFXSettings.AreApplicableTo(camera);
+            // TODO: always true
             bool useIntermediateBuffer = useScaledRendering || useDepthTexture || useColorTexture || hasActivePostFX;
             
             // TODO: buffer settings translate
@@ -135,7 +137,7 @@ namespace ArcToon.Runtime
             renderGraph.BeginRecording(renderGraphParameters);
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
             {
-                var lightData = LightingPass.Record(renderGraph, cullingResults, shadowSettings);
+                var lightData = LightingPass.Record(renderGraph, cullingResults, bufferSize, shadowSettings);
 
                 var textureData = SetupPass.Record(renderGraph, camera,
                     useIntermediateBuffer, useColorTexture, useDepthTexture, useHDR, bufferSize);

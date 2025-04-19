@@ -12,39 +12,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e612373677478a846b8eeadf532b9ab9, type: 3}
   m_Name: Arc Toon Render Pipeline Asset
   m_EditorClassIdentifier: 
-  enableSRPBatcher: 1
-  enablePostProcessing: 1
-  globalShadowSettings:
-    directionalCascade:
-      atlasSize: 8192
-      filterMode: 3
-      blendMode: 2
-      cascadeCount: 4
-      cascadeRatio1: 0.1
-      cascadeRatio2: 0.25
-      cascadeRatio3: 0.5
-      edgeFade: 0.1
-    spotShadow:
-      atlasSize: 4096
-      filterMode: 3
-    pointShadow:
-      atlasSize: 8192
-      filterMode: 3
-    maxDistance: 100
-    distanceFade: 0.1
-  globalPostFXSettings: {fileID: 11400000, guid: 5f31e115cdc74ac43a07d8833f409e0d, type: 2}
-  cameraBufferSettings:
-    allowHDR: 1
-    copyDepth: 1
-    copyDepthReflection: 0
-    copyColor: 1
-    copyColorReflection: 0
-    renderScale: 1.25
-    bicubicRescalingMode: 1
-    fxaaSettings:
-      enabled: 1
-      fixedThreshold: 0.0338
-      relativeThreshold: 0.084
-      subpixelBlending: 1
-      quality: 2
-  cameraCopyShader: {fileID: 4800000, guid: 5e1244f6dc0e4188b048fe07a152b6e2, type: 3}
+  settings:
+    useSRPBatcher: 1
+    cameraBufferSettings:
+      allowHDR: 1
+      copyDepth: 1
+      copyDepthReflection: 0
+      copyColor: 1
+      copyColorReflection: 0
+      renderScale: 1.25
+      bicubicRescalingMode: 1
+      fxaaSettings:
+        enabled: 1
+        fixedThreshold: 0.0338
+        relativeThreshold: 0.084
+        subpixelBlending: 1
+        quality: 2
+    globalShadowSettings:
+      directionalCascade:
+        atlasSize: 8192
+        filterMode: 3
+        blendMode: 2
+        cascadeCount: 4
+        cascadeRatio1: 0.1
+        cascadeRatio2: 0.25
+        cascadeRatio3: 0.5
+        edgeFade: 0.1
+      spotShadow:
+        atlasSize: 4096
+        filterMode: 3
+      pointShadow:
+        atlasSize: 8192
+        filterMode: 3
+      maxDistance: 100
+      distanceFade: 0.1
+    enablePostProcessing: 1
+    globalPostFXSettings: {fileID: 11400000, guid: 5f31e115cdc74ac43a07d8833f409e0d, type: 2}
+    cameraCopyShader: {fileID: 4800000, guid: 5e1244f6dc0e4188b048fe07a152b6e2, type: 3}
