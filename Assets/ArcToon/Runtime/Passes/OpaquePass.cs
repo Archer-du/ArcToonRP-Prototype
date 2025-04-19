@@ -51,7 +51,7 @@ namespace ArcToon.Runtime.Passes
             builder.ReadBuffer(lightData.directionalLightDataHandle);
             builder.ReadBuffer(lightData.spotLightDataHandle);
             builder.ReadBuffer(lightData.pointLightDataHandle);
-            builder.ReadBuffer(lightData.tileBufferHandle);
+            builder.ReadBuffer(lightData.forwardPlusTileBufferHandle);
             builder.ReadBuffer(lightData.shadowMapHandles.cascadeShadowDataHandle);
             builder.ReadBuffer(lightData.shadowMapHandles.directionalShadowMatricesHandle);
             builder.ReadBuffer(lightData.shadowMapHandles.spotShadowDataHandle);

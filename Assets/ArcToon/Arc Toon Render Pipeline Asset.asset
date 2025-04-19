@@ -49,3 +49,4 @@ MonoBehaviour:
     enablePostProcessing: 1
     globalPostFXSettings: {fileID: 11400000, guid: 5f31e115cdc74ac43a07d8833f409e0d, type: 2}
     cameraCopyShader: {fileID: 4800000, guid: 5e1244f6dc0e4188b048fe07a152b6e2, type: 3}
+    cameraDebugShader: {fileID: 4800000, guid: 12a50c9e5fdc4b1894e0d50efb0a3ab6, type: 3}

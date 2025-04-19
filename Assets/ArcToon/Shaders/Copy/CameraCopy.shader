@@ -8,8 +8,8 @@
         ZWrite Off
 
         HLSLINCLUDE
-        #include "../ShaderLibrary/Common.hlsl"
-        #include "CameraCopy.hlsl"
+        #include "../../ShaderLibrary/Common.hlsl"
+        #include "CameraCopyPass.hlsl"
         ENDHLSL
 
         Pass

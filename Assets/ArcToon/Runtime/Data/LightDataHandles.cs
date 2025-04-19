@@ -8,7 +8,7 @@ namespace ArcToon.Runtime.Data
         public readonly BufferHandle spotLightDataHandle;
         public readonly BufferHandle pointLightDataHandle;
 
-        public readonly BufferHandle tileBufferHandle;
+        public readonly BufferHandle forwardPlusTileBufferHandle;
 
         public readonly ShadowMapHandles shadowMapHandles;
 
@@ -16,13 +16,13 @@ namespace ArcToon.Runtime.Data
             BufferHandle directionalLightDataHandle, 
             BufferHandle spotLightDataHandle, 
             BufferHandle pointLightDataHandle, 
-            BufferHandle tileBufferHandle,
+            BufferHandle forwardPlusTileBufferHandle,
             ShadowMapHandles shadowMapHandles)
         {
             this.directionalLightDataHandle = directionalLightDataHandle;
             this.spotLightDataHandle = spotLightDataHandle;
             this.pointLightDataHandle = pointLightDataHandle;
-            this.tileBufferHandle = tileBufferHandle;
+            this.forwardPlusTileBufferHandle = forwardPlusTileBufferHandle;
             this.shadowMapHandles = shadowMapHandles;
         }
     }

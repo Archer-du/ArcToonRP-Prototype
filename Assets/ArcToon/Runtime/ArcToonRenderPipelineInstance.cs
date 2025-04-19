@@ -17,7 +17,7 @@ namespace ArcToon.Runtime
         public ArcToonRenderPipelineInstance(ArcToonRenderPipelineSettings settings)
         {
             this.settings = settings;
-            cameraRenderer = new CameraRenderer(settings.cameraCopyShader);
+            cameraRenderer = new CameraRenderer(settings.cameraCopyShader, settings.cameraDebugShader);
             GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
 
