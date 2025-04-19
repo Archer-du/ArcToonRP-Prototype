@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using ArcToon.Runtime.Buffers;
+﻿using ArcToon.Runtime.Buffers;
 using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
 using Unity.Collections;
@@ -22,10 +21,31 @@ namespace ArcToon.Runtime
 
         public BufferHandle pointShadowDataHandle;
 
+        NativeArray<LightShadowCasterCullingInfo> cullingInfoPerLight;
+
+        NativeArray<ShadowSplitData> shadowSplitDataPerLight;
+
+        struct RenderInfo
+        {
+            public RendererListHandle handle;
+
+            public Matrix4x4 view, projection;
+        }
+
+        private RenderInfo[] directionalRenderInfo =
+            new RenderInfo[maxShadowedDirectionalLightCount * maxCascades];
+
+        private RenderInfo[] spotRenderInfo =
+            new RenderInfo[maxShadowedSpotLightCount];
+
+        private RenderInfo[] pointRenderInfo =
+            new RenderInfo[maxShadowedPointLightCount * maxTilesPerLight];
+
         // TODO: adapt to record
         public ShadowMapHandles GetShadowMapHandles(
             RenderGraph renderGraph,
-            RenderGraphBuilder builder)
+            RenderGraphBuilder builder,
+            ScriptableRenderContext context)
         {
             int atlasSize = (int)settings.directionalCascadeShadow.atlasSize;
             var desc = new TextureDesc(atlasSize, atlasSize)
@@ -83,14 +103,181 @@ namespace ArcToon.Runtime
                     target = GraphicsBuffer.Target.Structured
                 })
             );
+            
+            BuildRendererLists(renderGraph, builder, context);
 
-            return new ShadowMapHandles(directionalAtlas, spotAtlas, pointAtlas, 
+            return new ShadowMapHandles(directionalAtlas, spotAtlas, pointAtlas,
                 cascadeShadowDataHandle, directionalShadowMatricesHandle, spotShadowDataHandle, pointShadowDataHandle);
         }
 
-        public CommandBuffer commandBuffer;
 
-        private ScriptableRenderContext context;
+        int directionalSplit, directionalTileSize;
+        int spotSplit, spotTileSize;
+        int pointSplit, pointTileSize;
+
+        private const int maxTilesPerLight = 6;
+
+        void BuildRendererLists(
+            RenderGraph renderGraph,
+            RenderGraphBuilder builder,
+            ScriptableRenderContext context)
+        {
+            if (shadowedDirectionalLightCount > 0)
+            {
+                int atlasSize = (int)settings.directionalCascadeShadow.atlasSize;
+                int tiles =
+                    shadowedDirectionalLightCount * settings.directionalCascadeShadow.cascadeCount;
+                directionalSplit = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
+                directionalTileSize = atlasSize / directionalSplit;
+
+                for (int i = 0; i < shadowedDirectionalLightCount; i++)
+                {
+                    BuildDirectionalRendererList(i, renderGraph, builder);
+                }
+            }
+
+            if (shadowedSpotLightCount > 0)
+            {
+                int atlasSize = (int)settings.spotShadow.atlasSize;
+                int tiles = shadowedSpotLightCount;
+                spotSplit = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
+                spotTileSize = atlasSize / spotSplit;
+
+                for (int i = 0; i < shadowedSpotLightCount; i++)
+                {
+                    BuildSpotShadowsRendererList(i, renderGraph, builder);
+                }
+            }
+
+            if (shadowedPointLightCount > 0)
+            {
+                int atlasSize = (int)settings.pointShadow.atlasSize;
+                int tiles = shadowedPointLightCount * 6;
+                pointSplit = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
+                pointTileSize = atlasSize / pointSplit;
+
+                for (int i = 0; i < shadowedPointLightCount; i++)
+                {
+                    BuildPointShadowsRendererList(i, renderGraph, builder);
+                }
+            }
+
+            if (shadowedDirectionalLightCount + shadowedSpotLightCount + shadowedPointLightCount > 0)
+            {
+                context.CullShadowCasters(
+                    cullingResults,
+                    new ShadowCastersCullingInfos
+                    {
+                        perLightInfos = cullingInfoPerLight,
+                        splitBuffer = shadowSplitDataPerLight
+                    });
+            }
+        }
+
+        void BuildDirectionalRendererList(
+            int shadowedDirectionalLightIndex,
+            RenderGraph renderGraph,
+            RenderGraphBuilder builder)
+        {
+            ShadowMapDataDirectional lightShadowData = shadowMapDataDirectionals[shadowedDirectionalLightIndex];
+            var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex)
+            {
+                useRenderingLayerMaskTest = true
+            };
+            int cascadeCount = settings.directionalCascadeShadow.cascadeCount;
+            Vector3 ratios = settings.directionalCascadeShadow.CascadeRatios;
+            float cullingFactor = Mathf.Max(0f, 1f - settings.directionalCascadeShadow.edgeFade);
+            int splitOffset = lightShadowData.visibleLightIndex * maxTilesPerLight;
+            for (int i = 0; i < cascadeCount; i++)
+            {
+                ref RenderInfo info = ref directionalRenderInfo[shadowedDirectionalLightIndex * maxCascades + i];
+                cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
+                    lightShadowData.visibleLightIndex, i, cascadeCount, ratios,
+                    directionalTileSize, lightShadowData.nearPlaneOffset, out info.view,
+                    out info.projection, out ShadowSplitData splitData);
+                splitData.shadowCascadeBlendCullingFactor = cullingFactor;
+                shadowSplitDataPerLight[splitOffset + i] = splitData;
+                if (shadowedDirectionalLightIndex == 0)
+                {
+                    // for performance: compare the square distance from the sphere's center with a surface fragment square radius
+                    cascadeShadowData[i] = new ShadowCascadeBufferData(
+                        splitData.cullingSphere,
+                        directionalTileSize, settings.filterSize);
+                }
+
+                info.handle = builder.UseRendererList(renderGraph.CreateShadowRendererList(ref shadowSettings));
+            }
+
+            cullingInfoPerLight[lightShadowData.visibleLightIndex] =
+                new LightShadowCasterCullingInfo
+                {
+                    projectionType = BatchCullingProjectionType.Orthographic,
+                    splitRange = new RangeInt(splitOffset, cascadeCount)
+                };
+        }
+
+        void BuildSpotShadowsRendererList(
+            int shadowedSpotLightIndex, RenderGraph renderGraph, RenderGraphBuilder builder)
+        {
+            ShadowMapDataSpot lightShadowData = shadowMapDataSpots[shadowedSpotLightIndex];
+            var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex)
+            {
+                useRenderingLayerMaskTest = true
+            };
+            ref RenderInfo info = ref spotRenderInfo[shadowedSpotLightIndex];
+            cullingResults.ComputeSpotShadowMatricesAndCullingPrimitives(
+                lightShadowData.visibleLightIndex, out info.view, out info.projection,
+                out ShadowSplitData splitData);
+
+            int splitOffset = lightShadowData.visibleLightIndex * maxTilesPerLight;
+            shadowSplitDataPerLight[splitOffset] = splitData;
+
+            info.handle = builder.UseRendererList(renderGraph.CreateShadowRendererList(ref shadowSettings));
+
+            cullingInfoPerLight[lightShadowData.visibleLightIndex] =
+                new LightShadowCasterCullingInfo
+                {
+                    projectionType = BatchCullingProjectionType.Perspective,
+                    splitRange = new RangeInt(splitOffset, 1)
+                };
+        }
+
+        void BuildPointShadowsRendererList(
+            int shadowedPointLightIndex, RenderGraph renderGraph, RenderGraphBuilder builder)
+        {
+            ShadowMapDataPoint lightShadowData = shadowMapDataPoints[shadowedPointLightIndex];
+            var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex)
+            {
+                useRenderingLayerMaskTest = true
+            };
+            float texelSize = 2f / pointTileSize;
+            float filterSize = texelSize * settings.filterSize;
+            float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
+            float fovBias = Mathf.Atan(1f + normalBiasScale + filterSize) * Mathf.Rad2Deg * 2f - 90f;
+
+            int splitOffset = lightShadowData.visibleLightIndex * maxTilesPerLight;
+            for (int i = 0; i < 6; i++)
+            {
+                ref RenderInfo info =
+                    ref pointRenderInfo[shadowedPointLightIndex * maxTilesPerLight + i];
+                cullingResults.ComputePointShadowMatricesAndCullingPrimitives(
+                    lightShadowData.visibleLightIndex, (CubemapFace)i, fovBias,
+                    out info.view, out info.projection,
+                    out ShadowSplitData splitData);
+                shadowSplitDataPerLight[splitOffset + i] = splitData;
+
+                info.handle = builder.UseRendererList(renderGraph.CreateShadowRendererList(ref shadowSettings));
+            }
+
+            cullingInfoPerLight[lightShadowData.visibleLightIndex] =
+                new LightShadowCasterCullingInfo
+                {
+                    projectionType = BatchCullingProjectionType.Perspective,
+                    splitRange = new RangeInt(splitOffset, 6)
+                };
+        }
+
+        public CommandBuffer commandBuffer;
 
         private CullingResults cullingResults;
 
@@ -113,7 +300,7 @@ namespace ArcToon.Runtime
             GlobalKeyword.Create("_PCF5X5"),
             GlobalKeyword.Create("_PCF7X7"),
         };
-        
+
         // ----------------- directional shadow -----------------
 
         private static Matrix4x4[] directionalShadowVPMatrices =
@@ -184,6 +371,12 @@ namespace ArcToon.Runtime
             shadowedDirectionalLightCount = shadowedSpotLightCount = shadowedPointLightCount = 0;
 
             useShadowMask = false;
+
+            cullingInfoPerLight = new NativeArray<LightShadowCasterCullingInfo>(
+                cullingResults.visibleLights.Length, Allocator.Temp);
+            shadowSplitDataPerLight = new NativeArray<ShadowSplitData>(
+                cullingInfoPerLight.Length * maxTilesPerLight,
+                Allocator.Temp, NativeArrayOptions.UninitializedMemory);
         }
 
         struct ShadowMapDataDirectional
@@ -332,7 +525,6 @@ namespace ArcToon.Runtime
         public void RenderShadowMap(RenderGraphContext context)
         {
             commandBuffer = context.cmd;
-            this.context = context.renderContext;
 
             if (shadowedDirectionalLightCount > 0)
             {
@@ -348,19 +540,21 @@ namespace ArcToon.Runtime
             {
                 RenderPointShadowMap();
             }
+
+            commandBuffer.SetGlobalDepthBias(0f, 0f);
             commandBuffer.SetGlobalBuffer(
                 cascadeShadowDataID, cascadeShadowDataHandle);
             commandBuffer.SetGlobalBuffer(
                 directionalShadowVPMatricesID, directionalShadowMatricesHandle);
             commandBuffer.SetGlobalBuffer(spotShadowDataID, spotShadowDataHandle);
             commandBuffer.SetGlobalBuffer(pointShadowDataID, pointShadowDataHandle);
-            
+
             commandBuffer.SetGlobalTexture(dirShadowAtlasID, directionalAtlas);
             commandBuffer.SetGlobalTexture(spotShadowAtlasID, spotAtlas);
             commandBuffer.SetGlobalTexture(pointShadowAtlasID, pointAtlas);
 
             SetKeywords(filterKeywords, (int)settings.filterQuality - 1);
-            
+
             SetKeywords(shadowMaskKeywords,
                 useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
 
@@ -370,6 +564,9 @@ namespace ArcToon.Runtime
             float f = 1f - settings.directionalCascadeShadow.edgeFade;
             commandBuffer.SetGlobalVector(shadowDistanceFadeID,
                 new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade, 1f / (1f - f * f)));
+
+            context.renderContext.ExecuteCommandBuffer(commandBuffer);
+            commandBuffer.Clear();
         }
 
         void RenderDirectionalShadowMap()
@@ -378,19 +575,16 @@ namespace ArcToon.Runtime
             directionalAtlasSizes.x = directionalAtlasSizes.y = 1f / atlasSize;
             directionalAtlasSizes.z = directionalAtlasSizes.w = atlasSize;
 
+            commandBuffer.BeginSample("Directional Shadows");
             commandBuffer.SetRenderTarget(
                 directionalAtlas,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             commandBuffer.ClearRenderTarget(true, false, Color.clear);
             commandBuffer.SetGlobalFloat(shadowPancakingID, 1f);
-            // TODO: config
-            int tiles = shadowedDirectionalLightCount * settings.directionalCascadeShadow.cascadeCount;
-            int split = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
-            int tileSize = atlasSize / split;
             for (int i = 0; i < shadowedDirectionalLightCount; i++)
             {
-                RenderDirectionalShadowSplitTile(i, split, tileSize);
+                RenderDirectionalShadowSplitTile(i);
             }
 
             commandBuffer.SetGlobalVector(directionalShadowAtlasSizeID, directionalAtlasSizes);
@@ -404,6 +598,7 @@ namespace ArcToon.Runtime
             SetKeywords(
                 cascadeBlendKeywords, (int)settings.directionalCascadeShadow.blendMode - 1
             );
+            commandBuffer.EndSample("Directional Shadows");
         }
 
         void RenderSpotShadowMap()
@@ -412,24 +607,24 @@ namespace ArcToon.Runtime
             spotAtlasSizes.x = spotAtlasSizes.y = 1f / atlasSize;
             spotAtlasSizes.z = spotAtlasSizes.w = atlasSize;
 
+            commandBuffer.BeginSample("Spot Shadows");
+
             commandBuffer.SetRenderTarget(
                 spotAtlas,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             commandBuffer.ClearRenderTarget(true, false, Color.clear);
             commandBuffer.SetGlobalFloat(shadowPancakingID, 0f);
-            // TODO: config
-            int tiles = shadowedSpotLightCount;
-            int split = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
-            int tileSize = atlasSize / split;
             for (int i = 0; i < shadowedSpotLightCount; i++)
             {
-                RenderSpotShadowSplitTile(i, split, tileSize);
+                RenderSpotShadowSplitTile(i);
             }
 
             commandBuffer.SetGlobalVector(spotShadowAtlasSizeID, spotAtlasSizes);
             commandBuffer.SetBufferData(spotShadowDataHandle, spotShadowData,
-                0, 0, tiles);
+                0, 0, shadowedSpotLightCount);
+            
+            commandBuffer.EndSample("Spot Shadows");
         }
 
         void RenderPointShadowMap()
@@ -438,132 +633,95 @@ namespace ArcToon.Runtime
             pointAtlasSizes.x = pointAtlasSizes.y = 1f / atlasSize;
             pointAtlasSizes.z = pointAtlasSizes.w = atlasSize;
 
+            commandBuffer.BeginSample("Point Shadows");
+
             commandBuffer.SetRenderTarget(
                 pointAtlas,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             commandBuffer.ClearRenderTarget(true, false, Color.clear);
             commandBuffer.SetGlobalFloat(shadowPancakingID, 0f);
-            // TODO: config
-            int tiles = shadowedPointLightCount * 6;
-            int split = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
-            int tileSize = atlasSize / split;
             for (int i = 0; i < shadowedPointLightCount; i++)
             {
-                RenderPointShadowSplitTile(i, split, tileSize);
+                RenderPointShadowSplitTile(i);
             }
 
             commandBuffer.SetGlobalVector(pointShadowAtlasSizeID, pointAtlasSizes);
             commandBuffer.SetBufferData(pointShadowDataHandle, pointShadowData,
-                0, 0, tiles);
+                0, 0, shadowedPointLightCount * 6);
+            
+            commandBuffer.EndSample("Point Shadows");
         }
 
-        void RenderDirectionalShadowSplitTile(int shadowedDirectionalLightIndex, int split, int tileSize)
+        void RenderDirectionalShadowSplitTile(int shadowedDirectionalLightIndex)
         {
-            ShadowMapDataDirectional lightShadowData = shadowMapDataDirectionals[shadowedDirectionalLightIndex];
-            var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex);
             int cascadeCount = settings.directionalCascadeShadow.cascadeCount;
-            Vector3 ratios = settings.directionalCascadeShadow.CascadeRatios;
             int tileOffset = shadowedDirectionalLightIndex * cascadeCount;
-            float cullingFactor = Mathf.Max(0f, 1 - settings.directionalCascadeShadow.edgeFade);
-            float tileScale = 1.0f / split;
+            float tileScale = 1.0f / directionalSplit;
+            commandBuffer.SetGlobalDepthBias(0f, shadowMapDataDirectionals[shadowedDirectionalLightIndex].slopeScaleBias);
             for (int i = 0; i < cascadeCount; i++)
             {
-                cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
-                    lightShadowData.visibleLightIndex,
-                    i, cascadeCount, ratios, tileSize,
-                    lightShadowData.nearPlaneOffset,
-                    out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
-                    out ShadowSplitData splitData
-                );
-                splitData.shadowCascadeBlendCullingFactor = cullingFactor;
-                shadowSettings.splitData = splitData;
-
+                RenderInfo info = directionalRenderInfo[shadowedDirectionalLightIndex * maxCascades + i];
                 int tileIndex = tileOffset + i;
-                Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
-                // set cascade data
-                if (shadowedDirectionalLightIndex == 0)
-                {
-                    // for performance: compare the square distance from the sphere's center with a surface fragment square radius
-                    cascadeShadowData[i] = new ShadowCascadeBufferData(
-                        splitData.cullingSphere,
-                        tileSize, settings.filterSize);
-                }
-
+                Vector2 offset = SetTileViewport(tileIndex, directionalSplit, directionalTileSize);
+                
                 directionalShadowVPMatrices[tileIndex] =
-                    ConvertToAtlasMatrix(projectionMatrix * viewMatrix, offset, tileScale);
+                    ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale);
 
-                commandBuffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
-                commandBuffer.SetGlobalDepthBias(0f, lightShadowData.slopeScaleBias);
-                commandBuffer.DrawRendererList(context.CreateShadowRendererList(ref shadowSettings));
-                commandBuffer.SetGlobalDepthBias(0f, 0);
+                commandBuffer.SetViewProjectionMatrices(info.view, info.projection);
+                commandBuffer.DrawRendererList(info.handle);
             }
         }
 
-        void RenderSpotShadowSplitTile(int shadowedSpotLightIndex, int split, int tileSize)
+        void RenderSpotShadowSplitTile(int shadowedSpotLightIndex)
         {
             ShadowMapDataSpot lightShadowData = shadowMapDataSpots[shadowedSpotLightIndex];
-            var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex);
             int tileIndex = shadowedSpotLightIndex;
-            cullingResults.ComputeSpotShadowMatricesAndCullingPrimitives(
-                lightShadowData.visibleLightIndex,
-                out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
-                out ShadowSplitData splitData
-            );
-            shadowSettings.splitData = splitData;
 
+            RenderInfo info = spotRenderInfo[shadowedSpotLightIndex];
             // m00 = \frac{cot\frac{FOV}{2}}{Aspect} (Aspect = 1 in case of shadow map)
-            float texelSize = 2f / (tileSize * projectionMatrix.m00);
+            float texelSize = 2f / (spotTileSize * info.projection.m00);
             float filterSize = texelSize * settings.filterSize;
             float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
-            Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
-            float tileScale = 1f / split;
+            Vector2 offset = SetTileViewport(tileIndex, spotSplit, spotTileSize);
+            float tileScale = 1f / spotSplit;
 
             spotShadowData[tileIndex] = new SpotShadowBufferData(
                 offset, tileScale, normalBiasScale, spotAtlasSizes.x,
-                ConvertToAtlasMatrix(projectionMatrix * viewMatrix, offset, tileScale));
+                ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
 
-            commandBuffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+            commandBuffer.SetViewProjectionMatrices(info.view, info.projection);
             commandBuffer.SetGlobalDepthBias(0f, lightShadowData.slopeScaleBias);
-            commandBuffer.DrawRendererList(context.CreateShadowRendererList(ref shadowSettings));
-            commandBuffer.SetGlobalDepthBias(0f, 0);
+            commandBuffer.DrawRendererList(info.handle);
         }
 
-        void RenderPointShadowSplitTile(int shadowedPointLightIndex, int split, int tileSize)
+        void RenderPointShadowSplitTile(int shadowedPointLightIndex)
         {
             ShadowMapDataPoint lightShadowData = shadowMapDataPoints[shadowedPointLightIndex];
-            var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex);
             int tileOffset = shadowedPointLightIndex * 6;
             // m00 = \frac{cot\frac{FOV}{2}}{Aspect} (Aspect = 1, cot\frac{FOV}{2} = 1 in case of point shadow map)
-            float texelSize = 2f / tileSize;
+            float texelSize = 2f / pointTileSize;
             float filterSize = texelSize * settings.filterSize;
             float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
-            float tileScale = 1.0f / split;
-            float fovBias = Mathf.Atan(1f + normalBiasScale + filterSize) * Mathf.Rad2Deg * 2f - 90f;
+            float tileScale = 1.0f / pointSplit;
+            commandBuffer.SetGlobalDepthBias(0f, lightShadowData.slopeScaleBias);
             for (int i = 0; i < 6; i++)
             {
-                cullingResults.ComputePointShadowMatricesAndCullingPrimitives(
-                    lightShadowData.visibleLightIndex, (CubemapFace)i, fovBias,
-                    out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
-                    out ShadowSplitData splitData
-                );
+                RenderInfo info = pointRenderInfo[shadowedPointLightIndex * maxTilesPerLight + i];
                 // Undo the front face culling effect
-                viewMatrix.m11 = -viewMatrix.m11;
-                viewMatrix.m12 = -viewMatrix.m12;
-                viewMatrix.m13 = -viewMatrix.m13;
-                shadowSettings.splitData = splitData;
+                info.view.m11 = -info.view.m11;
+                info.view.m12 = -info.view.m12;
+                info.view.m13 = -info.view.m13;
 
                 int tileIndex = tileOffset + i;
-                Vector2 offset = SetTileViewport(tileIndex, split, tileSize);
+                Vector2 offset = SetTileViewport(tileIndex, pointSplit, pointTileSize);
 
                 pointShadowData[tileIndex] = new PointShadowBufferData(
                     offset, tileScale, normalBiasScale, spotAtlasSizes.x,
-                    ConvertToAtlasMatrix(projectionMatrix * viewMatrix, offset, tileScale));
+                    ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
 
-                commandBuffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
-                commandBuffer.SetGlobalDepthBias(0f, lightShadowData.slopeScaleBias);
-                commandBuffer.DrawRendererList(context.CreateShadowRendererList(ref shadowSettings));
-                commandBuffer.SetGlobalDepthBias(0f, 0);
+                commandBuffer.SetViewProjectionMatrices(info.view, info.projection);
+                commandBuffer.DrawRendererList(info.handle);
             }
         }
 

@@ -28,6 +28,7 @@ namespace ArcToon.Runtime.Passes
             builder.ReadWriteTexture(textureData.colorAttachment);
             builder.ReadTexture(textureData.depthAttachment);
 
+            builder.AllowPassCulling(false);
             builder.SetRenderFunc<SkyboxPass>(static (pass, context) => pass.Render(context));
         }
     }

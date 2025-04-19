@@ -8,7 +8,7 @@ namespace ArcToon.Runtime.Settings
     {
         public bool useSRPBatcher = true;
         
-        [FormerlySerializedAs("cameraBuffer")] public CameraBufferSettings cameraBufferSettings = new()
+        public CameraBufferSettings cameraBufferSettings = new()
         {
             allowHDR = true,
             renderScale = 1f,
