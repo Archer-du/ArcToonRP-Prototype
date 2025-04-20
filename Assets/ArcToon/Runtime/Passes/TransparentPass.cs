@@ -26,7 +26,7 @@ namespace ArcToon.Runtime.Passes
         }
 
         public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults,
-            in CameraAttachmentTextureData textureData, in LightDataHandles lightData)
+            in CameraAttachmentHandles handles, in LightingDataHandles lightingData)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out TransparentPass pass, sampler);
@@ -42,23 +42,23 @@ namespace ArcToon.Runtime.Passes
                                             PerObjectData.OcclusionProbeProxyVolume |
                                             PerObjectData.ReflectionProbes,
                 }));
-            builder.ReadWriteTexture(textureData.colorAttachment);
-            builder.ReadWriteTexture(textureData.depthAttachment);
-            if (textureData.colorCopy.IsValid())
+            builder.ReadWriteTexture(handles.colorAttachment);
+            builder.ReadWriteTexture(handles.depthAttachment);
+            if (handles.colorCopy.IsValid())
             {
-                builder.ReadTexture(textureData.colorCopy);
+                builder.ReadTexture(handles.colorCopy);
             }
-            if (textureData.depthCopy.IsValid())
+            if (handles.depthCopy.IsValid())
             {
-                builder.ReadTexture(textureData.depthCopy);
+                builder.ReadTexture(handles.depthCopy);
             }
-            builder.ReadBuffer(lightData.directionalLightDataHandle);
-            builder.ReadBuffer(lightData.spotLightDataHandle);
-            builder.ReadBuffer(lightData.pointLightDataHandle);
-            builder.ReadBuffer(lightData.shadowMapHandles.cascadeShadowDataHandle);
-            builder.ReadBuffer(lightData.shadowMapHandles.directionalShadowMatricesHandle);
-            builder.ReadBuffer(lightData.shadowMapHandles.spotShadowDataHandle);
-            builder.ReadBuffer(lightData.shadowMapHandles.pointShadowDataHandle);
+            builder.ReadBuffer(lightingData.directionalLightDataHandle);
+            builder.ReadBuffer(lightingData.spotLightDataHandle);
+            builder.ReadBuffer(lightingData.pointLightDataHandle);
+            builder.ReadBuffer(lightingData.shadowMapHandles.cascadeShadowDataHandle);
+            builder.ReadBuffer(lightingData.shadowMapHandles.directionalShadowMatricesHandle);
+            builder.ReadBuffer(lightingData.shadowMapHandles.spotShadowDataHandle);
+            builder.ReadBuffer(lightingData.shadowMapHandles.pointShadowDataHandle);
 
             builder.SetRenderFunc<TransparentPass>(static (pass, context) => pass.Render(context));
         }

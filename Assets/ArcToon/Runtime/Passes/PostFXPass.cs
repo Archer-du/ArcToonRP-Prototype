@@ -1,5 +1,7 @@
 ﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Overrides;
 using ArcToon.Runtime.Passes.PostProcess;
+using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -11,23 +13,31 @@ namespace ArcToon.Runtime.Passes
     {
         static readonly ProfilingSampler sampler = new("Post FX");
 
-        TextureHandle colorAttachment;
-
-        PostFXStack stack;
-
         public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
-            PostFXStack stack,
-            int colorLUTResolution,
-            in TextureHandle srcHandle, 
-            bool usePostFX)
+            CullingResults cullingResults, Vector2Int bufferSize,
+            CameraSettings cameraSettings,
+            CameraBufferSettings bufferSettings,
+            PostFXSettings postFXSettings,
+            bool useHDR,
+            in TextureHandle srcHandle)
         {
-            if (!usePostFX) return srcHandle;
+            bool hasActivePostFX =
+                postFXSettings != null && PostFXSettings.AreApplicableTo(camera);
+            if (!hasActivePostFX) return srcHandle;
+            
             using (new RenderGraphProfilingScope(renderGraph, sampler))
             {
+                PostFXStack postFXStack = new PostFXStack(postFXSettings.PostProcessStackMaterial);
                 TextureHandle handle = srcHandle;
-                handle = BloomPass.Record(renderGraph, camera, stack, handle);
-                handle = ColorGradingPass.Record(renderGraph, stack, colorLUTResolution, handle);
-                handle = AntiAliasingPass.Record(renderGraph, stack, handle);
+                handle = BloomPass.Record(renderGraph, camera, cullingResults, bufferSize, 
+                    cameraSettings, bufferSettings, postFXSettings, useHDR,
+                    handle, postFXStack);
+                handle = ColorGradingPass.Record(renderGraph, camera, cullingResults, bufferSize,
+                    cameraSettings, bufferSettings, postFXSettings, useHDR,
+                    handle, postFXStack);
+                handle = AntiAliasingPass.Record(renderGraph, camera, cullingResults, bufferSize,
+                    cameraSettings, bufferSettings, postFXSettings, useHDR,
+                    handle, postFXStack);
                 return handle;
             }
         }

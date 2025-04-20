@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Overrides;
 using ArcToon.Runtime.Passes.PostProcess;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
@@ -14,17 +15,29 @@ namespace ArcToon.Runtime.Passes
     {
         static readonly ProfilingSampler sampler = new("FXAA");
 
-        private static readonly int fxaaParamsID = Shader.PropertyToID("_FXAAParams");
-        private static Vector4 fxaaParams;
-
         private TextureHandle source;
         private TextureHandle result;
 
         private PostFXStack stack;
 
+        private FXAARuntimeConfig fxaaConfig;
+        
+        private static readonly int fxaaParamsID = Shader.PropertyToID("_FXAAParams");
+        private static Vector4 fxaaParams;
+
         static readonly GlobalKeyword
             fxaaQualityLowKeyword = GlobalKeyword.Create("FXAA_QUALITY_LOW"),
             fxaaQualityMediumKeyword = GlobalKeyword.Create("FXAA_QUALITY_MEDIUM");
+        
+        public struct FXAARuntimeConfig
+        {
+            public bool enabled;
+            public bool keepAlpha;
+            public float fixedThreshold;
+            public float relativeThreshold;
+            public float subpixelBlending;
+            public CameraBufferSettings.FXAASettings.Quality quality;
+        }
 
         void Render(RenderGraphContext context)
         {
@@ -37,23 +50,39 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.Clear();
         }
 
-        public static TextureHandle Record(
-            RenderGraph renderGraph,
-            PostFXStack stack,
-            in TextureHandle srcHandle)
+        public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
+            CullingResults cullingResults, Vector2Int bufferSize,
+            CameraSettings cameraSettings,
+            CameraBufferSettings bufferSettings,
+            PostFXSettings postFXSettings,
+            bool useHDR,
+            in TextureHandle srcHandle,
+            PostFXStack stack)
         {
-            if (!stack.fxaaConfig.enabled) return srcHandle;
+            // TODO: buffer settings translate
+            FXAARuntimeConfig fxaaConfig = new FXAARuntimeConfig
+            {
+                enabled = bufferSettings.fxaaSettings.enabled && cameraSettings.allowFXAA,
+                keepAlpha = cameraSettings.keepAlpha,
+                fixedThreshold = bufferSettings.fxaaSettings.fixedThreshold,
+                relativeThreshold = bufferSettings.fxaaSettings.relativeThreshold,
+                subpixelBlending = bufferSettings.fxaaSettings.subpixelBlending,
+                quality = bufferSettings.fxaaSettings.quality,
+            };
+            
+            if (!fxaaConfig.enabled) return srcHandle;
 
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out AntiAliasingPass pass, sampler);
 
             pass.stack = stack;
+            pass.fxaaConfig = fxaaConfig;
             pass.source = builder.ReadTexture(srcHandle);
 
-            var desc = new TextureDesc(stack.bufferSize.x, stack.bufferSize.y)
+            var desc = new TextureDesc(bufferSize.x, bufferSize.y)
             {
                 colorFormat = SystemInfo.GetGraphicsFormat(
-                    stack.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
+                    useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
                 name = "FXAA Result"
             };
 
@@ -67,12 +96,12 @@ namespace ArcToon.Runtime.Passes
 
         void ConfigureFXAA(CommandBuffer commandBuffer)
         {
-            if (stack.fxaaConfig.quality == CameraBufferSettings.FXAASettings.Quality.Low)
+            if (fxaaConfig.quality == CameraBufferSettings.FXAASettings.Quality.Low)
             {
                 commandBuffer.SetKeyword(fxaaQualityLowKeyword, true);
                 commandBuffer.SetKeyword(fxaaQualityMediumKeyword, false);
             }
-            else if (stack.fxaaConfig.quality == CameraBufferSettings.FXAASettings.Quality.Medium)
+            else if (fxaaConfig.quality == CameraBufferSettings.FXAASettings.Quality.Medium)
             {
                 commandBuffer.SetKeyword(fxaaQualityLowKeyword, false);
                 commandBuffer.SetKeyword(fxaaQualityMediumKeyword, true);
@@ -83,7 +112,7 @@ namespace ArcToon.Runtime.Passes
                 commandBuffer.SetKeyword(fxaaQualityMediumKeyword, false);
             }
 
-            if (stack.fxaaConfig.keepAlpha)
+            if (fxaaConfig.keepAlpha)
             {
                 commandBuffer.DisableShaderKeyword("FXAA_ALPHA_CONTAINS_LUMA");
             }
@@ -92,8 +121,8 @@ namespace ArcToon.Runtime.Passes
                 commandBuffer.EnableShaderKeyword("FXAA_ALPHA_CONTAINS_LUMA");
             }
 
-            fxaaParams = new Vector4(stack.fxaaConfig.fixedThreshold, stack.fxaaConfig.relativeThreshold,
-                stack.fxaaConfig.subpixelBlending);
+            fxaaParams = new Vector4(fxaaConfig.fixedThreshold, fxaaConfig.relativeThreshold,
+                fxaaConfig.subpixelBlending);
             commandBuffer.SetGlobalVector(fxaaParamsID, fxaaParams);
         }
     }

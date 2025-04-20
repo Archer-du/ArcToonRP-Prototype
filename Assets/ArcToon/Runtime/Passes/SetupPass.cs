@@ -46,12 +46,11 @@ namespace ArcToon.Runtime.Passes
             context.cmd.Clear();
         }
 
-        public static CameraAttachmentTextureData Record(
-            RenderGraph renderGraph, Camera camera,
+        public static CameraAttachmentHandles Record(RenderGraph renderGraph, Camera camera,
+            Vector2Int attachmentSize,
             bool copyColor,
             bool copyDepth,
-            bool useHDR,
-            Vector2Int attachmentSize)
+            bool useHDR)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out SetupPass pass, sampler);
@@ -89,7 +88,7 @@ namespace ArcToon.Runtime.Passes
             builder.AllowPassCulling(false);
             builder.SetRenderFunc<SetupPass>(static (pass, context) => pass.Render(context));
             
-            return new CameraAttachmentTextureData(
+            return new CameraAttachmentHandles(
                 colorAttachment, depthAttachment, colorCopy, depthCopy);
         }
     }
