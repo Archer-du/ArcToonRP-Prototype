@@ -1,5 +1,6 @@
 ﻿using ArcToon.Runtime.Overrides;
 using ArcToon.Runtime.Passes;
+using ArcToon.Runtime.Passes.PostProcess;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -42,7 +43,7 @@ namespace ArcToon.Runtime
         }
 
         public void Render(RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
-            ArcToonRenderPipelineSettings settings)
+            RenderPipelineSettings settings)
         {
             CameraBufferSettings bufferSettings = settings.cameraBufferSettings;
             PostFXSettings postFXSettings = settings.enablePostProcessing ? settings.globalPostFXSettings : null;
@@ -124,9 +125,9 @@ namespace ArcToon.Runtime
                 Mathf.Min(shadowSettings.maxDistance, camera.farClipPlane);
             CullingResults cullingResults = context.Cull(ref scriptableCullingParameters);
 
-
             var cameraSampler =
                 additiveCameraData ? additiveCameraData.Sampler : ProfilingSampler.Get(camera.cameraType);
+            
             var renderGraphParameters = new RenderGraphParameters
             {
                 commandBuffer = CommandBufferPool.Get(),
@@ -136,6 +137,7 @@ namespace ArcToon.Runtime
                 rendererListCulling = true,
             };
             CameraAttachmentCopier copier = new(cameraCopyMaterial, camera);
+            
             renderGraph.BeginRecording(renderGraphParameters);
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
             {
@@ -143,8 +145,7 @@ namespace ArcToon.Runtime
                     forwardPlusSettings,
                     context);
 
-                var textureData = SetupPass.Record(renderGraph, camera,
-                    useColorTexture, useDepthTexture, useHDR, bufferSize);
+                var textureData = SetupPass.Record(renderGraph, camera, useColorTexture, useDepthTexture, useHDR, bufferSize);
 
                 OpaquePass.Record(renderGraph, camera, cullingResults, textureData, lightData);
 

@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 
-namespace ArcToon.Runtime
+namespace ArcToon.Runtime.Passes.Lighting
 {
     public class ShadowRenderer
     {
