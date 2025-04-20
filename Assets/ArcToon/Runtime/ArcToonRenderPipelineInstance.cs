@@ -2,37 +2,24 @@
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime
 {
-    public struct ArcToonRenderPipelineParams
-    {
-        public bool enableSRPBatcher;
-        public bool enableGPUInstancing;
-        public int colorLUTResolution;
-    }
-
     public partial class ArcToonRenderPipelineInstance : RenderPipeline
     {
+        readonly RenderGraph renderGraph = new("Arc Toon Render Graph");
+        
+        readonly RenderPipelineSettings settings;
+        
         private CameraRenderer cameraRenderer;
 
-        private ArcToonRenderPipelineParams renderParams;
-
-        private ShadowSettings globalShadowSettings;
-        private PostFXSettings globalPostFXSettings;
-        private CameraBufferSettings cameraBufferSettings;
-
-        public ArcToonRenderPipelineInstance(ArcToonRenderPipelineParams pipelineParams,
-            ShadowSettings globalShadowSettings, PostFXSettings globalPostFXSettings,
-            CameraBufferSettings cameraBufferSettings,
-            Shader cameraCopyShader)
+        public ArcToonRenderPipelineInstance(RenderPipelineSettings settings)
         {
-            cameraRenderer = new CameraRenderer(cameraCopyShader);
-            renderParams = pipelineParams;
-            this.globalShadowSettings = globalShadowSettings;
-            this.globalPostFXSettings = globalPostFXSettings;
-            this.cameraBufferSettings = cameraBufferSettings;
-            GraphicsSettings.useScriptableRenderPipelineBatching = pipelineParams.enableSRPBatcher;
+            this.settings = settings;
+            cameraRenderer = new CameraRenderer(settings.cameraCopyShader, settings.cameraDebugShader);
+            
+            GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
 
             InitializeForEditor();
@@ -47,11 +34,9 @@ namespace ArcToon.Runtime
         {
             for (int i = 0; i < cameras.Count; i++)
             {
-                cameraRenderer.Render(renderContext, cameras[i],
-                    renderParams.enableGPUInstancing,
-                    renderParams.colorLUTResolution,
-                    globalShadowSettings, globalPostFXSettings, cameraBufferSettings);
+                cameraRenderer.Render(renderGraph, renderContext, cameras[i], settings);
             }
+            renderGraph.EndFrame();
         }
 
         protected override void Dispose(bool disposing)
@@ -59,12 +44,7 @@ namespace ArcToon.Runtime
             base.Dispose(disposing);
             DisposeForEditor();
             cameraRenderer.Dispose();
-        }
-
-        public static void ConsumeCommandBuffer(ScriptableRenderContext renderContext, CommandBuffer commandBuffer)
-        {
-            renderContext.ExecuteCommandBuffer(commandBuffer);
-            commandBuffer.Clear();
+            renderGraph.Cleanup();
         }
     }
 }

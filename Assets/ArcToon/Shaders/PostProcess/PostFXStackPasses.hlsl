@@ -339,9 +339,7 @@ float4 ColorGradingFinalPassFragment(Varyings input) : SV_TARGET
 {
     float4 color = SampleSource(input.screenUV);
     color.rgb = ApplyColorGradingLUT(color.rgb);
-    #if defined(FXAA_ALPHA_CONTAINS_LUMA)
     color.a = sqrt(Luminance(color.rgb));
-    #endif
     return color;
 }
 

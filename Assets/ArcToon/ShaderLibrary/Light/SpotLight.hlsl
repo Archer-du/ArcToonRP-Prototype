@@ -1,30 +1,26 @@
 ﻿#ifndef ARCTOON_SPOT_LIGHT_INCLUDED
 #define ARCTOON_SPOT_LIGHT_INCLUDED
 
-#define MAX_SPOT_LIGHT_COUNT 64
-
 #include "../Shadow.hlsl"
 #include "../GI.hlsl"
 #include "LightType.hlsl"
 
 CBUFFER_START(_CustomSpotLight)
     int _SpotLightCount;
-    float4 _SpotLightColors[MAX_SPOT_LIGHT_COUNT];
-    float4 _SpotLightPositions[MAX_SPOT_LIGHT_COUNT];
-    float4 _SpotLightDirections[MAX_SPOT_LIGHT_COUNT];
-    float4 _SpotLightSpotAngles[MAX_SPOT_LIGHT_COUNT];
-    // per light shadow data:
+CBUFFER_END
+
+struct SpotLightBufferData
+{
+    float4 color;
+    float4 position;
+    float4 direction;
+    float4 spotAngle;
     // x: shadow strength
     // y: shadow map tile index
     // z: shadow slope scale bias
     // w: shadow mask channel
-    float4 _SpotLightShadowData[MAX_SPOT_LIGHT_COUNT];
-CBUFFER_END
-
-int GetSpotLightCount()
-{
-    return _SpotLightCount;
-}
+    float4 shadowData;
+};
 
 struct SpotShadowData
 {
@@ -35,29 +31,38 @@ struct SpotShadowData
     float3 spotDirectionWS;
 };
 
-SpotShadowData GetSpotLightShadowData(int lightIndex)
+StructuredBuffer<SpotLightBufferData> _SpotLightData;
+
+int GetSpotLightCount()
+{
+    return _SpotLightCount;
+}
+
+SpotShadowData DecodeSpotLightShadowData(SpotLightBufferData bufferData)
 {
     SpotShadowData data;
-    data.shadowStrength = _SpotLightShadowData[lightIndex].x;
-    data.tileIndex = _SpotLightShadowData[lightIndex].y;
-    data.shadowMaskChannel = _SpotLightShadowData[lightIndex].w;
-    data.lightPositionWS = _SpotLightPositions[lightIndex].xyz;
-    data.spotDirectionWS = _SpotLightDirections[lightIndex].xyz;
+    data.shadowStrength = bufferData.shadowData.x;
+    data.tileIndex = bufferData.shadowData.y;
+    data.shadowMaskChannel = bufferData.shadowData.w;
+    data.lightPositionWS = bufferData.position.xyz;
+    data.spotDirectionWS = bufferData.direction.xyz;
     return data;
 }
 
-float GetSpotRealtimeShadow(SpotShadowData spot, CascadeShadowData cascade,
+float GetSpotRealtimeShadow(SpotShadowData spotShadow, CascadeShadowData cascade,
                                    Surface surface)
 {
-    if (spot.shadowStrength <= 0) return 1.0;
-    float3 surfaceToLight = spot.lightPositionWS - surface.position;
-    float distanceToLightPlane = dot(surfaceToLight, spot.spotDirectionWS);
-    float3 normalBias = surface.interpolatedNormal * (distanceToLightPlane * _SpotShadowTiles[spot.tileIndex].w);
-    float4 positionSTS = mul(_SpotShadowMatrices[spot.tileIndex],
+    if (spotShadow.shadowStrength <= 0) return 1.0;
+    int tileIndex = spotShadow.tileIndex;
+    SpotShadowBufferData shadowData = _SpotShadowData[tileIndex];
+    float3 surfaceToLight = spotShadow.lightPositionWS - surface.position;
+    float distanceToLightPlane = dot(surfaceToLight, spotShadow.spotDirectionWS);
+    float3 normalBias = surface.interpolatedNormal * (distanceToLightPlane * shadowData.tileData.w);
+    float4 positionSTS = mul(shadowData.shadowMatrix,
         float4(surface.position + normalBias, 1.0));
     float shadow = FilterSpotShadow(positionSTS.xyz / positionSTS.w,
-        _SpotShadowTiles[spot.tileIndex].xyz);
-    shadow = lerp(1.0, shadow, spot.shadowStrength);
+        shadowData.tileData.xyz);
+    shadow = lerp(1.0, shadow, spotShadow.shadowStrength);
     return shadow;
 }
 
@@ -70,8 +75,7 @@ float GetSpotShadowAttenuation(SpotShadowData pointSpot, CascadeShadowData casca
     float realtimeShadow = GetSpotRealtimeShadow(pointSpot, cascade, surface);
     float attenuation;
     // TODO:
-    float fade = FadedStrength(surface.linearDepth, _ShadowDistanceFade.x, _ShadowDistanceFade.y) * cascade.
-        rangeFade;
+    float fade = FadedStrength(surface.linearDepth, _ShadowDistanceFade.x, _ShadowDistanceFade.y) * cascade.rangeFade;
     if (gi.shadowMask.alwaysMode)
     {
         // TODO:
@@ -90,23 +94,23 @@ float GetSpotShadowAttenuation(SpotShadowData pointSpot, CascadeShadowData casca
     return attenuation;
 }
 
-
 Light GetSpotLight(int index, Surface surface, CascadeShadowData cascade, GI gi)
 {
+    SpotLightBufferData bufferData = _SpotLightData[index];
     Light light;
-    light.color = _SpotLightColors[index].rgb;
-    float3 position = _SpotLightPositions[index].xyz;
+    light.color = bufferData.color.rgb;
+    float3 position = bufferData.position.xyz;
     float3 raydirection = position - surface.position;
     light.direction = normalize(raydirection);
     float distanceSqr = max(dot(raydirection, raydirection), 0.00001);
-    float rangeAttenuation = Square(saturate(1.0 - Square(distanceSqr * _SpotLightPositions[index].w)));
-    float4 spotAngles = _SpotLightSpotAngles[index];
-    float3 spotDirection = _SpotLightDirections[index].xyz;
+    float rangeAttenuation = Square(saturate(1.0 - Square(distanceSqr * bufferData.position.w)));
+    float4 spotAngles = bufferData.spotAngle;
+    float3 spotDirection = bufferData.direction.xyz;
     float spotAttenuation = Square(saturate(dot(spotDirection, light.direction) *
         spotAngles.x + spotAngles.y));
     light.distanceAttenuation = spotAttenuation * rangeAttenuation / distanceSqr;
     
-    SpotShadowData spotShadowData = GetSpotLightShadowData(index);
+    SpotShadowData spotShadowData = DecodeSpotLightShadowData(bufferData);
     light.shadowAttenuation = GetSpotShadowAttenuation(spotShadowData, cascade, surface, gi);
     return light;
 }

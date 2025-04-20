@@ -12,7 +12,7 @@ namespace ArcToon.Runtime.Settings
         public bool copyDepth, copyDepthReflection;
         public bool copyColor, copyColorReflection;
 
-        [Range(0.1f, 2f)] public float renderScale;
+        [Range(0.5f, 2f)] public float renderScale;
         
         public enum BicubicRescalingMode { Off, UpOnly, UpAndDown }
         

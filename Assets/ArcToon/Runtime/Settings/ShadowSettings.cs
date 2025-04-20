@@ -26,17 +26,14 @@ namespace ArcToon.Runtime.Settings
 
         public enum CascadeBlendMode
         {
-            Hard,
+            Dither,
             Soft,
-            Dither
         }
 
         [System.Serializable]
-        public struct DirectionalCascade
+        public struct DirectionalCascadeShadow
         {
             public MapSize atlasSize;
-
-            public FilterMode filterMode;
 
             public CascadeBlendMode blendMode;
 
@@ -50,48 +47,53 @@ namespace ArcToon.Runtime.Settings
                 new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
         }
 
-        public DirectionalCascade directionalCascade = new()
+        [FormerlySerializedAs("directionalCascade")] public DirectionalCascadeShadow directionalCascadeShadow = new()
         {
             atlasSize = MapSize._1024,
-            filterMode = FilterMode.PCF2x2,
             cascadeCount = 4,
             cascadeRatio1 = 0.1f,
             cascadeRatio2 = 0.25f,
             cascadeRatio3 = 0.5f,
             edgeFade = 0.1f,
-            blendMode = CascadeBlendMode.Hard
+            blendMode = CascadeBlendMode.Dither
         };
 
         [System.Serializable]
         public struct SpotShadow
         {
             public MapSize atlasSize;
-
-            public FilterMode filterMode;
         }
 
-        [FormerlySerializedAs("pointSpot")] public SpotShadow spotShadow = new()
+        public SpotShadow spotShadow = new()
         {
             atlasSize = MapSize._1024,
-            filterMode = FilterMode.PCF2x2
         };
 
         [System.Serializable]
         public struct PointShadow
         {
             public MapSize atlasSize;
-
-            public FilterMode filterMode;
         }
 
         public PointShadow pointShadow = new()
         {
             atlasSize = MapSize._1024,
-            filterMode = FilterMode.PCF2x2
         };
+
+        public enum FilterQuality
+        {
+            PCF2x2,
+            PCF3x3,
+            PCF5x5,
+            PCF7x7
+        }
+
+        public FilterQuality filterQuality = FilterQuality.PCF5x5;
 
         [Min(0.001f)] public float maxDistance = 100f;
 
         [Range(0.001f, 1f)] public float distanceFade = 0.1f;
+        
+        public int filterSize => (int)filterQuality + 1;
     }
 }
