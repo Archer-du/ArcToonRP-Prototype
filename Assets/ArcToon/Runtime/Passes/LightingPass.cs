@@ -19,11 +19,10 @@ namespace ArcToon.Runtime.Passes
         static readonly ProfilingSampler sampler = new("Lighting");
 
         private CullingResults cullingResults;
-        private ShadowRenderer shadowRenderer = new();
+        private ShadowMapRenderer shadowMapRenderer = new();
 
-        // directional light
+        #region DirectionalLight
         int directionalLightCount;
-
         private const int maxDirectionalLightCount = 4;
 
         private static readonly DirectionalLightBufferData[] directionalLightData =
@@ -31,36 +30,33 @@ namespace ArcToon.Runtime.Passes
 
         private static int directionalLightCountID = Shader.PropertyToID("_DirectionalLightCount");
         private static int directionalLightDataID = Shader.PropertyToID("_DirectionalLightData");
-
         BufferHandle directionalLightDataHandle;
-
-
-        // spot light
+        #endregion
+        
+        #region SpotLight
         int spotLightCount;
-
         private const int maxSpotLightCount = 64;
 
         private static readonly SpotLightBufferData[] spotLightData = new SpotLightBufferData[maxSpotLightCount];
 
         private static int spotLightCountID = Shader.PropertyToID("_SpotLightCount");
         private static int spotLightDataID = Shader.PropertyToID("_SpotLightData");
-
         BufferHandle spotLightDataHandle;
+        #endregion
 
-
-        // point light
+        #region PointLight
         int pointLightCount;
-
         private const int maxPointLightCount = 16;
 
         private static readonly PointLightBufferData[] pointLightData = new PointLightBufferData[maxPointLightCount];
 
         private static int pointLightCountID = Shader.PropertyToID("_PointLightCount");
         private static int pointLightDataID = Shader.PropertyToID("_PointLightData");
-
         BufferHandle pointLightDataHandle;
+        #endregion
 
         // tile job
+        #region TileForward+
         JobHandle forwardPlusJobHandle;
 
         NativeArray<float4> spotLightBounds;
@@ -78,8 +74,8 @@ namespace ArcToon.Runtime.Passes
         Vector2 screenUVToTileCoordinates;
 
         Vector2Int tileCount;
-
         int TileCount => tileCount.x * tileCount.y;
+        #endregion
 
         void Render(RenderGraphContext context)
         {
@@ -99,7 +95,7 @@ namespace ArcToon.Runtime.Passes
                 0, 0, pointLightCount);
             commandBuffer.SetGlobalBuffer(pointLightDataID, pointLightDataHandle);
 
-            shadowRenderer.RenderShadowMap(context);
+            shadowMapRenderer.RenderShadowMap(context);
 
             // block waiting for job result
             forwardPlusJobHandle.Complete();
@@ -121,7 +117,7 @@ namespace ArcToon.Runtime.Passes
             forwardPlusTileData.Dispose();
         }
 
-        public static LightDataHandles Record(RenderGraph renderGraph, CullingResults cullingResults,
+        public static LightingDataHandles Record(RenderGraph renderGraph, CullingResults cullingResults,
             Vector2Int attachmentSize,
             ShadowSettings shadowSettings,
             ForwardPlusSettings forwardPlusSettings,
@@ -161,10 +157,10 @@ namespace ArcToon.Runtime.Passes
             builder.AllowPassCulling(false);
             builder.SetRenderFunc<LightingPass>(static (pass, context) => pass.Render(context));
 
-            return new LightDataHandles(pass.directionalLightDataHandle, pass.spotLightDataHandle,
+            return new LightingDataHandles(pass.directionalLightDataHandle, pass.spotLightDataHandle,
                 pass.pointLightDataHandle,
                 pass.forwardPlusTileBufferHandle,
-                pass.shadowRenderer.GetShadowMapHandles(renderGraph, builder, context));
+                pass.shadowMapRenderer.GetShadowMapHandles(renderGraph, builder, context));
         }
 
         public void Setup(CullingResults cullingResults, Vector2Int attachmentSize,
@@ -175,7 +171,7 @@ namespace ArcToon.Runtime.Passes
             maxLightCountPerTile = forwardPlusSettings.maxLightsPerTile;
             tileDataSize = maxLightCountPerTile + 2;
 
-            shadowRenderer.Setup(cullingResults, shadowSettings);
+            shadowMapRenderer.Setup(cullingResults, shadowSettings);
 
             spotLightBounds = new NativeArray<float4>(maxSpotLightCount,
                 Allocator.TempJob,
@@ -208,19 +204,19 @@ namespace ArcToon.Runtime.Passes
                     case LightType.Directional when directionalLightCount < maxDirectionalLightCount:
                         directionalLightData[directionalLightCount++] =
                             DirectionalLightBufferData.GenerateStructuredData(visibleLights[i], light,
-                                shadowRenderer.ReservePerLightShadowDataDirectional(light, i));
+                                shadowMapRenderer.ReservePerLightShadowDataDirectional(light, i));
                         break;
                     case LightType.Spot when spotLightCount < maxSpotLightCount:
                         SetupForwardPlusSpot(spotLightCount, visibleLights[i]);
                         spotLightData[spotLightCount++] =
                             SpotLightBufferData.GenerateStructuredData(visibleLights[i], light,
-                                shadowRenderer.ReservePerLightShadowDataSpot(light, i));
+                                shadowMapRenderer.ReservePerLightShadowDataSpot(light, i));
                         break;
                     case LightType.Point when pointLightCount < maxPointLightCount:
                         SetupForwardPlusPoint(pointLightCount, visibleLights[i]);
                         pointLightData[pointLightCount++] =
                             PointLightBufferData.GenerateStructuredData(visibleLights[i], light,
-                                shadowRenderer.ReservePerLightShadowDataPoint(light, i));
+                                shadowMapRenderer.ReservePerLightShadowDataPoint(light, i));
                         break;
                 }
             }

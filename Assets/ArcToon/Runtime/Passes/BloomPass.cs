@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Overrides;
 using ArcToon.Runtime.Passes.PostProcess;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
@@ -14,6 +15,13 @@ namespace ArcToon.Runtime.Passes
     {
         static readonly ProfilingSampler sampler = new("Bloom");
 
+        private TextureHandle source;
+        private TextureHandle result;
+
+        private PostFXStack stack;
+        
+        private BloomSettings bloomSettings;
+
         static readonly GraphicsFormat colorFormat = SystemInfo.GetGraphicsFormat(DefaultFormat.HDR);
         
         private static readonly int fxSource2Id = Shader.PropertyToID("_PostFXSource2");
@@ -22,12 +30,7 @@ namespace ArcToon.Runtime.Passes
         private readonly TextureHandle[] pyramid =
             new TextureHandle[2 * maxBloomPyramidLevels];
 
-        private TextureHandle colorSource;
-        private TextureHandle bloomResult;
-
         private int stepCount;
-
-        private PostFXStack stack;
 
         const int maxBloomPyramidLevels = 16;
 
@@ -41,11 +44,10 @@ namespace ArcToon.Runtime.Passes
         {
             CommandBuffer commandBuffer = context.cmd;
 
-            BloomSettings bloomSettings = stack.settings.Bloom;
             commandBuffer.SetGlobalVector(bloomThresholdID, GetKneeCurveData(bloomSettings));
 
             // knee curve prefilter
-            stack.Draw(commandBuffer, colorSource, bloomPrefilter,
+            stack.Draw(commandBuffer, source, bloomPrefilter,
                 bloomSettings.fadeFireflies ? Pass.BloomPrefilterFireflies : Pass.BloomPrefilter);
 
             // down sample
@@ -91,23 +93,28 @@ namespace ArcToon.Runtime.Passes
                 dstPyramidIndex -= 2;
             }
 
-            commandBuffer.SetGlobalTexture(fxSource2Id, colorSource);
+            commandBuffer.SetGlobalTexture(fxSource2Id, source);
             commandBuffer.SetGlobalFloat(bloomScaleID, finalScale);
-            stack.Draw(commandBuffer, pyramid[srcPyramidIndex], bloomResult, finalPass);
+            stack.Draw(commandBuffer, pyramid[srcPyramidIndex], result, finalPass);
             
             context.renderContext.ExecuteCommandBuffer(commandBuffer);
             commandBuffer.Clear();
         }
 
-        public static TextureHandle Record(
-            RenderGraph renderGraph, Camera camera,
-            PostFXStack stack,
-            in TextureHandle srcHandle)
+        public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
+            CullingResults cullingResults, Vector2Int bufferSize,
+            CameraSettings cameraSettings,
+            CameraBufferSettings bufferSettings,
+            PostFXSettings postFXSettings,
+            bool useHDR,
+            in TextureHandle srcHandle, 
+            PostFXStack stack)
         {
-            BloomSettings bloom = stack.settings.Bloom;
-            Vector2Int bufferSize = bloom.ignoreRenderScale
+            BloomSettings bloom = postFXSettings.Bloom;
+            Vector2Int originalBufferSize = bufferSize;
+            bufferSize = bloom.ignoreRenderScale
                 ? new Vector2Int(camera.pixelWidth, camera.pixelHeight)
-                : stack.bufferSize;
+                : bufferSize;
 
             if (bloom.maxIterations == 0 ||
                 bloom.intensity <= 0f ||
@@ -121,13 +128,14 @@ namespace ArcToon.Runtime.Passes
                 sampler.name, out BloomPass pass, sampler);
 
             pass.stack = stack;
-            pass.colorSource = builder.ReadTexture(srcHandle);
+            pass.bloomSettings = bloom;
+            pass.source = builder.ReadTexture(srcHandle);
 
             bufferSize /= 2;
             var desc = new TextureDesc(bufferSize.x, bufferSize.y)
             {
                 colorFormat = SystemInfo.GetGraphicsFormat(
-                    stack.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
+                    useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
                 name = "Bloom Prefilter"
             };
             pass.bloomPrefilter = builder.CreateTransientTexture(desc);
@@ -154,15 +162,15 @@ namespace ArcToon.Runtime.Passes
 
             pass.stepCount = i;
 
-            desc.width = stack.bufferSize.x;
-            desc.height = stack.bufferSize.y;
+            desc.width = originalBufferSize.x;
+            desc.height = originalBufferSize.y;
             desc.name = "Bloom Result";
-            pass.bloomResult = builder.WriteTexture(renderGraph.CreateTexture(desc));
+            pass.result = builder.WriteTexture(renderGraph.CreateTexture(desc));
             
             builder.SetRenderFunc<BloomPass>(
                 static (pass, context) => pass.Render(context));
             
-            return pass.bloomResult;
+            return pass.result;
         }
 
         private Vector4 GetKneeCurveData(BloomSettings bloomSettings)

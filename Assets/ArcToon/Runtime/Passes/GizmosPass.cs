@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Utils;
 using UnityEditor;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -31,7 +32,7 @@ namespace ArcToon.Runtime.Passes
 #endif
         [Conditional("UNITY_EDITOR")]
         public static void Record(RenderGraph renderGraph,
-            in CameraAttachmentTextureData textureData,
+            in CameraAttachmentHandles handles,
             CameraAttachmentCopier copier)
         {
 #if UNITY_EDITOR
@@ -41,7 +42,7 @@ namespace ArcToon.Runtime.Passes
                     sampler.name, out GizmosPass pass, sampler);
                 
                 pass.copier = copier;
-                pass.depthAttachment = builder.ReadTexture(textureData.depthAttachment);
+                pass.depthAttachment = builder.ReadTexture(handles.depthAttachment);
                 
                 builder.SetRenderFunc<GizmosPass>(static (pass, context) => pass.Render(context));
             }

@@ -15,7 +15,7 @@ namespace ArcToon.Runtime.Passes
         public static void Record(
             RenderGraph renderGraph,
             Camera camera,
-            in LightDataHandles lightData)
+            in LightingDataHandles lightingData)
         {
             if (CameraDebugger.IsActive &&
                 camera.cameraType <= CameraType.SceneView)
@@ -23,7 +23,7 @@ namespace ArcToon.Runtime.Passes
                 using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                     sampler.name, out DebugPass pass, sampler);
                 
-                builder.ReadBuffer(lightData.forwardPlusTileBufferHandle);
+                builder.ReadBuffer(lightingData.forwardPlusTileBufferHandle);
                 
                 builder.SetRenderFunc<DebugPass>(
                     static (pass, context) => CameraDebugger.Render(context));

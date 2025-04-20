@@ -3,7 +3,7 @@ using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime
+namespace ArcToon.Runtime.Utils
 {
     public readonly struct CameraAttachmentCopier
     {

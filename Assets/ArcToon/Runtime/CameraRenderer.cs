@@ -2,6 +2,7 @@
 using ArcToon.Runtime.Passes;
 using ArcToon.Runtime.Passes.PostProcess;
 using ArcToon.Runtime.Settings;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -10,17 +11,16 @@ namespace ArcToon.Runtime
 {
     public partial class CameraRenderer
     {
+        private Camera camera;
+        
         static CameraSettings defaultCameraSettings = new();
 
         public const float renderScaleMin = 0.1f, renderScaleMax = 2f;
-
-        private PostFXStack postFXStack;
 
         private Material cameraCopyMaterial;
 
         public CameraRenderer(Shader cameraCopyShader, Shader cameraDebuggerShader)
         {
-            postFXStack = new();
             cameraCopyMaterial = CoreUtils.CreateEngineMaterial(cameraCopyShader);
             CameraDebugger.Initialize(cameraDebuggerShader);
         }
@@ -31,41 +31,115 @@ namespace ArcToon.Runtime
             CameraDebugger.Cleanup();
         }
 
-        // TODO: move
-        public struct FXAARuntimeConfig
-        {
-            public bool enabled;
-            public bool keepAlpha;
-            public float fixedThreshold;
-            public float relativeThreshold;
-            public float subpixelBlending;
-            public CameraBufferSettings.FXAASettings.Quality quality;
-        }
 
         public void Render(RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
             RenderPipelineSettings settings)
         {
+            this.camera = camera;
             CameraBufferSettings bufferSettings = settings.cameraBufferSettings;
             PostFXSettings postFXSettings = settings.enablePostProcessing ? settings.globalPostFXSettings : null;
             ShadowSettings shadowSettings = settings.globalShadowSettings;
             ForwardPlusSettings forwardPlusSettings = settings.forwardPlusSettings;
-
-            // settings
             var additiveCameraData = camera.GetComponent<ArcToonAdditiveCameraData>();
-            var cameraSettings = additiveCameraData ? additiveCameraData.Settings : defaultCameraSettings;
+            CameraSettings cameraSettings = additiveCameraData ? additiveCameraData.Settings : defaultCameraSettings;
             postFXSettings = cameraSettings.overridePostFX ? cameraSettings.postFXSettings : postFXSettings;
-            // hdr
+            var cameraSampler =
+                additiveCameraData ? additiveCameraData.Sampler : ProfilingSampler.Get(camera.cameraType);
             bool useHDR = bufferSettings.allowHDR && camera.allowHDR;
-
+            
             // render scale
-            float renderScale = cameraSettings.GetRenderScale(bufferSettings.renderScale);
-            renderScale = Mathf.Clamp(renderScale, renderScaleMin, renderScaleMax);
-            bool useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
-            var bicubicRescalingMode = bufferSettings.bicubicRescalingMode;
+            var bufferSize = GetCameraBufferSize(cameraSettings, bufferSettings);
+            
+            // prepare scene data
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
             {
                 ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
+            }
+#endif
+            // camera texture
+            bool copyColorTexture, copyDepthTexture;
+            if (camera.cameraType == CameraType.Reflection)
+            {
+                copyDepthTexture = bufferSettings.copyDepthReflection;
+                copyColorTexture = bufferSettings.copyColorReflection;
+            }
+            else
+            {
+                copyDepthTexture = bufferSettings.copyDepth && cameraSettings.copyDepth;
+                copyColorTexture = bufferSettings.copyColor && cameraSettings.copyColor;
+            }
+
+            // cull
+            if (!GetCullingResults(context, out var cullingResults, shadowSettings.maxDistance))
+            {
+                return;
+            }
+
+            var renderGraphParameters = new RenderGraphParameters
+            {
+                commandBuffer = CommandBufferPool.Get(),
+                currentFrameIndex = Time.frameCount,
+                executionName = cameraSampler.name,
+                scriptableRenderContext = context,
+                rendererListCulling = true,
+            };
+            CameraAttachmentCopier copier = new(cameraCopyMaterial, camera);
+
+            renderGraph.BeginRecording(renderGraphParameters);
+            using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
+            {
+                var lightingHandles = LightingPass.Record(renderGraph, cullingResults, bufferSize, 
+                    shadowSettings,
+                    forwardPlusSettings,
+                    context);
+
+                var attachmentHandles = SetupPass.Record(renderGraph, camera, bufferSize, 
+                    copyColorTexture, copyDepthTexture, useHDR);
+
+                OpaquePass.Record(renderGraph, camera, cullingResults, attachmentHandles, lightingHandles);
+
+                SkyboxPass.Record(renderGraph, camera, cullingResults, attachmentHandles);
+
+                CopyAttachmentPass.Record(renderGraph, copyColorTexture, copyDepthTexture, attachmentHandles, copier);
+
+                TransparentPass.Record(renderGraph, camera, cullingResults, attachmentHandles, lightingHandles);
+
+                UnsupportedPass.Record(renderGraph, camera, cullingResults);
+
+                // post fx
+
+                var texture = PostFXPass.Record(renderGraph, camera, cullingResults, bufferSize, 
+                    cameraSettings, bufferSettings, postFXSettings, useHDR,
+                    attachmentHandles.colorAttachment);
+
+                var bicubicRescalingMode = bufferSettings.bicubicRescalingMode;
+                bool bicubicSampling =
+                    bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||
+                    bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpOnly &&
+                    bufferSize.x < camera.pixelWidth;
+                CopyFinalPass.Record(renderGraph, cameraSettings.finalBlendMode, bicubicSampling, texture, copier);
+
+                DebugPass.Record(renderGraph, camera, lightingHandles);
+
+                GizmosPass.Record(renderGraph, attachmentHandles, copier);
+            }
+
+            renderGraph.EndRecordingAndExecute();
+            // submit
+            context.ExecuteCommandBuffer(renderGraphParameters.commandBuffer);
+            context.Submit();
+            CommandBufferPool.Release(renderGraphParameters.commandBuffer);
+        }
+
+        private Vector2Int GetCameraBufferSize(CameraSettings cameraSettings, CameraBufferSettings bufferSettings)
+        {
+            float renderScale = cameraSettings.GetRenderScale(bufferSettings.renderScale);
+            renderScale = Mathf.Clamp(renderScale, renderScaleMin, renderScaleMax);
+            bool useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
+#if UNITY_EDITOR
+            if (camera.cameraType == CameraType.SceneView)
+            {
                 useScaledRendering = false;
             }
 #endif
@@ -81,98 +155,20 @@ namespace ArcToon.Runtime
                 bufferSize.y = camera.pixelHeight;
             }
 
-            bool bicubicSampling =
-                bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||
-                bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpOnly &&
-                bufferSize.x < camera.pixelWidth;
-
-            // camera texture
-            bool useColorTexture, useDepthTexture;
-            if (camera.cameraType == CameraType.Reflection)
-            {
-                useDepthTexture = bufferSettings.copyDepthReflection;
-                useColorTexture = bufferSettings.copyColorReflection;
-            }
-            else
-            {
-                useDepthTexture = bufferSettings.copyDepth && cameraSettings.copyDepth;
-                useColorTexture = bufferSettings.copyColor && cameraSettings.copyColor;
-            }
-
-            // post fx
-            bool hasActivePostFX =
-                postFXSettings != null && PostFXSettings.AreApplicableTo(camera);
-
-            // TODO: buffer settings translate
-            FXAARuntimeConfig fxaaConfig = new FXAARuntimeConfig
-            {
-                enabled = bufferSettings.fxaaSettings.enabled && cameraSettings.allowFXAA,
-                keepAlpha = cameraSettings.keepAlpha,
-                fixedThreshold = bufferSettings.fxaaSettings.fixedThreshold,
-                relativeThreshold = bufferSettings.fxaaSettings.relativeThreshold,
-                subpixelBlending = bufferSettings.fxaaSettings.subpixelBlending,
-                quality = bufferSettings.fxaaSettings.quality,
-            };
-            postFXStack.Setup(bufferSize, postFXSettings, useHDR, fxaaConfig);
-
-            // cull
+            return bufferSize;
+        }
+        
+        private bool GetCullingResults(ScriptableRenderContext context, out CullingResults cullingResults, float maxShadowDistance)
+        {
             if (!camera.TryGetCullingParameters(out ScriptableCullingParameters scriptableCullingParameters))
             {
-                return;
+                cullingResults = default;
+                return false;
             }
 
-            scriptableCullingParameters.shadowDistance =
-                Mathf.Min(shadowSettings.maxDistance, camera.farClipPlane);
-            CullingResults cullingResults = context.Cull(ref scriptableCullingParameters);
-
-            var cameraSampler =
-                additiveCameraData ? additiveCameraData.Sampler : ProfilingSampler.Get(camera.cameraType);
-            
-            var renderGraphParameters = new RenderGraphParameters
-            {
-                commandBuffer = CommandBufferPool.Get(),
-                currentFrameIndex = Time.frameCount,
-                executionName = cameraSampler.name,
-                scriptableRenderContext = context,
-                rendererListCulling = true,
-            };
-            CameraAttachmentCopier copier = new(cameraCopyMaterial, camera);
-            
-            renderGraph.BeginRecording(renderGraphParameters);
-            using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
-            {
-                var lightData = LightingPass.Record(renderGraph, cullingResults, bufferSize, shadowSettings,
-                    forwardPlusSettings,
-                    context);
-
-                var textureData = SetupPass.Record(renderGraph, camera, useColorTexture, useDepthTexture, useHDR, bufferSize);
-
-                OpaquePass.Record(renderGraph, camera, cullingResults, textureData, lightData);
-
-                SkyboxPass.Record(renderGraph, camera, cullingResults, textureData);
-
-                CopyAttachmentPass.Record(renderGraph, useColorTexture, useDepthTexture, textureData, copier);
-
-                TransparentPass.Record(renderGraph, camera, cullingResults, textureData, lightData);
-
-                UnsupportedPass.Record(renderGraph, camera, cullingResults);
-
-                var texture = PostFXPass.Record(renderGraph, camera, postFXStack,
-                    postFXSettings ? (int)postFXSettings.ToneMapping.colorLUTResolution : 0,
-                    textureData.colorAttachment, hasActivePostFX);
-
-                CopyFinalPass.Record(renderGraph, cameraSettings.finalBlendMode, bicubicSampling, texture, copier);
-
-                DebugPass.Record(renderGraph, camera, lightData);
-
-                GizmosPass.Record(renderGraph, textureData, copier);
-            }
-
-            renderGraph.EndRecordingAndExecute();
-            // submit
-            context.ExecuteCommandBuffer(renderGraphParameters.commandBuffer);
-            context.Submit();
-            CommandBufferPool.Release(renderGraphParameters.commandBuffer);
+            scriptableCullingParameters.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
+            cullingResults = context.Cull(ref scriptableCullingParameters);
+            return true;
         }
     }
 }
