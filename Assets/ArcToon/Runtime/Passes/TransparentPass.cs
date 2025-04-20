@@ -16,6 +16,7 @@ namespace ArcToon.Runtime.Passes
         {
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
+            new("ToonBase"),
         };
 
         void Render(RenderGraphContext context)

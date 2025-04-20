@@ -10,17 +10,28 @@ namespace ArcToon.Runtime.Passes
     {
         static readonly ProfilingSampler sampler = new("Opaque");
 
-        RendererListHandle list;
+        RendererListHandle baseList;
+        RendererListHandle outlineList;
 
-        private static ShaderTagId[] shaderTagIds =
+        private static ShaderTagId[] baseShaderTagIds =
         {
+            new("ToonBase"),
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
+        };
+        private static ShaderTagId[] outlineShaderTagIds =
+        {
+            new("ToonOutline"),
         };
 
         void Render(RenderGraphContext context)
         {
-            context.cmd.DrawRendererList(list);
+            context.cmd.BeginSample("Toon Outline");
+            context.cmd.DrawRendererList(outlineList);
+            context.cmd.EndSample("Toon Outline");
+            context.cmd.BeginSample("Toon Base");
+            context.cmd.DrawRendererList(baseList);
+            context.cmd.EndSample("Toon Base");
             context.renderContext.ExecuteCommandBuffer(context.cmd);
             context.cmd.Clear();
         }
@@ -31,8 +42,15 @@ namespace ArcToon.Runtime.Passes
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out OpaquePass pass, sampler);
 
-            pass.list = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(shaderTagIds, cullingResults, camera)
+            pass.outlineList = builder.UseRendererList(renderGraph.CreateRendererList(
+                new RendererListDesc(outlineShaderTagIds, cullingResults, camera)
+                {
+                    sortingCriteria = SortingCriteria.CommonOpaque,
+                    renderQueueRange = RenderQueueRange.opaque,
+                })
+            );
+            pass.baseList = builder.UseRendererList(renderGraph.CreateRendererList(
+                new RendererListDesc(baseShaderTagIds, cullingResults, camera)
                 {
                     sortingCriteria = SortingCriteria.CommonOpaque,
                     renderQueueRange = RenderQueueRange.opaque,
@@ -41,7 +59,8 @@ namespace ArcToon.Runtime.Passes
                                             PerObjectData.LightProbeProxyVolume |
                                             PerObjectData.OcclusionProbeProxyVolume |
                                             PerObjectData.ReflectionProbes,
-                }));
+                })
+            );
             builder.ReadWriteTexture(handles.colorAttachment);
             builder.ReadWriteTexture(handles.depthAttachment);
             builder.ReadTexture(lightingData.shadowMapHandles.directionalAtlas);

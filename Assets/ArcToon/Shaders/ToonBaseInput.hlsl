@@ -1,0 +1,115 @@
+﻿#ifndef ARCTOON_TOONBASE_INPUT_INCLUDED
+#define ARCTOON_TOONBASE_INPUT_INCLUDED
+
+#include "../ShaderLibrary/Common.hlsl"
+#include "../ShaderLibrary/Input/InputConfig.hlsl"
+
+TEXTURE2D(_BaseMap);
+SAMPLER(sampler_BaseMap);
+TEXTURE2D(_NormalMap);
+TEXTURE2D(_RMOMaskMap);
+TEXTURE2D(_EmissionMap);
+
+TEXTURE2D(_DetailMap);
+SAMPLER(sampler_DetailMap);
+TEXTURE2D(_DetailNormalMap);
+
+UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+    UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Roughness)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
+
+    UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DetailAlbedo)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DetailSmoothness)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DetailNormalScale)
+UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
+float2 TransformBaseUV(float2 rawBaseUV)
+{
+    float4 baseST = INPUT_PROP(_BaseMap_ST);
+    return rawBaseUV * baseST.xy + baseST.zw;
+}
+
+float2 TransformDetailUV(float2 rawDetailUV)
+{
+    float4 detailST = INPUT_PROP(_DetailMap_ST);
+    return rawDetailUV * detailST.xy + detailST.zw;
+}
+
+float4 GetRMOMask(InputConfig input)
+{
+    #ifdef _RMO_MASK_MAP
+    return SAMPLE_TEXTURE2D(_MODSMaskMap, sampler_BaseMap, input.baseUV);
+    #endif
+    return 1.0;
+}
+
+float4 GetColor(InputConfig input)
+{
+    float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
+    float4 color = INPUT_PROP(_BaseColor);
+    return albedo * color;
+}
+
+float GetAlphaClip(InputConfig input)
+{
+    return INPUT_PROP(_Cutoff);
+}
+
+float3 GetNormalTS(InputConfig input)
+{
+    float4 packedNormal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, input.baseUV);
+    float scale = INPUT_PROP(_NormalScale);
+    float3 normal = DecodeNormal(packedNormal, scale);
+    return normal;
+}
+
+float GetMetallic(InputConfig input)
+{
+    float metallic = INPUT_PROP(_Metallic);
+    metallic *= GetRMOMask(input).g;
+    return metallic;
+}
+
+float GetRoughness(InputConfig input)
+{
+    float roughness = INPUT_PROP(_Roughness);
+    roughness *= GetRMOMask(input).r;
+    return roughness;
+}
+
+float GetOcclusion(InputConfig input)
+{
+    float strength = INPUT_PROP(_Occlusion);
+    float occlusion = GetRMOMask(input).g;
+    occlusion = lerp(1.0, occlusion, strength);
+    return occlusion;
+}
+
+float GetFresnel(InputConfig input)
+{
+    return INPUT_PROP(_Fresnel);
+}
+
+float3 GetEmission(InputConfig input)
+{
+    float4 albedo = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, input.baseUV);
+    float4 color = INPUT_PROP(_EmissionColor);
+    return albedo.rgb * color.rgb;
+}
+
+float GetFinalAlpha(float alpha)
+{
+    return INPUT_PROP(_ZWrite) ? 1.0 : alpha;
+}
+
+#endif

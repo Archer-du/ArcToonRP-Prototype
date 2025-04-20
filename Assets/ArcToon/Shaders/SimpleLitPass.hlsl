@@ -31,7 +31,7 @@ struct Varyings
     GI_VARYINGS_DATA
 };
 
-Varyings SimplelitPassVertex(Attributes input)
+Varyings SimpleLitPassVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -50,14 +50,14 @@ Varyings SimplelitPassVertex(Attributes input)
     return output;
 }
 
-float4 SimplelitPassFragment(Varyings input) : SV_TARGET
+float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
     
     ClipLOD(config.fragment, unity_LODFade.x);
     
-    #if defined(_MASK_MAP)
+    #if defined(_MODS_MASK_MAP)
     config.useMODSMask = true;
     #endif
     #if defined(_DETAIL_MAP)
@@ -87,7 +87,7 @@ float4 SimplelitPassFragment(Varyings input) : SV_TARGET
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
-    surface.smoothness = GetSmoothness(config);
+    surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.fresnelStrength = GetFresnel(config);
     surface.occlusion = GetOcclusion(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
