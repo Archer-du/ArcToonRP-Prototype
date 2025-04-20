@@ -4,7 +4,7 @@ using UnityEngine.Serialization;
 namespace ArcToon.Runtime.Settings
 {
     [System.Serializable]
-    public class ArcToonRenderPipelineSettings
+    public class RenderPipelineSettings
     {
         public bool useSRPBatcher = true;
         

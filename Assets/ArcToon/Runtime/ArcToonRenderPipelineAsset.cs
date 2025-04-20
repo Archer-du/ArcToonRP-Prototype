@@ -9,7 +9,7 @@ namespace ArcToon.Runtime
     public class ArcToonRenderPipelineAsset : RenderPipelineAsset<ArcToonRenderPipelineInstance>
     {
         [SerializeField]
-        ArcToonRenderPipelineSettings settings;
+        RenderPipelineSettings settings;
         
         protected override RenderPipeline CreatePipeline()
         {

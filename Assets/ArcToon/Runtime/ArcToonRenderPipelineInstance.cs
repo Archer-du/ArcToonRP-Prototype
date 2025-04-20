@@ -10,14 +10,15 @@ namespace ArcToon.Runtime
     {
         readonly RenderGraph renderGraph = new("Arc Toon Render Graph");
         
-        readonly ArcToonRenderPipelineSettings settings;
+        readonly RenderPipelineSettings settings;
         
         private CameraRenderer cameraRenderer;
 
-        public ArcToonRenderPipelineInstance(ArcToonRenderPipelineSettings settings)
+        public ArcToonRenderPipelineInstance(RenderPipelineSettings settings)
         {
             this.settings = settings;
             cameraRenderer = new CameraRenderer(settings.cameraCopyShader, settings.cameraDebugShader);
+            
             GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
 

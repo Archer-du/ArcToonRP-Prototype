@@ -1,10 +1,11 @@
-﻿using ArcToon.Runtime.Settings;
+﻿using ArcToon.Runtime.Passes.PostProcess;
+using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using static ArcToon.Runtime.Settings.PostFXSettings;
-using static ArcToon.Runtime.PostFXStack;
+using static ArcToon.Runtime.Passes.PostProcess.PostFXStack;
 
 namespace ArcToon.Runtime.Passes
 {

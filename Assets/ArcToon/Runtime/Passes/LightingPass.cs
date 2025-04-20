@@ -2,6 +2,7 @@
 using ArcToon.Runtime.Buffers;
 using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Jobs;
+using ArcToon.Runtime.Passes.Lighting;
 using ArcToon.Runtime.Settings;
 using Unity.Collections;
 using UnityEngine;
@@ -19,17 +20,6 @@ namespace ArcToon.Runtime.Passes
 
         private CullingResults cullingResults;
         private ShadowRenderer shadowRenderer = new();
-
-        BufferHandle forwardPlusTileBufferHandle;
-
-        private int maxLightCountPerTile;
-        private int tileDataSize;
-
-        Vector2 screenUVToTileCoordinates;
-
-        Vector2Int tileCount;
-
-        int TileCount => tileCount.x * tileCount.y;
 
         // directional light
         int directionalLightCount;
@@ -70,7 +60,6 @@ namespace ArcToon.Runtime.Passes
 
         BufferHandle pointLightDataHandle;
 
-
         // tile job
         JobHandle forwardPlusJobHandle;
 
@@ -80,6 +69,17 @@ namespace ArcToon.Runtime.Passes
         NativeArray<int> forwardPlusTileData;
         private static int forwardPlusTileDataID = Shader.PropertyToID("_ForwardPlusTileData");
         private static int forwardPlusTileSettingsID = Shader.PropertyToID("_ForwardPlusTileSettings");
+        
+        BufferHandle forwardPlusTileBufferHandle;
+
+        private int maxLightCountPerTile;
+        private int tileDataSize;
+
+        Vector2 screenUVToTileCoordinates;
+
+        Vector2Int tileCount;
+
+        int TileCount => tileCount.x * tileCount.y;
 
         void Render(RenderGraphContext context)
         {
