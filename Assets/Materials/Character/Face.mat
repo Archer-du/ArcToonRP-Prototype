@@ -12,9 +12,10 @@ Material:
   m_Parent: {fileID: 2100000, guid: c81ddf0583e79f843be25314af2c636b, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _DEBUG_INCOMING_LIGHT
+  - _RAMP_SET
+  - _RMO_MASK_MAP
   m_InvalidKeywords:
-  - _LIGHTINGDEBUGMODE_INCOMINGLIGHT
+  - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -31,13 +32,20 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: b6b66658662b7734f86e89191d020fa6, type: 3}
+        m_Texture: {fileID: 2800000, guid: 049ade1c0e0240048b50bf041b2d8143, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RampSet:
+        m_Texture: {fileID: 2800000, guid: 2a31729ecaf3d4948af4ae8d13348171, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _LightingDebugMode: 1
+    - _DirectLightAttenSigmoidCenter: 0.5
+    - _DirectLightAttenSigmoidSharp: 2
+    - _LightingDebugMode: 0
     - _OutlineScale: 0.1
+    - _RampSetToggle: 1
     - _ReceiveShadows: 0
     - _Smoothness: 0
     m_Colors:

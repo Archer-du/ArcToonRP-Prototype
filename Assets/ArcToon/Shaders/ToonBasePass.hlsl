@@ -1,9 +1,7 @@
 ﻿#ifndef ARCTOON_TOON_BASE_PASS_INCLUDED
 #define ARCTOON_TOON_BASE_PASS_INCLUDED
 
-#include "../ShaderLibrary/Shadow.hlsl"
 #include "../ShaderLibrary/Light/Lighting.hlsl"
-#include "../ShaderLibrary/BRDF.hlsl"
 
 struct Attributes
 {
@@ -70,6 +68,7 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     surface.interpolatedNormalWS = surface.normalWS;
     #endif
 
+    float4 rmo = GetRMOMask(config);
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
@@ -82,8 +81,6 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     float3 finalColor = GetLighting(config.fragment, surface, brdf, gi);
     finalColor += GetEmission(config);
-
-    float3 c = config.fragment.linearDepth / 100.0;
 
     return float4(finalColor, GetFinalAlpha(surface.alpha));
 }

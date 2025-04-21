@@ -8,10 +8,8 @@ TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
 TEXTURE2D(_NormalMap);
 TEXTURE2D(_RMOMaskMap);
+SAMPLER(sampler_RMOMaskMap);
 TEXTURE2D(_EmissionMap);
-
-TEXTURE2D(_RampSet);
-SAMPLER(sampler_RampSet);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
@@ -39,7 +37,7 @@ float2 TransformBaseUV(float2 rawBaseUV)
 float4 GetRMOMask(InputConfig input)
 {
     #ifdef _RMO_MASK_MAP
-    return SAMPLE_TEXTURE2D(_RMOMaskMap, sampler_BaseMap, input.baseUV);
+    return SAMPLE_TEXTURE2D(_RMOMaskMap, sampler_RMOMaskMap, input.baseUV);
     #endif
     return 1.0;
 }
@@ -67,14 +65,14 @@ float3 GetNormalTS(InputConfig input)
 float GetMetallic(InputConfig input)
 {
     float metallic = INPUT_PROP(_Metallic);
-    metallic *= GetRMOMask(input).r;
+    metallic *= GetRMOMask(input).g;
     return metallic;
 }
 
 float GetSmoothness(InputConfig input)
 {
-    float smoothness = INPUT_PROP(_Smoothness);
-    smoothness *= GetRMOMask(input).g;
+    float smoothness = PerceptualRoughnessToPerceptualSmoothness(GetRMOMask(input).r);
+    smoothness *= INPUT_PROP(_Smoothness);
     return smoothness;
 }
 
