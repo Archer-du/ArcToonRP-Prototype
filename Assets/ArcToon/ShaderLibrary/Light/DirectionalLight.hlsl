@@ -30,11 +30,6 @@ struct DirectionalLightShadowData
     int shadowMaskChannel;
 };
 
-int GetDirectionalLightCount()
-{
-    return _DirectionalLightCount;
-}
-
 DirectionalLightShadowData DecodeDirectionalLightShadowData(DirectionalLightBufferData bufferData,
                                                             CascadeShadowData cascadeShadowData)
 {

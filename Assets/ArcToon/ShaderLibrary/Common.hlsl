@@ -44,6 +44,12 @@ float FadedStrength(float distance, float scale, float fade)
     return saturate((1.0 - distance * scale) * fade);
 }
 
+float SigmoidSharp(float x, float center, float sharp)
+{
+    float s = 1.0 / (1.0 + pow(100000.0, (-3.0 * sharp * (x - center))));
+    return s;
+};
+
 void ClipLOD(Fragment fragment, float fade)
 {
     #if defined(LOD_FADE_CROSSFADE)

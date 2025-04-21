@@ -10,14 +10,18 @@
         _NormalScale("Normal Scale", Range(0, 1)) = 1
 
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
-        [NoScaleOffset] _MODSMaskMap("Mask (RMO)", 2D) = "white" {}
+        [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
 
         _Smoothness ("Smoothness", Range(0, 1)) = 0.5
         _Metallic ("Metallic", Range(0, 1)) = 0.8
         _Occlusion ("Occlusion", Range(0, 1)) = 1
         _Fresnel ("Fresnel", Range(0, 1)) = 1
-        
-        _RampSet ("Ramp Set", 2D) = "white" {}
+
+        [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
+        [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
+
+        _DirectLightAttenSigmoidCenter ("Direct Attenuation Sigmoid Center", Range(0, 1)) = 0.5
+        _DirectLightAttenSigmoidSharp ("Direct Attenuation Sigmoid Sharp", Range(0, 2)) = 1.25
 
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
@@ -31,7 +35,7 @@
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-        
+
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
 
@@ -89,6 +93,7 @@
 
             #pragma shader_feature _NORMAL_MAP
             #pragma shader_feature _RMO_MASK_MAP
+            #pragma shader_feature _RAMP_SET
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _CLIPPING
 

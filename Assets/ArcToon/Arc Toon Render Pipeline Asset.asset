@@ -33,16 +33,16 @@ MonoBehaviour:
         atlasSize: 8192
         blendMode: 0
         cascadeCount: 4
-        cascadeRatio1: 0.1
-        cascadeRatio2: 0.25
-        cascadeRatio3: 0.5
+        cascadeRatio1: 0.4
+        cascadeRatio2: 0.55
+        cascadeRatio3: 0.8
         edgeFade: 0.1
       spotShadow:
         atlasSize: 4096
       pointShadow:
         atlasSize: 8192
       filterQuality: 3
-      maxDistance: 200
+      maxDistance: 80
       distanceFade: 0.1
     enablePostProcessing: 1
     globalPostFXSettings: {fileID: 11400000, guid: c11cd6f2791f04b428fa2e0d92a8490a, type: 2}

@@ -12,12 +12,12 @@ Material:
   m_Parent: {fileID: 2100000, guid: c81ddf0583e79f843be25314af2c636b, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _DEBUG_INCOMING_LIGHT
   - _NORMAL_MAP
+  - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _RMO_MASK_MAP
   m_InvalidKeywords:
-  - _LIGHTINGDEBUGMODE_INCOMINGLIGHT
+  - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -49,16 +49,27 @@ Material:
         m_Texture: {fileID: 2800000, guid: 5c0d9814d4c41f3428e41ff2b4168272, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _RMOMaskMap:
+        m_Texture: {fileID: 2800000, guid: d0ad3805493505640a8b7d21a71c5c41, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RampSet:
+        m_Texture: {fileID: 2800000, guid: 2503f2eec933d51419caadbacee0a459, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _Cull: 0
+    - _DirectLightAttenSigmoidCenter: 0.5
+    - _DirectLightAttenSigmoidSharp: 2
     - _Fresnel: 1
-    - _LightingDebugMode: 1
+    - _LightingDebugMode: 0
     - _MaskMapToggle: 1
     - _Metallic: 1
     - _NormalMapToggle: 1
     - _Occlusion: 1
     - _OutlineScale: 0.2
+    - _RampSetToggle: 1
     - _Roughness: 1
     - _Smoothness: 1
     m_Colors:
