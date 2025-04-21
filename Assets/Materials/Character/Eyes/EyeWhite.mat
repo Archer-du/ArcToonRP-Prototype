@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mouth
+  m_Name: EyeWhite
   m_Shader: {fileID: 4800000, guid: fe7cc458bdb942f9a629995bef3c6590, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -86,6 +86,7 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Clipping: 0
+    - _Cull: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DirectLightAttenSigmoidCenter: 0.5
@@ -105,14 +106,14 @@ Material:
     - _NormalScale: 1
     - _Occlusion: 1
     - _OcclusionStrength: 1
-    - _OutlineScale: 0.1
+    - _OutlineScale: 0
     - _Parallax: 0.02
     - _PremulAlpha: 0
     - _RampSetToggle: 1
     - _ReceiveShadows: 0
     - _Roughness: 0.5
     - _Shadows: 0
-    - _Smoothness: 0.5
+    - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1

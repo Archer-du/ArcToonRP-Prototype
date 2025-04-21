@@ -26,7 +26,18 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _OutlineScale)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSigmoidCenter)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSigmoidSharp)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecSigmoidCenter)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecSigmoidSharp)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
+#define INPUT_PROPS_DIRECT_LIGHT_SIGMOID_PARAMS \
+INPUT_PROP(_DirectLightAttenSigmoidCenter), \
+INPUT_PROP(_DirectLightAttenSigmoidSharp), \
+INPUT_PROP(_DirectLightSpecSigmoidCenter), \
+INPUT_PROP(_DirectLightSpecSigmoidSharp)
 
 float2 TransformBaseUV(float2 rawBaseUV)
 {

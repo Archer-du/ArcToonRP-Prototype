@@ -41,14 +41,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _DirectLightAttenSigmoidCenter: 0.5
-    - _DirectLightAttenSigmoidSharp: 2
+    - _DirectLightAttenSigmoidCenter: 0.3
+    - _DirectLightAttenSigmoidSharp: 1
+    - _DirectLightSpecSigmoidCenter: 0.5
+    - _DirectLightSpecSigmoidSharp: 1
     - _LightingDebugMode: 0
     - _OutlineScale: 0.1
     - _RampSetToggle: 1
     - _ReceiveShadows: 0
     - _Smoothness: 0
     m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
