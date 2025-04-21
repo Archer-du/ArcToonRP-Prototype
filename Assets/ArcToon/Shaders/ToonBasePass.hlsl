@@ -1,5 +1,5 @@
-﻿#ifndef ARCTOON_SIMPLELIT_PASS_INCLUDED
-#define ARCTOON_SIMPLELIT_PASS_INCLUDED
+﻿#ifndef ARCTOON_TOON_BASE_PASS_INCLUDED
+#define ARCTOON_TOON_BASE_PASS_INCLUDED
 
 #include "../ShaderLibrary/Shadow.hlsl"
 #include "../ShaderLibrary/Light/Lighting.hlsl"

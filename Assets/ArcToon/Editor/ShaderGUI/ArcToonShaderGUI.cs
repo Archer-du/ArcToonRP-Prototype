@@ -27,8 +27,6 @@ namespace ArcToon.Editor.GUI
             materials = materialEditor.targets;
             properties = materialProperties;
 
-            BakedEmission();
-
             EditorGUILayout.Space();
 
             if (EditorGUI.EndChangeCheck())
@@ -89,21 +87,6 @@ namespace ArcToon.Editor.GUI
             {
                 var material = (Material)o;
                 material.SetShaderPassEnabled("ShadowCaster", enabled);
-            }
-        }
-
-        void BakedEmission()
-        {
-            EditorGUI.BeginChangeCheck();
-            editor.LightmapEmissionProperty();
-            if (EditorGUI.EndChangeCheck())
-            {
-                foreach (var o in editor.targets)
-                {
-                    var m = (Material)o;
-                    m.globalIlluminationFlags &=
-                        ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
-                }
             }
         }
 

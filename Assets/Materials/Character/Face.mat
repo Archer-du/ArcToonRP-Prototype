@@ -29,8 +29,14 @@ Material:
         m_Texture: {fileID: 2800000, guid: 049ade1c0e0240048b50bf041b2d8143, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 049ade1c0e0240048b50bf041b2d8143, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
-    m_Floats: []
-    m_Colors: []
+    m_Floats:
+    - _OutlineScale: 0.1
+    m_Colors:
+    - _OutlineColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
