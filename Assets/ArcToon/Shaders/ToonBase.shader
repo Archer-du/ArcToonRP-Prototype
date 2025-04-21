@@ -21,7 +21,9 @@
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
 
         _DirectLightAttenSigmoidCenter ("Direct Attenuation Sigmoid Center", Range(0, 1)) = 0.5
-        _DirectLightAttenSigmoidSharp ("Direct Attenuation Sigmoid Sharp", Range(0, 2)) = 1.25
+        _DirectLightAttenSigmoidSharp ("Direct Attenuation Sigmoid Sharp", Range(0, 5)) = 0.5
+        _DirectLightSpecSigmoidCenter ("Direct Specular Sigmoid Center", Range(0, 1)) = 0.5
+        _DirectLightSpecSigmoidSharp ("Direct Specular Sigmoid Sharp", Range(0, 5)) = 0.5
 
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1

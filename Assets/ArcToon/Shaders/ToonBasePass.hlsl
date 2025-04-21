@@ -68,7 +68,6 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     surface.interpolatedNormalWS = surface.normalWS;
     #endif
 
-    float4 rmo = GetRMOMask(config);
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
@@ -77,9 +76,10 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     surface.fresnelStrength = GetFresnel(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
 
+    RampChannelData channelData = GetRampChannelData(INPUT_PROPS_DIRECT_LIGHT_SIGMOID_PARAMS);
     BRDF brdf = GetBRDF(surface);
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
-    float3 finalColor = GetLighting(config.fragment, surface, brdf, gi);
+    float3 finalColor = GetLightingRamp(config.fragment, surface, brdf, gi, channelData);
     finalColor += GetEmission(config);
 
     return float4(finalColor, GetFinalAlpha(surface.alpha));

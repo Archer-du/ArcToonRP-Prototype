@@ -67,6 +67,12 @@ float3 DecodeNormal(float4 sample, float scale = 1.0)
     #endif
 }
 
+float GetHalfLambertFactor(float3 normal, float3 lightDir)
+{
+    float NdotL = dot(normal, lightDir);
+    return NdotL * 0.5 + 0.5;
+}
+
 float4 TransformObjectToWorldTangent(float4 tangentOS)
 {
     return float4(TransformObjectToWorldDir(tangentOS.xyz), tangentOS.w);
