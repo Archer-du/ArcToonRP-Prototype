@@ -96,6 +96,8 @@ namespace ArcToon.Runtime
 
                 var attachmentHandles = SetupPass.Record(renderGraph, camera, bufferSize, 
                     copyColorTexture, copyDepthTexture, useHDR);
+                
+                DepthPrePass.Record(renderGraph, camera, cullingResults, copyDepthTexture, attachmentHandles);
 
                 OpaquePass.Record(renderGraph, camera, cullingResults, attachmentHandles, lightingHandles);
 

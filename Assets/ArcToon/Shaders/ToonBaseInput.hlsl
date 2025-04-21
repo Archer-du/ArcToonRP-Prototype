@@ -20,7 +20,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Roughness)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
     UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
@@ -68,15 +68,15 @@ float3 GetNormalTS(InputConfig input)
 float GetMetallic(InputConfig input)
 {
     float metallic = INPUT_PROP(_Metallic);
-    metallic *= GetRMOMask(input).g;
+    metallic *= GetRMOMask(input).r;
     return metallic;
 }
 
-float GetRoughness(InputConfig input)
+float GetSmoothness(InputConfig input)
 {
-    float roughness = INPUT_PROP(_Roughness);
-    roughness *= GetRMOMask(input).r;
-    return roughness;
+    float smoothness = INPUT_PROP(_Smoothness);
+    smoothness *= GetRMOMask(input).g;
+    return smoothness;
 }
 
 float GetOcclusion(InputConfig input)

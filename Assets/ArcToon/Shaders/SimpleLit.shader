@@ -112,6 +112,28 @@
         {
             Tags
             {
+                "LightMode" = "DepthOnly"
+            }
+            ZWrite On
+            Cull Back
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #pragma multi_compile_instancing
+
+            #include "DepthOnlyPass.hlsl"
+
+            #pragma vertex DepthOnlyPassVertex
+            #pragma fragment DepthOnlyPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
                 "LightMode" = "Meta"
             }
 
