@@ -100,7 +100,8 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     float3 finalColor = GetLighting(config.fragment, surface, brdf, gi);
     finalColor += GetEmission(config);
-    return float4(finalColor.rgb, GetFinalAlpha(surface.alpha));
+
+    return float4(finalColor, GetFinalAlpha(surface.alpha));
 }
 
 #endif

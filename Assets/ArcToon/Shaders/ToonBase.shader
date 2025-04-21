@@ -12,7 +12,7 @@
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
         [NoScaleOffset] _MODSMaskMap("Mask (RMO)", 2D) = "white" {}
 
-        _Roughness ("Roughness", Range(0, 1)) = 0.5
+        _Smoothness ("Smoothness", Range(0, 1)) = 0.5
         _Metallic ("Metallic", Range(0, 1)) = 0.8
         _Occlusion ("Occlusion", Range(0, 1)) = 1
         _Fresnel ("Fresnel", Range(0, 1)) = 1
@@ -115,6 +115,28 @@
 
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "DepthOnly"
+            }
+            ZWrite On
+            Cull Back
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #pragma multi_compile_instancing
+
+            #include "DepthOnlyPass.hlsl"
+
+            #pragma vertex DepthOnlyPassVertex
+            #pragma fragment DepthOnlyPassFragment
             ENDHLSL
         }
 
