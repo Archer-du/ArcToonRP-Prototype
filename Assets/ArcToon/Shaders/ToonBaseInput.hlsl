@@ -10,9 +10,8 @@ TEXTURE2D(_NormalMap);
 TEXTURE2D(_RMOMaskMap);
 TEXTURE2D(_EmissionMap);
 
-TEXTURE2D(_DetailMap);
-SAMPLER(sampler_DetailMap);
-TEXTURE2D(_DetailNormalMap);
+TEXTURE2D(_RampSet);
+SAMPLER(sampler_RampSet);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)

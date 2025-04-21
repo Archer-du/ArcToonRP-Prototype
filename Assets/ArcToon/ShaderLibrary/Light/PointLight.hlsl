@@ -63,16 +63,16 @@ float GetPointRealtimeShadow(PointShadowData pointShadow, CascadeShadowData casc
 {
     if (pointShadow.shadowStrength <= 0) return 1.0;
     int tileIndex = pointShadow.tileIndex;
-    float3 surfaceToLight = pointShadow.lightPositionWS - surface.position;
+    float3 surfaceToLight = pointShadow.lightPositionWS - surface.positionWS;
     float faceOffset = CubeMapFaceID(-surfaceToLight);
     tileIndex += faceOffset;
     PointShadowBufferData shadowData = _PointShadowData[tileIndex];
     float3 lightPlane = pointShadowPlanes[faceOffset];
     float distanceToLightPlane = dot(surfaceToLight, lightPlane);
 
-    float3 normalBias = surface.interpolatedNormal * (distanceToLightPlane * shadowData.tileData.w);
+    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * shadowData.tileData.w);
     float4 positionSTS = mul(shadowData.shadowMatrix,
-                             float4(surface.position + normalBias, 1.0));
+                             float4(surface.positionWS + normalBias, 1.0));
     float shadow = FilterPointShadow(positionSTS.xyz / positionSTS.w,
                                     shadowData.tileData.xyz);
     shadow = lerp(1.0, shadow, pointShadow.shadowStrength);
@@ -82,9 +82,9 @@ float GetPointRealtimeShadow(PointShadowData pointShadow, CascadeShadowData casc
 float GetPointShadowAttenuation(PointShadowData pointShadow, CascadeShadowData cascade,
                                 Surface surface, GI gi)
 {
-    // #if !defined(_RECEIVE_SHADOWS)
-    // return 1.0;
-    // #endif
+    #if !defined(_RECEIVE_SHADOWS)
+    return 1.0;
+    #endif
     float realtimeShadow = GetPointRealtimeShadow(pointShadow, cascade, surface);
     float attenuation;
     // TODO:
@@ -116,7 +116,7 @@ Light GetPointLight(int index, Surface surface, CascadeShadowData cascade, GI gi
     Light light;
     light.color = bufferData.color.rgb;
     float3 position = bufferData.position.xyz;
-    float3 raydirection = position - surface.position;
+    float3 raydirection = position - surface.positionWS;
     light.direction = normalize(raydirection);
     float distanceSqr = max(dot(raydirection, raydirection), 0.00001);
     float rangeAttenuation = Square(saturate(1.0 - Square(distanceSqr * bufferData.position.w)));

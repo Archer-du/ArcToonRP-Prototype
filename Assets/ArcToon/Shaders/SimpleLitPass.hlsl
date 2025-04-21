@@ -71,21 +71,21 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     #endif
 
     Surface surface;
-    surface.position = input.positionWS;
+    surface.positionWS = input.positionWS;
     surface.color = color.rgb;
     surface.alpha = color.a;
     
     #if defined(_NORMAL_MAP)
-    surface.normal = normalize(NormalTangentToWorld(GetNormalTS(config),
+    surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
         input.normalWS, input.tangentWS));
-    surface.interpolatedNormal = normalize(input.normalWS);
+    surface.interpolatedNormalWS = normalize(input.normalWS);
     #else
-    surface.normal = normalize(input.normalWS);
-    surface.interpolatedNormal = surface.normal;
+    surface.normalWS = normalize(input.normalWS);
+    surface.interpolatedNormalWS = surface.normalWS;
     #endif
 
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
-    surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
+    surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.fresnelStrength = GetFresnel(config);
@@ -100,6 +100,8 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     float3 finalColor = GetLighting(config.fragment, surface, brdf, gi);
     finalColor += GetEmission(config);
+
+    float3 c = config.fragment.linearDepth / 100.0;
 
     return float4(finalColor, GetFinalAlpha(surface.alpha));
 }

@@ -55,11 +55,11 @@ float GetSpotRealtimeShadow(SpotShadowData spotShadow, CascadeShadowData cascade
     if (spotShadow.shadowStrength <= 0) return 1.0;
     int tileIndex = spotShadow.tileIndex;
     SpotShadowBufferData shadowData = _SpotShadowData[tileIndex];
-    float3 surfaceToLight = spotShadow.lightPositionWS - surface.position;
+    float3 surfaceToLight = spotShadow.lightPositionWS - surface.positionWS;
     float distanceToLightPlane = dot(surfaceToLight, spotShadow.spotDirectionWS);
-    float3 normalBias = surface.interpolatedNormal * (distanceToLightPlane * shadowData.tileData.w);
+    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * shadowData.tileData.w);
     float4 positionSTS = mul(shadowData.shadowMatrix,
-        float4(surface.position + normalBias, 1.0));
+        float4(surface.positionWS + normalBias, 1.0));
     float shadow = FilterSpotShadow(positionSTS.xyz / positionSTS.w,
         shadowData.tileData.xyz);
     shadow = lerp(1.0, shadow, spotShadow.shadowStrength);
@@ -69,9 +69,9 @@ float GetSpotRealtimeShadow(SpotShadowData spotShadow, CascadeShadowData cascade
 float GetSpotShadowAttenuation(SpotShadowData pointSpot, CascadeShadowData cascade,
                                     Surface surface, GI gi)
 {
-    // #if !defined(_RECEIVE_SHADOWS)
-    // return 1.0;
-    // #endif
+    #if !defined(_RECEIVE_SHADOWS)
+    return 1.0;
+    #endif
     float realtimeShadow = GetSpotRealtimeShadow(pointSpot, cascade, surface);
     float attenuation;
     // TODO:
@@ -100,7 +100,7 @@ Light GetSpotLight(int index, Surface surface, CascadeShadowData cascade, GI gi)
     Light light;
     light.color = bufferData.color.rgb;
     float3 position = bufferData.position.xyz;
-    float3 raydirection = position - surface.position;
+    float3 raydirection = position - surface.positionWS;
     light.direction = normalize(raydirection);
     float distanceSqr = max(dot(raydirection, raydirection), 0.00001);
     float rangeAttenuation = Square(saturate(1.0 - Square(distanceSqr * bufferData.position.w)));

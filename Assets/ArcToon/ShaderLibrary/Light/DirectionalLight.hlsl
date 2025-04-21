@@ -50,9 +50,9 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
                                    Surface surface)
 {
     if (directional.shadowStrength <= 0) return 1.0;
-    float3 normalBias = surface.interpolatedNormal * _ShadowCascadeData[cascade.offset].data.y * directional.normalBiasScale;
+    float3 normalBias = surface.interpolatedNormalWS * _ShadowCascadeData[cascade.offset].data.y * directional.normalBiasScale;
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex],
-                             float4(surface.position + normalBias, 1.0)).xyz;
+                             float4(surface.positionWS + normalBias, 1.0)).xyz;
     float shadow = FilterDirectionalShadow(positionSTS);
     #if defined(_CASCADE_BLEND_SOFT)
     // cascade shadow blend
@@ -68,9 +68,9 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
 float GetDirectionalShadowAttenuation(DirectionalLightShadowData directional, CascadeShadowData cascade,
                                       Surface surface, GI gi)
 {
-    // #if !defined(_RECEIVE_SHADOWS)
-    // return 1.0;
-    // #endif
+    #if !defined(_RECEIVE_SHADOWS)
+    return 1.0;
+    #endif
     float realtimeShadow = GetDirectionalRealtimeShadow(directional, cascade, surface);
     float attenuation;
     // farther than max distance but still inside the last culling sphere

@@ -110,7 +110,6 @@ namespace ArcToon.Runtime
                 UnsupportedPass.Record(renderGraph, camera, cullingResults);
 
                 // post fx
-
                 var texture = PostFXPass.Record(renderGraph, camera, cullingResults, bufferSize, 
                     cameraSettings, bufferSettings, postFXSettings, useHDR,
                     attachmentHandles.colorAttachment);

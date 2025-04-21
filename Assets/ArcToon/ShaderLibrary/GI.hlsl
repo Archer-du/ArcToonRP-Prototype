@@ -95,7 +95,7 @@ float4 SampleBakedShadows(float2 lightMapUV, Surface surface)
     {
         return SampleProbeOcclusion(
             TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
-            surface.position, unity_ProbeVolumeWorldToObject,
+            surface.positionWS, unity_ProbeVolumeWorldToObject,
             unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
             unity_ProbeVolumeMin.xyz, unity_ProbeVolumeSizeInv.xyz
         );
@@ -109,7 +109,7 @@ float4 SampleBakedShadows(float2 lightMapUV, Surface surface)
 
 float3 SampleEnvironment(Surface surface, BRDF brdf)
 {
-    float3 uvw = reflect(-surface.viewDirection, surface.normal);
+    float3 uvw = reflect(-surface.viewDirectionWS, surface.normalWS);
     float mipLevel = PerceptualRoughnessToMipmapLevel(brdf.perceptualRoughness);
     float4 environment = SAMPLE_TEXTURECUBE_LOD(
         unity_SpecCube0, samplerunity_SpecCube0, uvw, mipLevel

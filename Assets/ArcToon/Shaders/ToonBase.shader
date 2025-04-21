@@ -16,6 +16,8 @@
         _Metallic ("Metallic", Range(0, 1)) = 0.8
         _Occlusion ("Occlusion", Range(0, 1)) = 1
         _Fresnel ("Fresnel", Range(0, 1)) = 1
+        
+        _RampSet ("Ramp Set", 2D) = "white" {}
 
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
@@ -29,6 +31,9 @@
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        
+        [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
+        _LightingDebugMode ("Lighting Debug Mode", Float) = 0
 
         // for hard-coded unity capacity
         [HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
@@ -86,6 +91,11 @@
             #pragma shader_feature _RMO_MASK_MAP
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _CLIPPING
+
+            #pragma shader_feature _DEBUG_INCOMING_LIGHT
+            #pragma shader_feature _DEBUG_DIRECT_BRDF
+            #pragma shader_feature _DEBUG_SPECULAR
+            #pragma shader_feature _DEBUG_DIFFUSE
 
             #include "ToonBasePass.hlsl"
 
