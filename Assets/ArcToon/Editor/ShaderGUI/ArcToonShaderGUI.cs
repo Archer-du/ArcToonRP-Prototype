@@ -18,6 +18,15 @@ namespace ArcToon.Editor.GUI
             Off
         }
 
+        enum LightingDebugMode
+        {
+            None,
+            IncomingLight,
+            DirectBRDF,
+            Specular,
+            Diffuse,
+        }
+
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] materialProperties)
         {
             EditorGUI.BeginChangeCheck();
@@ -31,6 +40,7 @@ namespace ArcToon.Editor.GUI
 
             if (EditorGUI.EndChangeCheck())
             {
+                UpdateLightingDebugKeywords();
                 UpdateShadowCasterPass();
                 CopyLightMappingProperties();
             }
@@ -87,6 +97,49 @@ namespace ArcToon.Editor.GUI
             {
                 var material = (Material)o;
                 material.SetShaderPassEnabled("ShadowCaster", enabled);
+            }
+        }
+
+        void UpdateLightingDebugKeywords()
+        {
+            MaterialProperty property = FindProperty("_LightingDebugMode", properties, false);
+            if (property == null || property.hasMixedValue)
+                return;
+
+            switch ((LightingDebugMode)property.floatValue)
+            {
+                case LightingDebugMode.IncomingLight:
+                    SetKeyword("_DEBUG_INCOMING_LIGHT", true);
+                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
+                    SetKeyword("_DEBUG_SPECULAR", false);
+                    SetKeyword("_DEBUG_DIFFUSE", false);
+
+                    break;
+                case LightingDebugMode.DirectBRDF:
+                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
+                    SetKeyword("_DEBUG_DIRECT_BRDF", true);
+                    SetKeyword("_DEBUG_SPECULAR", false);
+                    SetKeyword("_DEBUG_DIFFUSE", false);
+
+                    break;
+                case LightingDebugMode.Specular:
+                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
+                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
+                    SetKeyword("_DEBUG_SPECULAR", true);
+                    SetKeyword("_DEBUG_DIFFUSE", false);
+                    break;
+                case LightingDebugMode.Diffuse:
+                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
+                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
+                    SetKeyword("_DEBUG_SPECULAR", false);
+                    SetKeyword("_DEBUG_DIFFUSE", true);
+                    break;
+                default:
+                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
+                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
+                    SetKeyword("_DEBUG_SPECULAR", false);
+                    SetKeyword("_DEBUG_DIFFUSE", false);
+                    break;
             }
         }
 
