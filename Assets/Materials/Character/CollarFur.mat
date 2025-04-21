@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _NORMAL_MAP
   - _RECEIVE_SHADOWS
   m_InvalidKeywords:
   - _SHADOWS_ON
@@ -54,7 +55,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 6783a8cfffd3c0348b4b4dddc21a0efd, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -62,7 +63,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 65a14a096a78d414aa31cb902fa1a986, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -88,10 +89,11 @@ Material:
     - _MaskMapToggle: 0
     - _Metallic: 0
     - _Mode: 0
-    - _NormalMapToggle: 0
+    - _NormalMapToggle: 1
     - _NormalScale: 1
     - _Occlusion: 1
     - _OcclusionStrength: 1
+    - _OutlineScale: 0.2
     - _Parallax: 0.02
     - _PremulAlpha: 0
     - _ReceiveShadows: 1
@@ -106,5 +108,6 @@ Material:
     - _BaseColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

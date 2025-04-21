@@ -52,7 +52,7 @@ void ClipLOD(Fragment fragment, float fade)
     #endif
 }
 
-float3 DecodeNormal(float4 sample, float scale)
+float3 DecodeNormal(float4 sample, float scale = 1.0)
 {
     #if defined(UNITY_NO_DXT5nm)
     return normalize(UnpackNormalRGB(sample, scale));
@@ -61,11 +61,16 @@ float3 DecodeNormal(float4 sample, float scale)
     #endif
 }
 
-float3 NormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS)
+float4 TransformObjectToWorldTangent(float4 tangentOS)
+{
+    return float4(TransformObjectToWorldDir(tangentOS.xyz), tangentOS.w);
+}
+
+float3 NormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS, bool doNormalize = false)
 {
     float3x3 tangentToWorld =
         CreateTangentToWorld(normalWS, tangentWS.xyz, tangentWS.w);
-    return TransformTangentToWorld(normalTS, tangentToWorld);
+    return TransformTangentToWorld(normalTS, tangentToWorld, doNormalize);
 }
 
 #endif

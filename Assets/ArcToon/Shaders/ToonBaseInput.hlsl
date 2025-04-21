@@ -1,5 +1,5 @@
-﻿#ifndef ARCTOON_TOONBASE_INPUT_INCLUDED
-#define ARCTOON_TOONBASE_INPUT_INCLUDED
+﻿#ifndef ARCTOON_TOON_BASE_INPUT_INCLUDED
+#define ARCTOON_TOON_BASE_INPUT_INCLUDED
 
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Input/InputConfig.hlsl"
@@ -20,17 +20,15 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-    UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Roughness)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
 
-    UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)
-    UNITY_DEFINE_INSTANCED_PROP(float, _DetailAlbedo)
-    UNITY_DEFINE_INSTANCED_PROP(float, _DetailSmoothness)
-    UNITY_DEFINE_INSTANCED_PROP(float, _DetailNormalScale)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _OutlineColor)
+    UNITY_DEFINE_INSTANCED_PROP(float, _OutlineScale)
+
+    UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 float2 TransformBaseUV(float2 rawBaseUV)
@@ -39,16 +37,10 @@ float2 TransformBaseUV(float2 rawBaseUV)
     return rawBaseUV * baseST.xy + baseST.zw;
 }
 
-float2 TransformDetailUV(float2 rawDetailUV)
-{
-    float4 detailST = INPUT_PROP(_DetailMap_ST);
-    return rawDetailUV * detailST.xy + detailST.zw;
-}
-
 float4 GetRMOMask(InputConfig input)
 {
     #ifdef _RMO_MASK_MAP
-    return SAMPLE_TEXTURE2D(_MODSMaskMap, sampler_BaseMap, input.baseUV);
+    return SAMPLE_TEXTURE2D(_RMOMaskMap, sampler_BaseMap, input.baseUV);
     #endif
     return 1.0;
 }
@@ -90,9 +82,19 @@ float GetRoughness(InputConfig input)
 float GetOcclusion(InputConfig input)
 {
     float strength = INPUT_PROP(_Occlusion);
-    float occlusion = GetRMOMask(input).g;
+    float occlusion = GetRMOMask(input).b;
     occlusion = lerp(1.0, occlusion, strength);
     return occlusion;
+}
+
+float GetOutlineScale()
+{
+    return INPUT_PROP(_OutlineScale);
+}
+
+float GetOutlineColor()
+{
+    return INPUT_PROP(_OutlineColor);
 }
 
 float GetFresnel(InputConfig input)
@@ -109,7 +111,7 @@ float3 GetEmission(InputConfig input)
 
 float GetFinalAlpha(float alpha)
 {
-    return INPUT_PROP(_ZWrite) ? 1.0 : alpha;
+    return 1.0;
 }
 
 #endif
