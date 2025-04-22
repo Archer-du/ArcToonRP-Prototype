@@ -78,6 +78,11 @@ float4 TransformObjectToWorldTangent(float4 tangentOS)
     return float4(TransformObjectToWorldDir(tangentOS.xyz), tangentOS.w);
 }
 
+float3 GetFaceFrontDir()
+{
+    return mul((float3x3)GetObjectToWorldMatrix(), float3(0, 0, -1));
+}
+
 float3 NormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS, bool doNormalize = false)
 {
     float3x3 tangentToWorld =

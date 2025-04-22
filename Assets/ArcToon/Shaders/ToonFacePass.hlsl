@@ -1,5 +1,5 @@
-﻿#ifndef ARCTOON_TOON_BASE_PASS_INCLUDED
-#define ARCTOON_TOON_BASE_PASS_INCLUDED
+﻿#ifndef ARCTOON_TOON_FACE_PASS_INCLUDED
+#define ARCTOON_TOON_FACE_PASS_INCLUDED
 
 #include "../ShaderLibrary/Light/Lighting.hlsl"
 
@@ -7,7 +7,6 @@ struct Attributes
 {
     float3 positionOS : POSITION;
     float3 normalOS : NORMAL;
-    float4 tangentOS : TANGENT;
     float2 baseUV : TEXCOORD0;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     GI_ATTRIBUTES_DATA
@@ -18,32 +17,53 @@ struct Varyings
     float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
     float3 normalWS : VAR_NORMAL;
-    #if defined(_NORMAL_MAP)
-    float4 tangentWS : VAR_TANGENT;
-    #endif
     float2 baseUV : VAR_BASE_UV;
+    float2 faceUV : VAR_FACE_UV;
+    float3 faceFrontWS : VAR_FACE_FRONT_WS;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     GI_VARYINGS_DATA
 };
 
-float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenData)
+float3 IncomingLight(Surface surface, Light light,
+    DirectLightAttenData attenData, FaceData faceData)
 {
     float3 lightAttenuation = 0.0f;
+    
     #if defined(_RAMP_SET)
+    float attenuationUV = 0.0;
+    #if defined(_SDF_LIGHT_MAP)
+    float3 faceDirHWS = normalize(float3(faceData.directionWS.x, 0.0, faceData.directionWS.z));
+    float3 lightDirHWS = normalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
+    float FdotL = dot(faceDirHWS, lightDirHWS);
+    float clipCenter = - FdotL * 0.5 + 0.5 + GetSDFShadowOffset();
+    float flipSign = cross(faceDirHWS, lightDirHWS).y;
+    float2 faceUV = faceData.faceUV;
+    if (flipSign > 0.0f)
+    {
+        faceUV.x = 1 - faceUV.x;
+    }
+    float attenFactorSDF = SampleSDFLightMap(faceUV);
+    float shadowMaskFactorSDF = SampleSDFLightMapShadowMask(faceUV);
+    attenuationUV = min(
+        SigmoidSharp(attenFactorSDF, clipCenter, attenData.smooth),
+        SigmoidSharp(shadowMaskFactorSDF, attenData.offset, attenData.smooth)
+    );
+    #else
     float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
-    float attenuationUV = min(
+    attenuationUV = min(
         SigmoidSharp(halfLambertFactor, attenData.offset, attenData.smooth),
         SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
     );
+    #endif
     lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
-    // lightAttenuation = light.shadowAttenuation;
     return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
     #else
     return IncomingLight(surface, light);
     #endif
 }
 
-float3 GetLighting(Surface surface, BRDF brdf, Light light, DirectLightAttenData attenData)
+float3 GetLighting(Surface surface, BRDF brdf, Light light,
+    DirectLightAttenData attenData, FaceData faceData)
 {
     #if defined(_DEBUG_INCOMING_LIGHT)
     return IncomingLight(surface, light, attenData);
@@ -54,10 +74,10 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light, DirectLightAttenData
     #if defined(_DEBUG_SPECULAR)
     return SpecularStrength(surface, brdf, light) * brdf.specular;
     #endif
-    return IncomingLight(surface, light, attenData) * DirectBRDF(surface, brdf, light);
+    return IncomingLight(surface, light, attenData, faceData) * DirectBRDF(surface, brdf, light);
 }
 
-Varyings ToonBasePassVertex(Attributes input)
+Varyings ToonFacePassVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -66,39 +86,30 @@ Varyings ToonBasePassVertex(Attributes input)
     output.positionWS = TransformObjectToWorld(input.positionOS);
     output.positionCS_SS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-    #if defined(_NORMAL_MAP)
-    output.tangentWS = float4(TransformObjectToWorldDir(input.tangentOS.xyz), input.tangentOS.w);
-    #endif
     output.baseUV = TransformBaseUV(input.baseUV);
+    output.faceUV = TransformFaceUV(input.baseUV);
+    output.faceFrontWS = GetFaceFrontDir();
     return output;
 }
 
-float4 ToonBasePassFragment(Varyings input) : SV_TARGET
+float4 ToonFacePassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
     
     ClipLOD(config.fragment, unity_LODFade.x);
     
-    float4 color = GetColor(config);
+    float4 albedo = GetColor(config);
     #if defined(_CLIPPING)
     clip(color.a - GetAlphaClip(config));
     #endif
 
     Surface surface;
     surface.positionWS = input.positionWS;
-    surface.color = color.rgb;
-    surface.alpha = color.a;
-    
-    #if defined(_NORMAL_MAP)
-    surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
-        input.normalWS, input.tangentWS));
-    surface.interpolatedNormalWS = normalize(input.normalWS);
-    #else
+    surface.color = albedo.rgb;
+    surface.alpha = albedo.a;
     surface.normalWS = normalize(input.normalWS);
     surface.interpolatedNormalWS = surface.normalWS;
-    #endif
-
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
@@ -110,18 +121,20 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     BRDF brdf = GetBRDF(surface);
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
+    FaceData faceData = GetFaceData(input.faceFrontWS, input.faceUV);
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
     
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
-    
+
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
-        finalColor += GetLighting(surface, brdf, light, attenData);
+        finalColor += GetLighting(surface, brdf, light, attenData, faceData);
+        // finalColor = normalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
     }
 
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);
-    
+
     finalColor += GetEmission(config);
 
     return float4(finalColor, GetFinalAlpha(surface.alpha));

@@ -101,12 +101,12 @@ Light GetSpotLight(int index, Surface surface, CascadeShadowData cascade, GI gi)
     light.color = bufferData.color.rgb;
     float3 position = bufferData.position.xyz;
     float3 raydirection = position - surface.positionWS;
-    light.direction = normalize(raydirection);
+    light.directionWS = normalize(raydirection);
     float distanceSqr = max(dot(raydirection, raydirection), 0.00001);
     float rangeAttenuation = Square(saturate(1.0 - Square(distanceSqr * bufferData.position.w)));
     float4 spotAngles = bufferData.spotAngle;
     float3 spotDirection = bufferData.direction.xyz;
-    float spotAttenuation = Square(saturate(dot(spotDirection, light.direction) *
+    float spotAttenuation = Square(saturate(dot(spotDirection, light.directionWS) *
         spotAngles.x + spotAngles.y));
     light.distanceAttenuation = spotAttenuation * rangeAttenuation / distanceSqr;
     
