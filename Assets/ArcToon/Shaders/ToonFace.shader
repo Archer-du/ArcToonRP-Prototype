@@ -14,7 +14,7 @@
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
         
         [Toggle(_SDF_LIGHT_MAP)] _LightMapSDFToggle ("Use SDF Light Map", Float) = 0
-        _LightMapSDF ("SDF Light Map", 2D) = "white" {}
+        [NoScaleOffset] _LightMapSDF ("SDF Light Map", 2D) = "white" {}
         
         _ShadowOffsetSDF("SDF Light Map Attenuation Offset", Range(-1, 1)) = 0
         
