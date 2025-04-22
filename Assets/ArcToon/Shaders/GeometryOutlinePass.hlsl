@@ -40,7 +40,7 @@ Varyings GeometryOutlinePassVertex(Attributes input)
 
 float4 GeometryOutlinePassFragment(Varyings input) : SV_TARGET
 {
-    return GetOutlineColor();
+    return float4(GetOutlineColor(), 1.0);
 }
 
 #endif

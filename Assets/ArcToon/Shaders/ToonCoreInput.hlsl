@@ -119,7 +119,7 @@ float GetOutlineScale()
     return INPUT_PROP(_OutlineScale);
 }
 
-float GetOutlineColor()
+float3 GetOutlineColor()
 {
     return INPUT_PROP(_OutlineColor).rgb;
 }
