@@ -4,7 +4,7 @@
 struct Light
 {
     float3 color;
-    float3 direction;
+    float3 directionWS;
     float shadowAttenuation;
     float distanceAttenuation;
 };

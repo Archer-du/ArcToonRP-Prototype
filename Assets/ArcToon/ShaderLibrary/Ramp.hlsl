@@ -4,31 +4,32 @@
 #define RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL 0.125
 #define RAMP_DIRECT_LIGHTING_SPECULAR_CHANNEL 0.375
 
-struct RampChannelData
+struct DirectLightAttenData
 {
-    float directLightAttenSigmoidCenter;
-    float directLightAttenSigmoidSharp;
-    float directLightSpecSigmoidCenter;
-    float directLightSpecSigmoidSharp;
+    float offset;
+    float smooth;
 };
 
-RampChannelData GetRampChannelData(
-    float directLightAttenSigmoidCenter,
-    float directLightAttenSigmoidSharp,
-    float directLightSpecSigmoidCenter,
-    float directLightSpecSigmoidSharp)
+struct FaceData
 {
-    RampChannelData data;
-    data.directLightAttenSigmoidCenter = directLightAttenSigmoidCenter;
-    data.directLightAttenSigmoidSharp = directLightAttenSigmoidSharp;
-    data.directLightSpecSigmoidCenter = directLightSpecSigmoidCenter;
-    data.directLightSpecSigmoidSharp = directLightSpecSigmoidSharp;
+    float3 directionWS;
+    float2 faceUV;
+};
+
+DirectLightAttenData GetDirectLightAttenData(float offset, float smooth)
+{
+    DirectLightAttenData data;
+    data.offset = offset;
+    data.smooth = smooth;
     return data;
 }
 
-float3 SampleRampSetChannel(TEXTURE2D_PARAM(RampTex, RampSampler), float rampUV, float channel)
+FaceData GetFaceData(float3 directionWS, float2 faceUV)
 {
-    return SAMPLE_TEXTURE2D(RampTex, RampSampler, float2(rampUV, channel));
+    FaceData data;
+    data.directionWS = directionWS;
+    data.faceUV = faceUV;
+    return data;
 }
 
 #endif

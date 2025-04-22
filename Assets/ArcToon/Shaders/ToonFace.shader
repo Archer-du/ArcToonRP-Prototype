@@ -1,16 +1,9 @@
-﻿Shader "ArcToon/ToonBase"
+﻿Shader "ArcToon/ToonFace"
 {
     Properties
     {
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
-
-        [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
-        [NoScaleOffset] _NormalMap("Normals", 2D) = "bump" {}
-        _NormalScale("Normal Scale", Range(0, 1)) = 1
-
-        [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
-        [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
 
         _Smoothness ("Smoothness", Range(0, 1)) = 0.5
         _Metallic ("Metallic", Range(0, 1)) = 0.8
@@ -19,7 +12,12 @@
 
         [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
-
+        
+        [Toggle(_SDF_LIGHT_MAP)] _LightMapSDFToggle ("Use SDF Light Map", Float) = 0
+        _LightMapSDF ("SDF Light Map", 2D) = "white" {}
+        
+        _ShadowOffsetSDF("SDF Light Map Attenuation Offset", Range(-1, 1)) = 0
+        
         _DirectLightSpecSigmoidCenter ("Direct Specular Sigmoid Center", Range(0, 1)) = 0.5
         _DirectLightSpecSigmoidSharp ("Direct Specular Sigmoid Sharp", Range(0, 5)) = 0.5
         
@@ -27,7 +25,6 @@
         _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5
 
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
-        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
 
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
@@ -49,7 +46,7 @@
     SubShader
     {
         HLSLINCLUDE
-        #include "ToonBaseInput.hlsl"
+        #include "ToonFaceInput.hlsl"
         ENDHLSL
 
         Pass
@@ -89,15 +86,12 @@
 
             #pragma multi_compile_instancing
             #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
-            #pragma multi_compile _ _CASCADE_BLEND_SOFT
             #pragma multi_compile _ LIGHTMAP_ON
-            #pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
             #pragma multi_compile _ LOD_FADE_CROSSFADE
 
-            #pragma shader_feature _NORMAL_MAP
-            #pragma shader_feature _RMO_MASK_MAP
             #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _SDF_LIGHT_MAP
+            
             #pragma shader_feature _CLIPPING
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
@@ -105,10 +99,10 @@
             #pragma shader_feature _DEBUG_SPECULAR
             #pragma shader_feature _DEBUG_DIFFUSE
 
-            #include "ToonBasePass.hlsl"
+            #include "ToonFacePass.hlsl"
 
-            #pragma vertex ToonBasePassVertex
-            #pragma fragment ToonBasePassFragment
+            #pragma vertex ToonFacePassVertex
+            #pragma fragment ToonFacePassFragment
             ENDHLSL
         }
 

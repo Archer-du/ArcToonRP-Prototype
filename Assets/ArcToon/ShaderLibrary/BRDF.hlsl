@@ -44,9 +44,9 @@ BRDF GetBRDF(Surface surface, bool applyAlphaToDiffuse = false)
 // reference: com.unity.render-pipelines.universal/ShaderLibrary/BRDF.hlsl
 float SpecularStrength(Surface surface, BRDF brdf, Light light)
 {
-    float3 h = SafeNormalize(light.direction + surface.viewDirectionWS);
+    float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
     float nh2 = Square(saturate(dot(surface.normalWS, h)));
-    float lh2 = Square(saturate(dot(light.direction, h)));
+    float lh2 = Square(saturate(dot(light.directionWS, h)));
     float r2 = Square(brdf.roughness);
     float d2 = Square(nh2 * (r2 - 1.0) + 1.00001);
     float normalization = brdf.roughness * 4.0 + 2.0;

@@ -95,7 +95,7 @@ Light GetDirectionalLight(int lightIndex, Surface surface, CascadeShadowData cas
     DirectionalLightBufferData bufferData = _DirectionalLightData[lightIndex];
     Light light;
     light.color = bufferData.color.rgb;
-    light.direction = bufferData.direction.xyz;
+    light.directionWS = bufferData.direction.xyz;
     DirectionalLightShadowData dirShadowData = DecodeDirectionalLightShadowData(bufferData, cascade);
     light.shadowAttenuation = GetDirectionalShadowAttenuation(dirShadowData, cascade, surface, gi);
     light.distanceAttenuation = 1.0;
@@ -103,13 +103,12 @@ Light GetDirectionalLight(int lightIndex, Surface surface, CascadeShadowData cas
 }
 
 
-Light GetDirectionalLightDebugCascadeCullingSphere(int lightIndex, Surface surface,
-                                                   CascadeShadowData cascade)
+Light GetDirectionalLightDebugCascadeCullingSphere(int lightIndex, Surface surface, CascadeShadowData cascade, GI gi)
 {
     DirectionalLightBufferData bufferData = _DirectionalLightData[lightIndex];
     Light light;
     light.color = bufferData.color.rgb;
-    light.direction = bufferData.direction.xyz;
+    light.directionWS = bufferData.direction.xyz;
     light.shadowAttenuation = cascade.offset * 0.25;
     light.distanceAttenuation = 1.0;
     return light;
