@@ -13,6 +13,7 @@ struct Surface
     float metallic;
     float roughness;
     float fresnelStrength;
+    float specularStrength;
     float occlusion;
     float dither;
 };

@@ -17,12 +17,9 @@
         [Toggle(_SDF_LIGHT_MAP_SPEC)] _LightMapSpecularSDFToggle ("Use SDF Light Map Specular", Float) = 0
         _LightMapSDF ("SDF Light Map", 2D) = "white" {}
         
-        _ShadowOffsetSDF("SDF Light Map Attenuation Offset", Range(-1, 1)) = 0
+        _ShadowOffsetSDF ("SDF Light Map Attenuation Offset", Range(-1, 1)) = 0
         _NoseSpecularStrengthSDF ("SDF Light Map Nose Specular Strength", Range(0, 1)) = 0.5
         _NoseSpecularSmoothSDF ("SDF Light Map Nose Specular Smooth", Range(0, 1)) = 0.1
-        
-        _DirectLightSpecSigmoidCenter ("Direct Specular Sigmoid Center", Range(0, 1)) = 0.5
-        _DirectLightSpecSigmoidSharp ("Direct Specular Sigmoid Sharp", Range(0, 5)) = 0.5
         
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
         _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5

@@ -19,11 +19,15 @@ SAMPLER(sampler_LightMapSDF);
 TEXTURE2D(_RampSet);
 SAMPLER(sampler_RampSet);
 
+TEXTURE2D(_SpecMap);
+
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _LightMapSDF_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _SpecMap_ST)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+    UNITY_DEFINE_INSTANCED_PROP(float, _SpecScale)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
 
@@ -136,6 +140,18 @@ float3 GetEmission(InputConfig input)
     float4 albedo = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, input.baseUV);
     float4 color = INPUT_PROP(_EmissionColor);
     return albedo.rgb * color.rgb;
+}
+
+float GetSpecular(InputConfig input)
+{
+    // TODO:
+    #ifdef _SPEC_MAP
+    float4 baseST = INPUT_PROP(_SpecMap_ST);
+    float2 baseUV = input.baseUV * baseST.xy * 0.1 + baseST.zw * 0.1;
+    float specularScale = INPUT_PROP(_SpecScale);
+    return SAMPLE_TEXTURE2D(_SpecMap, sampler_BaseMap, baseUV).rgb * specularScale;
+    #endif
+    return 0.0;
 }
 
 float GetFinalAlpha(float alpha)
