@@ -13,6 +13,7 @@ struct DirectLightAttenData
 struct FaceData
 {
     float3 directionWS;
+    float3 positionWS;
     float2 faceUV;
 };
 
@@ -24,10 +25,11 @@ DirectLightAttenData GetDirectLightAttenData(float offset, float smooth)
     return data;
 }
 
-FaceData GetFaceData(float3 directionWS, float2 faceUV)
+FaceData GetFaceData(float2 faceUV)
 {
     FaceData data;
-    data.directionWS = directionWS;
+    data.directionWS = GetFaceFrontDir();
+    data.positionWS = GetFaceCenterPositionWorld();
     data.faceUV = faceUV;
     return data;
 }

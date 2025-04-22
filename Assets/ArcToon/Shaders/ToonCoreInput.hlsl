@@ -46,6 +46,8 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmooth)
 
+    UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularStrengthSDF)
+    UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularSmoothSDF)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 #define INPUT_PROPS_DIRECT_ATTEN_PARAMS \
@@ -163,6 +165,32 @@ float SampleSDFLightMapShadowMask(float2 faceUV)
     return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).a;
     #endif
     return 1.0;
+}
+
+float SampleSDFLightMapNoseSpecular1(float2 faceUV)
+{
+    #ifdef _SDF_LIGHT_MAP_SPEC
+    return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).g;
+    #endif
+    return 1.0;
+}
+
+float SampleSDFLightMapNoseSpecular2(float2 faceUV)
+{
+    #ifdef _SDF_LIGHT_MAP_SPEC
+    return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).b;
+    #endif
+    return 1.0;
+}
+
+float GetNoseSpecularStrength()
+{
+    return INPUT_PROP(_NoseSpecularStrengthSDF) * 50;
+}
+
+float GetNoseSpecularSmooth()
+{
+    return INPUT_PROP(_NoseSpecularSmoothSDF) * 2;
 }
 
 float GetSDFShadowOffset()
