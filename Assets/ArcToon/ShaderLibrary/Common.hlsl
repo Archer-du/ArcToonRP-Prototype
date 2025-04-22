@@ -83,6 +83,12 @@ float3 GetFaceFrontDir()
     return mul((float3x3)GetObjectToWorldMatrix(), float3(0, 0, -1));
 }
 
+float3 GetFaceCenterPositionWorld()
+{
+    float3 objectCenterWorld = mul(GetObjectToWorldMatrix(), float4(0,0,0,1)).xyz;
+    return objectCenterWorld;
+}
+
 float3 NormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS, bool doNormalize = false)
 {
     float3x3 tangentToWorld =
