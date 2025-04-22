@@ -46,7 +46,7 @@
     SubShader
     {
         HLSLINCLUDE
-        #include "ToonFaceInput.hlsl"
+        #include "ToonCoreInput.hlsl"
         ENDHLSL
 
         Pass
