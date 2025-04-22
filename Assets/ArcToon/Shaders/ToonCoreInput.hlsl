@@ -1,24 +1,34 @@
-﻿#ifndef ARCTOON_TOON_BASE_INPUT_INCLUDED
-#define ARCTOON_TOON_BASE_INPUT_INCLUDED
+#ifndef ARCTOON_TOON_CORE_INPUT_INCLUDED
+#define ARCTOON_TOON_CORE_INPUT_INCLUDED
+
 
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Input/InputConfig.hlsl"
 
 TEXTURE2D(_BaseMap);
-SAMPLER(sampler_BaseMap);
 TEXTURE2D(_NormalMap);
+TEXTURE2D(_EmissionMap);
+SAMPLER(sampler_BaseMap);
+
 TEXTURE2D(_RMOMaskMap);
 SAMPLER(sampler_RMOMaskMap);
-TEXTURE2D(_EmissionMap);
+
+TEXTURE2D(_LightMapSDF);
+SAMPLER(sampler_LightMapSDF);
 
 TEXTURE2D(_RampSet);
 SAMPLER(sampler_RampSet);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _LightMapSDF_ST)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+
+    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _ShadowOffsetSDF)
+
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
     UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
@@ -35,6 +45,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmooth)
+
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 #define INPUT_PROPS_DIRECT_ATTEN_PARAMS \
@@ -45,6 +56,12 @@ float2 TransformBaseUV(float2 rawBaseUV)
 {
     float4 baseST = INPUT_PROP(_BaseMap_ST);
     return rawBaseUV * baseST.xy + baseST.zw;
+}
+
+float2 TransformFaceUV(float2 rawFaceUV)
+{
+    float4 faceST = INPUT_PROP(_LightMapSDF_ST);
+    return rawFaceUV * faceST.xy * 0.1 + faceST.zw * 0.1;
 }
 
 float4 GetRMOMask(InputConfig input)
@@ -104,7 +121,7 @@ float GetOutlineScale()
 
 float GetOutlineColor()
 {
-    return INPUT_PROP(_OutlineColor);
+    return INPUT_PROP(_OutlineColor).rgb;
 }
 
 float GetFresnel(InputConfig input)
@@ -130,6 +147,27 @@ float3 SampleRampSetChannel(float rampUV, float channel)
     return SAMPLE_TEXTURE2D(_RampSet, sampler_RampSet, float2(rampUV, channel)).rgb;
     #endif
     return 1.0;
+}
+
+float SampleSDFLightMap(float2 faceUV)
+{
+    #ifdef _SDF_LIGHT_MAP
+    return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).r;
+    #endif
+    return 1.0;
+}
+
+float SampleSDFLightMapShadowMask(float2 faceUV)
+{
+    #ifdef _SDF_LIGHT_MAP
+    return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).a;
+    #endif
+    return 1.0;
+}
+
+float GetSDFShadowOffset()
+{
+    return INPUT_PROP(_ShadowOffsetSDF) * 0.25;
 }
 
 #endif
