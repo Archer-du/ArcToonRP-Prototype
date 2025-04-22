@@ -1,4 +1,4 @@
-﻿Shader "ArcToon/ToonBase"
+﻿Shader "ArcToon/ToonFringe"
 {
     Properties
     {
@@ -25,10 +25,6 @@
         
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
         _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5
-        
-        [Toggle(_SPEC_MAP)] _SpecMapToggle ("Use Specular Map", Float) = 0
-        _SpecMap ("Specular Map", 2D) = "white" {}
-        _SpecScale ("Specular Scale", Range(0, 1)) = 1
 
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
@@ -101,7 +97,6 @@
             #pragma shader_feature _NORMAL_MAP
             #pragma shader_feature _RMO_MASK_MAP
             #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _SPEC_MAP
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _CLIPPING
 

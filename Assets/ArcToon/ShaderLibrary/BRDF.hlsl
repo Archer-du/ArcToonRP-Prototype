@@ -55,7 +55,12 @@ float SpecularStrength(Surface surface, BRDF brdf, Light light)
 
 float3 DirectBRDF(Surface surface, BRDF brdf, Light light)
 {
+    #ifdef _SPEC_MAP
+    float specularStrengthMask = surface.specularStrength;
+    return specularStrengthMask + SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
+    #else
     return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
+    #endif
 }
 
 float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)

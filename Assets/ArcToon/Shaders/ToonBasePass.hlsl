@@ -86,6 +86,7 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     #endif
 
     Surface surface;
+    ZERO_INITIALIZE(Surface, surface)
     surface.positionWS = input.positionWS;
     surface.color = color.rgb;
     surface.alpha = color.a;
@@ -105,6 +106,7 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.occlusion = GetOcclusion(config);
     surface.fresnelStrength = GetFresnel(config);
+    surface.specularStrength = GetSpecular(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
 
     BRDF brdf = GetBRDF(surface);

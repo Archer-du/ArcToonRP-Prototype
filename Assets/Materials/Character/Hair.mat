@@ -14,6 +14,7 @@ Material:
   m_ValidKeywords:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
+  - _SPEC_MAP
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
@@ -83,6 +84,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 3b131a763c8de8d4ebf69c6d410d508d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SpecMap:
+        m_Texture: {fileID: 2800000, guid: 3c45735b9a5bac040b5ff84339b20719, type: 3}
+        m_Scale: {x: 10, y: 10}
+        m_Offset: {x: 12.3, y: 0}
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
@@ -118,6 +123,8 @@ Material:
     - _Shadows: 0
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
+    - _SpecMapToggle: 1
+    - _SpecScale: 0.4
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0

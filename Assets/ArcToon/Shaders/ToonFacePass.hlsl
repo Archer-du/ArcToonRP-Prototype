@@ -24,9 +24,8 @@ struct Varyings
 };
 
 // overrides
-
-float3 SpecularStrength(Surface surface, BRDF brdf, Light light,
-    DirectLightAttenData attenData, FaceData faceData)
+float3 SpecularStrength(Light light,
+    FaceData faceData)
 {
     float3 faceDirHWS = SafeNormalize(float3(faceData.directionWS.x, 0.0, faceData.directionWS.z));
     float3 lightDirHWS = SafeNormalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
@@ -47,14 +46,14 @@ float3 SpecularStrength(Surface surface, BRDF brdf, Light light,
         SigmoidSharp(specFactorNoseSDF1, clipCenter, GetNoseSpecularSmooth()) *
         SigmoidSharp(specFactorNoseSDF2, 1 - clipCenter, GetNoseSpecularSmooth());
     float specularStrength = specularUV;
+    // TODO: config
     if (HdotN < 0.6095) specularStrength = lerp(specularStrength, 0, saturate((0.6095 - HdotN) * 20));
     return specularStrength * GetNoseSpecularStrength();
 }
 
-float3 DirectBRDF(Surface surface, BRDF brdf, Light light,
-    DirectLightAttenData attenData, FaceData faceData)
+float3 DirectBRDF(Surface surface, BRDF brdf, Light light, FaceData faceData)
 {
-    return SpecularStrength(surface, brdf, light, attenData, faceData) * brdf.specular + brdf.diffuse;
+    return SpecularStrength(light, faceData) * brdf.specular + brdf.diffuse;
 }
 
 float3 IncomingLight(Surface surface, Light light,
@@ -102,12 +101,12 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light,
     return IncomingLight(surface, light, attenData, faceData);
     #endif
     #if defined(_DEBUG_DIRECT_BRDF)
-    return DirectBRDF(surface, brdf, light, attenData, faceData);
+    return DirectBRDF(surface, brdf, light, faceData);
     #endif
     #if defined(_DEBUG_SPECULAR)
     return SpecularStrength(surface, brdf, light, attenData, faceData) * brdf.specular;
     #endif
-    return IncomingLight(surface, light, attenData, faceData) * DirectBRDF(surface, brdf, light, attenData, faceData);
+    return IncomingLight(surface, light, attenData, faceData) * DirectBRDF(surface, brdf, light, faceData);
 }
 
 Varyings ToonFacePassVertex(Attributes input)
