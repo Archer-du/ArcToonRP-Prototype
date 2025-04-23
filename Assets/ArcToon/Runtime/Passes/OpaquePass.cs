@@ -63,6 +63,7 @@ namespace ArcToon.Runtime.Passes
             );
             builder.ReadWriteTexture(handles.colorAttachment);
             builder.ReadWriteTexture(handles.depthAttachment);
+            builder.ReadTexture(handles.stencilMask);
             builder.ReadTexture(lightingData.shadowMapHandles.directionalAtlas);
             builder.ReadTexture(lightingData.shadowMapHandles.spotAtlas);
             builder.ReadTexture(lightingData.shadowMapHandles.pointAtlas);

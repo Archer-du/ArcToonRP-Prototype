@@ -52,6 +52,9 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularStrengthSDF)
     UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularSmoothSDF)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleX)
+    UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleY)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 #define INPUT_PROPS_DIRECT_ATTEN_PARAMS \
@@ -212,6 +215,14 @@ float GetNoseSpecularSmooth()
 float GetSDFShadowOffset()
 {
     return INPUT_PROP(_ShadowOffsetSDF) * 0.25;
+}
+
+float2 GetFringeShadowBiasScale()
+{
+    float2 data;
+    data.x = INPUT_PROP(_FringeShadowBiasScaleX) * 0.1;
+    data.y = INPUT_PROP(_FringeShadowBiasScaleY) * 0.1;
+    return data;
 }
 
 #endif

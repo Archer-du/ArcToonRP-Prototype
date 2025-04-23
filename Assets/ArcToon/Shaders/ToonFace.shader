@@ -35,6 +35,11 @@
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        
+        [IntRange] _StencilRef ("Fringe StencilRef (Binary)", Range(0, 255)) = 0
+        
+        [IntRange] _StencilReadMask ("Fringe Stencil Read Mask (Binary)", Range(0, 255)) = 0
+        [IntRange] _StencilWriteMask ("Fringe Stencil Write Mask (Binary)", Range(0, 255)) = 0
 
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
@@ -68,6 +73,38 @@
 
             #pragma vertex GeometryOutlinePassVertex
             #pragma fragment GeometryOutlinePassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "FringeReceiver"
+            }
+            Blend One Zero
+            ZTest Always
+            ZWrite Off
+            Cull Back
+            Stencil
+            {
+                Ref[_StencilRef]
+                Comp Equal
+                Pass Keep
+                ReadMask[_StencilReadMask]
+                WriteMask[_StencilWriteMask]
+            }
+            ColorMask G
+
+            HLSLPROGRAM
+            #pragma target 4.5
+
+            #pragma multi_compile_instancing
+
+            #include "FringeReceiverPass.hlsl"
+
+            #pragma vertex FringeReceiverPassVertex
+            #pragma fragment FringeReceiverPassFragment
             ENDHLSL
         }
 

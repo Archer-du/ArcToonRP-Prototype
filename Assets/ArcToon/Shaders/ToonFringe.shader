@@ -22,23 +22,37 @@
 
         _DirectLightSpecSigmoidCenter ("Direct Specular Sigmoid Center", Range(0, 1)) = 0.5
         _DirectLightSpecSigmoidSharp ("Direct Specular Sigmoid Sharp", Range(0, 5)) = 0.5
-        
+
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
         _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5
-
+        
+        [Toggle(_SPEC_MAP)] _SpecMapToggle ("Use Specular Map", Float) = 0
+        _SpecMap ("Specular Map", 2D) = "white" {}
+        _SpecScale ("Specular Scale", Range(0, 1)) = 1
+        
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
 
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
 
-        [NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
-        [HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
+        [NoScaleOffset] _EmissionMap ("Emission", 2D) = "white" {}
+        [HDR] _EmissionColor ("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
 
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        
+        _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
+        _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
 
+        [IntRange] _StencilRef ("Fringe StencilRef (Binary)", Range(0, 255)) = 0
+        [Enum(UnityEngine.Rendering.CompareFunction)] _StencilComp ("Fringe StencilComp", int) = 0
+        [Enum(UnityEngine.Rendering.StencilOp)] _StencilOp ("Fringe StencilOp", int) = 0
+        
+        [IntRange] _StencilReadMask ("Fringe Stencil Read Mask (Binary)", Range(0, 255)) = 0
+        [IntRange] _StencilWriteMask ("Fringe Stencil Write Mask (Binary)", Range(0, 255)) = 0
+        
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
 
@@ -78,6 +92,38 @@
         {
             Tags
             {
+                "LightMode" = "FringeCaster"
+            }
+            Blend One Zero
+            ZTest On
+            ZWrite Off
+            Cull Back
+            Stencil
+            {
+                Ref[_StencilRef]
+                Comp[_StencilComp]
+                Pass[_StencilOp]
+                ReadMask[_StencilReadMask]
+                WriteMask[_StencilWriteMask]
+            }
+            ColorMask 0
+
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #pragma multi_compile_instancing
+
+            #include "FringeCasterPass.hlsl"
+
+            #pragma vertex FringeCasterPassVertex
+            #pragma fragment FringeCasterPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
                 "LightMode" = "ToonBase"
             }
             Blend One Zero, One OneMinusSrcAlpha
@@ -97,6 +143,7 @@
             #pragma shader_feature _NORMAL_MAP
             #pragma shader_feature _RMO_MASK_MAP
             #pragma shader_feature _RAMP_SET
+            #pragma shader_feature _SPEC_MAP
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _CLIPPING
 
