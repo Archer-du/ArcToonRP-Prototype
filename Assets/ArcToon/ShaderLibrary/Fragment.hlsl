@@ -4,7 +4,6 @@
 #include "Input/UnityInput.hlsl"
 
 TEXTURE2D(_CameraDepthTexture);
-TEXTURE2D(_CameraColorTexture);
 TEXTURE2D(_StencilMaskTexture);
 
 float4 _CameraBufferSize;

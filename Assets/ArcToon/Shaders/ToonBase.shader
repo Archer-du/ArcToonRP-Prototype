@@ -52,6 +52,11 @@
     }
     SubShader
     {
+        Tags
+        {
+            "Queue" = "Geometry+10"
+        }
+        
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
         ENDHLSL

@@ -49,9 +49,9 @@ namespace ArcToon.Runtime.Passes
             {
                 builder.ReadTexture(handles.colorCopy);
             }
-            if (handles.depthStencilCopy.IsValid())
+            if (handles.depthStencilBuffer.IsValid())
             {
-                builder.ReadTexture(handles.depthStencilCopy);
+                builder.ReadTexture(handles.depthStencilBuffer);
             }
             builder.ReadBuffer(lightingData.directionalLightDataHandle);
             builder.ReadBuffer(lightingData.spotLightDataHandle);
