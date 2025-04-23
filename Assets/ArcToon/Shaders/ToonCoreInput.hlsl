@@ -220,8 +220,8 @@ float GetSDFShadowOffset()
 float2 GetFringeShadowBiasScale()
 {
     float2 data;
-    data.x = INPUT_PROP(_FringeShadowBiasScaleX) * 0.1;
-    data.y = INPUT_PROP(_FringeShadowBiasScaleY) * 0.1;
+    data.x = INPUT_PROP(_FringeShadowBiasScaleX) * 0.2;
+    data.y = INPUT_PROP(_FringeShadowBiasScaleY) * 0.2;
     return data;
 }
 

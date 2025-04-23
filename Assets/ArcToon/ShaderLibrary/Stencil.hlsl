@@ -1,0 +1,5 @@
+#ifndef ARCTOON_STENCIL_INCLUDED
+#define ARCTOON_STENCIL_INCLUDED
+
+
+#endif
