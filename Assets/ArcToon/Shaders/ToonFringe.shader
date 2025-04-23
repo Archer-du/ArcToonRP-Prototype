@@ -62,6 +62,11 @@
     }
     SubShader
     {
+        Tags
+        {
+            "Queue" = "Geometry+20"
+        }
+                
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
         ENDHLSL
@@ -100,11 +105,11 @@
             Cull Back
             Stencil
             {
-                Ref[_StencilRef]
-                Comp[_StencilComp]
-                Pass[_StencilOp]
-                ReadMask[_StencilReadMask]
-                WriteMask[_StencilWriteMask]
+                Ref 1
+                Comp Always
+                Pass Replace
+                ReadMask 3
+                WriteMask 3
             }
             ColorMask 0
 
