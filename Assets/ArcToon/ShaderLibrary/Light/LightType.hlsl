@@ -7,6 +7,7 @@ struct Light
     float3 directionWS;
     float shadowAttenuation;
     float distanceAttenuation;
+    bool isMainLight;
 };
 
 #endif

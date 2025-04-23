@@ -94,6 +94,7 @@ Light GetDirectionalLight(int lightIndex, Surface surface, CascadeShadowData cas
 {
     DirectionalLightBufferData bufferData = _DirectionalLightData[lightIndex];
     Light light;
+    light.isMainLight = lightIndex == 0;
     light.color = bufferData.color.rgb;
     light.directionWS = bufferData.direction.xyz;
     DirectionalLightShadowData dirShadowData = DecodeDirectionalLightShadowData(bufferData, cascade);

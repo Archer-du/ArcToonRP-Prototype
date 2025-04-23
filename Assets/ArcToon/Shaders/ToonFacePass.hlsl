@@ -24,9 +24,9 @@ struct Varyings
 };
 
 // overrides
-float3 SpecularStrength(Light light,
-    FaceData faceData)
+float3 SpecularStrength(Light light, FaceData faceData)
 {
+    if (!light.isMainLight) return 0.0;
     float3 faceDirHWS = SafeNormalize(float3(faceData.directionWS.x, 0.0, faceData.directionWS.z));
     float3 lightDirHWS = SafeNormalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
     float3 viewDirWS = SafeNormalize(_WorldSpaceCameraPos - faceData.positionWS);
@@ -56,7 +56,7 @@ float3 DirectBRDF(Surface surface, BRDF brdf, Light light, FaceData faceData)
     return SpecularStrength(light, faceData) * brdf.specular + brdf.diffuse;
 }
 
-float3 IncomingLight(Surface surface, Light light,
+float3 IncomingLight(Surface surface, Light light, Fragment fragment,
     DirectLightAttenData attenData, FaceData faceData)
 {
     float3 lightAttenuation = 0.0f;
@@ -80,6 +80,13 @@ float3 IncomingLight(Surface surface, Light light,
         SigmoidSharp(attenFactorSDF, clipCenter, attenData.smooth),
         SigmoidSharp(shadowMaskFactorSDF, attenData.offset, attenData.smooth)
     );
+    if (light.isMainLight)
+    {
+        attenuationUV = min(
+            attenuationUV,
+            SigmoidSharp(1 - fragment.stencilMask, attenData.offset, attenData.smooth)
+        );
+    }
     #else
     float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
     attenuationUV = min(
@@ -94,11 +101,11 @@ float3 IncomingLight(Surface surface, Light light,
     #endif
 }
 
-float3 GetLighting(Surface surface, BRDF brdf, Light light,
+float3 GetLighting(Surface surface, BRDF brdf, Light light, Fragment fragment,
     DirectLightAttenData attenData, FaceData faceData)
 {
     #if defined(_DEBUG_INCOMING_LIGHT)
-    return IncomingLight(surface, light, attenData, faceData);
+    return IncomingLight(surface, light, fragment, attenData, faceData);
     #endif
     #if defined(_DEBUG_DIRECT_BRDF)
     return DirectBRDF(surface, brdf, light, faceData);
@@ -106,7 +113,7 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light,
     #if defined(_DEBUG_SPECULAR)
     return SpecularStrength(surface, brdf, light, attenData, faceData) * brdf.specular;
     #endif
-    return IncomingLight(surface, light, attenData, faceData) * DirectBRDF(surface, brdf, light, faceData);
+    return IncomingLight(surface, light, fragment, attenData, faceData) * DirectBRDF(surface, brdf, light, faceData);
 }
 
 Varyings ToonFacePassVertex(Attributes input)
@@ -147,6 +154,7 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.occlusion = GetOcclusion(config);
     surface.fresnelStrength = GetFresnel(config);
+    surface.specularStrength = GetSpecular(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
 
     BRDF brdf = GetBRDF(surface);
@@ -160,7 +168,7 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
-        finalColor += GetLighting(surface, brdf, light, attenData, faceData);
+        finalColor += GetLighting(surface, brdf, light, config.fragment, attenData, faceData);
     }
 
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);

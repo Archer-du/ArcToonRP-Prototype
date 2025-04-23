@@ -8,6 +8,13 @@
 #include "PointLight.hlsl"
 #include "../GI.hlsl"
 
+float3 GetMainLightDirection()
+{
+    if (_DirectionalLightCount <= 0) return 1.0;
+    DirectionalLightBufferData bufferData = _DirectionalLightData[0];
+    return bufferData.direction.xyz;
+}
+
 // punctual lights avoid gradient unroll
 float3 IncomingLight(Surface surface, Light light)
 {

@@ -75,7 +75,7 @@ namespace ArcToon.Runtime.Passes
 
             if (copyDepth)
             {
-                pass.depthCopy = builder.WriteTexture(handles.depthCopy);
+                pass.depthCopy = builder.WriteTexture(handles.depthStencilCopy);
             }
 
             builder.SetRenderFunc<CopyAttachmentPass>(static (pass, context) => pass.Render(context));
