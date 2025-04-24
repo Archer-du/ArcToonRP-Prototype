@@ -15,6 +15,7 @@ Material:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _SPEC_MAP
+  - _TRANSPARENT_FRINGE
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
@@ -98,8 +99,9 @@ Material:
     - _DstBlend: 0
     - _Fresnel: 1
     - _FringeShadowBiasScale: 0.5
-    - _FringeShadowBiasScaleX: 0.75
+    - _FringeShadowBiasScaleX: 0.5
     - _FringeShadowBiasScaleY: 0.5
+    - _FringeTransparentScale: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -127,6 +129,7 @@ Material:
     - _StencilReadMask: 3
     - _StencilRef: 1
     - _StencilWriteMask: 3
+    - _TransparentFringeToggle: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

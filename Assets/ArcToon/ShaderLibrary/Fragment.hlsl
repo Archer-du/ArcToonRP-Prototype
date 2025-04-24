@@ -14,7 +14,7 @@ struct Fragment
     float2 screenUV;
     float linearDepth;
     float bufferLinearDepth;
-    float stencilMask;
+    float4 stencilMask;
 };
 
 bool IsOrthographicCamera()
@@ -37,7 +37,7 @@ Fragment GetFragment(float4 positionSS)
     fragment.screenUV = fragment.positionSS * _CameraBufferSize.xy;
     fragment.linearDepth = IsOrthographicCamera() ? OrthographicDepthBufferToLinear(positionSS.z) : positionSS.w;
     float bufferDepth = SAMPLE_TEXTURE2D(_CameraDepthTexture, sampler_point_clamp, fragment.screenUV).r;
-    float stencilMask = SAMPLE_TEXTURE2D(_StencilMaskTexture, sampler_linear_clamp, fragment.screenUV).g;
+    float4 stencilMask = SAMPLE_TEXTURE2D(_StencilMaskTexture, sampler_linear_clamp, fragment.screenUV);
     fragment.stencilMask = stencilMask;
     fragment.bufferLinearDepth = IsOrthographicCamera()
                                      ? OrthographicDepthBufferToLinear(bufferDepth)

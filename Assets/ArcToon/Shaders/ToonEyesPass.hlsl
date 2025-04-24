@@ -1,5 +1,6 @@
-﻿#ifndef ARCTOON_TOON_FACE_PASS_INCLUDED
-#define ARCTOON_TOON_FACE_PASS_INCLUDED
+// derive from face
+#ifndef ARCTOON_TOON_EYES_PASS_INCLUDED
+#define ARCTOON_TOON_EYES_PASS_INCLUDED
 
 #include "../ShaderLibrary/Light/Lighting.hlsl"
 
@@ -116,7 +117,7 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light, Fragment fragment,
     return IncomingLight(surface, light, fragment, attenData, faceData) * DirectBRDF(surface, brdf, light, faceData);
 }
 
-Varyings ToonFacePassVertex(Attributes input)
+Varyings ToonEyesPassVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -130,7 +131,7 @@ Varyings ToonFacePassVertex(Attributes input)
     return output;
 }
 
-float4 ToonFacePassFragment(Varyings input) : SV_TARGET
+float4 ToonEyesPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
@@ -143,12 +144,16 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     #endif
 
     Surface surface;
+    surface.linearDepth = -TransformWorldToView(input.positionWS).z;
+
+    // TODO: config
+    clip(config.fragment.bufferLinearDepth - surface.linearDepth + 0.285);
+    
     surface.positionWS = input.positionWS;
     surface.color = albedo.rgb;
     surface.alpha = albedo.a;
     surface.normalWS = normalize(input.normalWS);
     surface.interpolatedNormalWS = surface.normalWS;
-    surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
@@ -175,7 +180,7 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
 
     finalColor += GetEmission(config);
 
-    return float4(finalColor, GetFinalAlpha(surface.alpha));
+    return float4(finalColor, GetTransparentScale(config));
 }
 
 #endif

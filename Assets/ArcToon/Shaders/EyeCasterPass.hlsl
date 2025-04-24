@@ -1,5 +1,5 @@
-#ifndef ARCTOON_FRINGE_RECEIVER_PASS_INCLUDED
-#define ARCTOON_FRINGE_RECEIVER_PASS_INCLUDED
+#ifndef ARCTOON_EYE_CASTER_PASS_INCLUDED
+#define ARCTOON_EYE_CASTER_PASS_INCLUDED
 
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Light/Lighting.hlsl"
@@ -16,20 +16,20 @@ struct Varyings
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-Varyings FringeReceiverPassVertex(Attributes input)
+Varyings EyeCasterPassVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
+
+    output.positionCS_SS = TransformObjectToHClip(input.positionOS);
     
-    float3 positionWS = TransformObjectToWorld(input.positionOS);
-    output.positionCS_SS = TransformWorldToHClip(positionWS);
     return output;
 }
 
-float4 FringeReceiverPassFragment(Varyings input) : SV_TARGET
+float4 EyeCasterPassFragment(Varyings input) : SV_TARGET
 {
-    return float4(0.0, 1.0, 0.0, 0.0);
+    return 0.0;
 }
 
 #endif
