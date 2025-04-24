@@ -1,4 +1,4 @@
-﻿Shader "ArcToon/ToonEyes"
+﻿Shader "ArcToon/ToonEyeLashes"
 {
     Properties
     {
@@ -15,10 +15,7 @@
 
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
         _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5
-        
-        [Toggle(_SPEC_MAP)] _SpecMapToggle ("Use Specular Map", Float) = 0
-        _SpecMap ("Specular Map", 2D) = "white" {}
-        _SpecScale ("Specular Scale", Range(0, 1)) = 1
+        _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
         
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
 
@@ -91,7 +88,7 @@
         {
             Tags
             {
-                "LightMode" = "EyeReceiver"
+                "LightMode" = "EyeLashesReceiver"
             }
             Blend One Zero
             ZTest Always
@@ -112,10 +109,10 @@
 
             #pragma multi_compile_instancing
 
-            #include "EyeReceiverPass.hlsl"
+            #include "EyeLashesReceiverPass.hlsl"
 
-            #pragma vertex EyeReceiverPassVertex
-            #pragma fragment EyeReceiverPassFragment
+            #pragma vertex EyeLashesReceiverPassVertex
+            #pragma fragment EyeLashesReceiverPassFragment
             ENDHLSL
         }
 
@@ -150,10 +147,10 @@
             #pragma shader_feature _DEBUG_SPECULAR
             #pragma shader_feature _DEBUG_DIFFUSE
 
-            #include "ToonEyesPass.hlsl"
+            #include "ToonEyeLashesPass.hlsl"
 
-            #pragma vertex ToonEyesPassVertex
-            #pragma fragment ToonEyesPassFragment
+            #pragma vertex ToonEyeLashesPassVertex
+            #pragma fragment ToonEyeLashesPassFragment
             ENDHLSL
         }
 

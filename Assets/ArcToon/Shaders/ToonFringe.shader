@@ -20,11 +20,9 @@
         [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
 
-        _DirectLightSpecSigmoidCenter ("Direct Specular Sigmoid Center", Range(0, 1)) = 0.5
-        _DirectLightSpecSigmoidSharp ("Direct Specular Sigmoid Sharp", Range(0, 5)) = 0.5
-
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
         _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5
+        _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
         
         [Toggle(_SPEC_MAP)] _SpecMapToggle ("Use Specular Map", Float) = 0
         _SpecMap ("Specular Map", 2D) = "white" {}
@@ -122,7 +120,7 @@
         {
             Tags
             {
-                "LightMode" = "EyeCaster"
+                "LightMode" = "EyeLashesCaster"
             }
             Blend One Zero
             ZTest On
@@ -143,10 +141,10 @@
 
             #pragma multi_compile_instancing
 
-            #include "EyeCasterPass.hlsl"
+            #include "EyeLashesCasterPass.hlsl"
 
-            #pragma vertex EyeCasterPassVertex
-            #pragma fragment EyeCasterPassFragment
+            #pragma vertex EyeLashesCasterPassVertex
+            #pragma fragment EyeLashesCasterPassFragment
             ENDHLSL
         }
 

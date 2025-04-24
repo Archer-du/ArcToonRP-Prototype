@@ -117,7 +117,7 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light, Fragment fragment,
     return IncomingLight(surface, light, fragment, attenData, faceData) * DirectBRDF(surface, brdf, light, faceData);
 }
 
-Varyings ToonEyesPassVertex(Attributes input)
+Varyings ToonEyeLashesPassVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -131,7 +131,7 @@ Varyings ToonEyesPassVertex(Attributes input)
     return output;
 }
 
-float4 ToonEyesPassFragment(Varyings input) : SV_TARGET
+float4 ToonEyeLashesPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);

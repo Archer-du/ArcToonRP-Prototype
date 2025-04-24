@@ -44,11 +44,9 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 
-    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecSigmoidCenter)
-    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecSigmoidSharp)
-
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmooth)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmoothNew)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularStrengthSDF)
     UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularSmoothSDF)
@@ -61,7 +59,8 @@ UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 #define INPUT_PROPS_DIRECT_ATTEN_PARAMS \
 INPUT_PROP(_DirectLightAttenOffset), \
-INPUT_PROP(_DirectLightAttenSmooth)
+INPUT_PROP(_DirectLightAttenSmooth), \
+INPUT_PROP(_DirectLightAttenSmoothNew)
 
 float2 TransformBaseUV(float2 rawBaseUV)
 {

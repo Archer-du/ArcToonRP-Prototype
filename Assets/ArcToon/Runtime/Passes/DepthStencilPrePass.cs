@@ -23,13 +23,13 @@ namespace ArcToon.Runtime.Passes
         private static ShaderTagId[] stencilPrePassShaderTagIds =
         {
             new("FringeCaster"),
-            new("EyeCaster"),
+            new("EyeLashesCaster"),
         };
         
         private static ShaderTagId[] stencilShaderTagIds =
         {
             new("FringeReceiver"),
-            new("EyeReceiver"),
+            new("EyeLashesReceiver"),
         };
 
         private RendererListHandle depthPrepassList;

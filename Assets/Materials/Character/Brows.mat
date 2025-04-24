@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Lashes
+  m_Name: Brows
   m_Shader: {fileID: 4800000, guid: 86608eb599b448bca39d6bf2a1b085ab, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -16,6 +16,7 @@ Material:
   - _TRANSPARENT_FRINGE
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
+  - _RECEIVE_SHADOWS
   - _SHADOWS_ON
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
@@ -48,6 +49,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MODSMaskMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -87,10 +92,14 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Clipping: 0
+    - _Cull: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DirectLightAttenOffset: 0.5
-    - _DirectLightAttenSmooth: 0.5
+    - _DirectLightAttenOffset: 0.6
+    - _DirectLightAttenSigmoidCenter: 0.5
+    - _DirectLightAttenSigmoidSharp: 0.5
+    - _DirectLightAttenSmooth: 5
+    - _DirectLightAttenSmoothNew: 0.98
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
     - _DstBlend: 0
@@ -111,8 +120,10 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineScale: 0
     - _Parallax: 0.02
+    - _PremulAlpha: 0
     - _RampSetToggle: 1
-    - _ReceiveShadows: 0
+    - _ReceiveShadows: 1
+    - _Roughness: 0.5
     - _Shadows: 0
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
@@ -124,9 +135,9 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.46226418, g: 0.10978795, b: 0, a: 1}
-    - _Color: {r: 0.46226418, g: 0.10978795, b: 0, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

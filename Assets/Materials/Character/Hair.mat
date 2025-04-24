@@ -99,6 +99,7 @@ Material:
     - _DirectLightAttenSigmoidCenter: 0.5
     - _DirectLightAttenSigmoidSharp: 1
     - _DirectLightAttenSmooth: 2
+    - _DirectLightAttenSmoothNew: 0.95
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
     - _DstBlend: 0
