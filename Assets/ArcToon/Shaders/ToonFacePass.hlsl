@@ -181,9 +181,9 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
         finalColor += GetLighting(surface, brdf, light, config.fragment, attenData, faceData);
     }
-
+    
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);
-
+    
     finalColor += GetEmission(config);
 
     return float4(finalColor, GetFinalAlpha(config));

@@ -15,14 +15,12 @@ namespace ArcToon.Runtime.Passes
         
         private static ShaderTagId[] baseShaderTagIds =
         {
-            new("ToonBase"),
             new("ToonForward"),
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
         };
         private static ShaderTagId[] outlineShaderTagIds =
         {
-            new("ToonOutline"),
             new("GeometryOutline"),
         };
 
