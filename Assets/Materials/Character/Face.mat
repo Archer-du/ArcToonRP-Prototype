@@ -100,11 +100,14 @@ Material:
     - _DirectLightAttenSigmoidCenter: 0.3
     - _DirectLightAttenSigmoidSharp: 1
     - _DirectLightAttenSmooth: 5
+    - _DirectLightAttenSmoothNew: 0.99
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
     - _DstBlend: 0
     - _Fresnel: 1
     - _FringeShadowBiasScale: 0.5
+    - _FringeShadowBiasScaleX: 0.5
+    - _FringeShadowBiasScaleY: 0.5
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1

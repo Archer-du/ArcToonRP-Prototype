@@ -57,6 +57,7 @@ Material:
     m_Floats:
     - _DirectLightAttenSigmoidCenter: 0.5
     - _DirectLightAttenSigmoidSharp: 0.5
+    - _DirectLightAttenSmoothNew: 0.8
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
     - _LightingDebugMode: 0

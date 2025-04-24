@@ -17,11 +17,13 @@ struct FaceData
     float2 faceUV;
 };
 
-DirectLightAttenData GetDirectLightAttenData(float offset, float smooth)
+DirectLightAttenData GetDirectLightAttenData(float offset, float smooth, float smoothNew)
 {
     DirectLightAttenData data;
     data.offset = offset;
     data.smooth = smooth;
+    // TODO: optimize
+    data.smooth = -0.1 / (smoothNew - 1.001);
     return data;
 }
 

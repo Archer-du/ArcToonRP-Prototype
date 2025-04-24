@@ -16,7 +16,7 @@ struct Varyings
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-Varyings EyeReceiverPassVertex(Attributes input)
+Varyings EyeLashesReceiverPassVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -27,7 +27,7 @@ Varyings EyeReceiverPassVertex(Attributes input)
     return output;
 }
 
-float4 EyeReceiverPassFragment(Varyings input) : SV_TARGET
+float4 EyeLashesReceiverPassFragment(Varyings input) : SV_TARGET
 {
     return float4(0.0, 0.0, 1.0, 0.0);
 }
