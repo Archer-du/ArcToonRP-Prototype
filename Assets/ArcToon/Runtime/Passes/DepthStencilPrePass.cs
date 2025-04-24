@@ -23,12 +23,13 @@ namespace ArcToon.Runtime.Passes
         private static ShaderTagId[] stencilPrePassShaderTagIds =
         {
             new("FringeCaster"),
+            new("EyeCaster"),
         };
         
-        // TODO: remove
         private static ShaderTagId[] stencilShaderTagIds =
         {
             new("FringeReceiver"),
+            new("EyeReceiver"),
         };
 
         private RendererListHandle depthPrepassList;
@@ -63,7 +64,7 @@ namespace ArcToon.Runtime.Passes
                 stencilMask,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                 depthStencilBuffer,
-                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
+                RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
             );
             
             commandBuffer.ClearRenderTarget(false, true, Color.clear);

@@ -55,6 +55,8 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleX)
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleY)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _FringeTransparentScale)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 #define INPUT_PROPS_DIRECT_ATTEN_PARAMS \
@@ -157,8 +159,21 @@ float GetSpecular(InputConfig input)
     return 0.0;
 }
 
+float GetFringeTransparentScale()
+{
+    return INPUT_PROP(_FringeTransparentScale);
+}
+
 float GetFinalAlpha(float alpha)
 {
+    return 1.0;
+}
+
+float GetTransparentScale(InputConfig input)
+{
+    #ifdef _TRANSPARENT_FRINGE
+    return lerp(1.0, GetFringeTransparentScale(), input.fragment.stencilMask.b);
+    #endif
     return 1.0;
 }
 

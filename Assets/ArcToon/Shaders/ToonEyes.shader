@@ -1,16 +1,9 @@
-﻿Shader "ArcToon/ToonFringe"
+﻿Shader "ArcToon/ToonEyes"
 {
     Properties
     {
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
-
-        [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
-        [NoScaleOffset] _NormalMap("Normals", 2D) = "bump" {}
-        _NormalScale("Normal Scale", Range(0, 1)) = 1
-
-        [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
-        [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
 
         _Smoothness ("Smoothness", Range(0, 1)) = 0.5
         _Metallic ("Metallic", Range(0, 1)) = 0.8
@@ -20,9 +13,6 @@
         [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
 
-        _DirectLightSpecSigmoidCenter ("Direct Specular Sigmoid Center", Range(0, 1)) = 0.5
-        _DirectLightSpecSigmoidSharp ("Direct Specular Sigmoid Sharp", Range(0, 5)) = 0.5
-
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
         _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5
         
@@ -31,10 +21,6 @@
         _SpecScale ("Specular Scale", Range(0, 1)) = 1
         
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
-        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
-
-        _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
-        _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
 
         [NoScaleOffset] _EmissionMap ("Emission", 2D) = "white" {}
         [HDR] _EmissionColor ("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
@@ -46,6 +32,9 @@
         _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
         _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
 
+        [Toggle(_TRANSPARENT_FRINGE)] _TransparentFringeToggle ("Use Transparent Fringe", Float) = 0
+        _FringeTransparentScale ("Fringe Transparent Scale", Range(0, 1)) = 0.5
+        
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
 
@@ -57,96 +46,76 @@
     {
         Tags
         {
-            "Queue" = "Geometry+10"
+            "Queue" = "Geometry+100"
         }
                 
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
         ENDHLSL
 
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "ToonOutline"
-            }
-            Blend One Zero, One OneMinusSrcAlpha
-            ZWrite On
-            Cull Front
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #include "GeometryOutlinePass.hlsl"
-
-            #pragma vertex GeometryOutlinePassVertex
-            #pragma fragment GeometryOutlinePassFragment
-            ENDHLSL
-        }
 
         Pass
         {
             Tags
             {
-                "LightMode" = "FringeCaster"
+                "LightMode" = "FringeReceiver"
             }
             Blend One Zero
-            ZTest On
+            ZTest Always
             ZWrite Off
             Cull Back
             Stencil
             {
                 Ref 1
-                Comp Always
-                Pass Replace
+                Comp Equal
+                Pass Keep
                 ReadMask 3
                 WriteMask 3
             }
-            ColorMask 0
+            ColorMask G
 
             HLSLPROGRAM
-            #pragma target 3.5
+            #pragma target 4.5
 
             #pragma multi_compile_instancing
 
-            #include "FringeCasterPass.hlsl"
+            #include "FringeReceiverPass.hlsl"
 
-            #pragma vertex FringeCasterPassVertex
-            #pragma fragment FringeCasterPassFragment
+            #pragma vertex FringeReceiverPassVertex
+            #pragma fragment FringeReceiverPassFragment
             ENDHLSL
         }
+
 
         Pass
         {
             Tags
             {
-                "LightMode" = "EyeCaster"
+                "LightMode" = "EyeReceiver"
             }
             Blend One Zero
-            ZTest On
+            ZTest Always
             ZWrite Off
             Cull Back
             Stencil
             {
                 Ref 4
-                Comp Always
-                Pass Replace
+                Comp Equal
+                Pass Keep
                 ReadMask 12
                 WriteMask 12
             }
-            ColorMask 0
+            ColorMask B
 
             HLSLPROGRAM
             #pragma target 3.5
 
             #pragma multi_compile_instancing
 
-            #include "EyeCasterPass.hlsl"
+            #include "EyeReceiverPass.hlsl"
 
-            #pragma vertex EyeCasterPassVertex
-            #pragma fragment EyeCasterPassFragment
+            #pragma vertex EyeReceiverPassVertex
+            #pragma fragment EyeReceiverPassFragment
             ENDHLSL
         }
 
@@ -157,6 +126,7 @@
                 "LightMode" = "ToonBase"
             }
             Blend SrcAlpha OneMinusSrcAlpha, One OneMinusSrcAlpha
+            ZTest Always
             ZWrite On
             Cull Back
 
@@ -165,16 +135,14 @@
 
             #pragma multi_compile_instancing
             #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
-            #pragma multi_compile _ _CASCADE_BLEND_SOFT
             #pragma multi_compile _ LIGHTMAP_ON
-            #pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
             #pragma multi_compile _ LOD_FADE_CROSSFADE
 
-            #pragma shader_feature _NORMAL_MAP
-            #pragma shader_feature _RMO_MASK_MAP
             #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _SPEC_MAP
-            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _SDF_LIGHT_MAP
+            #pragma shader_feature _SDF_LIGHT_MAP_SPEC
+            #pragma shader_feature _TRANSPARENT_FRINGE
+
             #pragma shader_feature _CLIPPING
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
@@ -182,10 +150,10 @@
             #pragma shader_feature _DEBUG_SPECULAR
             #pragma shader_feature _DEBUG_DIFFUSE
 
-            #include "ToonBasePass.hlsl"
+            #include "ToonEyesPass.hlsl"
 
-            #pragma vertex ToonBasePassVertex
-            #pragma fragment ToonBasePassFragment
+            #pragma vertex ToonEyesPassVertex
+            #pragma fragment ToonEyesPassFragment
             ENDHLSL
         }
 

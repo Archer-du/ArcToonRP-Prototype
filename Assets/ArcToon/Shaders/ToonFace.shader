@@ -35,11 +35,9 @@
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-        
-        [IntRange] _StencilRef ("Fringe StencilRef (Binary)", Range(0, 255)) = 0
-        
-        [IntRange] _StencilReadMask ("Fringe Stencil Read Mask (Binary)", Range(0, 255)) = 0
-        [IntRange] _StencilWriteMask ("Fringe Stencil Write Mask (Binary)", Range(0, 255)) = 0
+                
+        _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
+        _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
 
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
@@ -52,7 +50,7 @@
     {
         Tags
         {
-            "Queue" = "Geometry+15"
+            "Queue" = "Geometry+10"
         }
                 
         HLSLINCLUDE
@@ -93,11 +91,11 @@
             Cull Back
             Stencil
             {
-                Ref[_StencilRef]
+                Ref 1
                 Comp Equal
                 Pass Keep
-                ReadMask[_StencilReadMask]
-                WriteMask[_StencilWriteMask]
+                ReadMask 3
+                WriteMask 3
             }
             ColorMask G
 
