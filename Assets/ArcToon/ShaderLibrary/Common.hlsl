@@ -29,6 +29,7 @@ SAMPLER(sampler_point_clamp);
 #include "Fragment.hlsl"
 #include "ForwardPlus.hlsl"
 
+// basic math helpers --------------------------
 float Square(float v)
 {
     return v * v;
@@ -49,14 +50,6 @@ float SigmoidSharp(float x, float center, float sharp)
     float s = 1.0 / (1.0 + pow(100000.0, (-3.0 * sharp * (x - center))));
     return s;
 };
-
-void ClipLOD(Fragment fragment, float fade)
-{
-    #if defined(LOD_FADE_CROSSFADE)
-    float dither = InterleavedGradientNoise(fragment.positionSS.xy, 0);;
-    clip((fade < 0 ? fade + 1 : fade) - dither);
-    #endif
-}
 
 float3 DecodeNormal(float4 sample, float scale = 1.0)
 {
@@ -94,6 +87,18 @@ float3 NormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS, 
     float3x3 tangentToWorld =
         CreateTangentToWorld(normalWS, tangentWS.xyz, tangentWS.w);
     return TransformTangentToWorld(normalTS, tangentToWorld, doNormalize);
+}
+
+
+
+// feature helpers --------------------------
+
+void ClipLOD(Fragment fragment, float fade)
+{
+    #if defined(LOD_FADE_CROSSFADE)
+    float dither = InterleavedGradientNoise(fragment.positionSS.xy, 0);;
+    clip((fade < 0 ? fade + 1 : fade) - dither);
+    #endif
 }
 
 #endif

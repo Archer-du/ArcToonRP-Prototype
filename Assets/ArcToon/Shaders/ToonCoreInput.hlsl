@@ -1,7 +1,6 @@
 #ifndef ARCTOON_TOON_CORE_INPUT_INCLUDED
 #define ARCTOON_TOON_CORE_INPUT_INCLUDED
 
-
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Input/InputConfig.hlsl"
 
@@ -163,12 +162,7 @@ float GetFringeTransparentScale()
     return INPUT_PROP(_FringeTransparentScale);
 }
 
-float GetFinalAlpha(float alpha)
-{
-    return 1.0;
-}
-
-float GetTransparentScale(InputConfig input)
+float GetFinalAlpha(InputConfig input)
 {
     #ifdef _TRANSPARENT_FRINGE
     return lerp(1.0, GetFringeTransparentScale(), input.fragment.stencilMask.b);
