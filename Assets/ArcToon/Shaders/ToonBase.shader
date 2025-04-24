@@ -61,9 +61,10 @@
 
         Pass
         {
+            Name "Toon Outline"
             Tags
             {
-                "LightMode" = "ToonOutline"
+                "LightMode" = "GeometryOutline"
             }
             Blend One Zero, One OneMinusSrcAlpha
             ZWrite On
@@ -83,9 +84,10 @@
 
         Pass
         {
+            Name "Toon Base"
             Tags
             {
-                "LightMode" = "ToonBase"
+                "LightMode" = "ToonForward"
             }
             Blend One Zero, One OneMinusSrcAlpha
             ZWrite On

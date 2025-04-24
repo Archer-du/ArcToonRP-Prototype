@@ -62,27 +62,9 @@
         #include "ToonCoreInput.hlsl"
         ENDHLSL
 
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "ToonOutline"
-            }
-            Blend One Zero, One OneMinusSrcAlpha
-            ZWrite On
-            Cull Front
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #include "GeometryOutlinePass.hlsl"
-
-            #pragma vertex GeometryOutlinePassVertex
-            #pragma fragment GeometryOutlinePassFragment
-            ENDHLSL
-        }
+        UsePass "ArcToon/ToonBase/TOON OUTLINE"
+        
+        UsePass "ArcToon/ToonBase/TOON BASE"
 
         Pass
         {
@@ -145,45 +127,6 @@
 
             #pragma vertex EyeLashesCasterPassVertex
             #pragma fragment EyeLashesCasterPassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "ToonBase"
-            }
-            Blend SrcAlpha OneMinusSrcAlpha, One OneMinusSrcAlpha
-            ZWrite On
-            Cull Back
-
-            HLSLPROGRAM
-            #pragma target 4.5
-
-            #pragma multi_compile_instancing
-            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
-            #pragma multi_compile _ _CASCADE_BLEND_SOFT
-            #pragma multi_compile _ LIGHTMAP_ON
-            #pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
-            #pragma multi_compile _ LOD_FADE_CROSSFADE
-
-            #pragma shader_feature _NORMAL_MAP
-            #pragma shader_feature _RMO_MASK_MAP
-            #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _SPEC_MAP
-            #pragma shader_feature _RECEIVE_SHADOWS
-            #pragma shader_feature _CLIPPING
-
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
-            #include "ToonBasePass.hlsl"
-
-            #pragma vertex ToonBasePassVertex
-            #pragma fragment ToonBasePassFragment
             ENDHLSL
         }
 

@@ -15,10 +15,10 @@ Material:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _SPEC_MAP
-  - _TRANSPARENT_FRINGE
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
+  - _TRANSPARENT_FRINGE
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -94,6 +94,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DirectLightAttenOffset: 0.55
     - _DirectLightAttenSmooth: 2
+    - _DirectLightAttenSmoothNew: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
     - _DstBlend: 0
@@ -121,7 +122,7 @@ Material:
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecMapToggle: 1
-    - _SpecScale: 0.4
+    - _SpecScale: 1
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _StencilComp: 8

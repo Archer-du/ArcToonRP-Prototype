@@ -13,16 +13,17 @@ namespace ArcToon.Runtime.Passes
         RendererListHandle baseList;
         RendererListHandle outlineList;
         
-        private static ShaderTagId[] shaderTagIds =
+        private static ShaderTagId[] baseShaderTagIds =
         {
+            new("ToonBase"),
+            new("ToonForward"),
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
-            new("ToonBase"),
         };
-        
         private static ShaderTagId[] outlineShaderTagIds =
         {
             new("ToonOutline"),
+            new("GeometryOutline"),
         };
 
         void Render(RenderGraphContext context)
@@ -51,7 +52,7 @@ namespace ArcToon.Runtime.Passes
                 })
             );
             pass.baseList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(shaderTagIds, cullingResults, camera)
+                new RendererListDesc(baseShaderTagIds, cullingResults, camera)
                 {
                     sortingCriteria = SortingCriteria.CommonTransparent,
                     renderQueueRange = RenderQueueRange.transparent,

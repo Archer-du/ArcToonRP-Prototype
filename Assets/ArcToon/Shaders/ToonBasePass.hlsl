@@ -26,6 +26,15 @@ struct Varyings
     GI_VARYINGS_DATA
 };
 
+GI GetGI(Surface surface, BRDF brdf)
+{
+    GI gi;
+    ZERO_INITIALIZE(GI, gi)
+    // gi.diffuse = ;
+    // gi.specular = ;
+    return gi;
+}
+
 float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenData)
 {
     float3 lightAttenuation = 0.0f;
@@ -90,7 +99,6 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     surface.positionWS = input.positionWS;
     surface.color = color.rgb;
     surface.alpha = color.a;
-    
     #if defined(_NORMAL_MAP)
     surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
         input.normalWS, input.tangentWS));
@@ -99,7 +107,6 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     surface.normalWS = normalize(input.normalWS);
     surface.interpolatedNormalWS = surface.normalWS;
     #endif
-
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
@@ -126,7 +133,7 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     
     finalColor += GetEmission(config);
 
-    return float4(finalColor, GetFinalAlpha(surface.alpha));
+    return float4(finalColor, GetFinalAlpha(config));
 }
 
 #endif

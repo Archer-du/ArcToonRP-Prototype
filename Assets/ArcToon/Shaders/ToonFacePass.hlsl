@@ -143,12 +143,23 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     #endif
 
     Surface surface;
+    ZERO_INITIALIZE(Surface, surface)
+    surface.linearDepth = -TransformWorldToView(input.positionWS).z;
+    #ifdef _TRANSPARENT_FRINGE
+    // TODO: config
+    clip(config.fragment.bufferLinearDepth - surface.linearDepth + 0.285);
+    #endif
     surface.positionWS = input.positionWS;
     surface.color = albedo.rgb;
     surface.alpha = albedo.a;
+    #if defined(_NORMAL_MAP)
+    surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
+        input.normalWS, input.tangentWS));
+    surface.interpolatedNormalWS = normalize(input.normalWS);
+    #else
     surface.normalWS = normalize(input.normalWS);
     surface.interpolatedNormalWS = surface.normalWS;
-    surface.linearDepth = -TransformWorldToView(input.positionWS).z;
+    #endif
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
@@ -160,8 +171,8 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     BRDF brdf = GetBRDF(surface);
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
-    FaceData faceData = GetFaceData(input.faceUV);
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
+    FaceData faceData = GetFaceData(input.faceUV);
     
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
 
@@ -175,7 +186,7 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
 
     finalColor += GetEmission(config);
 
-    return float4(finalColor, GetFinalAlpha(surface.alpha));
+    return float4(finalColor, GetFinalAlpha(config));
 }
 
 #endif

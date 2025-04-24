@@ -147,10 +147,10 @@
             #pragma shader_feature _DEBUG_SPECULAR
             #pragma shader_feature _DEBUG_DIFFUSE
 
-            #include "ToonEyeLashesPass.hlsl"
+            #include "ToonFacePass.hlsl"
 
-            #pragma vertex ToonEyeLashesPassVertex
-            #pragma fragment ToonEyeLashesPassFragment
+            #pragma vertex ToonFacePassVertex
+            #pragma fragment ToonFacePassFragment
             ENDHLSL
         }
 
