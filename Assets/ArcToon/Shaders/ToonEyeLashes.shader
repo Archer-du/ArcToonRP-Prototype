@@ -50,7 +50,6 @@
         #include "ToonCoreInput.hlsl"
         ENDHLSL
 
-
         Pass
         {
             Tags
@@ -118,9 +117,10 @@
 
         Pass
         {
+            Name "Toon Lashes"
             Tags
             {
-                "LightMode" = "ToonBase"
+                "LightMode" = "ToonForward"
             }
             Blend SrcAlpha OneMinusSrcAlpha, One OneMinusSrcAlpha
             ZTest Always

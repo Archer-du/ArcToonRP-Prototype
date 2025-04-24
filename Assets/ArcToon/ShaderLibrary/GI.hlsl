@@ -57,11 +57,13 @@ float3 SampleLightMap(float2 lightMapUV)
 float3 SampleLightProbe(Surface surface)
 {
     #if defined(LIGHTMAP_ON)
+    return 0.0;
+    #else
     if (unity_ProbeVolumeParams.x)
     {
         return SampleProbeVolumeSH4(
             TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
-            surface.position, surface.normal,
+            surface.positionWS, surface.normalWS,
             unity_ProbeVolumeWorldToObject,
             unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
             unity_ProbeVolumeMin.xyz, unity_ProbeVolumeSizeInv.xyz
@@ -77,10 +79,8 @@ float3 SampleLightProbe(Surface surface)
         coefficients[4] = unity_SHBg;
         coefficients[5] = unity_SHBb;
         coefficients[6] = unity_SHC;
-        return max(0.0, SampleSH9(coefficients, surface.normal));
+        return max(0.0, SampleSH9(coefficients, surface.normalWS));
     }
-    #else
-    return 0.0;
     #endif
 }
 

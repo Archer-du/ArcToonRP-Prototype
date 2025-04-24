@@ -26,15 +26,6 @@ struct Varyings
     GI_VARYINGS_DATA
 };
 
-GI GetGI(Surface surface, BRDF brdf)
-{
-    GI gi;
-    ZERO_INITIALIZE(GI, gi)
-    // gi.diffuse = ;
-    // gi.specular = ;
-    return gi;
-}
-
 float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenData)
 {
     float3 lightAttenuation = 0.0f;
@@ -128,7 +119,7 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
         finalColor += GetLighting(surface, brdf, light, attenData);
     }
-
+    
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);
     
     finalColor += GetEmission(config);
