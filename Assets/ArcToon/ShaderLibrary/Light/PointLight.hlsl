@@ -114,6 +114,7 @@ Light GetPointLight(int index, Surface surface, CascadeShadowData cascade, GI gi
 {
     PointLightBufferData bufferData = _PointLightData[index];
     Light light;
+    light.isMainLight = false;
     light.color = bufferData.color.rgb;
     float3 position = bufferData.position.xyz;
     float3 raydirection = position - surface.positionWS;

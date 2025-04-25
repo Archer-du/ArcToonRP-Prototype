@@ -118,6 +118,9 @@ Material:
     - _Parallax: 0.02
     - _RampSetToggle: 1
     - _ReceiveShadows: 1
+    - _RimDepthBias: 3
+    - _RimScale: 1
+    - _RimWidth: 0.5
     - _Shadows: 0
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0

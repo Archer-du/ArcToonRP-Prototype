@@ -128,6 +128,9 @@ Material:
     - _PremulAlpha: 0
     - _RampSetToggle: 1
     - _ReceiveShadows: 0
+    - _RimDepthBias: 3
+    - _RimScale: 0.3
+    - _RimWidth: 0.5
     - _Roughness: 0.5
     - _ShadowOffsetSDF: -0.25
     - _Shadows: 0

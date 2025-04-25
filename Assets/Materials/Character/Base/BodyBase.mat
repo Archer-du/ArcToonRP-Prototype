@@ -121,7 +121,7 @@ Material:
     - _RampSetToggle: 0
     - _ReceiveShadows: 1
     - _RimDepthBias: 3
-    - _RimScale: 0.5
+    - _RimScale: 0.3
     - _RimWidth: 0.5
     - _Roughness: 0.5
     - _Shadows: 0
