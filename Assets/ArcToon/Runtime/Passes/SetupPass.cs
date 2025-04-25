@@ -80,7 +80,7 @@ namespace ArcToon.Runtime.Passes
             var depthAttachment = pass.depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
             if (copyDepth)
             {
-                desc.name = "Depth Copy";
+                desc.name = "Depth Stencil Buffer";
                 depthStencilCopy = renderGraph.CreateTexture(desc);
             }
 

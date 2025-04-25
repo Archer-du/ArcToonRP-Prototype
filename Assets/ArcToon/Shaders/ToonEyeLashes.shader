@@ -18,6 +18,10 @@
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
         
         [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
+                
+        _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
+        _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
+        _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
 
         [NoScaleOffset] _EmissionMap ("Emission", 2D) = "white" {}
         [HDR] _EmissionColor ("Emission", Color) = (0.0, 0.0, 0.0, 0.0)

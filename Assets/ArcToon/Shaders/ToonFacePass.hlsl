@@ -16,7 +16,8 @@ struct Varyings
 {
     float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
-    float3 normalWS : VAR_NORMAL;
+    float3 normalWS : VAR_NORMAL_WS;
+    float3 normalVS : VAR_NORMAL_VS;
     float2 baseUV : VAR_BASE_UV;
     float2 faceUV : VAR_FACE_UV;
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -102,18 +103,19 @@ float3 IncomingLight(Surface surface, Light light, Fragment fragment,
 }
 
 float3 GetLighting(Surface surface, BRDF brdf, Light light, Fragment fragment,
-    DirectLightAttenData attenData, FaceData faceData)
+    DirectLightAttenData attenData, FaceData faceData, RimLightData rimLightData)
 {
     #if defined(_DEBUG_INCOMING_LIGHT)
     return IncomingLight(surface, light, fragment, attenData, faceData);
     #endif
     #if defined(_DEBUG_DIRECT_BRDF)
-    return DirectBRDF(surface, brdf, light, faceData);
+    return (DirectBRDF(surface, brdf, light, faceData) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
     #endif
     #if defined(_DEBUG_SPECULAR)
     return SpecularStrength(surface, brdf, light, attenData, faceData) * brdf.specular;
     #endif
-    return IncomingLight(surface, light, fragment, attenData, faceData) * DirectBRDF(surface, brdf, light, faceData);
+    return IncomingLight(surface, light, fragment, attenData, faceData) *
+        (DirectBRDF(surface, brdf, light, faceData) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
 }
 
 Varyings ToonFacePassVertex(Attributes input)
@@ -125,6 +127,7 @@ Varyings ToonFacePassVertex(Attributes input)
     output.positionWS = TransformObjectToWorld(input.positionOS);
     output.positionCS_SS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+    output.normalVS = TransformWorldToViewNormal(output.normalWS);
     output.baseUV = TransformBaseUV(input.baseUV);
     output.faceUV = TransformFaceUV(input.baseUV);
     return output;
@@ -160,6 +163,7 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     surface.normalWS = normalize(input.normalWS);
     surface.interpolatedNormalWS = surface.normalWS;
     #endif
+    surface.normalVS = normalize(input.normalVS);
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
@@ -173,13 +177,14 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
     FaceData faceData = GetFaceData(input.faceUV);
+    RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
     
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
 
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
-        finalColor += GetLighting(surface, brdf, light, config.fragment, attenData, faceData);
+        finalColor += GetLighting(surface, brdf, light, config.fragment, attenData, faceData, rimLightData);
     }
     
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);

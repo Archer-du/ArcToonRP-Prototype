@@ -29,6 +29,10 @@
 
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
+        
+        _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
+        _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
+        _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
 
         [NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
         [HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)

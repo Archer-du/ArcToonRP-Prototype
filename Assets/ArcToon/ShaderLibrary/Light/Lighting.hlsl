@@ -1,5 +1,5 @@
-﻿#ifndef CUSTOM_LIGHTING_INCLUDED
-#define CUSTOM_LIGHTING_INCLUDED
+﻿#ifndef ARCTOON_LIGHTING_INCLUDED
+#define ARCTOON_LIGHTING_INCLUDED
 
 #include "../Ramp.hlsl"
 #include "../BRDF.hlsl"
@@ -13,6 +13,27 @@ float3 GetMainLightDirection()
     if (_DirectionalLightCount <= 0) return 1.0;
     DirectionalLightBufferData bufferData = _DirectionalLightData[0];
     return bufferData.direction.xyz;
+}
+
+float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light, RimLightData rimData)
+{
+    float3 normalHVS = SafeNormalize(float3(surface.normalVS.x, surface.normalVS.y, 0.0));
+    float3 lightDirVS = SafeNormalize(TransformWorldToViewDir(light.directionWS));
+    float3 lightDirHVS = SafeNormalize(float3(lightDirVS.x, lightDirVS.y, 0.0));
+    float NdotLFactor = dot(normalHVS, lightDirHVS) * 0.5 + 0.5;
+    float rimThreshold = 0.2 + 0.3 * rimData.width;
+    float NdotVFactor = 1 - smoothstep(rimThreshold, rimThreshold + 0.1, dot(surface.normalWS, surface.viewDirectionWS));
+    uint texelNum = rimData.width * 10;
+    float2 offsetUV = float2(
+        fragment.screenUV.x + normalHVS.x * texelNum * _CameraBufferSize.x,
+        fragment.screenUV.y + normalHVS.y * texelNum * _CameraBufferSize.y);
+    float offsetBufferDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_point_clamp, offsetUV);
+    float offsetBufferLinearDepth = IsOrthographicCamera()
+                                        ? OrthographicDepthBufferToLinear(offsetBufferDepth)
+                                        : LinearEyeDepth(offsetBufferDepth, _ZBufferParams);
+    float bias = offsetBufferLinearDepth - fragment.linearDepth;
+    float rimFactor = step(rimData.depthBias, bias);
+    return rimData.scale * rimFactor * NdotLFactor * NdotVFactor * surface.color;
 }
 
 // punctual lights avoid gradient unroll
@@ -72,11 +93,5 @@ float3 GetLighting(Fragment fragment, Surface surface, BRDF brdf, GI gi)
 
     return color;
 }
-
-//
-// float3 GetLightingIndirect(Surface surface, BRDF brdf, GI gi)
-// {
-//     return IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
-// }
 
 #endif

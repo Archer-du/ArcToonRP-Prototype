@@ -66,6 +66,7 @@ Material:
     - _NormalMapToggle: 1
     - _OutlineScale: 0.15
     - _RampSetToggle: 1
+    - _RimWidth: 0.5
     - _Roughness: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

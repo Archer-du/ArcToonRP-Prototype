@@ -23,7 +23,8 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: :m_CustomRenderQueue _BaseColor _MaskMapToggle
+  m_LockedProperties: :m_CustomRenderQueue _BaseColor _MaskMapToggle _RimDepthBias
+    _RimScale _RimWidth
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -98,6 +99,7 @@ Material:
     - _DirectLightAttenSigmoidCenter: 0.5
     - _DirectLightAttenSigmoidSharp: 1.25
     - _DirectLightAttenSmooth: 0.5
+    - _DirectLightAttenSmoothNew: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 0.5
     - _DstBlend: 0
@@ -118,6 +120,9 @@ Material:
     - _PremulAlpha: 0
     - _RampSetToggle: 0
     - _ReceiveShadows: 1
+    - _RimDepthBias: 3
+    - _RimScale: 0.5
+    - _RimWidth: 0.5
     - _Roughness: 0.5
     - _Shadows: 0
     - _Smoothness: 0.5
