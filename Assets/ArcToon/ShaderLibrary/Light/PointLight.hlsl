@@ -119,6 +119,7 @@ Light GetPointLight(int index, Surface surface, CascadeShadowData cascade, GI gi
     float3 position = bufferData.position.xyz;
     float3 raydirection = position - surface.positionWS;
     light.directionWS = normalize(raydirection);
+    light.renderingLayerMask = bufferData.direction.w;
     float distanceSqr = max(dot(raydirection, raydirection), 0.00001);
     float rangeAttenuation = Square(saturate(1.0 - Square(distanceSqr * bufferData.position.w)));
     light.distanceAttenuation = rangeAttenuation / distanceSqr;

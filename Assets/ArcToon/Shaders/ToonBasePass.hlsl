@@ -109,7 +109,8 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     surface.fresnelStrength = GetFresnel(config);
     surface.specularStrength = GetSpecular(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
-
+    surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
+    
     BRDF brdf = GetBRDF(surface);
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
@@ -121,7 +122,10 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
-        finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, rimLightData);
+        if (RenderingLayersOverlap(surface, light))
+        {
+            finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, rimLightData);
+        }
     }
     
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);

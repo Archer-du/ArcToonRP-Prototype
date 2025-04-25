@@ -107,6 +107,7 @@ Light GetSpotLight(int index, Surface surface, CascadeShadowData cascade, GI gi)
     float rangeAttenuation = Square(saturate(1.0 - Square(distanceSqr * bufferData.position.w)));
     float4 spotAngles = bufferData.spotAngle;
     float3 spotDirection = bufferData.direction.xyz;
+    light.renderingLayerMask = bufferData.direction.w;
     float spotAttenuation = Square(saturate(dot(spotDirection, light.directionWS) *
         spotAngles.x + spotAngles.y));
     light.distanceAttenuation = spotAttenuation * rangeAttenuation / distanceSqr;

@@ -8,6 +8,7 @@ struct Light
     float shadowAttenuation;
     float distanceAttenuation;
     bool isMainLight;
+    uint renderingLayerMask;
 };
 
 #endif
