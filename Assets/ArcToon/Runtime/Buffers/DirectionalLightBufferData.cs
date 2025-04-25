@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -25,6 +26,7 @@ namespace ArcToon.Runtime.Buffers
             DirectionalLightBufferData data;
             data.color = visibleLight.finalColor;
             data.direction = -visibleLight.localToWorldMatrix.GetColumn(2);
+            data.direction.w = light.renderingLayerMask;
             data.shadowData = shadowData;
             return data;
         }

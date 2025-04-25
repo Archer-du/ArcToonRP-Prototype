@@ -17,6 +17,7 @@ struct Surface
     float specularStrength;
     float occlusion;
     float dither;
+    uint renderingLayerMask;
 };
 
 #endif

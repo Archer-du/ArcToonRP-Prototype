@@ -97,6 +97,7 @@ Light GetDirectionalLight(int lightIndex, Surface surface, CascadeShadowData cas
     light.isMainLight = lightIndex == 0;
     light.color = bufferData.color.rgb;
     light.directionWS = bufferData.direction.xyz;
+    light.renderingLayerMask = bufferData.direction.w;
     DirectionalLightShadowData dirShadowData = DecodeDirectionalLightShadowData(bufferData, cascade);
     light.shadowAttenuation = GetDirectionalShadowAttenuation(dirShadowData, cascade, surface, gi);
     light.distanceAttenuation = 1.0;

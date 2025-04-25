@@ -20,6 +20,9 @@ namespace ArcToon.Runtime.Overrides
             Multiply,
             Override
         }
+        public bool maskLights = false;
+
+        public RenderingLayerMask renderingLayerMask = -1;
 
         public RenderScaleMode renderScaleMode = RenderScaleMode.Inherit;
 

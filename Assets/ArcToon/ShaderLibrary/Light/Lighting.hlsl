@@ -15,6 +15,11 @@ float3 GetMainLightDirection()
     return bufferData.direction.xyz;
 }
 
+bool RenderingLayersOverlap(Surface surface, Light light)
+{
+    return (surface.renderingLayerMask & light.renderingLayerMask) != 0;
+}
+
 float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light, RimLightData rimData)
 {
     float3 normalHVS = SafeNormalize(float3(surface.normalVS.x, surface.normalVS.y, 0.0));
@@ -22,7 +27,8 @@ float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light, RimL
     float3 lightDirHVS = SafeNormalize(float3(lightDirVS.x, lightDirVS.y, 0.0));
     float NdotLFactor = dot(normalHVS, lightDirHVS) * 0.5 + 0.5;
     float rimThreshold = 0.2 + 0.3 * rimData.width;
-    float NdotVFactor = 1 - smoothstep(rimThreshold, rimThreshold + 0.1, dot(surface.normalWS, surface.viewDirectionWS));
+    float NdotVFactor = 1 - smoothstep(rimThreshold, rimThreshold + 0.1,
+                                       dot(surface.normalWS, surface.viewDirectionWS));
     uint texelNum = rimData.width * 10;
     float2 offsetUV = float2(
         fragment.screenUV.x + normalHVS.x * texelNum * _CameraBufferSize.x,
@@ -57,7 +63,8 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light)
     return IncomingLight(surface, light) * DirectBRDF(surface, brdf, light);
 }
 
-void AccumulatePunctualLighting(Fragment fragment, Surface surface, BRDF brdf, GI gi, CascadeShadowData cascadeShadowData, inout float3 color)
+void AccumulatePunctualLighting(Fragment fragment, Surface surface, BRDF brdf, GI gi,
+                                CascadeShadowData cascadeShadowData, inout float3 color)
 {
     ForwardPlusTile tile = GetForwardPlusTile(fragment.screenUV);
     int firstLightIndex = tile.GetFirstLightIndexInTile();
@@ -67,7 +74,10 @@ void AccumulatePunctualLighting(Fragment fragment, Surface surface, BRDF brdf, G
     {
         int spotLightIndex = tile.GetLightIndex(firstLightIndex + j);
         Light light = GetSpotLight(spotLightIndex, surface, cascadeShadowData, gi);
-        color += GetLighting(surface, brdf, light);
+        if (RenderingLayersOverlap(surface, light))
+        {
+            color += GetLighting(surface, brdf, light);
+        }
     }
     firstLightIndex += spotLightCount;
     int pointLightCount = tile.GetPointLightCount();
@@ -75,7 +85,10 @@ void AccumulatePunctualLighting(Fragment fragment, Surface surface, BRDF brdf, G
     {
         int pointLightIndex = tile.GetLightIndex(firstLightIndex + k);
         Light light = GetPointLight(pointLightIndex, surface, cascadeShadowData, gi);
-        color += GetLighting(surface, brdf, light);
+        if (RenderingLayersOverlap(surface, light))
+        {
+            color += GetLighting(surface, brdf, light);
+        }
     }
 }
 
@@ -86,7 +99,10 @@ float3 GetLighting(Fragment fragment, Surface surface, BRDF brdf, GI gi)
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
-        color += GetLighting(surface, brdf, light);
+        if (RenderingLayersOverlap(surface, light))
+        {
+            color += GetLighting(surface, brdf, light);
+        }
     }
 
     AccumulatePunctualLighting(fragment, surface, brdf, gi, cascadeShadowData, color);
