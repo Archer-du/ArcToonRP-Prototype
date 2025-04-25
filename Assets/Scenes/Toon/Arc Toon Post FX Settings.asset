@@ -25,12 +25,12 @@ MonoBehaviour:
     bicubicUpsampling: 1
   colorAdjustments:
     postExposure: 0
-    contrast: 0
+    contrast: 5
     colorFilter: {r: 1, g: 1, b: 1, a: 0}
     hueShift: 0
-    saturation: 0
+    saturation: 20
   whiteBalance:
-    temperature: 0
+    temperature: -5
     tint: 0
   splitToning:
     shadows: {r: 0.5, g: 0.5, b: 0.5, a: 1}
@@ -49,6 +49,6 @@ MonoBehaviour:
     highlightsStart: 0.55
     highLightsEnd: 1
   toneMapping:
-    mode: 0
+    mode: 2
     colorLUTResolution: 64
   postProcessStackShader: {fileID: 4800000, guid: 561909e82a69453d98483b380fdbdbfb, type: 3}

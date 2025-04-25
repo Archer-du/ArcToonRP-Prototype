@@ -98,6 +98,7 @@ Light GetSpotLight(int index, Surface surface, CascadeShadowData cascade, GI gi)
 {
     SpotLightBufferData bufferData = _SpotLightData[index];
     Light light;
+    light.isMainLight = false;
     light.color = bufferData.color.rgb;
     float3 position = bufferData.position.xyz;
     float3 raydirection = position - surface.positionWS;

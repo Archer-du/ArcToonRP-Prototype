@@ -117,15 +117,15 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
 
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
-
+    
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
         finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, rimLightData);
     }
-
+    
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);
-
+    
     finalColor += GetEmission(config);
 
     return float4(finalColor, GetFinalAlpha(config));
