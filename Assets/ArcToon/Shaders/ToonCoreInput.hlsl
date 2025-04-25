@@ -41,6 +41,10 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _OutlineColor)
     UNITY_DEFINE_INSTANCED_PROP(float, _OutlineScale)
 
+    UNITY_DEFINE_INSTANCED_PROP(float, _RimScale)
+    UNITY_DEFINE_INSTANCED_PROP(float, _RimWidth)
+    UNITY_DEFINE_INSTANCED_PROP(float, _RimDepthBias)
+
     UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
@@ -131,6 +135,21 @@ float GetOutlineScale()
 float3 GetOutlineColor()
 {
     return INPUT_PROP(_OutlineColor).rgb;
+}
+
+float GetRimLightScale()
+{
+    return INPUT_PROP(_RimScale) * 10.0;
+}
+
+float GetRimLightWidth()
+{
+    return INPUT_PROP(_RimWidth);
+}
+
+float GetRimLightDepthBias()
+{
+    return INPUT_PROP(_RimDepthBias);
 }
 
 float GetFresnel(InputConfig input)
