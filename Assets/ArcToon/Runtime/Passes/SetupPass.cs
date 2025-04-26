@@ -58,7 +58,7 @@ namespace ArcToon.Runtime.Passes
             pass.attachmentSize = attachmentSize;
             pass.camera = camera;
             pass.clearFlags = camera.clearFlags;
-            TextureHandle colorCopy = default, depthCopy = default;
+            TextureHandle colorCopy = default, depthStencilCopy = default;
             if (pass.clearFlags > CameraClearFlags.Color)
             {
                 pass.clearFlags = CameraClearFlags.Color;
@@ -80,16 +80,24 @@ namespace ArcToon.Runtime.Passes
             var depthAttachment = pass.depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
             if (copyDepth)
             {
-                desc.name = "Depth Copy";
-                depthCopy = renderGraph.CreateTexture(desc);
+                desc.name = "Depth Stencil Buffer";
+                depthStencilCopy = renderGraph.CreateTexture(desc);
             }
 
+            var stencilMask = renderGraph.CreateTexture(
+                new TextureDesc(attachmentSize.x, attachmentSize.y)
+                {
+                    colorFormat = SystemInfo.GetGraphicsFormat(DefaultFormat.LDR),
+                    name = "Stencil Mask Buffer",
+                }
+            );
+            
             // disable pass culling
             builder.AllowPassCulling(false);
             builder.SetRenderFunc<SetupPass>(static (pass, context) => pass.Render(context));
             
             return new CameraAttachmentHandles(
-                colorAttachment, depthAttachment, colorCopy, depthCopy);
+                colorAttachment, depthAttachment, colorCopy, depthStencilCopy, stencilMask);
         }
     }
 }

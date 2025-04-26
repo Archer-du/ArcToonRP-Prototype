@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -29,6 +30,7 @@ namespace ArcToon.Runtime.Buffers
             data.position = visibleLight.localToWorldMatrix.GetColumn(3);
             data.position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
             data.direction = -visibleLight.localToWorldMatrix.GetColumn(2);
+            data.direction.w = light.renderingLayerMask.ReinterpretAsFloat();
             float innerCos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * light.innerSpotAngle);
             float outerCos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * visibleLight.spotAngle);
             float angleRangeInv = 1f / Mathf.Max(innerCos - outerCos, 0.001f);

@@ -31,7 +31,7 @@ struct Varyings
     GI_VARYINGS_DATA
 };
 
-Varyings SimplelitPassVertex(Attributes input)
+Varyings SimpleLitPassVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -50,14 +50,14 @@ Varyings SimplelitPassVertex(Attributes input)
     return output;
 }
 
-float4 SimplelitPassFragment(Varyings input) : SV_TARGET
+float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
     
     ClipLOD(config.fragment, unity_LODFade.x);
     
-    #if defined(_MASK_MAP)
+    #if defined(_MODS_MASK_MAP)
     config.useMODSMask = true;
     #endif
     #if defined(_DETAIL_MAP)
@@ -71,26 +71,28 @@ float4 SimplelitPassFragment(Varyings input) : SV_TARGET
     #endif
 
     Surface surface;
-    surface.position = input.positionWS;
+    ZERO_INITIALIZE(Surface, surface)
+    surface.positionWS = input.positionWS;
     surface.color = color.rgb;
     surface.alpha = color.a;
     
     #if defined(_NORMAL_MAP)
-    surface.normal = normalize(NormalTangentToWorld(GetNormalTS(config),
+    surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
         input.normalWS, input.tangentWS));
-    surface.interpolatedNormal = normalize(input.normalWS);
+    surface.interpolatedNormalWS = normalize(input.normalWS);
     #else
-    surface.normal = normalize(input.normalWS);
-    surface.interpolatedNormal = surface.normal;
+    surface.normalWS = normalize(input.normalWS);
+    surface.interpolatedNormalWS = surface.normalWS;
     #endif
 
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
-    surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
+    surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
-    surface.smoothness = GetSmoothness(config);
+    surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.fresnelStrength = GetFresnel(config);
     surface.occlusion = GetOcclusion(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
+    surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
 
     #if defined(_PREMULTIPLY_ALPHA)
     BRDF brdf = GetBRDF(surface, true);
@@ -100,7 +102,8 @@ float4 SimplelitPassFragment(Varyings input) : SV_TARGET
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     float3 finalColor = GetLighting(config.fragment, surface, brdf, gi);
     finalColor += GetEmission(config);
-    return float4(finalColor.rgb, GetFinalAlpha(surface.alpha));
+
+    return float4(finalColor, GetFinalAlpha(surface.alpha));
 }
 
 #endif

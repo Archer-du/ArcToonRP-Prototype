@@ -71,7 +71,7 @@
             #pragma multi_compile _ LOD_FADE_CROSSFADE
 
             #pragma shader_feature _NORMAL_MAP
-            #pragma shader_feature _MASK_MAP
+            #pragma shader_feature _MODS_MASK_MAP
             #pragma shader_feature _DETAIL_MAP
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _PREMULTIPLY_ALPHA
@@ -79,8 +79,8 @@
 
             #include "SimpleLitPass.hlsl"
 
-            #pragma vertex SimplelitPassVertex
-            #pragma fragment SimplelitPassFragment
+            #pragma vertex SimpleLitPassVertex
+            #pragma fragment SimpleLitPassFragment
             ENDHLSL
         }
 
@@ -105,6 +105,28 @@
 
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "DepthOnly"
+            }
+            ZWrite On
+            Cull Back
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #pragma multi_compile_instancing
+
+            #include "DepthOnlyPass.hlsl"
+
+            #pragma vertex DepthOnlyPassVertex
+            #pragma fragment DepthOnlyPassFragment
             ENDHLSL
         }
 

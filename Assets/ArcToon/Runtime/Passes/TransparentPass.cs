@@ -10,17 +10,28 @@ namespace ArcToon.Runtime.Passes
     {
         static readonly ProfilingSampler sampler = new("Transparent");
 
-        RendererListHandle list;
-
-        private static ShaderTagId[] shaderTagIds =
+        RendererListHandle baseList;
+        RendererListHandle outlineList;
+        
+        private static ShaderTagId[] baseShaderTagIds =
         {
+            new("ToonForward"),
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
+        };
+        private static ShaderTagId[] outlineShaderTagIds =
+        {
+            new("GeometryOutline"),
         };
 
         void Render(RenderGraphContext context)
         {
-            context.cmd.DrawRendererList(list);
+            context.cmd.BeginSample("Toon Outline");
+            context.cmd.DrawRendererList(outlineList);
+            context.cmd.EndSample("Toon Outline");
+            context.cmd.BeginSample("Toon Base");
+            context.cmd.DrawRendererList(baseList);
+            context.cmd.EndSample("Toon Base");
             context.renderContext.ExecuteCommandBuffer(context.cmd);
             context.cmd.Clear();
         }
@@ -31,8 +42,15 @@ namespace ArcToon.Runtime.Passes
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out TransparentPass pass, sampler);
 
-            pass.list = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(shaderTagIds, cullingResults, camera)
+            pass.outlineList = builder.UseRendererList(renderGraph.CreateRendererList(
+                new RendererListDesc(outlineShaderTagIds, cullingResults, camera)
+                {
+                    sortingCriteria = SortingCriteria.CommonTransparent,
+                    renderQueueRange = RenderQueueRange.transparent,
+                })
+            );
+            pass.baseList = builder.UseRendererList(renderGraph.CreateRendererList(
+                new RendererListDesc(baseShaderTagIds, cullingResults, camera)
                 {
                     sortingCriteria = SortingCriteria.CommonTransparent,
                     renderQueueRange = RenderQueueRange.transparent,
@@ -44,17 +62,22 @@ namespace ArcToon.Runtime.Passes
                 }));
             builder.ReadWriteTexture(handles.colorAttachment);
             builder.ReadWriteTexture(handles.depthAttachment);
+            builder.ReadTexture(handles.stencilMask);
             if (handles.colorCopy.IsValid())
             {
                 builder.ReadTexture(handles.colorCopy);
             }
-            if (handles.depthCopy.IsValid())
+            if (handles.depthStencilBuffer.IsValid())
             {
-                builder.ReadTexture(handles.depthCopy);
+                builder.ReadTexture(handles.depthStencilBuffer);
             }
+            builder.ReadTexture(lightingData.shadowMapHandles.directionalAtlas);
+            builder.ReadTexture(lightingData.shadowMapHandles.spotAtlas);
+            builder.ReadTexture(lightingData.shadowMapHandles.pointAtlas);
             builder.ReadBuffer(lightingData.directionalLightDataHandle);
             builder.ReadBuffer(lightingData.spotLightDataHandle);
             builder.ReadBuffer(lightingData.pointLightDataHandle);
+            builder.ReadBuffer(lightingData.forwardPlusTileBufferHandle);
             builder.ReadBuffer(lightingData.shadowMapHandles.cascadeShadowDataHandle);
             builder.ReadBuffer(lightingData.shadowMapHandles.directionalShadowMatricesHandle);
             builder.ReadBuffer(lightingData.shadowMapHandles.spotShadowDataHandle);

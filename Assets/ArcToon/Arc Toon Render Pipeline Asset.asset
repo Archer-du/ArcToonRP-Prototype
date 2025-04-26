@@ -20,7 +20,7 @@ MonoBehaviour:
       copyDepthReflection: 0
       copyColor: 1
       copyColorReflection: 0
-      renderScale: 1.25
+      renderScale: 2
       bicubicRescalingMode: 1
       fxaaSettings:
         enabled: 1
@@ -33,19 +33,19 @@ MonoBehaviour:
         atlasSize: 8192
         blendMode: 0
         cascadeCount: 4
-        cascadeRatio1: 0.1
-        cascadeRatio2: 0.25
-        cascadeRatio3: 0.5
+        cascadeRatio1: 0.4
+        cascadeRatio2: 0.55
+        cascadeRatio3: 0.8
         edgeFade: 0.1
       spotShadow:
         atlasSize: 4096
       pointShadow:
         atlasSize: 8192
       filterQuality: 3
-      maxDistance: 100
+      maxDistance: 80
       distanceFade: 0.1
     enablePostProcessing: 1
-    globalPostFXSettings: {fileID: 11400000, guid: 5f31e115cdc74ac43a07d8833f409e0d, type: 2}
+    globalPostFXSettings: {fileID: 11400000, guid: c11cd6f2791f04b428fa2e0d92a8490a, type: 2}
     forwardPlusSettings:
       tileSize: 64
       maxLightsPerTile: 14

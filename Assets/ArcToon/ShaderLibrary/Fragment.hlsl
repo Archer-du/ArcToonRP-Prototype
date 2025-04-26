@@ -4,7 +4,7 @@
 #include "Input/UnityInput.hlsl"
 
 TEXTURE2D(_CameraDepthTexture);
-TEXTURE2D(_CameraColorTexture);
+TEXTURE2D(_StencilMaskTexture);
 
 float4 _CameraBufferSize;
 
@@ -14,6 +14,7 @@ struct Fragment
     float2 screenUV;
     float linearDepth;
     float bufferLinearDepth;
+    float4 stencilMask;
 };
 
 bool IsOrthographicCamera()
@@ -35,7 +36,9 @@ Fragment GetFragment(float4 positionSS)
     fragment.positionSS = positionSS.xy;
     fragment.screenUV = fragment.positionSS * _CameraBufferSize.xy;
     fragment.linearDepth = IsOrthographicCamera() ? OrthographicDepthBufferToLinear(positionSS.z) : positionSS.w;
-    float bufferDepth = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, sampler_point_clamp, fragment.screenUV, 0);
+    float bufferDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_point_clamp, fragment.screenUV);
+    float4 stencilMask = SAMPLE_TEXTURE2D(_StencilMaskTexture, sampler_linear_clamp, fragment.screenUV);
+    fragment.stencilMask = stencilMask;
     fragment.bufferLinearDepth = IsOrthographicCamera()
                                      ? OrthographicDepthBufferToLinear(bufferDepth)
                                      : LinearEyeDepth(bufferDepth, _ZBufferParams);

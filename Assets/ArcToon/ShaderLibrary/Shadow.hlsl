@@ -106,7 +106,7 @@ CascadeShadowData GetCascadeShadowData(Surface surface)
     for (i = 0; i < _CascadeCount; i++)
     {
         ShadowCascadeBufferData bufferData = _ShadowCascadeData[i];
-        float distanceSqr = DistanceSquared(surface.position, bufferData.cullingSphere.xyz);
+        float distanceSqr = DistanceSquared(surface.positionWS, bufferData.cullingSphere.xyz);
         if (distanceSqr < bufferData.cullingSphere.w)
         {
             float fade = FadedStrength(distanceSqr, bufferData.data.x, _ShadowDistanceFade.z);

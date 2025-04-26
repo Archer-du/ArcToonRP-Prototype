@@ -8,18 +8,21 @@ namespace ArcToon.Runtime.Data
             colorAttachment,
             depthAttachment,
             colorCopy,
-            depthCopy;
+            depthStencilBuffer,
+            stencilMask;
 
         public CameraAttachmentHandles(
             TextureHandle colorAttachment,
             TextureHandle depthAttachment,
             TextureHandle colorCopy,
-            TextureHandle depthCopy)
+            TextureHandle depthStencilBuffer,
+            TextureHandle stencilMask)
         {
             this.colorAttachment = colorAttachment;
             this.depthAttachment = depthAttachment;
             this.colorCopy = colorCopy;
-            this.depthCopy = depthCopy;
+            this.depthStencilBuffer = depthStencilBuffer;
+            this.stencilMask = stencilMask;
         }
     }
 }

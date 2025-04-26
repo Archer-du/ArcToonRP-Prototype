@@ -96,19 +96,18 @@ namespace ArcToon.Runtime
 
                 var attachmentHandles = SetupPass.Record(renderGraph, camera, bufferSize, 
                     copyColorTexture, copyDepthTexture, useHDR);
+                
+                DepthStencilPrePass.Record(renderGraph, camera, cullingResults, copyDepthTexture, attachmentHandles);
 
                 OpaquePass.Record(renderGraph, camera, cullingResults, attachmentHandles, lightingHandles);
 
                 SkyboxPass.Record(renderGraph, camera, cullingResults, attachmentHandles);
-
-                CopyAttachmentPass.Record(renderGraph, copyColorTexture, copyDepthTexture, attachmentHandles, copier);
 
                 TransparentPass.Record(renderGraph, camera, cullingResults, attachmentHandles, lightingHandles);
 
                 UnsupportedPass.Record(renderGraph, camera, cullingResults);
 
                 // post fx
-
                 var texture = PostFXPass.Record(renderGraph, camera, cullingResults, bufferSize, 
                     cameraSettings, bufferSettings, postFXSettings, useHDR,
                     attachmentHandles.colorAttachment);
