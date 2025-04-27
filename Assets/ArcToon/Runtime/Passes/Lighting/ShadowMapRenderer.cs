@@ -1,6 +1,7 @@
 ﻿using ArcToon.Runtime.Buffers;
 using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
+using ArcToon.Runtime.Utils;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -556,9 +557,9 @@ namespace ArcToon.Runtime.Passes.Lighting
             commandBuffer.SetGlobalTexture(spotShadowAtlasID, spotAtlas);
             commandBuffer.SetGlobalTexture(pointShadowAtlasID, pointAtlas);
 
-            SetKeywords(filterKeywords, (int)settings.filterQuality - 1);
+            commandBuffer.SetKeywords(filterKeywords, (int)settings.filterQuality - 1);
 
-            SetKeywords(shadowMaskKeywords,
+            commandBuffer.SetKeywords(shadowMaskKeywords,
                 useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
 
             commandBuffer.SetGlobalInt(cascadeCountId,
@@ -598,7 +599,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             commandBuffer.SetBufferData(
                 directionalShadowMatricesHandle, directionalShadowVPMatrices,
                 0, 0, shadowedDirectionalLightCount * settings.directionalCascadeShadow.cascadeCount);
-            SetKeywords(
+            commandBuffer.SetKeywords(
                 cascadeBlendKeywords, (int)settings.directionalCascadeShadow.blendMode - 1
             );
             commandBuffer.EndSample("Directional Shadows");
@@ -667,10 +668,10 @@ namespace ArcToon.Runtime.Passes.Lighting
             {
                 RenderInfo info = directionalRenderInfo[shadowedDirectionalLightIndex * maxCascades + i];
                 int tileIndex = tileOffset + i;
-                Vector2 offset = SetTileViewport(tileIndex, directionalSplit, directionalTileSize);
+                Vector2 offset = commandBuffer.SetTileViewport(tileIndex, directionalSplit, directionalTileSize);
 
                 directionalShadowVPMatrices[tileIndex] =
-                    ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale);
+                    ShadowMapHelpers.ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale);
 
                 commandBuffer.SetViewProjectionMatrices(info.view, info.projection);
                 commandBuffer.DrawRendererList(info.handle);
@@ -687,12 +688,12 @@ namespace ArcToon.Runtime.Passes.Lighting
             float texelSize = 2f / (spotTileSize * info.projection.m00);
             float filterSize = texelSize * settings.filterSize;
             float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
-            Vector2 offset = SetTileViewport(tileIndex, spotSplit, spotTileSize);
+            Vector2 offset = commandBuffer.SetTileViewport(tileIndex, spotSplit, spotTileSize);
             float tileScale = 1f / spotSplit;
 
             spotShadowData[tileIndex] = new SpotShadowBufferData(
                 offset, tileScale, normalBiasScale, spotAtlasSizes.x,
-                ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
+                ShadowMapHelpers.ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
 
             commandBuffer.SetViewProjectionMatrices(info.view, info.projection);
             commandBuffer.SetGlobalDepthBias(0f, lightShadowData.slopeScaleBias);
@@ -718,55 +719,14 @@ namespace ArcToon.Runtime.Passes.Lighting
                 info.view.m13 = -info.view.m13;
 
                 int tileIndex = tileOffset + i;
-                Vector2 offset = SetTileViewport(tileIndex, pointSplit, pointTileSize);
+                Vector2 offset = commandBuffer.SetTileViewport(tileIndex, pointSplit, pointTileSize);
 
                 pointShadowData[tileIndex] = new PointShadowBufferData(
                     offset, tileScale, normalBiasScale, spotAtlasSizes.x,
-                    ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
+                    ShadowMapHelpers.ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
 
                 commandBuffer.SetViewProjectionMatrices(info.view, info.projection);
                 commandBuffer.DrawRendererList(info.handle);
-            }
-        }
-
-        Vector2 SetTileViewport(int tileIndex, int split, float tileSize)
-        {
-            var offset = new Vector2(tileIndex % split, tileIndex / split);
-            commandBuffer.SetViewport(new Rect(offset.x * tileSize, offset.y * tileSize, tileSize, tileSize));
-            return offset;
-        }
-
-        Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 m, Vector2 offset, float scale)
-        {
-            if (SystemInfo.usesReversedZBuffer)
-            {
-                m.m20 = -m.m20;
-                m.m21 = -m.m21;
-                m.m22 = -m.m22;
-                m.m23 = -m.m23;
-            }
-
-            m.m00 = (0.5f * (m.m00 + m.m30) + offset.x * m.m30) * scale;
-            m.m01 = (0.5f * (m.m01 + m.m31) + offset.x * m.m31) * scale;
-            m.m02 = (0.5f * (m.m02 + m.m32) + offset.x * m.m32) * scale;
-            m.m03 = (0.5f * (m.m03 + m.m33) + offset.x * m.m33) * scale;
-            m.m10 = (0.5f * (m.m10 + m.m30) + offset.y * m.m30) * scale;
-            m.m11 = (0.5f * (m.m11 + m.m31) + offset.y * m.m31) * scale;
-            m.m12 = (0.5f * (m.m12 + m.m32) + offset.y * m.m32) * scale;
-            m.m13 = (0.5f * (m.m13 + m.m33) + offset.y * m.m33) * scale;
-            m.m20 = 0.5f * (m.m20 + m.m30);
-            m.m21 = 0.5f * (m.m21 + m.m31);
-            m.m22 = 0.5f * (m.m22 + m.m32);
-            m.m23 = 0.5f * (m.m23 + m.m33);
-            return m;
-        }
-
-        // TODO: extract
-        void SetKeywords(GlobalKeyword[] keywords, int enabledIndex)
-        {
-            for (int i = 0; i < keywords.Length; i++)
-            {
-                commandBuffer.SetKeyword(keywords[i], i == enabledIndex);
             }
         }
     }

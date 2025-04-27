@@ -72,6 +72,7 @@ Material:
     - _NormalMapToggle: 1
     - _Occlusion: 1
     - _OutlineScale: 0.2
+    - _PerObjectShadowCasterID: -1
     - _RampSetToggle: 1
     - _Roughness: 1
     - _Smoothness: 1
