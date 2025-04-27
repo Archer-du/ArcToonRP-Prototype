@@ -20,6 +20,7 @@ namespace ArcToon.Runtime.Passes
 
         private CullingResults cullingResults;
         private ShadowMapRenderer shadowMapRenderer = new();
+        private PerLightDataCollector perLightDataCollector = new();
 
         #region DirectionalLight
         int directionalLightCount;
@@ -157,10 +158,13 @@ namespace ArcToon.Runtime.Passes
             builder.AllowPassCulling(false);
             builder.SetRenderFunc<LightingPass>(static (pass, context) => pass.Render(context));
 
+            ShadowMapHandles shadowMapHandles =
+                pass.shadowMapRenderer.Record(renderGraph, builder, context);
+            
             return new LightingDataHandles(pass.directionalLightDataHandle, pass.spotLightDataHandle,
                 pass.pointLightDataHandle,
                 pass.forwardPlusTileBufferHandle,
-                pass.shadowMapRenderer.GetShadowMapHandles(renderGraph, builder, context));
+                shadowMapHandles);
         }
 
         public void Setup(CullingResults cullingResults, Vector2Int attachmentSize,
@@ -170,8 +174,6 @@ namespace ArcToon.Runtime.Passes
             
             maxLightCountPerTile = forwardPlusSettings.maxLightsPerTile;
             tileDataSize = maxLightCountPerTile + 2;
-
-            shadowMapRenderer.Setup(cullingResults, shadowSettings);
 
             spotLightBounds = new NativeArray<float4>(maxSpotLightCount,
                 Allocator.TempJob,
@@ -186,7 +188,10 @@ namespace ArcToon.Runtime.Passes
             tileCount.x = Mathf.CeilToInt(screenUVToTileCoordinates.x);
             tileCount.y = Mathf.CeilToInt(screenUVToTileCoordinates.y);
 
+            perLightDataCollector.Setup(cullingResults, shadowSettings);
             CollectPerLightData();
+            
+            shadowMapRenderer.Setup(cullingResults, shadowSettings, perLightDataCollector);
         }
 
         private void CollectPerLightData()
@@ -204,19 +209,19 @@ namespace ArcToon.Runtime.Passes
                     case LightType.Directional when directionalLightCount < maxDirectionalLightCount:
                         directionalLightData[directionalLightCount++] =
                             DirectionalLightBufferData.GenerateStructuredData(visibleLights[i], light,
-                                shadowMapRenderer.ReservePerLightShadowDataDirectional(light, i));
+                                perLightDataCollector.ReservePerLightShadowDataDirectional(light, i));
                         break;
                     case LightType.Spot when spotLightCount < maxSpotLightCount:
                         SetupForwardPlusSpot(spotLightCount, visibleLights[i]);
                         spotLightData[spotLightCount++] =
                             SpotLightBufferData.GenerateStructuredData(visibleLights[i], light,
-                                shadowMapRenderer.ReservePerLightShadowDataSpot(light, i));
+                                perLightDataCollector.ReservePerLightShadowDataSpot(light, i));
                         break;
                     case LightType.Point when pointLightCount < maxPointLightCount:
                         SetupForwardPlusPoint(pointLightCount, visibleLights[i]);
                         pointLightData[pointLightCount++] =
                             PointLightBufferData.GenerateStructuredData(visibleLights[i], light,
-                                shadowMapRenderer.ReservePerLightShadowDataPoint(light, i));
+                                perLightDataCollector.ReservePerLightShadowDataPoint(light, i));
                         break;
                 }
             }

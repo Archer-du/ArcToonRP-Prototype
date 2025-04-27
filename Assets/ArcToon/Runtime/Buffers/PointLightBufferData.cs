@@ -29,7 +29,7 @@ namespace ArcToon.Runtime.Buffers
             data.position = visibleLight.localToWorldMatrix.GetColumn(3);
             data.position.w = 1f / Mathf.Max(visibleLight.range * visibleLight.range, 0.00001f);
             data.direction = Vector4.zero;
-            data.direction.w = light.renderingLayerMask.ReinterpretAsFloat();
+            data.direction.w = light.renderingLayerMask;
             data.shadowData = shadowData;
             return data;
         }
