@@ -117,9 +117,14 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineScale: 0.2
     - _Parallax: 0.02
+    - _PerObjShadowCasterID: -1
+    - _PerObjectShadowCasterID: -1
     - _PremulAlpha: 0
     - _RampSetToggle: 1
     - _ReceiveShadows: 1
+    - _RimDepthBias: 3
+    - _RimScale: 0.5
+    - _RimWidth: 0.5
     - _Roughness: 0.5
     - _Shadows: 0
     - _Smoothness: 0

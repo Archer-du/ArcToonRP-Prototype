@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ArcToon.Runtime.Passes.Lighting;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -13,11 +14,13 @@ namespace ArcToon.Runtime
         readonly RenderPipelineSettings settings;
         
         private CameraRenderer cameraRenderer;
+        private PerObjectShadowCasterManager shadowCasterManager;
 
         public ArcToonRenderPipelineInstance(RenderPipelineSettings settings)
         {
             this.settings = settings;
             cameraRenderer = new CameraRenderer(settings.cameraCopyShader, settings.cameraDebugShader);
+            shadowCasterManager = new PerObjectShadowCasterManager();
             
             GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;

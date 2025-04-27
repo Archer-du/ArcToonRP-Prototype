@@ -58,6 +58,8 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleY)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeTransparentScale)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _PerObjectShadowCasterID)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 #define INPUT_PROPS_DIRECT_ATTEN_PARAMS \
@@ -250,6 +252,11 @@ float2 GetFringeShadowBiasScale()
     data.x = INPUT_PROP(_FringeShadowBiasScaleX) * 0.2;
     data.y = INPUT_PROP(_FringeShadowBiasScaleY) * 0.2;
     return data;
+}
+
+float GetPerObjectShadowCasterID()
+{
+    return INPUT_PROP(_PerObjectShadowCasterID);
 }
 
 #endif

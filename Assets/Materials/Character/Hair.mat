@@ -117,6 +117,8 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineScale: 0.1
     - _Parallax: 0.02
+    - _PerObjShadowCasterID: -1
+    - _PerObjectShadowCasterID: -1
     - _PremulAlpha: 0
     - _RampSetToggle: 1
     - _ReceiveShadows: 1
