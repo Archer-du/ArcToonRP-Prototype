@@ -225,13 +225,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings:
+    maskLights: 0
+    renderingLayerMask:
+      serializedVersion: 0
+      m_Bits: 4294967295
+    renderScaleMode: 0
+    renderScale: 1
     copyDepth: 1
+    copyColor: 1
     overridePostFX: 0
     postFXSettings: {fileID: 0}
     finalBlendMode:
       source: 1
       destination: 0
     allowFXAA: 0
+    keepAlpha: 0
 --- !u!1 &348174891
 GameObject:
   m_ObjectHideFlags: 0
@@ -1464,7 +1472,7 @@ Transform:
   m_GameObject: {fileID: 1667184509}
   serializedVersion: 2
   m_LocalRotation: {x: 0.43735117, y: 0, z: 0, w: 0.89929086}
-  m_LocalPosition: {x: -11.6, y: 5.7, z: -9.62}
+  m_LocalPosition: {x: -11.6, y: 5.07, z: -9.62}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
