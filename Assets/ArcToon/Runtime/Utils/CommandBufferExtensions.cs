@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using ArcToon.Runtime.Behavior;
+using ArcToon.Runtime.Passes.Lighting;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Utils
@@ -17,6 +19,18 @@ namespace ArcToon.Runtime.Utils
             for (int i = 0; i < keywords.Length; i++)
             {
                 commandBuffer.SetKeyword(keywords[i], i == enabledIndex);
+            }
+        }
+
+        public static void DrawPerObjectShadowRenderer(this CommandBuffer commandBuffer, PerObjectShadowCasterManager manager, int visiblePerObjectShadowCasterIndex)
+        {
+            PerObjectShadowCaster caster = manager.visibleCasters[visiblePerObjectShadowCasterIndex];
+            foreach (var renderer in caster.perObjectCasterRenderers)
+            {
+                foreach (var drawCall in renderer.drawCallList)
+                {
+                    commandBuffer.DrawRenderer(renderer.renderer, drawCall.material, drawCall.subMeshIndex, drawCall.passIndex);
+                }
             }
         }
     }
