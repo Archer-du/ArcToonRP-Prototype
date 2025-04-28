@@ -12,9 +12,12 @@ namespace ArcToon.Runtime.Behavior
         [NonSerialized] public int perObjectShadowCasterID = -1;
 
         [NonSerialized] public List<PerObjectShadowCasterRenderer> perObjectCasterRenderers = new();
-        [NonSerialized] public List<Renderer> renderers = new();
+        
+        [NonSerialized] private List<Renderer> renderers = new();
 
         private readonly Lazy<MaterialPropertyBlock> propertyBlock = new();
+        
+        private Bounds worldBoundCache;
 
         private void OnEnable()
         {
@@ -109,7 +112,13 @@ namespace ArcToon.Runtime.Behavior
                 }
             }
 
+            this.worldBoundCache = worldBounds;
             return !firstBounds;
+        }
+        
+        public void GetWorldBounds(out Bounds worldBounds)
+        {
+            worldBounds = worldBoundCache;
         }
 
         private bool CheckValidShadowCasterRenderer(Renderer renderer)

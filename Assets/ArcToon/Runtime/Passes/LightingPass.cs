@@ -122,7 +122,7 @@ namespace ArcToon.Runtime.Passes
             forwardPlusTileData.Dispose();
         }
 
-        public static LightingDataHandles Record(RenderGraph renderGraph, CullingResults cullingResults,
+        public static LightingDataHandles Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults,
             Vector2Int attachmentSize,
             ShadowSettings shadowSettings,
             ForwardPlusSettings forwardPlusSettings,
@@ -132,7 +132,7 @@ namespace ArcToon.Runtime.Passes
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out LightingPass pass, sampler);
 
-            pass.Setup(cullingResults, attachmentSize, shadowSettings, forwardPlusSettings, perObjectShadowCasterManager);
+            pass.Setup(cullingResults, camera, attachmentSize, shadowSettings, forwardPlusSettings, perObjectShadowCasterManager);
             pass.spotLightDataHandle = builder.WriteBuffer(
                 renderGraph.CreateBuffer(new BufferDesc(maxSpotLightCount, SpotLightBufferData.stride)
                 {
@@ -172,7 +172,7 @@ namespace ArcToon.Runtime.Passes
                 shadowMapHandles);
         }
 
-        public void Setup(CullingResults cullingResults, Vector2Int attachmentSize,
+        public void Setup(CullingResults cullingResults, Camera camera, Vector2Int attachmentSize,
             ShadowSettings shadowSettings, ForwardPlusSettings forwardPlusSettings, PerObjectShadowCasterManager perObjectShadowCasterManager)
         {
             this.cullingResults = cullingResults;
@@ -197,7 +197,7 @@ namespace ArcToon.Runtime.Passes
             perLightDataCollector.Setup(cullingResults, shadowSettings);
             CollectPerLightData();
             
-            shadowMapRenderer.Setup(cullingResults, shadowSettings, perLightDataCollector);
+            shadowMapRenderer.Setup(cullingResults, camera, shadowSettings, perLightDataCollector, perObjectShadowCasterManager);
         }
 
         private void CollectPerLightData()

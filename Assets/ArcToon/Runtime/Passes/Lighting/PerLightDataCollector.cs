@@ -17,7 +17,7 @@ namespace ArcToon.Runtime.Passes.Lighting
         public static readonly int maxShadowedPointLightCount = 2;
 
         public int shadowedDirectionalLightCount { get; private set; }
-        public int perObjectShadowCasterCount { get; private set; }
+        public int enabledPerObjectShadowCasterCount { get; private set; }
         public int shadowedSpotLightCount { get; private set; }
         public int shadowedPointLightCount { get; private set; }
 
@@ -37,9 +37,7 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         public struct ShadowMapDataPerObjectCaster
         {
-            public int visibleLightIndex;
-            public float slopeScaleBias;
-            public float nearPlaneOffset;
+            public int visibleCasterIndex;
         }
 
         private ShadowMapDataPerObjectCaster[] shadowMapDataPerObjectCasters =
@@ -79,7 +77,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             this.settings = settings;
 
             shadowedDirectionalLightCount = shadowedSpotLightCount = shadowedPointLightCount = 0;
-            perObjectShadowCasterCount = 0;
+            enabledPerObjectShadowCasterCount = 0;
 
             useShadowMask = false;
         }
@@ -126,20 +124,13 @@ namespace ArcToon.Runtime.Passes.Lighting
         
         public Vector4 ReservePerObjectShadowCasterData(PerObjectShadowCaster light, int visibleCasterIndex)
         {
-            
             // if (shadows != None)
             {
-                int enabledCasterIndex = perObjectShadowCasterCount++;
-                // shadowMapDataPoints[enabledCasterIndex] = new ShadowMapDataPoint
-                // {
-                //     visibleLightIndex = visibleLightIndex,
-                //     // TODO: interpreting light settings differently than their original purpose, use additional data instead
-                //     slopeScaleBias = light.shadowBias,
-                //     normalBias = light.shadowNormalBias,
-                // };
-                // return new Vector4(
-                //     light.shadowStrength, enabledCasterIndex * 6, 0, maskChannel
-                // );
+                int enabledCasterIndex = enabledPerObjectShadowCasterCount++;
+                shadowMapDataPerObjectCasters[enabledCasterIndex] = new ShadowMapDataPerObjectCaster()
+                {
+                    visibleCasterIndex = visibleCasterIndex,
+                };
                 return new Vector4(0f, 0f, 0f, -1f);
             }
         }
