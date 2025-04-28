@@ -5,6 +5,7 @@ using ArcToon.Runtime.Utils;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RendererUtils;
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime.Passes.Lighting
@@ -87,6 +88,12 @@ namespace ArcToon.Runtime.Passes.Lighting
             new RenderInfo[PerLightDataCollector.maxShadowedDirectionalLightCount * maxCascades];
 
         private int directionalSplit, directionalTileSize;
+
+        #endregion
+
+        #region Per Object Shadow
+
+        private int perObjectSplit, perObjectTileSize;
 
         #endregion
 
@@ -288,6 +295,20 @@ namespace ArcToon.Runtime.Passes.Lighting
                 }
             }
 
+            if (collector.perObjectShadowCasterCount > 0)
+            {
+                int atlasSize = (int)settings.perObjectShadow.atlasSize;
+                int tiles =
+                    collector.perObjectShadowCasterCount * collector.shadowedDirectionalLightCount;
+                perObjectSplit = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
+                perObjectTileSize = atlasSize / perObjectSplit;
+
+                for (int i = 0; i < collector.perObjectShadowCasterCount; i++)
+                {
+                    BuildPerObjectRendererList(i, renderGraph, builder);
+                }
+            }
+
             if (collector.shadowedSpotLightCount > 0)
             {
                 int atlasSize = (int)settings.spotShadow.atlasSize;
@@ -367,6 +388,50 @@ namespace ArcToon.Runtime.Passes.Lighting
                     projectionType = BatchCullingProjectionType.Orthographic,
                     splitRange = new RangeInt(splitOffset, cascadeCount)
                 };
+        }
+
+        void BuildPerObjectRendererList(
+            int perObjectShadowCasterIndex,
+            RenderGraph renderGraph,
+            RenderGraphBuilder builder)
+        {
+            // var lightShadowData = collector.ShadowMapDataDirectionals[perObjectShadowCasterIndex];
+            // var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex)
+            // {
+            //     useRenderingLayerMaskTest = true
+            // };
+            
+            
+            // int shadowedDirectionalLightCount = collector.shadowedDirectionalLightCount;
+            // int splitOffset = perObjectShadowCasterIndex * PerLightDataCollector.maxShadowedDirectionalLightCount;
+            // for (int i = 0; i < shadowedDirectionalLightCount; i++)
+            // {
+            //     ref RenderInfo info = ref directionalRenderInfo[
+            //             perObjectShadowCasterIndex * PerLightDataCollector.maxShadowedDirectionalLightCount + i];
+            //     cullingResults.ComputePerObjectShadowMatricesAndCullingPrimitives(
+            //         perObjectShadowCasterIndex, i, shadowedDirectionalLightCount, 
+            //         perObjectTileSize, lightShadowData.nearPlaneOffset, out info.view,
+            //         out info.projection, out ShadowSplitData splitData);
+            //     // shadowSplitDataPerLight[splitOffset + i] = splitData;
+            //
+            //     info.handle = builder.UseRendererList(renderGraph.CreateShadowRendererList(ref shadowSettings));
+            //     info.handle = builder.UseRendererList(renderGraph.CreateRendererList(
+            //         new RendererListDesc(outlineShaderTagIds, cullingResults, camera)
+            //         {
+            //             sortingCriteria = SortingCriteria.CommonOpaque,
+            //             renderQueueRange = RenderQueueRange.opaque,
+            //         })
+            //     );
+            // }
+            
+            
+            
+            // cullingInfoPerLight[lightShadowData.visibleLightIndex] =
+            //     new LightShadowCasterCullingInfo
+            //     {
+            //         projectionType = BatchCullingProjectionType.Orthographic,
+            //         splitRange = new RangeInt(splitOffset, shadowedDirectionalLightCount)
+            //     };
         }
 
         void BuildSpotShadowsRendererList(

@@ -23,15 +23,13 @@ namespace ArcToon.Runtime.Behavior
 
         [NonSerialized] public List<PerObjectShadowCasterRenderer> perObjectCasterRenderers = new();
         [NonSerialized] public List<Renderer> renderers = new();
-        
+
         private readonly Lazy<MaterialPropertyBlock> propertyBlock = new();
 
         private void OnEnable()
         {
             PerObjectShadowCasterManager.Register(this);
-            UpdateRendererList();
-            UpdateRendererMaterialProperties();
-            UpdateShadowCasterRendererList();
+            UpdateCasterInfo();
         }
 
         private void OnDisable()
@@ -47,13 +45,14 @@ namespace ArcToon.Runtime.Behavior
 
         private void Update()
         {
-#if UNITY_EDITOR
+            UpdateCasterInfo();
+        }
+
+        public void UpdateCasterInfo()
+        {
             UpdateRendererList();
             UpdateRendererMaterialProperties();
             UpdateShadowCasterRendererList();
-#else
-            UpdateRendererMaterialProperties();
-#endif
         }
 
         private void UpdateRendererList()
@@ -61,7 +60,7 @@ namespace ArcToon.Runtime.Behavior
             renderers.Clear();
             GetComponentsInChildren(true, renderers);
         }
-        
+
         private void UpdateRendererMaterialProperties()
         {
             foreach (var renderer in renderers)
@@ -83,33 +82,68 @@ namespace ArcToon.Runtime.Behavior
                 }
             }
         }
-        
+
         private void UpdateShadowCasterRendererList()
         {
             perObjectCasterRenderers.Clear();
 
-            foreach (var renderer in renderers)
+            for (int i = 0; i < renderers.Count; i++)
             {
-                List<Material> materialList = ListPool<Material>.Get();
-                try
+                if (CheckValidShadowCasterRenderer(renderers[i]))
                 {
-                    renderer.GetSharedMaterials(materialList);
-                    for (int i = 0; i < materialList.Count; i++)
-                    {
-                        Material material = materialList[i];
-                        if (TryGetShadowCasterPass(material))
-                        {
-                            perObjectCasterRenderers.Add(new PerObjectShadowCasterRenderer(renderer));
-                        }
-                    }
-                }
-                finally
-                {
-                    ListPool<Material>.Release(materialList);
+                    perObjectCasterRenderers.Add(new PerObjectShadowCasterRenderer(renderers[i]));
                 }
             }
 
             UpdateRendererMaterialProperties();
+        }
+
+        public bool TryGetWorldBounds(out Bounds worldBounds)
+        {
+            worldBounds = default;
+            bool firstBounds = true;
+
+            for (int i = 0; i < perObjectCasterRenderers.Count; i++)
+            {
+                var entry = perObjectCasterRenderers[i];
+
+                if (firstBounds)
+                {
+                    worldBounds = entry.renderer.bounds;
+                    firstBounds = false;
+                }
+                else
+                {
+                    worldBounds.Encapsulate(entry.renderer.bounds);
+                }
+            }
+
+            return !firstBounds;
+        }
+        
+        private bool CheckValidShadowCasterRenderer(Renderer renderer)
+        {
+            bool haveShadowCasterPass = false;
+            List<Material> materialList = ListPool<Material>.Get();
+            try
+            {
+                renderer.GetSharedMaterials(materialList);
+                for (int i = 0; i < materialList.Count; i++)
+                {
+                    Material material = materialList[i];
+                    if (TryGetShadowCasterPass(material))
+                    {
+                        haveShadowCasterPass = true;
+                    }
+                }
+            }
+            finally
+            {
+                ListPool<Material>.Release(materialList);
+            }
+
+            return haveShadowCasterPass && renderer.isVisible && renderer.enabled &&
+                   renderer.gameObject.activeInHierarchy && renderer.shadowCastingMode != ShadowCastingMode.Off;
         }
 
         private bool TryGetShadowCasterPass(Material material)
@@ -122,13 +156,16 @@ namespace ArcToon.Runtime.Behavior
                     return true;
                 }
             }
+
             return false;
         }
+
         private static class ShaderTagIds
         {
             public static readonly ShaderTagId LightMode = MemberNameHelpers.ShaderTagId();
             public static readonly ShaderTagId ShadowCaster = MemberNameHelpers.ShaderTagId();
         }
+
         private static class PropertyIDs
         {
             public static readonly int _PerObjectShadowCasterID = MemberNameHelpers.ShaderPropertyID();

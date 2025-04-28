@@ -11,10 +11,12 @@ namespace ArcToon.Runtime.Passes.Lighting
         private ShadowSettings settings;
 
         public static readonly int maxShadowedDirectionalLightCount = 4;
+        public static readonly int maxPerObjectShadowCasterCount = 16;
         public static readonly int maxShadowedSpotLightCount = 16;
         public static readonly int maxShadowedPointLightCount = 2;
 
         public int shadowedDirectionalLightCount { get; private set; }
+        public int perObjectShadowCasterCount { get; private set; }
         public int shadowedSpotLightCount { get; private set; }
         public int shadowedPointLightCount { get; private set; }
 
@@ -32,6 +34,18 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         public ShadowMapDataDirectional[] ShadowMapDataDirectionals => shadowMapDataDirectionals;
 
+        public struct ShadowMapDataPerObjectCaster
+        {
+            public int visibleLightIndex;
+            public float slopeScaleBias;
+            public float nearPlaneOffset;
+        }
+
+        private ShadowMapDataPerObjectCaster[] shadowMapDataPerObjectCasters =
+            new ShadowMapDataPerObjectCaster[maxPerObjectShadowCasterCount];
+
+        public ShadowMapDataPerObjectCaster[] ShadowMapDataPerObjectCasters => shadowMapDataPerObjectCasters;
+        
         public struct ShadowMapDataSpot
         {
             public int visibleLightIndex;
@@ -64,6 +78,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             this.settings = settings;
 
             shadowedDirectionalLightCount = shadowedSpotLightCount = shadowedPointLightCount = 0;
+            perObjectShadowCasterCount = 0;
 
             useShadowMask = false;
         }
