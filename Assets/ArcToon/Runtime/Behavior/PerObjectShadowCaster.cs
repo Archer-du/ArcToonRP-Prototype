@@ -11,16 +11,6 @@ namespace ArcToon.Runtime.Behavior
     {
         [NonSerialized] public int perObjectShadowCasterID = -1;
 
-        public struct PerObjectShadowCasterRenderer
-        {
-            public Renderer renderer;
-
-            public PerObjectShadowCasterRenderer(Renderer renderer)
-            {
-                this.renderer = renderer;
-            }
-        }
-
         [NonSerialized] public List<PerObjectShadowCasterRenderer> perObjectCasterRenderers = new();
         [NonSerialized] public List<Renderer> renderers = new();
 
@@ -91,7 +81,8 @@ namespace ArcToon.Runtime.Behavior
             {
                 if (CheckValidShadowCasterRenderer(renderers[i]))
                 {
-                    perObjectCasterRenderers.Add(new PerObjectShadowCasterRenderer(renderers[i]));
+                    perObjectCasterRenderers.Add(new PerObjectShadowCasterRenderer(renderers[i],
+                        GetShadowCasterRendererDrawCallData(renderers[i])));
                 }
             }
 
@@ -120,7 +111,7 @@ namespace ArcToon.Runtime.Behavior
 
             return !firstBounds;
         }
-        
+
         private bool CheckValidShadowCasterRenderer(Renderer renderer)
         {
             bool haveShadowCasterPass = false;
@@ -128,12 +119,12 @@ namespace ArcToon.Runtime.Behavior
             try
             {
                 renderer.GetSharedMaterials(materialList);
-                for (int i = 0; i < materialList.Count; i++)
+                foreach (var material in materialList)
                 {
-                    Material material = materialList[i];
-                    if (TryGetShadowCasterPass(material))
+                    if (TryGetShadowCasterPass(material, out int passIndex))
                     {
                         haveShadowCasterPass = true;
+                        break;
                     }
                 }
             }
@@ -146,17 +137,43 @@ namespace ArcToon.Runtime.Behavior
                    renderer.gameObject.activeInHierarchy && renderer.shadowCastingMode != ShadowCastingMode.Off;
         }
 
-        private bool TryGetShadowCasterPass(Material material)
+        private List<DrawCallData> GetShadowCasterRendererDrawCallData(Renderer renderer)
+        {
+            List<DrawCallData> drawCallList = new();
+            List<Material> materialList = ListPool<Material>.Get();
+            try
+            {
+                renderer.GetSharedMaterials(materialList);
+                for (int i = 0; i < materialList.Count; i++)
+                {
+                    var material = materialList[i];
+                    if (TryGetShadowCasterPass(material, out int passIndex))
+                    {
+                        drawCallList.Add(new(material, i, passIndex));
+                    }
+                }
+            }
+            finally
+            {
+                ListPool<Material>.Release(materialList);
+            }
+
+            return drawCallList;
+        }
+
+        private bool TryGetShadowCasterPass(Material material, out int passIndex)
         {
             Shader shader = material.shader;
             for (int i = 0; i < shader.passCount; i++)
             {
                 if (shader.FindPassTagValue(i, ShaderTagIds.LightMode) == ShaderTagIds.ShadowCaster)
                 {
+                    passIndex = i;
                     return true;
                 }
             }
 
+            passIndex = -1;
             return false;
         }
 

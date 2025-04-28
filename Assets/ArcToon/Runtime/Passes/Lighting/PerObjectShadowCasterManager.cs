@@ -25,25 +25,18 @@ namespace ArcToon.Runtime.Passes.Lighting
         public static void Unregister(PerObjectShadowCaster caster) => perObjectCasters.Remove(caster);
         
         private readonly List<int> rendererIndexList = new();
-        private readonly List<PerObjectShadowCaster> casterCullResults = new();
+        public readonly List<PerObjectShadowCaster> visibleCasters = new();
 
-        public unsafe void Cull(Camera camera)
+        public void Cull(Camera camera)
         {
             rendererIndexList.Clear();
-            casterCullResults.Clear();
+            visibleCasters.Clear();
             if (perObjectCasters.Count <= 0)
             {
                 return;
             }
-            // float4* frustumCorners = stackalloc float4[CullUtilities.FrustumCornerCount];
-            // CullUtilities.SetFrustumEightCorners(frustumCorners, camera);
-            // PerObjectShadowCullingParams param = new PerObjectShadowCullingParams()
-            // {
-            //     
-            // };
             foreach (var caster in perObjectCasters)
             {
-                // caster.UpdateCasterInfo();
                 // if (!caster.CanCastShadow(baseArgs.Usage))
                 // {
                 //     continue;
@@ -60,8 +53,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                     continue;
                 }
 
-                DrawDebugBounds(bounds, Color.cyan);
-                casterCullResults.Add(caster);
+                visibleCasters.Add(caster);
             }
         }
 
