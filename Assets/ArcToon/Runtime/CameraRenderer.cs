@@ -91,7 +91,7 @@ namespace ArcToon.Runtime
             renderGraph.BeginRecording(renderGraphParameters);
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
             {
-                var lightingHandles = LightingPass.Record(renderGraph, cullingResults, bufferSize,
+                var lightingHandles = LightingPass.Record(renderGraph, camera, cullingResults, bufferSize,
                     shadowSettings,
                     forwardPlusSettings,
                     context, perObjectShadowCasterManager);

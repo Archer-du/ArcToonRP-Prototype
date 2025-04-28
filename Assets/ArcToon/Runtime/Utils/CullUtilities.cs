@@ -121,242 +121,141 @@ namespace ArcToon.Runtime.Utils
             public EdgeType Type;
         }
         
-        // [BurstCompile(OptimizeFor = OptimizeFor.Performance)]
-        // public static unsafe bool Cull(in PerObjectShadowCullingParams args)
-        // {
-        //     float3* frustumCorners = stackalloc float3[FrustumCornerCount];
-        //
-        //     for (int i = 0; i < FrustumCornerCount; i++)
-        //     {
-        //         frustumCorners[i] = mul(viewMatrix, args.frustumCorners[i]).xyz;
-        //     }
-        //     
-        //     float4* points = stackalloc float4[8]
-        //     {
-        //         float4(args.AABBMin, 1),
-        //         float4(args.AABBMax.x, args.AABBMin.y, args.AABBMin.z, 1),
-        //         float4(args.AABBMin.x, args.AABBMax.y, args.AABBMin.z, 1),
-        //         float4(args.AABBMin.x, args.AABBMin.y, args.AABBMax.z, 1),
-        //         float4(args.AABBMax.x, args.AABBMax.y, args.AABBMin.z, 1),
-        //         float4(args.AABBMax.x, args.AABBMin.y, args.AABBMax.z, 1),
-        //         float4(args.AABBMin.x, args.AABBMax.y, args.AABBMax.z, 1),
-        //         float4(args.AABBMax, 1),
-        //     };
-        //
-        //     shadowMin = float3(float.PositiveInfinity);
-        //     shadowMax = float3(float.NegativeInfinity);
-        //
-        //     for (int i = 0; i < 8; i++)
-        //     {
-        //         float3 p = mul(viewMatrix, points[i]).xyz;
-        //         shadowMin = min(shadowMin, p);
-        //         shadowMax = max(shadowMax, p);
-        //     }
-        //     
-        //     EdgeData* edges = stackalloc EdgeData[4]
-        //     {
-        //         new() { ComponentIndex = 0, Value = shadowMin.x, Type = EdgeType.Min },
-        //         new() { ComponentIndex = 0, Value = shadowMax.x, Type = EdgeType.Max },
-        //         new() { ComponentIndex = 1, Value = shadowMin.y, Type = EdgeType.Min },
-        //         new() { ComponentIndex = 1, Value = shadowMax.y, Type = EdgeType.Max },
-        //     };
-        //
-        //     // 最坏情况：1 个三角形被拆成 2**4 = 16 个三角形
-        //     TriangleData* triangles = stackalloc TriangleData[16];
-        //
-        //     bool isVisibleXY = false;
-        //     float minZ = float.PositiveInfinity;
-        //     float maxZ = float.NegativeInfinity;
-        //
-        //     for (int i = 0; i < FrustumTriangleCount; i++)
-        //     {
-        //         int triangleCount = 1;
-        //         triangles[0].P0 = frustumCorners[FrustumTriangleIndices[i * 3 + 0]].xyz;
-        //         triangles[0].P1 = frustumCorners[FrustumTriangleIndices[i * 3 + 1]].xyz;
-        //         triangles[0].P2 = frustumCorners[FrustumTriangleIndices[i * 3 + 2]].xyz;
-        //         triangles[0].IsCulled = false;
-        //
-        //         for (int j = 0; j < 4; j++)
-        //         {
-        //             for (int k = 0; k < triangleCount; k++)
-        //             {
-        //                 CullTriangle(triangles, ref k, ref triangleCount, in edges[j]);
-        //             }
-        //         }
-        //
-        //         for (int j = 0; j < triangleCount; j++)
-        //         {
-        //             ref TriangleData tri = ref triangles[j];
-        //
-        //             if (tri.IsCulled)
-        //             {
-        //                 continue;
-        //             }
-        //
-        //             // DebugDrawViewSpaceTriangle(in tri, in viewMatrix, Color.red);
-        //
-        //             isVisibleXY = true;
-        //             minZ = min(minZ, min(tri.P0.z, min(tri.P1.z, tri.P2.z)));
-        //             maxZ = max(maxZ, max(tri.P0.z, max(tri.P1.z, tri.P2.z)));
-        //         }
-        //     }
-        //
-        //     if (isVisibleXY && minZ < shadowMax.z && maxZ > shadowMin.z)
-        //     {
-        //         return true;
-        //     }
-        //     return false;
-        // }
+        [BurstCompile(OptimizeFor = OptimizeFor.Performance)]
+        public static bool ComputePerObjectShadowMatricesAndCullingPrimitives(in PerObjectShadowCullingParams args,
+            out float4x4 viewMatrix, out float4x4 projectionMatrix)
+        {
+            float3 aabbCenter = (args.AABBMin + args.AABBMax) * 0.5f;
+            float3 cameraUp = args.cameraLocalToWorldMatrix.c1.xyz;
+            float3 lightForward = args.lightLocalToWorldMatrix.c2.xyz;
+            quaternion lightRotation = quaternion.LookRotation(lightForward, cameraUp);
+            viewMatrix = inverse(float4x4.TRS(aabbCenter, lightRotation, 1));
+            viewMatrix = mul(s_FlipZMatrix, viewMatrix);
 
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // private static unsafe bool CullAABBWorldSpace(in PerObjectShadowCullingParams args, ref float3 shadowMin, ref float3 shadowMax)
-        // {
-        //     // float3 aabbCenter = (args.AABBMin + args.AABBMax) * 0.5f;
-        //     // GetLightRotationAndDirection(in aabbCenter, in args, out quaternion lightRotation, out lightDirection);
-        //     // viewMatrix = inverse(float4x4.TRS(aabbCenter, lightRotation, 1));
-        //     // viewMatrix = mul(s_FlipZMatrix, viewMatrix); // 翻转 z 轴
-        // }
+            if (GetProjectionMatrix(in args, in viewMatrix, out projectionMatrix))
+            {
+                return true;
+            }
+            return false;
+        }
 
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // private static void GetLightRotationAndDirection(in float3 aabbCenter, in ShadowCasterCullingArgs args,
-        //     out quaternion lightRotation, out float4 lightDirection)
-        // {
-        //     float3 cameraPosition = args.CameraLocalToWorldMatrix.c3.xyz;
-        //     float3 cameraUp = args.CameraLocalToWorldMatrix.c1.xyz;
-        //
-        //     // 混合视角和主光源的方向，视角方向不用 camera forward，避免转动视角时阴影方向变化
-        //     // 直接用向量插值，四元数插值会导致部分情况跳变
-        //     // 以视角方向为主，减少背面 artifact
-        //     float3 viewForward = normalizesafe(aabbCenter - cameraPosition);
-        //     float3 lightForward = args.MainLightLocalToWorldMatrix.c2.xyz;
-        //     float3 forward = normalize(lerp(viewForward, lightForward, 0.2f));
-        //
-        //     // 超低角度观察会出现不该有的阴影
-        //     float cosAngle = dot(forward, args.CasterUpVector);
-        //     float cosAngleClamped = clamp(cosAngle, -0.866f, 0); // 限制在 90° ~ 150° 之间
-        //     forward = normalize(forward + (cosAngleClamped - cosAngle) * args.CasterUpVector);
-        //
-        //     lightRotation = quaternion.LookRotation(forward, cameraUp);
-        //     lightDirection = float4(-forward, 0);
-        // }
 
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // private static bool GetProjectionMatrix(in ShadowCasterCullingArgs args,
-        //     in float4x4 viewMatrix, out float4x4 projectionMatrix)
-        // {
-        //     if (AdjustViewSpaceShadowAABB(in args, in viewMatrix, ref shadowMin, ref shadowMax))
-        //     {
-        //         // DebugDrawViewSpaceAABB(in shadowMin, in shadowMax, in viewMatrix, Color.blue);
-        //
-        //         float width = shadowMax.x * 2;
-        //         float height = shadowMax.y * 2;
-        //         float zNear = -shadowMax.z;
-        //         float zFar = -shadowMin.z;
-        //         projectionMatrix = float4x4.Ortho(width, height, zNear, zFar);
-        //         return true;
-        //     }
-        //
-        //     projectionMatrix = default;
-        //     return false;
-        // }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool GetProjectionMatrix(in PerObjectShadowCullingParams args,
+            in float4x4 viewMatrix, out float4x4 projectionMatrix)
+        {
+            GetViewSpaceShadowAABB(in args, in viewMatrix, out float3 shadowMin, out float3 shadowMax);
 
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // private static unsafe void GetViewSpaceShadowAABB(in ShadowCasterCullingArgs args,
-        //     out float3 shadowMin, out float3 shadowMax)
-        // {
-        //     // 8 个顶点
-        //     float4* points = stackalloc float4[8]
-        //     {
-        //         float4(args.AABBMin, 1),
-        //         float4(args.AABBMax.x, args.AABBMin.y, args.AABBMin.z, 1),
-        //         float4(args.AABBMin.x, args.AABBMax.y, args.AABBMin.z, 1),
-        //         float4(args.AABBMin.x, args.AABBMin.y, args.AABBMax.z, 1),
-        //         float4(args.AABBMax.x, args.AABBMax.y, args.AABBMin.z, 1),
-        //         float4(args.AABBMax.x, args.AABBMin.y, args.AABBMax.z, 1),
-        //         float4(args.AABBMin.x, args.AABBMax.y, args.AABBMax.z, 1),
-        //         float4(args.AABBMax, 1),
-        //     };
-        //
-        //     shadowMin = float3(float.PositiveInfinity);
-        //     shadowMax = float3(float.NegativeInfinity);
-        //
-        //     for (int i = 0; i < 8; i++)
-        //     {
-        //         float3 p = mul(viewMatrix, points[i]).xyz;
-        //         shadowMin = min(shadowMin, p);
-        //         shadowMax = max(shadowMax, p);
-        //     }
-        // }
+            if (AdjustViewSpaceShadowAABB(in args, in viewMatrix, ref shadowMin, ref shadowMax))
+            {
+                // DebugDrawViewSpaceAABB(in shadowMin, in shadowMax, in viewMatrix, Color.blue);
+                float width = shadowMax.x * 2;
+                float height = shadowMax.y * 2;
+                float zNear = -shadowMax.z;
+                float zFar = -shadowMin.z;
+                projectionMatrix = float4x4.Ortho(width, height, zNear, zFar);
+                return true;
+            }
+            projectionMatrix = default;
+            return false;
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void GetViewSpaceShadowAABB(in PerObjectShadowCullingParams args,
+            in float4x4 viewMatrix, out float3 shadowMin, out float3 shadowMax)
+        {
+            // 8 个顶点
+            float4* points = stackalloc float4[8]
+            {
+                float4(args.AABBMin, 1),
+                float4(args.AABBMax.x, args.AABBMin.y, args.AABBMin.z, 1),
+                float4(args.AABBMin.x, args.AABBMax.y, args.AABBMin.z, 1),
+                float4(args.AABBMin.x, args.AABBMin.y, args.AABBMax.z, 1),
+                float4(args.AABBMax.x, args.AABBMax.y, args.AABBMin.z, 1),
+                float4(args.AABBMax.x, args.AABBMin.y, args.AABBMax.z, 1),
+                float4(args.AABBMin.x, args.AABBMax.y, args.AABBMax.z, 1),
+                float4(args.AABBMax, 1),
+            };
         
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // private static unsafe bool AdjustViewSpaceShadowAABB(in ShadowCasterCullingArgs args,
-        //     in float4x4 viewMatrix, ref float3 shadowMin, ref float3 shadowMax)
-        // {
-        //     float3* frustumCorners = stackalloc float3[FrustumCornerCount];
-        //
-        //     for (int i = 0; i < FrustumCornerCount; i++)
-        //     {
-        //         frustumCorners[i] = mul(viewMatrix, args.FrustumEightCorners[i]).xyz;
-        //     }
-        //
-        //     EdgeData* edges = stackalloc EdgeData[4]
-        //     {
-        //         new() { ComponentIndex = 0, Value = shadowMin.x, Type = EdgeType.Min },
-        //         new() { ComponentIndex = 0, Value = shadowMax.x, Type = EdgeType.Max },
-        //         new() { ComponentIndex = 1, Value = shadowMin.y, Type = EdgeType.Min },
-        //         new() { ComponentIndex = 1, Value = shadowMax.y, Type = EdgeType.Max },
-        //     };
-        //
-        //     // 最坏情况：1 个三角形被拆成 2**4 = 16 个三角形
-        //     TriangleData* triangles = stackalloc TriangleData[16];
-        //
-        //     bool isVisibleXY = false;
-        //     float minZ = float.PositiveInfinity;
-        //     float maxZ = float.NegativeInfinity;
-        //
-        //     for (int i = 0; i < FrustumTriangleCount; i++)
-        //     {
-        //         int triangleCount = 1;
-        //         triangles[0].P0 = frustumCorners[FrustumTriangleIndices[i * 3 + 0]];
-        //         triangles[0].P1 = frustumCorners[FrustumTriangleIndices[i * 3 + 1]];
-        //         triangles[0].P2 = frustumCorners[FrustumTriangleIndices[i * 3 + 2]];
-        //         triangles[0].IsCulled = false;
-        //
-        //         for (int j = 0; j < 4; j++)
-        //         {
-        //             for (int k = 0; k < triangleCount; k++)
-        //             {
-        //                 CullTriangle(triangles, ref k, ref triangleCount, in edges[j]);
-        //             }
-        //         }
-        //
-        //         for (int j = 0; j < triangleCount; j++)
-        //         {
-        //             ref TriangleData tri = ref triangles[j];
-        //
-        //             if (tri.IsCulled)
-        //             {
-        //                 continue;
-        //             }
-        //
-        //             // DebugDrawViewSpaceTriangle(in tri, in viewMatrix, Color.red);
-        //
-        //             isVisibleXY = true;
-        //             minZ = min(minZ, min(tri.P0.z, min(tri.P1.z, tri.P2.z)));
-        //             maxZ = max(maxZ, max(tri.P0.z, max(tri.P1.z, tri.P2.z)));
-        //         }
-        //     }
-        //
-        //     if (isVisibleXY && minZ < shadowMax.z && maxZ > shadowMin.z)
-        //     {
-        //         // 为了阴影的完整性，不应该修改 shadowMax.z
-        //         shadowMin.z = max(shadowMin.z, minZ);
-        //         return true;
-        //     }
-        //
-        //     return false;
-        // }
+            shadowMin = float3(float.PositiveInfinity);
+            shadowMax = float3(float.NegativeInfinity);
+        
+            for (int i = 0; i < 8; i++)
+            {
+                float3 p = mul(viewMatrix, points[i]).xyz;
+                shadowMin = min(shadowMin, p);
+                shadowMax = max(shadowMax, p);
+            }
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe bool AdjustViewSpaceShadowAABB(in PerObjectShadowCullingParams args,
+            in float4x4 viewMatrix, ref float3 shadowMin, ref float3 shadowMax)
+        {
+            float3* frustumCorners = stackalloc float3[FrustumCornerCount];
+        
+            for (int i = 0; i < FrustumCornerCount; i++)
+            {
+                frustumCorners[i] = mul(viewMatrix, args.frustumCorners[i]).xyz;
+            }
+        
+            EdgeData* edges = stackalloc EdgeData[4]
+            {
+                new() { ComponentIndex = 0, Value = shadowMin.x, Type = EdgeType.Min },
+                new() { ComponentIndex = 0, Value = shadowMax.x, Type = EdgeType.Max },
+                new() { ComponentIndex = 1, Value = shadowMin.y, Type = EdgeType.Min },
+                new() { ComponentIndex = 1, Value = shadowMax.y, Type = EdgeType.Max },
+            };
+        
+            // 最坏情况：1 个三角形被拆成 2**4 = 16 个三角形
+            TriangleData* triangles = stackalloc TriangleData[16];
+        
+            bool isVisibleXY = false;
+            float minZ = float.PositiveInfinity;
+            float maxZ = float.NegativeInfinity;
+        
+            for (int i = 0; i < FrustumTriangleCount; i++)
+            {
+                int triangleCount = 1;
+                triangles[0].P0 = frustumCorners[FrustumTriangleIndices[i * 3 + 0]];
+                triangles[0].P1 = frustumCorners[FrustumTriangleIndices[i * 3 + 1]];
+                triangles[0].P2 = frustumCorners[FrustumTriangleIndices[i * 3 + 2]];
+                triangles[0].IsCulled = false;
+        
+                for (int j = 0; j < 4; j++)
+                {
+                    for (int k = 0; k < triangleCount; k++)
+                    {
+                        CullTriangle(triangles, ref k, ref triangleCount, in edges[j]);
+                    }
+                }
+        
+                for (int j = 0; j < triangleCount; j++)
+                {
+                    ref TriangleData tri = ref triangles[j];
+        
+                    if (tri.IsCulled)
+                    {
+                        continue;
+                    }
+        
+                    // DebugDrawViewSpaceTriangle(in tri, in viewMatrix, Color.red);
+        
+                    isVisibleXY = true;
+                    minZ = min(minZ, min(tri.P0.z, min(tri.P1.z, tri.P2.z)));
+                    maxZ = max(maxZ, max(tri.P0.z, max(tri.P1.z, tri.P2.z)));
+                }
+            }
+        
+            if (isVisibleXY && minZ < shadowMax.z && maxZ > shadowMin.z)
+            {
+                // 为了阴影的完整性，不应该修改 shadowMax.z
+                shadowMin.z = max(shadowMin.z, minZ);
+                return true;
+            }
+        
+            return false;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe void CullTriangle([NoAlias] TriangleData* triangles,

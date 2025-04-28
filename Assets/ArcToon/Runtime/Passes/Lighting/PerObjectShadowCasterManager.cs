@@ -37,11 +37,6 @@ namespace ArcToon.Runtime.Passes.Lighting
             }
             foreach (var caster in perObjectCasters)
             {
-                // if (!caster.CanCastShadow(baseArgs.Usage))
-                // {
-                //     continue;
-                // }
-                // int rendererIndexInitialCount = rendererIndexList.Count;
                 if (!caster.TryGetWorldBounds(out Bounds bounds))
                 {
                     continue;
