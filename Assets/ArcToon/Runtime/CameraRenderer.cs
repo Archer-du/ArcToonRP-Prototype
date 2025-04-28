@@ -94,7 +94,7 @@ namespace ArcToon.Runtime
                 var lightingHandles = LightingPass.Record(renderGraph, cullingResults, bufferSize,
                     shadowSettings,
                     forwardPlusSettings,
-                    context);
+                    context, perObjectShadowCasterManager);
 
                 var attachmentHandles = SetupPass.Record(renderGraph, camera, bufferSize,
                     copyColorTexture, copyDepthTexture, useHDR);

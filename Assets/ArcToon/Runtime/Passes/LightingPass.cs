@@ -21,6 +21,7 @@ namespace ArcToon.Runtime.Passes
         private CullingResults cullingResults;
         private ShadowMapRenderer shadowMapRenderer = new();
         private PerLightDataCollector perLightDataCollector = new();
+        private PerObjectShadowCasterManager perObjectShadowCasterManager;
 
         #region DirectionalLight
         int directionalLightCount;
@@ -55,6 +56,9 @@ namespace ArcToon.Runtime.Passes
         private static int pointLightDataID = Shader.PropertyToID("_PointLightData");
         BufferHandle pointLightDataHandle;
         #endregion
+
+        private const int maxPerObjectCasterCount = 16;
+        int perObjectCasterCount;
 
         // tile job
         #region TileForward+
@@ -122,12 +126,13 @@ namespace ArcToon.Runtime.Passes
             Vector2Int attachmentSize,
             ShadowSettings shadowSettings,
             ForwardPlusSettings forwardPlusSettings,
-            ScriptableRenderContext context)
+            ScriptableRenderContext context, 
+            PerObjectShadowCasterManager perObjectShadowCasterManager)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out LightingPass pass, sampler);
 
-            pass.Setup(cullingResults, attachmentSize, shadowSettings, forwardPlusSettings);
+            pass.Setup(cullingResults, attachmentSize, shadowSettings, forwardPlusSettings, perObjectShadowCasterManager);
             pass.spotLightDataHandle = builder.WriteBuffer(
                 renderGraph.CreateBuffer(new BufferDesc(maxSpotLightCount, SpotLightBufferData.stride)
                 {
@@ -168,9 +173,10 @@ namespace ArcToon.Runtime.Passes
         }
 
         public void Setup(CullingResults cullingResults, Vector2Int attachmentSize,
-            ShadowSettings shadowSettings, ForwardPlusSettings forwardPlusSettings)
+            ShadowSettings shadowSettings, ForwardPlusSettings forwardPlusSettings, PerObjectShadowCasterManager perObjectShadowCasterManager)
         {
             this.cullingResults = cullingResults;
+            this.perObjectShadowCasterManager = perObjectShadowCasterManager;
             
             maxLightCountPerTile = forwardPlusSettings.maxLightsPerTile;
             tileDataSize = maxLightCountPerTile + 2;
@@ -223,6 +229,17 @@ namespace ArcToon.Runtime.Passes
                             PointLightBufferData.GenerateStructuredData(visibleLights[i], light,
                                 perLightDataCollector.ReservePerLightShadowDataPoint(light, i));
                         break;
+                }
+            }
+
+            var visiblePerObjectShadowCasters = perObjectShadowCasterManager.visibleCasters;
+            perObjectCasterCount = 0;
+            for (int i = 0; i < visiblePerObjectShadowCasters.Count; i++)
+            {
+                var caster = visiblePerObjectShadowCasters[i];
+                if (perObjectCasterCount < maxPerObjectCasterCount)
+                {
+                    perLightDataCollector.ReservePerObjectShadowCasterData(caster, i);
                 }
             }
 

@@ -1,4 +1,5 @@
-﻿using ArcToon.Runtime.Settings;
+﻿using ArcToon.Runtime.Behavior;
+using ArcToon.Runtime.Settings;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -122,7 +123,27 @@ namespace ArcToon.Runtime.Passes.Lighting
 
             return new Vector4(0f, 0f, 0f, -1f);
         }
-
+        
+        public Vector4 ReservePerObjectShadowCasterData(PerObjectShadowCaster light, int visibleCasterIndex)
+        {
+            
+            // if (shadows != None)
+            {
+                int enabledCasterIndex = perObjectShadowCasterCount++;
+                // shadowMapDataPoints[enabledCasterIndex] = new ShadowMapDataPoint
+                // {
+                //     visibleLightIndex = visibleLightIndex,
+                //     // TODO: interpreting light settings differently than their original purpose, use additional data instead
+                //     slopeScaleBias = light.shadowBias,
+                //     normalBias = light.shadowNormalBias,
+                // };
+                // return new Vector4(
+                //     light.shadowStrength, enabledCasterIndex * 6, 0, maskChannel
+                // );
+                return new Vector4(0f, 0f, 0f, -1f);
+            }
+        }
+        
         public Vector4 ReservePerLightShadowDataSpot(Light light, int visibleLightIndex)
         {
             if (light.shadows != LightShadows.None && light.shadowStrength > 0f)
@@ -193,5 +214,6 @@ namespace ArcToon.Runtime.Passes.Lighting
 
             return new Vector4(0f, 0f, 0f, -1f);
         }
+
     }
 }

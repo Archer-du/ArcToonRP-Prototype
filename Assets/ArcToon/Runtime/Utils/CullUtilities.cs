@@ -57,48 +57,6 @@ namespace ArcToon.Runtime.Utils
                 float top = camera.orthographicSize;
                 float right = top * camera.aspect;
 
-                frustumEightCorners[0] = float4(-right, -top, near, 1.0f);
-                frustumEightCorners[1] = float4(-right, +top, near, 1.0f);
-                frustumEightCorners[2] = float4(+right, +top, near, 1.0f);
-                frustumEightCorners[3] = float4(+right, -top, near, 1.0f);
-                frustumEightCorners[4] = float4(-right, -top, far, 1.0f);
-                frustumEightCorners[5] = float4(-right, +top, far, 1.0f);
-                frustumEightCorners[6] = float4(+right, +top, far, 1.0f);
-                frustumEightCorners[7] = float4(+right, -top, far, 1.0f);
-            }
-            else
-            {
-                // https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Camera.CalculateFrustumCorners.html
-                // The order of the corners is lower left, upper left, upper right, lower right.
-                Rect viewport = new Rect(0, 0, 1, 1);
-                const Camera.MonoOrStereoscopicEye eye = Camera.MonoOrStereoscopicEye.Mono;
-
-                camera.CalculateFrustumCorners(viewport, near, eye, s_FrustumCornerBuffer);
-                for (int i = 0; i < 4; i++)
-                {
-                    frustumEightCorners[i] = TransformPoint(transform, s_FrustumCornerBuffer[i]);
-                }
-
-                camera.CalculateFrustumCorners(viewport, far, eye, s_FrustumCornerBuffer);
-                for (int i = 0; i < 4; i++)
-                {
-                    frustumEightCorners[i + 4] = TransformPoint(transform, s_FrustumCornerBuffer[i]);
-                }
-            }
-        }
-        public static unsafe void SetFrustumEightCornersTest(float4* frustumEightCorners, Camera camera)
-        {
-            Transform transform = camera.transform;
-            float near = camera.nearClipPlane;
-            float far = camera.farClipPlane;
-
-            if (camera.orthographic)
-            {
-                // The orthographicSize is half the size of the vertical viewing volume.
-                // The horizontal size of the viewing volume depends on the aspect ratio.
-                float top = camera.orthographicSize;
-                float right = top * camera.aspect;
-
                 frustumEightCorners[0] = TransformPoint(transform, -right, -top, near);
                 frustumEightCorners[1] = TransformPoint(transform, -right, +top, near);
                 frustumEightCorners[2] = TransformPoint(transform, +right, +top, near);
