@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ArcToon.Runtime.Passes.Lighting;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;

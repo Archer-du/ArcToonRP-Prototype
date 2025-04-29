@@ -1,5 +1,6 @@
 ﻿using ArcToon.Runtime.Overrides;
 using ArcToon.Runtime.Passes;
+using ArcToon.Runtime.Passes.Lighting;
 using ArcToon.Runtime.Passes.PostProcess;
 using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
@@ -12,7 +13,8 @@ namespace ArcToon.Runtime
     public partial class CameraRenderer
     {
         private Camera camera;
-        
+        private PerObjectShadowCasterManager perObjectShadowCasterManager = new();
+
         static CameraSettings defaultCameraSettings = new();
 
         public const float renderScaleMin = 0.1f, renderScaleMax = 2f;
@@ -46,10 +48,10 @@ namespace ArcToon.Runtime
             var cameraSampler =
                 additiveCameraData ? additiveCameraData.Sampler : ProfilingSampler.Get(camera.cameraType);
             bool useHDR = bufferSettings.allowHDR && camera.allowHDR;
-            
+
             // render scale
             var bufferSize = GetCameraBufferSize(cameraSettings, bufferSettings);
-            
+
             // prepare scene data
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
@@ -89,14 +91,14 @@ namespace ArcToon.Runtime
             renderGraph.BeginRecording(renderGraphParameters);
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
             {
-                var lightingHandles = LightingPass.Record(renderGraph, cullingResults, bufferSize, 
+                var lightingHandles = LightingPass.Record(renderGraph, camera, cullingResults, bufferSize,
                     shadowSettings,
                     forwardPlusSettings,
-                    context);
+                    context, perObjectShadowCasterManager);
 
-                var attachmentHandles = SetupPass.Record(renderGraph, camera, bufferSize, 
+                var attachmentHandles = SetupPass.Record(renderGraph, camera, bufferSize,
                     copyColorTexture, copyDepthTexture, useHDR);
-                
+
                 DepthStencilPrePass.Record(renderGraph, camera, cullingResults, copyDepthTexture, attachmentHandles);
 
                 OpaquePass.Record(renderGraph, camera, cullingResults, attachmentHandles, lightingHandles);
@@ -108,7 +110,7 @@ namespace ArcToon.Runtime
                 UnsupportedPass.Record(renderGraph, camera, cullingResults);
 
                 // post fx
-                var texture = PostFXPass.Record(renderGraph, camera, cullingResults, bufferSize, 
+                var texture = PostFXPass.Record(renderGraph, camera, cullingResults, bufferSize,
                     cameraSettings, bufferSettings, postFXSettings, useHDR,
                     attachmentHandles.colorAttachment);
 
@@ -156,8 +158,9 @@ namespace ArcToon.Runtime
 
             return bufferSize;
         }
-        
-        private bool GetCullingResults(ScriptableRenderContext context, out CullingResults cullingResults, float maxShadowDistance)
+
+        private bool GetCullingResults(ScriptableRenderContext context, out CullingResults cullingResults,
+            float maxShadowDistance)
         {
             if (!camera.TryGetCullingParameters(out ScriptableCullingParameters scriptableCullingParameters))
             {
@@ -167,6 +170,8 @@ namespace ArcToon.Runtime
 
             scriptableCullingParameters.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
             cullingResults = context.Cull(ref scriptableCullingParameters);
+            perObjectShadowCasterManager.Cull(camera);
+            
             return true;
         }
     }

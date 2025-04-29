@@ -45,8 +45,9 @@ float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light, RimL
 // punctual lights avoid gradient unroll
 float3 IncomingLight(Surface surface, Light light)
 {
-    float lightAttenuation = saturate(dot(surface.normalWS, light.directionWS)) * light.shadowAttenuation;
-    return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
+    float lightAttenuation = saturate(dot(surface.normalWS, light.directionWS) *
+        light.shadowAttenuation * light.distanceAttenuation);
+    return lightAttenuation * light.color * surface.occlusion;
 }
 
 float3 GetLighting(Surface surface, BRDF brdf, Light light)

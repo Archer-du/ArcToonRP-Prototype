@@ -50,6 +50,8 @@
 
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
+        
+        [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
 
         // for hard-coded unity capacity
         [HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}

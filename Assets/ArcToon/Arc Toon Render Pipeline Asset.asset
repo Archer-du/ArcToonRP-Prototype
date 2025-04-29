@@ -37,6 +37,8 @@ MonoBehaviour:
         cascadeRatio2: 0.55
         cascadeRatio3: 0.8
         edgeFade: 0.1
+      perObjectShadow:
+        atlasSize: 1024
       spotShadow:
         atlasSize: 4096
       pointShadow:

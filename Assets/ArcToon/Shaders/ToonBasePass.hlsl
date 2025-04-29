@@ -132,6 +132,8 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     
     finalColor += GetEmission(config);
 
+    // finalColor = GetPerObjectShadowCasterID() == 1 ? float3(1.0, 0, 0) : GetPerObjectShadowCasterID() == 2 ?  float3(0, 0, 1) : float3(0, 0, 0);
+
     return float4(finalColor, GetFinalAlpha(config));
 }
 

@@ -59,6 +59,16 @@ namespace ArcToon.Runtime.Settings
         };
 
         [System.Serializable]
+        public struct PerObjectShadow
+        {
+            public MapSize atlasSize;
+        }
+        public PerObjectShadow perObjectShadow = new()
+        {
+            atlasSize = MapSize._1024
+        };
+
+        [System.Serializable]
         public struct SpotShadow
         {
             public MapSize atlasSize;
