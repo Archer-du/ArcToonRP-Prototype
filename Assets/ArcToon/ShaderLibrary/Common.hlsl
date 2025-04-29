@@ -89,6 +89,12 @@ float3 NormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS, 
     return TransformTangentToWorld(normalTS, tangentToWorld, doNormalize);
 }
 
+float GetTexelSizeWorldSpace(float linearDepth)
+{
+    float size = 2.0 * linearDepth / (_CameraBufferSize.z * GetViewToHClipMatrix()._m00);
+    return size;
+}
+
 // void poissonDiskSamples(const in float2 randomSeed, int sampleNum, out real disk)
 // {
 //     float angle = rand_2to1(randomSeed) * PI2;

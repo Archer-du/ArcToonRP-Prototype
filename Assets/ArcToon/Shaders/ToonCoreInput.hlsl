@@ -131,7 +131,7 @@ float GetOcclusion(InputConfig input)
 
 float GetOutlineScale()
 {
-    return INPUT_PROP(_OutlineScale);
+    return INPUT_PROP(_OutlineScale) * 12.5;
 }
 
 float3 GetOutlineColor()
@@ -141,12 +141,12 @@ float3 GetOutlineColor()
 
 float GetRimLightScale()
 {
-    return INPUT_PROP(_RimScale) * 10.0;
+    return INPUT_PROP(_RimScale) * 12.5;
 }
 
 float GetRimLightWidth()
 {
-    return INPUT_PROP(_RimWidth);
+    return INPUT_PROP(_RimWidth) * 0.07;
 }
 
 float GetRimLightDepthBias()

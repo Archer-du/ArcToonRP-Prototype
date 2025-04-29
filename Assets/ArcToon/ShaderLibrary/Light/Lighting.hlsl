@@ -26,10 +26,9 @@ float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light, RimL
     float3 lightDirVS = SafeNormalize(TransformWorldToViewDir(light.directionWS));
     float3 lightDirHVS = SafeNormalize(float3(lightDirVS.x, lightDirVS.y, 0.0));
     float NdotLFactor = dot(normalHVS, lightDirHVS) * 0.5 + 0.5;
-    float rimThreshold = 0.2 + 0.3 * rimData.width;
-    float NdotVFactor = 1 - smoothstep(rimThreshold, rimThreshold + 0.1,
-                                       dot(surface.normalWS, surface.viewDirectionWS));
-    uint texelNum = rimData.width * 10;
+    float texelNum = rimData.width / GetTexelSizeWorldSpace(fragment.linearDepth);
+    // TODO: config
+    texelNum = clamp(texelNum, rimData.width * 0.01, rimData.width * 200);
     float2 offsetUV = float2(
         fragment.screenUV.x + normalHVS.x * texelNum * _CameraBufferSize.x,
         fragment.screenUV.y + normalHVS.y * texelNum * _CameraBufferSize.y);
@@ -39,7 +38,7 @@ float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light, RimL
                                         : LinearEyeDepth(offsetBufferDepth, _ZBufferParams);
     float bias = offsetBufferLinearDepth - fragment.linearDepth;
     float rimFactor = step(rimData.depthBias, bias);
-    return rimData.scale * rimFactor * NdotLFactor * NdotVFactor * surface.color;
+    return rimData.scale * rimFactor * NdotLFactor * surface.color;
 }
 
 // punctual lights avoid gradient unroll

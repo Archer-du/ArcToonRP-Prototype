@@ -33,7 +33,11 @@ Varyings GeometryOutlinePassVertex(Attributes input)
     float3 smoothNormalWS = NormalTangentToWorld(normalize(DecodeNormal(input.smoothNormal)),
         normalWS, tangentWS, true);
     float3 smoothNormalVS = TransformWorldToViewNormal(smoothNormalWS, true);
-    float3 scaledPositionVS = positionVS + smoothNormalVS * GetOutlineScale() * 0.1;
+    float linearDepth = -positionVS.z;
+    float outlineScale = GetOutlineScale() * GetTexelSizeWorldSpace(linearDepth);
+    // TODO: config
+    outlineScale = clamp(outlineScale, GetOutlineScale() * 0.001, GetOutlineScale() * 100);
+    float3 scaledPositionVS = positionVS + smoothNormalVS * outlineScale;
     output.positionCS_SS = TransformWViewToHClip(scaledPositionVS);
     return output;
 }
