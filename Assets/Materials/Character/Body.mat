@@ -60,9 +60,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _Cull: 0
+    - _DirectLightAttenOffset: 0.55
     - _DirectLightAttenSigmoidCenter: 0.5
     - _DirectLightAttenSigmoidSharp: 0.5
-    - _DirectLightAttenSmoothNew: 0.8
+    - _DirectLightAttenSmoothNew: 0.83
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
     - _Fresnel: 1

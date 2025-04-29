@@ -42,7 +42,7 @@ MonoBehaviour:
       spotShadow:
         atlasSize: 4096
       pointShadow:
-        atlasSize: 8192
+        atlasSize: 4096
       filterQuality: 3
       maxDistance: 80
       distanceFade: 0.1

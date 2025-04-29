@@ -37,6 +37,7 @@ float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenDat
         SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
     );
     lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
+    // lightAttenuation = attenuationUV;
     return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
     #else
     return IncomingLight(surface, light);
@@ -119,7 +120,6 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
 
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
-    finalColor = 0;
     
     for (int i = 0; i < _DirectionalLightCount; i++)
     {

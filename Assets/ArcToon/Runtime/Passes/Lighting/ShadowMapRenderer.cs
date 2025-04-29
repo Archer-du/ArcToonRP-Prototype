@@ -682,7 +682,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             int tileOffset = enabledPerObjectShadowCasterIndex * tileCount;
             float tileScale = 1.0f / perObjectTileData.splitCount;
             // TODO: config
-            commandBuffer.SetGlobalDepthBias(1f, 2.5f);
+            commandBuffer.SetGlobalDepthBias(0f, 5f);
             for (int i = 0; i < tileCount; i++)
             {
                 RenderInfo info =

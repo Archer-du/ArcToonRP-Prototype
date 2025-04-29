@@ -92,9 +92,9 @@ Material:
     - _ColorMask: 15
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DirectLightAttenOffset: 0.55
+    - _DirectLightAttenOffset: 0.6
     - _DirectLightAttenSmooth: 2
-    - _DirectLightAttenSmoothNew: 0.5
+    - _DirectLightAttenSmoothNew: 0.92
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
     - _DstBlend: 0

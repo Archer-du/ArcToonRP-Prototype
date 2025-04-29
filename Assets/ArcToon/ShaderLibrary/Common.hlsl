@@ -78,7 +78,7 @@ float3 GetFaceFrontDir()
 
 float3 GetFaceCenterPositionWorld()
 {
-    float3 objectCenterWorld = mul(GetObjectToWorldMatrix(), float4(0,0,0,1)).xyz;
+    float3 objectCenterWorld = mul(GetObjectToWorldMatrix(), float4(0, 0, 0, 1)).xyz;
     return objectCenterWorld;
 }
 
@@ -89,7 +89,21 @@ float3 NormalTangentToWorld(float3 normalTS, float3 normalWS, float4 tangentWS, 
     return TransformTangentToWorld(normalTS, tangentToWorld, doNormalize);
 }
 
-
+// void poissonDiskSamples(const in float2 randomSeed, int sampleNum, out real disk)
+// {
+//     float angle = rand_2to1(randomSeed) * PI2;
+//     float invSampleNum = 1.0 / float(sampleNum);
+//     float radius = invSampleNum;
+//     float angleStep = 3.883222077450933; // (sqrt(5)-1)/2 *2PI
+//     float radiusStep = radius;
+//
+//     for (int i = 0; i < sampleNum; i++)
+//     {
+//         disk[i] = float2(cos(angle), sin(angle)) * pow(radius, 0.75);
+//         radius += radiusStep;
+//         angle += angleStep;
+//     }
+// }
 
 // feature helpers --------------------------
 

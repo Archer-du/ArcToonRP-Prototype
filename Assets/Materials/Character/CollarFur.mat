@@ -95,11 +95,11 @@ Material:
     - _Cull: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DirectLightAttenOffset: 0.5
+    - _DirectLightAttenOffset: 0.4
     - _DirectLightAttenSigmoidCenter: 0.5
     - _DirectLightAttenSigmoidSharp: 0.5
     - _DirectLightAttenSmooth: 0.5
-    - _DirectLightAttenSmoothNew: 0.8
+    - _DirectLightAttenSmoothNew: 0.6
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
     - _DstBlend: 0

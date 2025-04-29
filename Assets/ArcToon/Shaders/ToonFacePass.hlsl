@@ -182,7 +182,6 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
     
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
-    finalColor = 0;
 
     for (int i = 0; i < _DirectionalLightCount; i++)
     {

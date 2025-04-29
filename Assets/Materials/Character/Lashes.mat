@@ -91,7 +91,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DirectLightAttenOffset: 0.5
     - _DirectLightAttenSmooth: 0.5
-    - _DirectLightAttenSmoothNew: 0.8
+    - _DirectLightAttenSmoothNew: 1
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
     - _DstBlend: 0
