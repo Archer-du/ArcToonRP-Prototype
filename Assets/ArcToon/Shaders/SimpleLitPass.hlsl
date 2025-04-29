@@ -93,6 +93,8 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     surface.occlusion = GetOcclusion(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
     surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
+    surface.perObjectCasterID = -1;
+
 
     #if defined(_PREMULTIPLY_ALPHA)
     BRDF brdf = GetBRDF(surface, true);

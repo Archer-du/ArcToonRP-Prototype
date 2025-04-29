@@ -74,14 +74,18 @@ namespace ArcToon.Runtime.Passes
             builder.ReadTexture(lightingData.shadowMapHandles.directionalAtlas);
             builder.ReadTexture(lightingData.shadowMapHandles.spotAtlas);
             builder.ReadTexture(lightingData.shadowMapHandles.pointAtlas);
+            builder.ReadTexture(lightingData.shadowMapHandles.perObjectAtlas);
+
             builder.ReadBuffer(lightingData.directionalLightDataHandle);
             builder.ReadBuffer(lightingData.spotLightDataHandle);
             builder.ReadBuffer(lightingData.pointLightDataHandle);
+            builder.ReadBuffer(lightingData.perObjectShadowCasterDataHandle);
             builder.ReadBuffer(lightingData.forwardPlusTileBufferHandle);
             builder.ReadBuffer(lightingData.shadowMapHandles.cascadeShadowDataHandle);
             builder.ReadBuffer(lightingData.shadowMapHandles.directionalShadowMatricesHandle);
             builder.ReadBuffer(lightingData.shadowMapHandles.spotShadowDataHandle);
             builder.ReadBuffer(lightingData.shadowMapHandles.pointShadowDataHandle);
+            builder.ReadBuffer(lightingData.shadowMapHandles.perObjectShadowDataHandle);
 
             builder.SetRenderFunc<TransparentPass>(static (pass, context) => pass.Render(context));
         }

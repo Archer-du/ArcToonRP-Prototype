@@ -16,7 +16,8 @@ namespace ArcToon.Runtime.Utils
             Camera camera,
             PerObjectShadowCasterManager manager,
             out Matrix4x4 viewMatrix,
-            out Matrix4x4 projMatrix)
+            out Matrix4x4 projMatrix,
+            out float width, out float height)
         {
             PerObjectShadowCaster caster = manager.visibleCasters[visibleCasterIndex];
             caster.GetWorldBounds(out Bounds bounds);
@@ -32,7 +33,8 @@ namespace ArcToon.Runtime.Utils
                 AABBMax = bounds.max,
                 CasterUpVector = caster.transform.up,
             };
-            bool result = CullUtilities.ComputePerObjectShadowMatricesAndCullingPrimitives(param, out float4x4 lightViewMatrix, out float4x4 projectionMatrix);
+            bool result = CullUtilities.ComputePerObjectShadowMatricesAndCullingPrimitives(param,
+                out float4x4 lightViewMatrix, out float4x4 projectionMatrix, out width, out height);
             viewMatrix = UnsafeUtility.As<float4x4, Matrix4x4>(ref lightViewMatrix);
             projMatrix = UnsafeUtility.As<float4x4, Matrix4x4>(ref projectionMatrix);
             return result;

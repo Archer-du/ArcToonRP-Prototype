@@ -36,6 +36,7 @@
 TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 TEXTURE2D_SHADOW(_SpotShadowAtlas);
 TEXTURE2D_SHADOW(_PointShadowAtlas);
+TEXTURE2D_SHADOW(_PerObjectShadowAtlas);
 
 #define SHADOW_SAMPLER sampler_linear_clamp_compare
 SAMPLER_CMP(SHADOW_SAMPLER);
@@ -44,6 +45,7 @@ CBUFFER_START(_CustomShadows)
     float4 _DirectionalShadowAtlasSize;
     float4 _SpotShadowAtlasSize;
     float4 _PointShadowAtlasSize;
+    float4 _PerObjectAtlasSize;
 
     float4 _ShadowDistanceFade;
     int _CascadeCount;
@@ -82,6 +84,14 @@ struct PointShadowBufferData
 };
 
 StructuredBuffer<PointShadowBufferData> _PointShadowData;
+
+struct PerObjectShadowBufferData
+{
+    float4 normalBias;
+    float4x4 shadowMatrix;
+};
+
+StructuredBuffer<PerObjectShadowBufferData> _PerObjectShadowData;
 
 struct ShadowMask
 {
@@ -181,6 +191,33 @@ float FilterDirectionalShadow(float3 positionSTS)
     return shadow;
     #else
     return SampleDirectionalShadowAtlas(positionSTS);
+    #endif
+}
+
+float SamplePerObjectShadowAtlas(float3 positionSTS)
+{
+    return SAMPLE_TEXTURE2D_SHADOW(
+        _PerObjectShadowAtlas, SHADOW_SAMPLER, positionSTS
+    );
+}
+
+float FilterPerObjectShadow(float3 positionSTS)
+{
+    #if defined(DIRECTIONAL_FILTER_SETUP)
+    float weights[DIRECTIONAL_FILTER_SAMPLES];
+    float2 positions[DIRECTIONAL_FILTER_SAMPLES];
+    float4 size = _PerObjectAtlasSize;
+    DIRECTIONAL_FILTER_SETUP(size, positionSTS.xy, weights, positions);
+    float shadow = 0;
+    for (int i = 0; i < DIRECTIONAL_FILTER_SAMPLES; i++)
+    {
+        shadow += weights[i] * SamplePerObjectShadowAtlas(
+            float3(positions[i].xy, positionSTS.z)
+        );
+    }
+    return shadow;
+    #else
+    return SamplePerObjectShadowAtlas(positionSTS);
     #endif
 }
 

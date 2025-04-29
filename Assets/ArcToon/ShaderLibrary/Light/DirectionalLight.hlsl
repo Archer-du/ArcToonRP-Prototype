@@ -7,6 +7,7 @@
 
 CBUFFER_START(_CustomDirectionalLight)
     int _DirectionalLightCount;
+    int _PerObjectShadowCasterCount;
 CBUFFER_END
 
 struct DirectionalLightBufferData
@@ -14,7 +15,7 @@ struct DirectionalLightBufferData
     float4 color;
     float4 direction;
     // x: shadow strength
-    // y: shadow map tile index
+    // y: shadowed directional light index
     // z: shadow slope scale bias
     // w: shadow mask channel
     float4 shadowData;
@@ -26,16 +27,30 @@ struct DirectionalLightShadowData
 {
     float shadowStrength;
     int tileIndex;
+    int shadowedLightIndex;
     float normalBiasScale;
     int shadowMaskChannel;
 };
+
+struct PerObjectCasterBufferData
+{
+    float4 perObjectData;
+
+    bool CheckCasterID(float casterID)
+    {
+        return abs(perObjectData.y - casterID) <= 0.01;
+    }
+};
+
+StructuredBuffer<PerObjectCasterBufferData> _PerObjectShadowCasterData;
 
 DirectionalLightShadowData DecodeDirectionalLightShadowData(DirectionalLightBufferData bufferData,
                                                             CascadeShadowData cascadeShadowData)
 {
     DirectionalLightShadowData data;
     data.shadowStrength = bufferData.shadowData.x;
-    data.tileIndex = bufferData.shadowData.y + cascadeShadowData.offset;
+    data.shadowedLightIndex = bufferData.shadowData.y;
+    data.tileIndex = bufferData.shadowData.y * _CascadeCount + cascadeShadowData.offset;
     data.normalBiasScale = bufferData.shadowData.z;
     data.shadowMaskChannel = bufferData.shadowData.w;
     return data;
@@ -45,6 +60,24 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
                                    Surface surface)
 {
     if (directional.shadowStrength <= 0) return 1.0;
+    if (surface.perObjectCasterID > 0)
+    {
+        for (int i = 0; i < _PerObjectShadowCasterCount; i++)
+        {
+            PerObjectCasterBufferData bufferData = _PerObjectShadowCasterData[i];
+            if (bufferData.CheckCasterID(surface.perObjectCasterID))
+            {
+                int tileIndex = bufferData.perObjectData.z + directional.shadowedLightIndex;
+                PerObjectShadowBufferData shadowData = _PerObjectShadowData[tileIndex];
+                float3 normalBias = surface.interpolatedNormalWS * shadowData.normalBias.x * directional.normalBiasScale;
+                float3 positionSTS = mul(shadowData.shadowMatrix,
+                                         float4(surface.positionWS + normalBias, 1.0)).xyz;
+                float shadow = FilterPerObjectShadow(positionSTS);
+                shadow = lerp(1.0, shadow, directional.shadowStrength);
+                return shadow;
+            }
+        }
+    }
     float3 normalBias = surface.interpolatedNormalWS * _ShadowCascadeData[cascade.offset].data.y * directional.normalBiasScale;
     float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex],
                              float4(surface.positionWS + normalBias, 1.0)).xyz;
@@ -104,16 +137,15 @@ Light GetDirectionalLight(int lightIndex, Surface surface, CascadeShadowData cas
     return light;
 }
 
-
-Light GetDirectionalLightDebugCascadeCullingSphere(int lightIndex, Surface surface, CascadeShadowData cascade, GI gi)
-{
-    DirectionalLightBufferData bufferData = _DirectionalLightData[lightIndex];
-    Light light;
-    light.color = bufferData.color.rgb;
-    light.directionWS = bufferData.direction.xyz;
-    light.shadowAttenuation = cascade.offset * 0.25;
-    light.distanceAttenuation = 1.0;
-    return light;
-}
+// Light GetDirectionalLightDebugCascadeCullingSphere(int lightIndex, Surface surface, CascadeShadowData cascade, GI gi)
+// {
+//     DirectionalLightBufferData bufferData = _DirectionalLightData[lightIndex];
+//     Light light;
+//     light.color = bufferData.color.rgb;
+//     light.directionWS = bufferData.direction.xyz;
+//     light.shadowAttenuation = cascade.offset * 0.25;
+//     light.distanceAttenuation = 1.0;
+//     return light;
+// }
 
 #endif

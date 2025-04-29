@@ -123,7 +123,7 @@ namespace ArcToon.Runtime.Utils
         
         [BurstCompile(OptimizeFor = OptimizeFor.Performance)]
         public static bool ComputePerObjectShadowMatricesAndCullingPrimitives(in PerObjectShadowCullingParams args,
-            out float4x4 viewMatrix, out float4x4 projectionMatrix)
+            out float4x4 viewMatrix, out float4x4 projectionMatrix, out float width, out float height)
         {
             float3 aabbCenter = (args.AABBMin + args.AABBMax) * 0.5f;
             float3 cameraUp = args.cameraLocalToWorldMatrix.c1.xyz;
@@ -132,32 +132,28 @@ namespace ArcToon.Runtime.Utils
             viewMatrix = inverse(float4x4.TRS(aabbCenter, lightRotation, 1));
             viewMatrix = mul(s_FlipZMatrix, viewMatrix);
 
-            if (GetProjectionMatrix(in args, in viewMatrix, out projectionMatrix))
-            {
-                return true;
-            }
-            return false;
+            return GetProjectionMatrix(in args, in viewMatrix, out projectionMatrix, out width, out height);
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool GetProjectionMatrix(in PerObjectShadowCullingParams args,
-            in float4x4 viewMatrix, out float4x4 projectionMatrix)
+            in float4x4 viewMatrix, out float4x4 projectionMatrix, out float width, out float height)
         {
             GetViewSpaceShadowAABB(in args, in viewMatrix, out float3 shadowMin, out float3 shadowMax);
 
             if (AdjustViewSpaceShadowAABB(in args, in viewMatrix, ref shadowMin, ref shadowMax))
             {
                 // DebugDrawViewSpaceAABB(in shadowMin, in shadowMax, in viewMatrix, Color.blue);
-                float width = shadowMax.x * 2;
-                float height = shadowMax.y * 2;
-                float zNear = -shadowMax.z;
-                float zFar = -shadowMin.z;
-                projectionMatrix = float4x4.Ortho(width, height, zNear, zFar);
-                return true;
             }
-            projectionMatrix = default;
-            return false;
+
+            float length = max(shadowMax.x, shadowMax.y);
+            width = length * 2;
+            height = length * 2;
+            float zNear = -shadowMax.z;
+            float zFar = -shadowMin.z;
+            projectionMatrix = float4x4.Ortho(width, height, zNear, zFar);
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

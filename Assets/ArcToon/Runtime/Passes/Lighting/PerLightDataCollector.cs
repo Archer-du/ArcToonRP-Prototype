@@ -114,7 +114,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                     };
                 return new Vector4(
                     light.shadowStrength,
-                    shadowedDirectionalLightIndex * settings.directionalCascadeShadow.cascadeCount,
+                    shadowedDirectionalLightIndex,
                     light.shadowNormalBias, maskChannel
                 );
             }
@@ -122,7 +122,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             return new Vector4(0f, 0f, 0f, -1f);
         }
         
-        public Vector4 ReservePerObjectShadowCasterData(PerObjectShadowCaster light, int visibleCasterIndex)
+        public Vector4 ReservePerObjectShadowCasterData(PerObjectShadowCaster caster, int visibleCasterIndex)
         {
             // if (shadows != None)
             {
@@ -131,7 +131,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                 {
                     visibleCasterIndex = visibleCasterIndex,
                 };
-                return new Vector4(0f, 0f, 0f, -1f);
+                return new Vector4(1f, caster.perObjectShadowCasterID, enabledCasterIndex * shadowedDirectionalLightCount, -1f);
             }
         }
         

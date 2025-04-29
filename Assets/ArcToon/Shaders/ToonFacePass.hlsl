@@ -172,6 +172,7 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     surface.specularStrength = GetSpecular(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
     surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
+    surface.perObjectCasterID = GetPerObjectShadowCasterID();
 
     BRDF brdf = GetBRDF(surface);
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
@@ -181,6 +182,7 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
     
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
+    finalColor = 0;
 
     for (int i = 0; i < _DirectionalLightCount; i++)
     {

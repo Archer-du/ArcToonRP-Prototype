@@ -15,7 +15,7 @@ namespace ArcToon.Runtime.Buffers
         public Vector4 direction;
 
         // x: shadow strength
-        // y: shadow map tile index
+        // y: shadowed directional light index
         // z: shadow slope scale bias
         // w: shadow mask channel
         public Vector4 shadowData;

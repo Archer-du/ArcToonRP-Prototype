@@ -18,6 +18,7 @@ struct Surface
     float occlusion;
     float dither;
     uint renderingLayerMask;
+    float perObjectCasterID;
 };
 
 #endif
