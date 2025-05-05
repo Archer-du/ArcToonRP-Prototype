@@ -32,9 +32,6 @@
         
         _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
         _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
-
-        [Toggle(_TRANSPARENT_FRINGE)] _TransparentFringeToggle ("Use Transparent Fringe", Float) = 0
-        _FringeTransparentScale ("Fringe Transparent Scale", Range(0, 1)) = 0.5
         
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
@@ -49,7 +46,7 @@
     {
         Tags
         {
-            "Queue" = "Geometry+100"
+            "Queue" = "Geometry+10"
         }
                 
         HLSLINCLUDE
@@ -58,9 +55,46 @@
 
         Pass
         {
+            Name "Toon Lashes"
             Tags
             {
-                "LightMode" = "FringeReceiver"
+                "LightMode" = "ToonForward"
+            }
+            Blend One Zero, One OneMinusSrcAlpha
+            ZWrite On
+            Cull Back
+
+            HLSLPROGRAM
+            #pragma target 4.5
+
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
+            #pragma multi_compile _ LIGHTMAP_ON
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
+
+            #pragma shader_feature _RAMP_SET
+            #pragma shader_feature _SDF_LIGHT_MAP
+            #pragma shader_feature _SDF_LIGHT_MAP_SPEC
+
+            #pragma shader_feature _CLIPPING
+
+            #pragma shader_feature _DEBUG_INCOMING_LIGHT
+            #pragma shader_feature _DEBUG_DIRECT_BRDF
+            #pragma shader_feature _DEBUG_SPECULAR
+            #pragma shader_feature _DEBUG_DIFFUSE
+
+            #include "ToonFacePass.hlsl"
+
+            #pragma vertex ToonFacePassVertex
+            #pragma fragment ToonFacePassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "StencilMask"
             }
             Blend One Zero
             ZTest Always
@@ -77,86 +111,46 @@
             ColorMask G
 
             HLSLPROGRAM
-            #pragma target 4.5
+            #pragma target 3.5
 
             #pragma multi_compile_instancing
 
-            #include "FringeReceiverPass.hlsl"
+            #include "ToonStencilMaskPass.hlsl"
 
             #pragma vertex FringeReceiverPassVertex
             #pragma fragment FringeReceiverPassFragment
             ENDHLSL
         }
 
-
         Pass
         {
             Tags
             {
-                "LightMode" = "EyeLashesReceiver"
+                "LightMode" = "DepthStencil"
             }
             Blend One Zero
-            ZTest Always
-            ZWrite Off
+            ZTest On
+            ZWrite On
             Cull Back
             Stencil
             {
                 Ref 4
-                Comp Equal
-                Pass Keep
+                Comp Always
+                Pass Replace
                 ReadMask 12
                 WriteMask 12
             }
-            ColorMask B
+            ColorMask R
 
             HLSLPROGRAM
             #pragma target 3.5
 
             #pragma multi_compile_instancing
 
-            #include "EyeLashesReceiverPass.hlsl"
+            #include "ToonDepthStencilPass.hlsl"
 
-            #pragma vertex EyeLashesReceiverPassVertex
-            #pragma fragment EyeLashesReceiverPassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Name "Toon Lashes"
-            Tags
-            {
-                "LightMode" = "ToonForward"
-            }
-            Blend SrcAlpha OneMinusSrcAlpha, One OneMinusSrcAlpha
-            ZTest Always
-            ZWrite On
-            Cull Back
-
-            HLSLPROGRAM
-            #pragma target 4.5
-
-            #pragma multi_compile_instancing
-            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
-            #pragma multi_compile _ LIGHTMAP_ON
-            #pragma multi_compile _ LOD_FADE_CROSSFADE
-
-            #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _SDF_LIGHT_MAP
-            #pragma shader_feature _SDF_LIGHT_MAP_SPEC
-            #pragma shader_feature _TRANSPARENT_FRINGE
-
-            #pragma shader_feature _CLIPPING
-
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
-            #include "ToonFacePass.hlsl"
-
-            #pragma vertex ToonFacePassVertex
-            #pragma fragment ToonFacePassFragment
+            #pragma vertex DefaultDepthStencilPassVertex
+            #pragma fragment DefaultDepthStencilPassFragment
             ENDHLSL
         }
 
@@ -181,28 +175,6 @@
 
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "DepthOnly"
-            }
-            ZWrite On
-            Cull Back
-            ColorMask R
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #include "DepthOnlyPass.hlsl"
-
-            #pragma vertex DepthOnlyPassVertex
-            #pragma fragment DepthOnlyPassFragment
             ENDHLSL
         }
 

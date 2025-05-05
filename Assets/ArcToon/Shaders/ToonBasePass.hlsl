@@ -27,6 +27,24 @@ struct Varyings
     GI_VARYINGS_DATA
 };
 
+float3 SpecularStrength(Surface surface, BRDF brdf, Light light, DirectLightSpecData specData)
+{
+    #if defined(_RAMP_SET)
+    // float SpecularFactor = SpecularStrength(surface, brdf, light);
+    // float specularUV = SigmoidSharp(SpecularFactor, specData.offset + 2, specData.smooth);
+    // float specularStrength = 10.0 * SampleRampSetChannel(specularUV, RAMP_DIRECT_LIGHTING_SPECULAR_CHANNEL);
+    // return specularStrength;
+    return SpecularStrength(surface, brdf, light);
+    #else
+    return SpecularStrength(surface, brdf, light);
+    #endif
+}
+
+float3 DirectBRDF(Surface surface, BRDF brdf, Light light, DirectLightSpecData specData)
+{
+    return SpecularStrength(surface, brdf, light, specData) * brdf.specular + brdf.diffuse;
+}
+
 float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenData)
 {
     float3 lightAttenuation = 0.0f;
@@ -44,19 +62,20 @@ float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenDat
     #endif
 }
 
-float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light, DirectLightAttenData attenData, RimLightData rimLightData)
+float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light,
+    DirectLightAttenData attenData, DirectLightSpecData specData, RimLightData rimLightData)
 {
     #if defined(_DEBUG_INCOMING_LIGHT)
     return IncomingLight(surface, light, attenData);
     #endif
     #if defined(_DEBUG_DIRECT_BRDF)
-    return (DirectBRDF(surface, brdf, light) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
+    return (DirectBRDF(surface, brdf, light, specData) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
     #endif
     #if defined(_DEBUG_SPECULAR)
-    return SpecularStrength(surface, brdf, light) * brdf.specular;
+    return SpecularStrength(surface, brdf, light, specData) * brdf.specular;
     #endif
     return IncomingLight(surface, light, attenData) *
-        (DirectBRDF(surface, brdf, light) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
+        (DirectBRDF(surface, brdf, light, specData) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
 }
 
 Varyings ToonBasePassVertex(Attributes input)
@@ -91,11 +110,12 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     Surface surface;
     ZERO_INITIALIZE(Surface, surface)
     surface.positionWS = input.positionWS;
+    surface.baseUV = input.baseUV;
     surface.color = color.rgb;
     surface.alpha = color.a;
     #if defined(_NORMAL_MAP)
     surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
-                                                      input.normalWS, input.tangentWS));
+        input.normalWS, input.tangentWS));
     surface.interpolatedNormalWS = normalize(input.normalWS);
     #else
     surface.normalWS = normalize(input.normalWS);
@@ -116,6 +136,7 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     BRDF brdf = GetBRDF(surface);
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
+    DirectLightSpecData specData = GetDirectLightSpecData(INPUT_PROPS_DIRECT_SPEC_PARAMS);
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
 
@@ -126,7 +147,7 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
         if (RenderingLayersOverlap(surface, light))
         {
-            finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, rimLightData);
+            finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, specData, rimLightData);
         }
     }
     

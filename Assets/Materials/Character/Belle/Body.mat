@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Body
+  m_Shader: {fileID: 4800000, guid: fe7cc458bdb942f9a629995bef3c6590, type: 3}
+  m_Parent: {fileID: 2100000, guid: 36063e9a14885274eaaa622a5abb5105, type: 2}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _NORMAL_MAP
+  - _RAMP_SET
+  - _RECEIVE_SHADOWS
+  - _RMO_MASK_MAP
+  m_InvalidKeywords:
+  - _LIGHTINGDEBUGMODE_NONE
+  - _SHADOWS_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 3445c208119f3914f97ab67542f865ff, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MODSMaskMap:
+        m_Texture: {fileID: 2800000, guid: d0ad3805493505640a8b7d21a71c5c41, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 3445c208119f3914f97ab67542f865ff, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 2800000, guid: 196012a03af9a7a4ab4a3c54a7bc805a, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RMOMaskMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RampSet:
+        m_Texture: {fileID: 2800000, guid: 2503f2eec933d51419caadbacee0a459, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Cull: 0
+    - _DirectLightAttenOffset: 0.55
+    - _DirectLightAttenSigmoidCenter: 0.5
+    - _DirectLightAttenSigmoidSharp: 0.5
+    - _DirectLightAttenSmoothNew: 0.83
+    - _DirectLightSpecSigmoidCenter: 0.5
+    - _DirectLightSpecSigmoidSharp: 1
+    - _Fresnel: 1
+    - _LightingDebugMode: 0
+    - _MaskMapToggle: 1
+    - _Metallic: 1
+    - _NormalMapToggle: 1
+    - _Occlusion: 1
+    - _OutlineScale: 0.2
+    - _PerObjectShadowCasterID: -1
+    - _RampSetToggle: 1
+    - _Roughness: 1
+    - _Smoothness: 1
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

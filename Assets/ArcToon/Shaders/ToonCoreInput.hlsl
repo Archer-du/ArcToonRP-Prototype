@@ -18,6 +18,9 @@ SAMPLER(sampler_LightMapSDF);
 TEXTURE2D(_RampSet);
 SAMPLER(sampler_RampSet);
 
+TEXTURE2D(_TangentShiftMap);
+SAMPLER(sampler_TangentShiftMap);
+
 TEXTURE2D(_SpecMap);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
@@ -38,6 +41,11 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
     UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
 
+    UNITY_DEFINE_INSTANCED_PROP(float, _HairSpecGloss)
+    UNITY_DEFINE_INSTANCED_PROP(float, _HairSpecScale)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _TangentShiftOffset)
+
     UNITY_DEFINE_INSTANCED_PROP(float4, _OutlineColor)
     UNITY_DEFINE_INSTANCED_PROP(float, _OutlineScale)
 
@@ -50,6 +58,9 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmooth)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmoothNew)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecOffset)
+    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecSmooth)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularStrengthSDF)
     UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularSmoothSDF)
@@ -66,6 +77,10 @@ UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 INPUT_PROP(_DirectLightAttenOffset), \
 INPUT_PROP(_DirectLightAttenSmooth), \
 INPUT_PROP(_DirectLightAttenSmoothNew)
+
+#define INPUT_PROPS_DIRECT_SPEC_PARAMS \
+INPUT_PROP(_DirectLightSpecOffset), \
+INPUT_PROP(_DirectLightSpecSmooth)
 
 float2 TransformBaseUV(float2 rawBaseUV)
 {
@@ -116,8 +131,12 @@ float GetMetallic(InputConfig input)
 
 float GetSmoothness(InputConfig input)
 {
+    #ifdef _RMO_MASK_MAP
     float smoothness = PerceptualRoughnessToPerceptualSmoothness(GetRMOMask(input).r);
     smoothness *= INPUT_PROP(_Smoothness);
+    #else
+    float smoothness = INPUT_PROP(_Smoothness);
+    #endif
     return smoothness;
 }
 
@@ -231,6 +250,14 @@ float SampleSDFLightMapNoseSpecular2(float2 faceUV)
     return 1.0;
 }
 
+float SampleTangentShiftNoise(float2 baseUV)
+{
+    #ifdef _TANGENT_SHIFT_MAP
+    return SAMPLE_TEXTURE2D(_TangentShiftMap, sampler_TangentShiftMap, baseUV).r * 2.0 - 1.0;
+    #endif
+    return 0.0;
+}
+
 float GetNoseSpecularStrength()
 {
     return INPUT_PROP(_NoseSpecularStrengthSDF) * 50;
@@ -257,6 +284,21 @@ float2 GetFringeShadowBiasScale()
 float GetPerObjectShadowCasterID()
 {
     return INPUT_PROP(_PerObjectShadowCasterID);
+}
+
+float GetHairSpecGloss()
+{
+    return INPUT_PROP(_HairSpecGloss) * 200;
+}
+
+float GetHairSpecScale()
+{
+    return INPUT_PROP(_HairSpecScale) * 50;
+}
+
+float GetHairTangentShiftOffset()
+{
+    return INPUT_PROP(_TangentShiftOffset);
 }
 
 #endif

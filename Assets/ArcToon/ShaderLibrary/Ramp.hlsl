@@ -10,11 +10,24 @@ struct DirectLightAttenData
     float smooth;
 };
 
+struct DirectLightSpecData
+{
+    float offset;
+    float smooth;
+};
+
 struct FaceData
 {
     float3 directionWS;
     float3 positionWS;
     float2 faceUV;
+};
+
+struct HairSpecData
+{
+    float3 bitangentWS;
+    float gloss;
+    float scale;
 };
 
 struct RimLightData
@@ -34,12 +47,29 @@ DirectLightAttenData GetDirectLightAttenData(float offset, float smooth, float s
     return data;
 }
 
+DirectLightSpecData GetDirectLightSpecData(float offset, float smooth)
+{
+    DirectLightSpecData data;
+    data.offset = offset;
+    data.smooth = -0.1 / (smooth - 1.001);
+    return data;
+}
+
 FaceData GetFaceData(float2 faceUV)
 {
     FaceData data;
     data.directionWS = GetFaceFrontDir();
     data.positionWS = GetFaceCenterPositionWorld();
     data.faceUV = faceUV;
+    return data;
+}
+
+HairSpecData GetHairSpecData(float3 bitangentWS, float gloss, float scale)
+{
+    HairSpecData data;
+    data.bitangentWS = SafeNormalize(bitangentWS);
+    data.gloss = gloss;
+    data.scale = scale;
     return data;
 }
 

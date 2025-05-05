@@ -24,6 +24,9 @@
         _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
         
+        _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
+        _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
+        
         [Toggle(_SPEC_MAP)] _SpecMapToggle ("Use Specular Map", Float) = 0
         _SpecMap ("Specular Map", 2D) = "white" {}
         _SpecScale ("Specular Scale", Range(0, 1)) = 1
@@ -132,6 +135,28 @@
         {
             Tags
             {
+                "LightMode" = "DepthOnly"
+            }
+            ZWrite On
+            Cull Back
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #pragma multi_compile_instancing
+
+            #include "DepthOnlyPass.hlsl"
+
+            #pragma vertex DepthOnlyPassVertex
+            #pragma fragment DepthOnlyPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
                 "LightMode" = "ShadowCaster"
             }
 
@@ -149,28 +174,6 @@
 
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "DepthOnly"
-            }
-            ZWrite On
-            Cull Back
-            ColorMask R
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #include "DepthOnlyPass.hlsl"
-
-            #pragma vertex DepthOnlyPassVertex
-            #pragma fragment DepthOnlyPassFragment
             ENDHLSL
         }
 

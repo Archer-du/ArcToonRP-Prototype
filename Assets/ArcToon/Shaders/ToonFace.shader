@@ -107,7 +107,7 @@
         {
             Tags
             {
-                "LightMode" = "FringeReceiver"
+                "LightMode" = "StencilMask"
             }
             Blend One Zero
             ZTest Always
@@ -128,10 +128,32 @@
 
             #pragma multi_compile_instancing
 
-            #include "FringeReceiverPass.hlsl"
+            #include "ToonStencilMaskPass.hlsl"
 
             #pragma vertex FringeReceiverPassVertex
             #pragma fragment FringeReceiverPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "DepthOnly"
+            }
+            ZWrite On
+            Cull Back
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #pragma multi_compile_instancing
+
+            #include "DepthOnlyPass.hlsl"
+
+            #pragma vertex DepthOnlyPassVertex
+            #pragma fragment DepthOnlyPassFragment
             ENDHLSL
         }
 
@@ -156,28 +178,6 @@
 
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "DepthOnly"
-            }
-            ZWrite On
-            Cull Back
-            ColorMask R
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #include "DepthOnlyPass.hlsl"
-
-            #pragma vertex DepthOnlyPassVertex
-            #pragma fragment DepthOnlyPassFragment
             ENDHLSL
         }
 

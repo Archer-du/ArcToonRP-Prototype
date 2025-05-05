@@ -18,22 +18,15 @@ namespace ArcToon.Runtime.Passes
         private static ShaderTagId[] depthPrePassShaderTagIds =
         {
             new("DepthOnly"),
+            new("StencilOnly"),
+            new("DepthStencil"),
         };
-        
-        private static ShaderTagId[] stencilPrePassShaderTagIds =
+        private static ShaderTagId[] stencilMaskShaderTagIds =
         {
-            new("FringeCaster"),
-            new("EyeLashesCaster"),
-        };
-        
-        private static ShaderTagId[] stencilShaderTagIds =
-        {
-            new("FringeReceiver"),
-            new("EyeLashesReceiver"),
+            new("StencilMask"),
         };
 
         private RendererListHandle depthPrepassList;
-        private RendererListHandle stencilPrepassList;
         private RendererListHandle stencilMaskList;
 
         private TextureHandle colorAttachment, depthAttachment;
@@ -52,13 +45,7 @@ namespace ArcToon.Runtime.Passes
             
             commandBuffer.ClearRenderTarget(true, true, Color.clear);
             
-            commandBuffer.BeginSample("Depth Prepass");
             commandBuffer.DrawRendererList(depthPrepassList);
-            commandBuffer.EndSample("Depth Prepass");
-            
-            commandBuffer.BeginSample("Stencil Prepass");
-            commandBuffer.DrawRendererList(stencilPrepassList);
-            commandBuffer.EndSample("Stencil Prepass");
             
             commandBuffer.SetRenderTarget(
                 stencilMask,
@@ -104,15 +91,8 @@ namespace ArcToon.Runtime.Passes
                     renderQueueRange = RenderQueueRange.opaque,
                 })
             );
-            pass.stencilPrepassList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(stencilPrePassShaderTagIds, cullingResults, camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonOpaque,
-                    renderQueueRange = RenderQueueRange.opaque,
-                })
-            );
             pass.stencilMaskList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(stencilShaderTagIds, cullingResults, camera)
+                new RendererListDesc(stencilMaskShaderTagIds, cullingResults, camera)
                 {
                     sortingCriteria = SortingCriteria.CommonOpaque,
                     renderQueueRange = RenderQueueRange.opaque,

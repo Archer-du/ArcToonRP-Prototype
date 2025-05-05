@@ -26,12 +26,12 @@ namespace ArcToon.Runtime.Passes
 
         void Render(RenderGraphContext context)
         {
-            context.cmd.BeginSample("Toon Outline");
-            context.cmd.DrawRendererList(outlineList);
-            context.cmd.EndSample("Toon Outline");
             context.cmd.BeginSample("Toon Base");
             context.cmd.DrawRendererList(baseList);
             context.cmd.EndSample("Toon Base");
+            context.cmd.BeginSample("Toon Outline");
+            context.cmd.DrawRendererList(outlineList);
+            context.cmd.EndSample("Toon Outline");
             context.renderContext.ExecuteCommandBuffer(context.cmd);
             context.cmd.Clear();
         }

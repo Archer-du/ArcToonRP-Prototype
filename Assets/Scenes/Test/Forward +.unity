@@ -225,6 +225,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings:
+    maskLights: 0
+    renderingLayerMask:
+      serializedVersion: 0
+      m_Bits: 4294967295
     renderScaleMode: 0
     renderScale: 1
     copyDepth: 1

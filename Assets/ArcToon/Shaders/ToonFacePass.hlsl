@@ -147,12 +147,8 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
 
     Surface surface;
     ZERO_INITIALIZE(Surface, surface)
-    surface.linearDepth = -TransformWorldToView(input.positionWS).z;
-    #ifdef _TRANSPARENT_FRINGE
-    // TODO: config
-    clip(config.fragment.bufferLinearDepth - surface.linearDepth + 0.285);
-    #endif
     surface.positionWS = input.positionWS;
+    surface.baseUV = input.baseUV;
     surface.color = albedo.rgb;
     surface.alpha = albedo.a;
     #if defined(_NORMAL_MAP)
@@ -164,6 +160,7 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     surface.interpolatedNormalWS = surface.normalWS;
     #endif
     surface.normalVS = normalize(input.normalVS);
+    surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
