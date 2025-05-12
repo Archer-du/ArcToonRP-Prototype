@@ -2,13 +2,22 @@
 {
     Properties
     {
+        // ------------------------ general
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
         [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
-        [NoScaleOffset] _NormalMap("Normals", 2D) = "bump" {}
-        _NormalScale("Normal Scale", Range(0, 1)) = 1
+        [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
+        _NormalScale ("Normal Scale", Range(0, 1)) = 1
+        
+        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
+        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+        
+        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
+        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+
+        // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
         [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
 
@@ -16,10 +25,11 @@
         _Metallic ("Metallic", Range(0, 1)) = 0.8
         _Occlusion ("Occlusion", Range(0, 1)) = 1
         _Fresnel ("Fresnel", Range(0, 1)) = 1
-        
-        _HairSpecGloss ("Hair Spec Gloss", Range(0, 1)) = 0.5
-        _HairSpecScale ("Hair Spec Scale", Range(0, 1)) = 0.5
 
+        [NoScaleOffset] _EmissionMap ("Emission", 2D) = "white" {}
+        [HDR] _EmissionColor ("Emission Color", Color) = (0.0, 0.0, 0.0, 0.0)
+
+        // ------------------------ Toon
         [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
 
@@ -27,17 +37,12 @@
         _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
         
+        _HairSpecGloss ("Hair Spec Gloss", Range(0, 1)) = 0.5
+        _HairSpecScale ("Hair Spec Scale", Range(0, 1)) = 0.5
+        
         [Toggle(_TANGENT_SHIFT_MAP)] _TangentShiftMapToggle ("Use Tangent Shift Map", Float) = 0
         _TangentShiftMap ("Tangent Shift Map", 2D) = "white" {}
         _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
-        
-        // TODO: unsupported
-        [Toggle(_SPEC_MAP)] _SpecMapToggle ("Use Specular Map", Float) = 0
-        _SpecMap ("Specular Map", 2D) = "white" {}
-        _SpecScale ("Specular Scale", Range(0, 1)) = 1
-        
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
-        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
 
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
@@ -48,17 +53,11 @@
         
         [Toggle(_TRANSPARENT_FRINGE)] _TransparentFringeToggle ("Use Transparent Fringe", Float) = 0
         _FringeTransparentScale ("Fringe Transparent Scale", Range(0, 1)) = 0.5
-
-        [NoScaleOffset] _EmissionMap ("Emission", 2D) = "white" {}
-        [HDR] _EmissionColor ("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
-
-        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
         
         _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
         _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
 
+        // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
         
@@ -105,7 +104,6 @@
             #pragma shader_feature _NORMAL_MAP
             #pragma shader_feature _RMO_MASK_MAP
             #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _SPEC_MAP
             #pragma shader_feature _TANGENT_SHIFT_MAP
             #pragma shader_feature _TRANSPARENT_FRINGE
             #pragma shader_feature _RECEIVE_SHADOWS

@@ -44,33 +44,30 @@ float2 TransformDetailUV(float2 rawDetailUV)
 
 float4 GetDetail(InputConfig input)
 {
-    if (input.useDetail)
-    {
-        float4 detail = SAMPLE_TEXTURE2D(_DetailMap, sampler_DetailMap, input.detailUV);
-        return (detail * 2.0 - 1.0) *
-            float4(INPUT_PROP(_DetailAlbedo), 0, INPUT_PROP(_DetailSmoothness), 0);
-    }
+    #if defined(_DETAIL_MAP)
+    float4 detail = SAMPLE_TEXTURE2D(_DetailMap, sampler_DetailMap, input.detailUV);
+    return (detail * 2.0 - 1.0) *
+        float4(INPUT_PROP(_DetailAlbedo), 0, INPUT_PROP(_DetailSmoothness), 0);
+    #endif
     return 0.0;
 }
 
 float4 GetMODSMask(InputConfig input)
 {
-    if (input.useMODSMask)
-    {
-        return SAMPLE_TEXTURE2D(_MODSMaskMap, sampler_BaseMap, input.baseUV);
-    }
+    #if defined(_MODS_MASK_MAP)
+    return SAMPLE_TEXTURE2D(_MODSMaskMap, sampler_BaseMap, input.baseUV);
+    #endif
     return 1.0;
 }
 
 float4 GetColor(InputConfig input)
 {
     float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
-    if (input.useDetail)
-    {
-        float detail = GetDetail(input).r;
-        float detailMask = GetMODSMask(input).b;
-        albedo.rgb = lerp(albedo.rgb, detail < 0.0 ? 0.0 : 1.0, detailMask * abs(detail));
-    }
+    #if defined(_DETAIL_MAP)
+    float detail = GetDetail(input).r;
+    float detailMask = GetMODSMask(input).b;
+    albedo.rgb = lerp(albedo.rgb, detail < 0.0 ? 0.0 : 1.0, detailMask * abs(detail));
+    #endif
     float4 color = INPUT_PROP(_BaseColor);
     return albedo * color;
 }
@@ -85,13 +82,12 @@ float3 GetNormalTS(InputConfig input)
     float4 packedNormal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, input.baseUV);
     float scale = INPUT_PROP(_NormalScale);
     float3 normal = DecodeNormal(packedNormal, scale);
-    if (input.useDetail)
-    {
-        packedNormal = SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailMap, input.detailUV);
-        scale = INPUT_PROP(_DetailNormalScale) * GetMODSMask(input).b;
-        float3 detail = DecodeNormal(packedNormal, scale);
-        normal = BlendNormalRNM(normal, detail);
-    }
+    #if defined(_DETAIL_MAP)
+    packedNormal = SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailMap, input.detailUV);
+    scale = INPUT_PROP(_DetailNormalScale) * GetMODSMask(input).b;
+    float3 detail = DecodeNormal(packedNormal, scale);
+    normal = BlendNormalRNM(normal, detail);
+    #endif
     return normal;
 }
 

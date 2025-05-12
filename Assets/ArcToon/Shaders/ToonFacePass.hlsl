@@ -1,18 +1,7 @@
 ﻿#ifndef ARCTOON_TOON_FACE_PASS_INCLUDED
 #define ARCTOON_TOON_FACE_PASS_INCLUDED
 
-#include "../ShaderLibrary/Light/Lighting.hlsl"
-
-struct Attributes
-{
-    float3 positionOS : POSITION;
-    float3 normalOS : NORMAL;
-    float2 baseUV : TEXCOORD0;
-    UNITY_VERTEX_INPUT_INSTANCE_ID
-    GI_ATTRIBUTES_DATA
-};
-
-struct Varyings
+struct VaryingsFace
 {
     float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
@@ -118,9 +107,9 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light, Fragment fragment,
         (DirectBRDF(surface, brdf, light, faceData) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
 }
 
-Varyings ToonFacePassVertex(Attributes input)
+VaryingsFace ToonFacePassVertex(Attributes input)
 {
-    Varyings output;
+    VaryingsFace output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input, output);
@@ -129,15 +118,15 @@ Varyings ToonFacePassVertex(Attributes input)
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.normalVS = TransformWorldToViewNormal(output.normalWS);
     output.baseUV = TransformBaseUV(input.baseUV);
+    // TODO:
     output.faceUV = TransformFaceUV(input.baseUV);
     return output;
 }
 
-float4 ToonFacePassFragment(Varyings input) : SV_TARGET
+float4 ToonFacePassFragment(VaryingsFace input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
-    
     ClipLOD(config.fragment, unity_LODFade.x);
     
     float4 albedo = GetColor(config);
@@ -148,7 +137,6 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     Surface surface;
     ZERO_INITIALIZE(Surface, surface)
     surface.positionWS = input.positionWS;
-    surface.baseUV = input.baseUV;
     surface.color = albedo.rgb;
     surface.alpha = albedo.a;
     #if defined(_NORMAL_MAP)
@@ -166,7 +154,6 @@ float4 ToonFacePassFragment(Varyings input) : SV_TARGET
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.occlusion = GetOcclusion(config);
     surface.fresnelStrength = GetFresnel(config);
-    surface.specularStrength = GetSpecular(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
     surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
     surface.perObjectCasterID = GetPerObjectShadowCasterID();

@@ -5,23 +5,23 @@
 
 bool _ShadowPancaking;
 
-struct Attributes
+struct AttributesSC
 {
     float3 positionOS : POSITION;
     float2 baseUV : TEXCOORD0;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct Varyings
+struct VaryingsSC
 {
     float4 positionCS_SS : SV_POSITION;
     float2 baseUV : VAR_BASE_UV;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-Varyings ShadowCasterPassVertex(Attributes input)
+VaryingsSC ShadowCasterPassVertex(AttributesSC input)
 {
-    Varyings output;
+    VaryingsSC output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     float3 positionWS = TransformObjectToWorld(input.positionOS);
@@ -42,7 +42,7 @@ Varyings ShadowCasterPassVertex(Attributes input)
     return output;
 }
 
-void ShadowCasterPassFragment(Varyings input)
+void ShadowCasterPassFragment(VaryingsSC input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);

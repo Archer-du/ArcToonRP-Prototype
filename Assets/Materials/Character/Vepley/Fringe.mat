@@ -121,7 +121,7 @@ Material:
     - _NormalScale: 1
     - _Occlusion: 1
     - _OcclusionStrength: 1
-    - _OutlineScale: 0.16
+    - _OutlineScale: 0.18
     - _Parallax: 0.02
     - _PerObjShadowCasterID: -1
     - _PerObjectShadowCasterID: -1

@@ -3,7 +3,7 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 
-struct Attributes
+struct AttributesGO
 {
     float3 positionOS : POSITION;
     float3 normalOS : NORMAL;
@@ -14,15 +14,15 @@ struct Attributes
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct Varyings
+struct VaryingsGO
 {
     float4 positionCS_SS : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-Varyings OriginGeometryOutlinePassVertex(Attributes input)
+VaryingsGO OriginGeometryOutlinePassVertex(AttributesGO input)
 {
-    Varyings output;
+    VaryingsGO output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     float3 positionVS = TransformWorldToView(TransformObjectToWorld(input.positionOS));
@@ -34,9 +34,9 @@ Varyings OriginGeometryOutlinePassVertex(Attributes input)
     return output;
 }
 
-Varyings GeometryOutlinePassVertex(Attributes input)
+VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
 {
-    Varyings output;
+    VaryingsGO output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     // return OriginGeometryOutlinePassVertex(input);
@@ -56,7 +56,7 @@ Varyings GeometryOutlinePassVertex(Attributes input)
     return output;
 }
 
-float4 GeometryOutlinePassFragment(Varyings input) : SV_TARGET
+float4 GeometryOutlinePassFragment(VaryingsGO input) : SV_TARGET
 {
     return float4(GetOutlineColor(), 1.0);
 }

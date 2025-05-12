@@ -3,6 +3,7 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Input/InputConfig.hlsl"
+#include "../ShaderLibrary/Light/Lighting.hlsl"
 
 TEXTURE2D(_BaseMap);
 TEXTURE2D(_NormalMap);
@@ -21,15 +22,12 @@ SAMPLER(sampler_RampSet);
 TEXTURE2D(_TangentShiftMap);
 SAMPLER(sampler_TangentShiftMap);
 
-TEXTURE2D(_SpecMap);
-
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _LightMapSDF_ST)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _SpecMap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _TangentShiftMap_ST)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
-    UNITY_DEFINE_INSTANCED_PROP(float, _SpecScale)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
 
@@ -82,6 +80,18 @@ INPUT_PROP(_DirectLightAttenSmoothNew)
 INPUT_PROP(_DirectLightSpecOffset), \
 INPUT_PROP(_DirectLightSpecSmooth)
 
+struct Attributes
+{
+    float3 positionOS : POSITION;
+    float3 normalOS : NORMAL;
+    float4 tangentOS : TANGENT;
+    float2 baseUV : TEXCOORD0;
+    float2 UV2 : TEXCOORD1;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+    GI_ATTRIBUTES_DATA
+};
+
+// common -------------------------------------
 float2 TransformBaseUV(float2 rawBaseUV)
 {
     float4 baseST = INPUT_PROP(_BaseMap_ST);
@@ -94,12 +104,10 @@ float2 TransformFaceUV(float2 rawFaceUV)
     return rawFaceUV * faceST.xy * 0.1 + faceST.zw * 0.1;
 }
 
-float4 GetRMOMask(InputConfig input)
+float2 TransformHairUV(float2 rawHairUV)
 {
-    #ifdef _RMO_MASK_MAP
-    return SAMPLE_TEXTURE2D(_RMOMaskMap, sampler_RMOMaskMap, input.baseUV);
-    #endif
-    return 1.0;
+    float4 baseST = INPUT_PROP(_TangentShiftMap_ST);
+    return rawHairUV * baseST.xy + baseST.zw;
 }
 
 float4 GetColor(InputConfig input)
@@ -109,17 +117,31 @@ float4 GetColor(InputConfig input)
     return albedo * color;
 }
 
-float GetAlphaClip(InputConfig input)
-{
-    return INPUT_PROP(_Cutoff);
-}
-
 float3 GetNormalTS(InputConfig input)
 {
     float4 packedNormal = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, input.baseUV);
     float scale = INPUT_PROP(_NormalScale);
     float3 normal = DecodeNormal(packedNormal, scale);
     return normal;
+}
+
+float GetAlphaClip(InputConfig input)
+{
+    return INPUT_PROP(_Cutoff);
+}
+
+float GetPerObjectShadowCasterID()
+{
+    return INPUT_PROP(_PerObjectShadowCasterID);
+}
+
+// PBR -------------------------------------
+float4 GetRMOMask(InputConfig input)
+{
+    #ifdef _RMO_MASK_MAP
+    return SAMPLE_TEXTURE2D(_RMOMaskMap, sampler_RMOMaskMap, input.baseUV);
+    #endif
+    return 1.0;
 }
 
 float GetMetallic(InputConfig input)
@@ -148,6 +170,19 @@ float GetOcclusion(InputConfig input)
     return occlusion;
 }
 
+float GetFresnel(InputConfig input)
+{
+    return INPUT_PROP(_Fresnel);
+}
+
+float3 GetEmission(InputConfig input)
+{
+    float4 albedo = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, input.baseUV);
+    float4 color = INPUT_PROP(_EmissionColor);
+    return albedo.rgb * color.rgb;
+}
+
+// Toon -------------------------------------
 float GetOutlineScale()
 {
     return INPUT_PROP(_OutlineScale) * 12.5;
@@ -173,41 +208,47 @@ float GetRimLightDepthBias()
     return INPUT_PROP(_RimDepthBias);
 }
 
-float GetFresnel(InputConfig input)
-{
-    return INPUT_PROP(_Fresnel);
-}
-
-float3 GetEmission(InputConfig input)
-{
-    float4 albedo = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, input.baseUV);
-    float4 color = INPUT_PROP(_EmissionColor);
-    return albedo.rgb * color.rgb;
-}
-
-float GetSpecular(InputConfig input)
-{
-    // TODO:
-    #ifdef _SPEC_MAP
-    float4 baseST = INPUT_PROP(_SpecMap_ST);
-    float2 baseUV = input.baseUV * baseST.xy * 0.1 + baseST.zw * 0.1;
-    float specularScale = INPUT_PROP(_SpecScale);
-    return SAMPLE_TEXTURE2D(_SpecMap, sampler_BaseMap, baseUV).rgb * specularScale;
-    #endif
-    return 0.0;
-}
-
 float GetFringeTransparentScale()
 {
     return INPUT_PROP(_FringeTransparentScale);
 }
 
-float GetFinalAlpha(InputConfig input)
+float GetNoseSpecularStrength()
 {
-    #ifdef _TRANSPARENT_FRINGE
-    return lerp(1.0, GetFringeTransparentScale(), input.fragment.stencilMask.b);
-    #endif
-    return 1.0;
+    return INPUT_PROP(_NoseSpecularStrengthSDF) * 50;
+}
+
+float GetNoseSpecularSmooth()
+{
+    return INPUT_PROP(_NoseSpecularSmoothSDF) * 2;
+}
+
+float GetSDFShadowOffset()
+{
+    return INPUT_PROP(_ShadowOffsetSDF) * 0.25;
+}
+
+float2 GetFringeShadowBiasScale()
+{
+    float2 data;
+    data.x = INPUT_PROP(_FringeShadowBiasScaleX) * 0.2;
+    data.y = INPUT_PROP(_FringeShadowBiasScaleY) * 0.2;
+    return data;
+}
+
+float GetHairSpecGloss()
+{
+    return INPUT_PROP(_HairSpecGloss) * 200;
+}
+
+float GetHairSpecScale()
+{
+    return INPUT_PROP(_HairSpecScale) * 50;
+}
+
+float GetHairTangentShiftOffset()
+{
+    return INPUT_PROP(_TangentShiftOffset);
 }
 
 float3 SampleRampSetChannel(float rampUV, float channel)
@@ -253,52 +294,17 @@ float SampleSDFLightMapNoseSpecular2(float2 faceUV)
 float SampleTangentShiftNoise(float2 baseUV)
 {
     #ifdef _TANGENT_SHIFT_MAP
-    return SAMPLE_TEXTURE2D(_TangentShiftMap, sampler_TangentShiftMap, baseUV).r * 2.0 - 1.0;
+    return clamp(-0.8, 0.8, SAMPLE_TEXTURE2D(_TangentShiftMap, sampler_TangentShiftMap, baseUV).r * 2.0 - 1.0);
     #endif
     return 0.0;
 }
 
-float GetNoseSpecularStrength()
+float GetFinalAlpha(InputConfig input)
 {
-    return INPUT_PROP(_NoseSpecularStrengthSDF) * 50;
-}
-
-float GetNoseSpecularSmooth()
-{
-    return INPUT_PROP(_NoseSpecularSmoothSDF) * 2;
-}
-
-float GetSDFShadowOffset()
-{
-    return INPUT_PROP(_ShadowOffsetSDF) * 0.25;
-}
-
-float2 GetFringeShadowBiasScale()
-{
-    float2 data;
-    data.x = INPUT_PROP(_FringeShadowBiasScaleX) * 0.2;
-    data.y = INPUT_PROP(_FringeShadowBiasScaleY) * 0.2;
-    return data;
-}
-
-float GetPerObjectShadowCasterID()
-{
-    return INPUT_PROP(_PerObjectShadowCasterID);
-}
-
-float GetHairSpecGloss()
-{
-    return INPUT_PROP(_HairSpecGloss) * 200;
-}
-
-float GetHairSpecScale()
-{
-    return INPUT_PROP(_HairSpecScale) * 50;
-}
-
-float GetHairTangentShiftOffset()
-{
-    return INPUT_PROP(_TangentShiftOffset);
+    #ifdef _TRANSPARENT_FRINGE
+    return lerp(1.0, GetFringeTransparentScale(), input.fragment.stencilMask.b);
+    #endif
+    return 1.0;
 }
 
 #endif

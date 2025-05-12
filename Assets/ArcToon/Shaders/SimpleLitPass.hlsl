@@ -57,12 +57,8 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     
     ClipLOD(config.fragment, unity_LODFade.x);
     
-    #if defined(_MODS_MASK_MAP)
-    config.useMODSMask = true;
-    #endif
     #if defined(_DETAIL_MAP)
     config.detailUV = input.detailUV;
-    config.useDetail = true;
     #endif
     
     float4 color = GetColor(config);

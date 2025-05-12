@@ -4,7 +4,6 @@
 struct Surface
 {
     float3 positionWS;
-    float2 baseUV;
     float3 normalWS;
     float3 normalVS;
     float3 interpolatedNormalWS;
@@ -15,7 +14,6 @@ struct Surface
     float metallic;
     float roughness;
     float fresnelStrength;
-    float specularStrength;
     float occlusion;
     float dither;
     uint renderingLayerMask;

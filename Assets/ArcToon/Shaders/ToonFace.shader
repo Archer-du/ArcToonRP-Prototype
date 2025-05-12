@@ -2,14 +2,33 @@
 {
     Properties
     {
+        // ------------------------ general
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
+        [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
+        [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
+        _NormalScale ("Normal Scale", Range(0, 1)) = 1
+
+        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
+
+        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
+
+        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        
+        // ------------------------ PBR
+        [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
+        [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
+        
         _Smoothness ("Smoothness", Range(0, 1)) = 0.5
         _Metallic ("Metallic", Range(0, 1)) = 0.8
         _Occlusion ("Occlusion", Range(0, 1)) = 1
         _Fresnel ("Fresnel", Range(0, 1)) = 1
 
+        [NoScaleOffset] _EmissionMap ("Emission", 2D) = "white" {}
+        [HDR] _EmissionColor ("Emission Color", Color) = (0.0, 0.0, 0.0, 0.0)
+        
+        // ------------------------ Toon
         [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
         
@@ -24,26 +43,15 @@
         _ShadowOffsetSDF ("SDF Light Map Attenuation Offset", Range(-1, 1)) = 0
         _NoseSpecularStrengthSDF ("SDF Light Map Nose Specular Strength", Range(0, 1)) = 0.5
         _NoseSpecularSmoothSDF ("SDF Light Map Nose Specular Smooth", Range(0, 1)) = 0.1
-
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
-
+        
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
-
-        [NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
-        [HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
-
-        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-                
-        _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
-        _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
-
+        
+        // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
         

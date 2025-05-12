@@ -4,28 +4,28 @@
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Light/Lighting.hlsl"
 
-struct Attributes
+struct AttributesDS
 {
     float3 positionOS : POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct Varyings
+struct VaryingsDS
 {
     float4 positionCS_SS : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-Varyings DefaultDepthStencilPassVertex(Attributes input)
+VaryingsDS DefaultDepthStencilPassVertex(AttributesDS input)
 {
-    Varyings output = (Varyings)0;
+    VaryingsDS output = (VaryingsDS)0;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     output.positionCS_SS = TransformObjectToHClip(input.positionOS.xyz);
     return output;
 }
 
-half DefaultDepthStencilPassFragment(Varyings input) : SV_TARGET
+half DefaultDepthStencilPassFragment(VaryingsDS input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     #if defined(LOD_FADE_CROSSFADE)
@@ -34,9 +34,9 @@ half DefaultDepthStencilPassFragment(Varyings input) : SV_TARGET
     return input.positionCS_SS.z;
 }
 
-Varyings FringeStencilPassPassVertex(Attributes input)
+VaryingsDS FringeStencilPassPassVertex(AttributesDS input)
 {
-    Varyings output;
+    VaryingsDS output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
 

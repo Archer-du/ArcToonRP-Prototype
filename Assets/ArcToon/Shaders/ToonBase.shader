@@ -2,13 +2,22 @@
 {
     Properties
     {
+        // ------------------------ general
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
         [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
-        [NoScaleOffset] _NormalMap("Normals", 2D) = "bump" {}
-        _NormalScale("Normal Scale", Range(0, 1)) = 1
+        [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
+        _NormalScale ("Normal Scale", Range(0, 1)) = 1
+        
+        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
+        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+        
+        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
+        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        
+        // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
         [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
 
@@ -17,6 +26,10 @@
         _Occlusion ("Occlusion", Range(0, 1)) = 1
         _Fresnel ("Fresnel", Range(0, 1)) = 1
 
+        [NoScaleOffset] _EmissionMap ("Emission", 2D) = "white" {}
+        [HDR] _EmissionColor ("Emission Color", Color) = (0.0, 0.0, 0.0, 0.0)
+
+        // ------------------------ Toon
         [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
 
@@ -26,13 +39,6 @@
         
         _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
         _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
-        
-        [Toggle(_SPEC_MAP)] _SpecMapToggle ("Use Specular Map", Float) = 0
-        _SpecMap ("Specular Map", 2D) = "white" {}
-        _SpecScale ("Specular Scale", Range(0, 1)) = 1
-
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
-        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
 
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
@@ -41,13 +47,7 @@
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
 
-        [NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
-        [HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
-
-        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-
+        // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
 
@@ -115,7 +115,6 @@
             #pragma shader_feature _NORMAL_MAP
             #pragma shader_feature _RMO_MASK_MAP
             #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _SPEC_MAP
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _CLIPPING
 

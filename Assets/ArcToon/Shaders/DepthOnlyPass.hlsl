@@ -1,7 +1,7 @@
 ﻿#ifndef ARCTOON_DEPTH_ONLY_PASS_INCLUDED
 #define ARCTOON_DEPTH_ONLY_PASS_INCLUDED
 
-struct Attributes
+struct Attributes_DO
 {
     float4 positionOS : POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -14,7 +14,7 @@ struct Varyings
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
-Varyings DepthOnlyPassVertex(Attributes input)
+Varyings DepthOnlyPassVertex(Attributes_DO input)
 {
     Varyings output = (Varyings)0;
     UNITY_SETUP_INSTANCE_ID(input);

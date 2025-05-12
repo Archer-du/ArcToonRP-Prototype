@@ -18,13 +18,14 @@ struct DirectLightSpecData
 
 struct FaceData
 {
+    float2 faceUV;
     float3 directionWS;
     float3 positionWS;
-    float2 faceUV;
 };
 
 struct HairSpecData
 {
+    float2 hairUV;
     float3 bitangentWS;
     float gloss;
     float scale;
@@ -64,9 +65,10 @@ FaceData GetFaceData(float2 faceUV)
     return data;
 }
 
-HairSpecData GetHairSpecData(float3 bitangentWS, float gloss, float scale)
+HairSpecData GetHairSpecData(float2 hairUV, float3 bitangentWS, float gloss, float scale)
 {
     HairSpecData data;
+    data.hairUV = hairUV;
     data.bitangentWS = SafeNormalize(bitangentWS);
     data.gloss = gloss;
     data.scale = scale;

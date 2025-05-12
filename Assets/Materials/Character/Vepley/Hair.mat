@@ -14,10 +14,10 @@ Material:
   m_ValidKeywords:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
-  - _SPEC_MAP
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
+  - _SPEC_MAP
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -100,8 +100,10 @@ Material:
     - _DirectLightAttenSigmoidSharp: 1
     - _DirectLightAttenSmooth: 2
     - _DirectLightAttenSmoothNew: 0.92
+    - _DirectLightSpecOffset: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
+    - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
     - _GlossMapScale: 1
@@ -115,7 +117,7 @@ Material:
     - _NormalScale: 1
     - _Occlusion: 1
     - _OcclusionStrength: 1
-    - _OutlineScale: 0.16
+    - _OutlineScale: 0.18
     - _Parallax: 0.02
     - _PerObjShadowCasterID: -1
     - _PerObjectShadowCasterID: -1

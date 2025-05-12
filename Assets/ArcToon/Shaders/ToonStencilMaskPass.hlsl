@@ -3,21 +3,21 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 
-struct Attributes
+struct AttributesSM
 {
     float3 positionOS : POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct Varyings
+struct VaryingsSM
 {
     float4 positionCS_SS : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-Varyings EyeLashesReceiverPassVertex(Attributes input)
+VaryingsSM EyeLashesReceiverPassVertex(AttributesSM input)
 {
-    Varyings output;
+    VaryingsSM output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     
@@ -26,14 +26,14 @@ Varyings EyeLashesReceiverPassVertex(Attributes input)
     return output;
 }
 
-float4 EyeLashesReceiverPassFragment(Varyings input) : SV_TARGET
+float4 EyeLashesReceiverPassFragment(VaryingsSM input) : SV_TARGET
 {
     return float4(0.0, 0.0, 1.0, 0.0);
 }
 
-Varyings FringeReceiverPassVertex(Attributes input)
+VaryingsSM FringeReceiverPassVertex(AttributesSM input)
 {
-    Varyings output;
+    VaryingsSM output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     
@@ -42,7 +42,7 @@ Varyings FringeReceiverPassVertex(Attributes input)
     return output;
 }
 
-float4 FringeReceiverPassFragment(Varyings input) : SV_TARGET
+float4 FringeReceiverPassFragment(VaryingsSM input) : SV_TARGET
 {
     return float4(0.0, 1.0, 0.0, 0.0);
 }

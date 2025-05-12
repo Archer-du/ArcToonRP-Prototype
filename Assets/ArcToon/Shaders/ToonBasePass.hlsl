@@ -1,19 +1,7 @@
 ﻿#ifndef ARCTOON_TOON_BASE_PASS_INCLUDED
 #define ARCTOON_TOON_BASE_PASS_INCLUDED
 
-#include "../ShaderLibrary/Light/Lighting.hlsl"
-
-struct Attributes
-{
-    float3 positionOS : POSITION;
-    float3 normalOS : NORMAL;
-    float4 tangentOS : TANGENT;
-    float2 baseUV : TEXCOORD0;
-    UNITY_VERTEX_INPUT_INSTANCE_ID
-    GI_ATTRIBUTES_DATA
-};
-
-struct Varyings
+struct VaryingsBase
 {
     float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
@@ -78,9 +66,9 @@ float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light,
         (DirectBRDF(surface, brdf, light, specData) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
 }
 
-Varyings ToonBasePassVertex(Attributes input)
+VaryingsBase ToonBasePassVertex(Attributes input)
 {
-    Varyings output;
+    VaryingsBase output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input, output);
@@ -95,14 +83,13 @@ Varyings ToonBasePassVertex(Attributes input)
     return output;
 }
 
-float4 ToonBasePassFragment(Varyings input) : SV_TARGET
+float4 ToonBasePassFragment(VaryingsBase input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
-
     ClipLOD(config.fragment, unity_LODFade.x);
 
-    float4 color = GetColor(config);
+    float4 albedo = GetColor(config);
     #if defined(_CLIPPING)
     clip(color.a - GetAlphaClip(config));
     #endif
@@ -110,9 +97,8 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     Surface surface;
     ZERO_INITIALIZE(Surface, surface)
     surface.positionWS = input.positionWS;
-    surface.baseUV = input.baseUV;
-    surface.color = color.rgb;
-    surface.alpha = color.a;
+    surface.color = albedo.rgb;
+    surface.alpha = albedo.a;
     #if defined(_NORMAL_MAP)
     surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
         input.normalWS, input.tangentWS));
@@ -128,7 +114,6 @@ float4 ToonBasePassFragment(Varyings input) : SV_TARGET
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.occlusion = GetOcclusion(config);
     surface.fresnelStrength = GetFresnel(config);
-    surface.specularStrength = GetSpecular(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
     surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
     surface.perObjectCasterID = GetPerObjectShadowCasterID();
