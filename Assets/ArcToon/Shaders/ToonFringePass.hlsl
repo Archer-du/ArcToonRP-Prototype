@@ -65,7 +65,7 @@ float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light, D
         (DirectBRDF(surface, brdf, light, hairSpecData) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
 }
 
-VaryingsHair ToonHairPassVertex(Attributes input)
+VaryingsHair ToonFringePassVertex(Attributes input)
 {
     VaryingsHair output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -83,7 +83,7 @@ VaryingsHair ToonHairPassVertex(Attributes input)
     return output;
 }
 
-float4 ToonHairPassFragment(VaryingsHair input) : SV_TARGET
+float4 ToonFringePassFragment(VaryingsHair input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
@@ -135,7 +135,6 @@ float4 ToonHairPassFragment(VaryingsHair input) : SV_TARGET
             finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, rimLightData, hairSpecData);
         }
     }
-
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);
 
     finalColor += GetEmission(config);

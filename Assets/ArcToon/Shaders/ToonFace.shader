@@ -33,8 +33,14 @@
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
         
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
-        _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 5)) = 0.5
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
+        
+        _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
+        _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
+        
+        _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
+        _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
+        _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
 
         [Toggle(_SDF_LIGHT_MAP)] _LightMapSDFToggle ("Use SDF Light Map", Float) = 0
         [Toggle(_SDF_LIGHT_MAP_SPEC)] _LightMapSpecularSDFToggle ("Use SDF Light Map Specular", Float) = 0
@@ -43,13 +49,6 @@
         _ShadowOffsetSDF ("SDF Light Map Attenuation Offset", Range(-1, 1)) = 0
         _NoseSpecularStrengthSDF ("SDF Light Map Nose Specular Strength", Range(0, 1)) = 0.5
         _NoseSpecularSmoothSDF ("SDF Light Map Nose Specular Smooth", Range(0, 1)) = 0.1
-        
-        _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
-        _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
-        
-        _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
-        _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
-        _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
         
         // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]

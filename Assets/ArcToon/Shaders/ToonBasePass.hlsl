@@ -135,7 +135,6 @@ float4 ToonBasePassFragment(VaryingsBase input) : SV_TARGET
             finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, specData, rimLightData);
         }
     }
-    
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);
     
     finalColor += GetEmission(config);
