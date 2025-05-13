@@ -91,7 +91,6 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
     surface.perObjectCasterID = -1;
 
-
     #if defined(_PREMULTIPLY_ALPHA)
     BRDF brdf = GetBRDF(surface, true);
     #else
@@ -101,6 +100,7 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     float3 finalColor = GetLighting(config.fragment, surface, brdf, gi);
     finalColor += GetEmission(config);
 
+    // finalColor = config.fragment.linearDepth / 100.;
     return float4(finalColor, GetFinalAlpha(surface.alpha));
 }
 
