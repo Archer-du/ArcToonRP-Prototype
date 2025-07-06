@@ -3,6 +3,8 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 
+#define OUTLINE_RESCOEF (_CameraBufferSize.z / 1440);
+
 struct AttributesGO
 {
     float3 positionOS : POSITION;
@@ -48,7 +50,7 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
     float3 smoothNormalVS = TransformWorldToViewNormal(smoothNormalWS, true);
     float linearDepth = -positionVS.z;
     float outlineScale = GetOutlineScale();
-    float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth);
+    float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * OUTLINE_RESCOEF;
     // TODO: config
     outlineFactor = clamp(outlineFactor, outlineScale * 0.001, outlineScale * 50);
     float3 scaledPositionVS = positionVS + smoothNormalVS * outlineFactor;
