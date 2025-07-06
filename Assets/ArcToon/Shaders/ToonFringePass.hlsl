@@ -22,7 +22,9 @@ float3 SpecularStrength(Surface surface, Light light, HairSpecData hairSpecData)
     float shiftScale = SampleTangentShiftNoise(hairSpecData.hairUV) + GetHairTangentShiftOffset();
     float3 bitangentWS = SafeNormalize(hairSpecData.bitangentWS + shiftScale * surface.normalWS);
     float dotTH = dot(bitangentWS, h);
-    float sinTH = sqrt(1.0 - dotTH * dotTH);
+    // avoid sqrt crashes caused by floating point precision
+    float cosTH = saturate(dotTH);
+    float sinTH = sqrt(saturate(1.0 - cosTH * cosTH));
     float dirAtten = smoothstep(-1.0, 0.0, dotTH);
     return dirAtten * pow(sinTH, hairSpecData.gloss) * hairSpecData.scale;
 }
