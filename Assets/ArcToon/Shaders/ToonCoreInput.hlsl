@@ -101,7 +101,7 @@ float2 TransformBaseUV(float2 rawBaseUV)
 float2 TransformFaceUV(float2 rawFaceUV)
 {
     float4 faceST = INPUT_PROP(_LightMapSDF_ST);
-    return rawFaceUV * faceST.xy * 0.1 + faceST.zw * 0.1;
+    return rawFaceUV * faceST.xy + faceST.zw;
 }
 
 float2 TransformHairUV(float2 rawHairUV)

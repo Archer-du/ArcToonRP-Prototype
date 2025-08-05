@@ -73,7 +73,7 @@ float4 TransformObjectToWorldTangent(float4 tangentOS)
 
 float3 GetFaceFrontDir()
 {
-    return mul((float3x3)GetObjectToWorldMatrix(), float3(0, 0, -1));
+    return mul((float3x3)GetObjectToWorldMatrix(), float3(0, 0, 1));
 }
 
 float3 GetFaceCenterPositionWorld()

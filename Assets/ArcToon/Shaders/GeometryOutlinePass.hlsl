@@ -22,7 +22,7 @@ struct VaryingsGO
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-VaryingsGO OriginGeometryOutlinePassVertex(AttributesGO input)
+VaryingsGO LegacyGeometryOutlinePassVertex(AttributesGO input)
 {
     VaryingsGO output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -49,7 +49,7 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
         normalWS, tangentWS, true);
     float3 smoothNormalVS = TransformWorldToViewNormal(smoothNormalWS, true);
     float linearDepth = -positionVS.z;
-    float outlineScale = GetOutlineScale();
+    float outlineScale = GetOutlineScale() * input.smoothNormal.a;
     float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * OUTLINE_RESCOEF;
     // TODO: config
     outlineFactor = clamp(outlineFactor, outlineScale * 0.001, outlineScale * 50);

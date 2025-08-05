@@ -91,7 +91,7 @@ float4 ToonBasePassFragment(VaryingsBase input) : SV_TARGET
 
     float4 albedo = GetColor(config);
     #if defined(_CLIPPING)
-    clip(color.a - GetAlphaClip(config));
+    clip(albedo.a - GetAlphaClip(config));
     #endif
 
     Surface surface;

@@ -16,7 +16,8 @@
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-        
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
+
         // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
         [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
@@ -82,6 +83,8 @@
             #pragma target 3.5
 
             #pragma multi_compile_instancing
+            
+            #pragma shader_feature _SNCHANNEL_UV2 _SNCHANNEL_VERTCOL
 
             #include "GeometryOutlinePass.hlsl"
 
@@ -99,7 +102,7 @@
             }
             Blend One Zero, One OneMinusSrcAlpha
             ZWrite On
-            Cull Back
+            Cull [_Cull]
 
             HLSLPROGRAM
             #pragma target 4.5
@@ -136,7 +139,7 @@
                 "LightMode" = "DepthOnly"
             }
             ZWrite On
-            Cull Back
+            Cull [_Cull]
             ColorMask R
 
             HLSLPROGRAM
@@ -159,7 +162,7 @@
             }
 
             ColorMask 0
-            Cull Back
+            Cull [_Cull]
 
             HLSLPROGRAM
             #pragma target 3.5

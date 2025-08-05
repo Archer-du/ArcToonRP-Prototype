@@ -118,8 +118,7 @@ VaryingsFace ToonFacePassVertex(Attributes input)
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.normalVS = TransformWorldToViewNormal(output.normalWS);
     output.baseUV = TransformBaseUV(input.baseUV);
-    // TODO:
-    output.faceUV = TransformFaceUV(input.baseUV);
+    output.faceUV = TransformFaceUV(input.UV2);
     return output;
 }
 
