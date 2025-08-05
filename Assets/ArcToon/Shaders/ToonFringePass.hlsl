@@ -91,16 +91,16 @@ float4 ToonFringePassFragment(VaryingsHair input) : SV_TARGET
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
     ClipLOD(config.fragment, unity_LODFade.x);
 
-    float4 color = GetColor(config);
+    float4 albedo = GetColor(config);
     #if defined(_CLIPPING)
-    clip(color.a - GetAlphaClip(config));
+    clip(albedo.a - GetAlphaClip(config));
     #endif
 
     Surface surface;
     ZERO_INITIALIZE(Surface, surface)
     surface.positionWS = input.positionWS;
-    surface.color = color.rgb;
-    surface.alpha = color.a;
+    surface.color = albedo.rgb;
+    surface.alpha = albedo.a;
     #if defined(_NORMAL_MAP)
     surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
         input.normalWS, input.tangentWS));
