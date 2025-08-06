@@ -135,4 +135,9 @@ float GetFinalAlpha(float alpha)
     return INPUT_PROP(_ZWrite) ? 1.0 : alpha;
 }
 
+float2 GetFringeShadowBiasScale()
+{
+    return 0;
+}
+
 #endif

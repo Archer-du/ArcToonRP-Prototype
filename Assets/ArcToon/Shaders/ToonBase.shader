@@ -147,7 +147,7 @@
 
             #pragma multi_compile_instancing
 
-            #include "DepthOnlyPass.hlsl"
+            #include "ToonDepthStencilPass.hlsl"
 
             #pragma vertex DepthOnlyPassVertex
             #pragma fragment DepthOnlyPassFragment

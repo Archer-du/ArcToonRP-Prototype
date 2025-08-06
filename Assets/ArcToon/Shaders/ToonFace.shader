@@ -109,47 +109,25 @@
             #pragma fragment ToonFacePassFragment
             ENDHLSL
         }
-
+        
         Pass
         {
             Tags
             {
-                "LightMode" = "StencilMask"
+                "LightMode" = "DepthStencil"
             }
             Blend One Zero
-            ZTest Always
-            ZWrite Off
+            ZTest On
+            ZWrite On
             Cull Back
             Stencil
             {
                 Ref 1
-                Comp Equal
-                Pass Keep
+                Comp Always
+                Pass Replace
                 ReadMask 3
                 WriteMask 3
             }
-            ColorMask G
-
-            HLSLPROGRAM
-            #pragma target 4.5
-
-            #pragma multi_compile_instancing
-
-            #include "ToonStencilMaskPass.hlsl"
-
-            #pragma vertex FringeReceiverPassVertex
-            #pragma fragment FringeReceiverPassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "DepthOnly"
-            }
-            ZWrite On
-            Cull Back
             ColorMask R
 
             HLSLPROGRAM
@@ -157,10 +135,10 @@
 
             #pragma multi_compile_instancing
 
-            #include "DepthOnlyPass.hlsl"
+            #include "ToonDepthStencilPass.hlsl"
 
-            #pragma vertex DepthOnlyPassVertex
-            #pragma fragment DepthOnlyPassFragment
+            #pragma vertex DefaultDepthStencilPassVertex
+            #pragma fragment DefaultDepthStencilPassFragment
             ENDHLSL
         }
 

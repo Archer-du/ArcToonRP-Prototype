@@ -65,75 +65,8 @@
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"
         
-        Pass
-        {
-            Name "Toon Lashes"
-            Tags
-            {
-                "LightMode" = "ToonForward"
-            }
-            Blend One Zero, One OneMinusSrcAlpha
-            ZWrite On
-            Cull Back
-
-            HLSLPROGRAM
-            #pragma target 4.5
-
-            #pragma multi_compile_instancing
-            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
-            #pragma multi_compile _ LIGHTMAP_ON
-            #pragma multi_compile _ LOD_FADE_CROSSFADE
-
-            #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _SDF_LIGHT_MAP
-            #pragma shader_feature _SDF_LIGHT_MAP_SPEC
-
-            #pragma shader_feature _CLIPPING
-
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
-            #include "ToonFacePass.hlsl"
-
-            #pragma vertex ToonFacePassVertex
-            #pragma fragment ToonFacePassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "StencilMask"
-            }
-            Blend One Zero
-            ZTest Always
-            ZWrite Off
-            Cull Back
-            Stencil
-            {
-                Ref 1
-                Comp Equal
-                Pass Keep
-                ReadMask 3
-                WriteMask 3
-            }
-            ColorMask G
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #include "ToonStencilMaskPass.hlsl"
-
-            #pragma vertex FringeReceiverPassVertex
-            #pragma fragment FringeReceiverPassFragment
-            ENDHLSL
-        }
-
+        UsePass "ArcToon/ToonFace/TOON FACE"
+        
         Pass
         {
             Tags

@@ -80,6 +80,9 @@ INPUT_PROP(_DirectLightAttenSmoothNew)
 INPUT_PROP(_DirectLightSpecOffset), \
 INPUT_PROP(_DirectLightSpecSmooth)
 
+#define STENCIL_MASK_CHANNEL_FRINGE_SHADOW g
+#define STENCIL_MASK_CHANNEL_EYE_LASHES b
+
 struct Attributes
 {
     float3 positionOS : POSITION;
@@ -302,7 +305,7 @@ float SampleTangentShiftNoise(float2 baseUV)
 float GetFinalAlpha(InputConfig input)
 {
     #ifdef _TRANSPARENT_FRINGE
-    return lerp(1.0, GetFringeTransparentScale(), input.fragment.stencilMask.b);
+    return lerp(1.0, GetFringeTransparentScale(), input.fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
     #endif
     return 1.0;
 }

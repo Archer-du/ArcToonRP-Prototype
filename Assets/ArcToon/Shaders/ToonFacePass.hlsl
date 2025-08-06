@@ -74,7 +74,8 @@ float3 IncomingLight(Surface surface, Light light, Fragment fragment,
     {
         attenuationUV = min(
             attenuationUV,
-            SigmoidSharp(1 - fragment.stencilMask.g, attenData.offset, attenData.smooth)
+            SigmoidSharp(1 - fragment.stencilMask.STENCIL_MASK_CHANNEL_FRINGE_SHADOW,
+                attenData.offset, attenData.smooth)
         );
     }
     #else

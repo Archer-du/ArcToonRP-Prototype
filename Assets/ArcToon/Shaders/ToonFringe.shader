@@ -124,7 +124,7 @@
         {
             Tags
             {
-                "LightMode" = "StencilMask"
+                "LightMode" = "EyeLashesReceiver"
             }
             Blend One Zero
             ZTest Always
@@ -156,7 +156,7 @@
         {
             Tags
             {
-                "LightMode" = "StencilOnly"
+                "LightMode" = "FringeShadowReceiver"
             }
             Blend One Zero
             ZTest On
@@ -165,22 +165,22 @@
             Stencil
             {
                 Ref 1
-                Comp Always
-                Pass Replace
+                Comp Equal
+                Pass Keep
                 ReadMask 3
                 WriteMask 3
             }
-            ColorMask 0
+            ColorMask G
 
             HLSLPROGRAM
-            #pragma target 3.5
+            #pragma target 4.5
 
             #pragma multi_compile_instancing
 
-            #include "ToonDepthStencilPass.hlsl"
+            #include "ToonStencilMaskPass.hlsl"
 
-            #pragma vertex FringeStencilPassPassVertex
-            #pragma fragment DefaultDepthStencilPassFragment
+            #pragma vertex FringeReceiverPassVertex
+            #pragma fragment FringeReceiverPassFragment
             ENDHLSL
         }
 
