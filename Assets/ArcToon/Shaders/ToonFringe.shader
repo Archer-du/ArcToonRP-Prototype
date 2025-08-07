@@ -135,11 +135,11 @@
             Cull [_Cull]
             Stencil
             {
-                Ref 4
+                Ref 2
                 Comp Equal
                 Pass Keep
-                ReadMask 12
-                WriteMask 12
+                ReadMask 2
+                WriteMask 2
             }
             ColorMask B
 
@@ -170,8 +170,8 @@
                 Ref 1
                 Comp Equal
                 Pass Keep
-                ReadMask 3
-                WriteMask 3
+                ReadMask 1
+                WriteMask 1
             }
             ColorMask G
 
