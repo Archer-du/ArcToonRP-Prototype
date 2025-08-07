@@ -36,7 +36,7 @@ float3 SpecularStrength(Light light, FaceData faceData)
         SigmoidSharp(specFactorNoseSDF1, clipCenter, GetNoseSpecularSmooth()) *
         SigmoidSharp(specFactorNoseSDF2, 1 - clipCenter, GetNoseSpecularSmooth());
     float specularStrength = specularUV;
-    // TODO: config
+    // TODO: config nose spec attenuation
     if (HdotN < 0.6095) specularStrength = lerp(specularStrength, 0, saturate((0.6095 - HdotN) * 20));
     return specularStrength * GetNoseSpecularStrength();
 }

@@ -3,6 +3,18 @@
     Properties
     {
         // ------------------------ general
+        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
+
+        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
+        
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
+        
+        _Stencil("Stencil Ref ID", Float) = 1
+        _StencilWriteMask("Stencil Write Mask", Float) = 3
+        _StencilReadMask("Stencil Read Mask", Float) = 3
+        
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
@@ -10,12 +22,6 @@
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
 
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
-
-        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-        
         // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
         [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
@@ -34,7 +40,8 @@
         
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
-        
+
+        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
         
@@ -82,21 +89,23 @@
             }
             Blend One Zero, One OneMinusSrcAlpha
             ZWrite On
-            Cull Back
+            Cull [_Cull]
 
             HLSLPROGRAM
             #pragma target 4.5
 
             #pragma multi_compile_instancing
             #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
 
+            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _CLIPPING
+            
             #pragma shader_feature _RAMP_SET
             #pragma shader_feature _SDF_LIGHT_MAP
             #pragma shader_feature _SDF_LIGHT_MAP_SPEC
-            
-            #pragma shader_feature _CLIPPING
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
             #pragma shader_feature _DEBUG_DIRECT_BRDF
@@ -119,14 +128,14 @@
             Blend One Zero
             ZTest On
             ZWrite On
-            Cull Back
+            Cull [_Cull]
             Stencil
             {
-                Ref 1
+                Ref [_Stencil]
                 Comp Always
                 Pass Replace
-                ReadMask 3
-                WriteMask 3
+                ReadMask [_StencilReadMask]
+                WriteMask [_StencilWriteMask]
             }
             ColorMask R
 
@@ -150,7 +159,7 @@
             }
 
             ColorMask 0
-            Cull Back
+            Cull [_Cull]
 
             HLSLPROGRAM
             #pragma target 3.5

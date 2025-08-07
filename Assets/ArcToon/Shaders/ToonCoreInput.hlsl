@@ -283,7 +283,7 @@ float SampleSDFLightMapNoseSpecular1(float2 faceUV)
     #ifdef _SDF_LIGHT_MAP_SPEC
     return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).g;
     #endif
-    return 1.0;
+    return 0.0;
 }
 
 float SampleSDFLightMapNoseSpecular2(float2 faceUV)
@@ -291,7 +291,7 @@ float SampleSDFLightMapNoseSpecular2(float2 faceUV)
     #ifdef _SDF_LIGHT_MAP_SPEC
     return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).b;
     #endif
-    return 1.0;
+    return 0.0;
 }
 
 float SampleTangentShiftNoise(float2 baseUV)

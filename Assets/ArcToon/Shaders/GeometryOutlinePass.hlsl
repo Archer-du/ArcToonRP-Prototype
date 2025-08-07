@@ -49,7 +49,10 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
         normalWS, tangentWS, true);
     float3 smoothNormalVS = TransformWorldToViewNormal(smoothNormalWS, true);
     float linearDepth = -positionVS.z;
-    float outlineScale = GetOutlineScale() * input.smoothNormal.a;
+    float outlineScale = GetOutlineScale();
+    #if defined(_ALPHA_CONTROL_WIDTH)
+    outlineScale *= input.smoothNormal.a;
+    #endif
     float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * OUTLINE_RESCOEF;
     // TODO: config
     outlineFactor = clamp(outlineFactor, outlineScale * 0.001, outlineScale * 50);
