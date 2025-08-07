@@ -85,7 +85,12 @@ float3 IncomingLight(Surface surface, Light light, Fragment fragment,
         SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
     );
     #endif
+    // attenuation compensation for transparent fringe
+    // —— eyelashes covered by fringe may show incorrect shadows due to the fringe shadow caster clipping.
+    attenuationUV = lerp(attenuationUV, 0, fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
     lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
+    #ifdef _TRANSPARENT_FRINGE
+    #endif
     return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
     #else
     return IncomingLight(surface, light);
