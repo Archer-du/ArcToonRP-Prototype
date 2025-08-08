@@ -27,7 +27,8 @@ namespace ArcToon.Runtime.Passes
             new("EyeLashesReceiver")
         };
 
-        private RendererListHandle depthPrepassList;
+        private RendererListHandle opaqueDepthPrepassList;
+        private RendererListHandle transparentDepthPrepassList;
         private RendererListHandle stencilMaskList;
 
         private TextureHandle colorAttachment, depthAttachment;
@@ -46,8 +47,13 @@ namespace ArcToon.Runtime.Passes
             
             commandBuffer.ClearRenderTarget(true, true, Color.clear);
             
-            commandBuffer.DrawRendererList(depthPrepassList);
-            
+            commandBuffer.BeginSample("Opaque Depth Stencil");
+            commandBuffer.DrawRendererList(opaqueDepthPrepassList);
+            commandBuffer.EndSample("Opaque Depth Stencil");
+            commandBuffer.BeginSample("Transparent Depth Stencil");
+            commandBuffer.DrawRendererList(transparentDepthPrepassList);
+            commandBuffer.EndSample("Transparent Depth Stencil");
+
             commandBuffer.SetRenderTarget(
                 stencilMask,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
@@ -85,11 +91,18 @@ namespace ArcToon.Runtime.Passes
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out DepthStencilPrePass pass, sampler);
             
-            pass.depthPrepassList = builder.UseRendererList(renderGraph.CreateRendererList(
+            pass.opaqueDepthPrepassList = builder.UseRendererList(renderGraph.CreateRendererList(
                 new RendererListDesc(depthPrePassShaderTagIds, cullingResults, camera)
                 {
                     sortingCriteria = SortingCriteria.CommonOpaque,
                     renderQueueRange = RenderQueueRange.opaque,
+                })
+            );
+            pass.transparentDepthPrepassList = builder.UseRendererList(renderGraph.CreateRendererList(
+                new RendererListDesc(depthPrePassShaderTagIds, cullingResults, camera)
+                {
+                    sortingCriteria = SortingCriteria.CommonTransparent,
+                    renderQueueRange = RenderQueueRange.transparent,
                 })
             );
             pass.stencilMaskList = builder.UseRendererList(renderGraph.CreateRendererList(

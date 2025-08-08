@@ -118,7 +118,11 @@ float4 ToonBasePassFragment(VaryingsBase input) : SV_TARGET
     surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
     surface.perObjectCasterID = GetPerObjectShadowCasterID();
     
+    #if defined(_PREMULTIPLY_ALPHA)
+    BRDF brdf = GetBRDF(surface, true);
+    #else
     BRDF brdf = GetBRDF(surface);
+    #endif
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
     DirectLightSpecData specData = GetDirectLightSpecData(INPUT_PROPS_DIRECT_SPEC_PARAMS);
@@ -139,7 +143,7 @@ float4 ToonBasePassFragment(VaryingsBase input) : SV_TARGET
     
     finalColor += GetEmission(config);
 
-    return float4(finalColor, GetFinalAlpha(config));
+    return float4(finalColor, GetFinalAlpha(config, surface.alpha));
 }
 
 #endif

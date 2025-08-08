@@ -184,7 +184,7 @@ float4 ToonFacePassFragment(VaryingsFace input) : SV_TARGET
     
     finalColor += GetEmission(config);
 
-    return float4(finalColor, GetFinalAlpha(config));
+    return float4(finalColor, GetFinalAlpha(config, surface.alpha));
 }
 
 #endif

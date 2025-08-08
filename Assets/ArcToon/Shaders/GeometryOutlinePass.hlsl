@@ -3,7 +3,11 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 
-#define OUTLINE_RESCOEF (_CameraBufferSize.z / 1440);
+#define LEGACY_OUTLINE_WIDTH_COEF 0.02
+
+#define OUTLINE_WIDTH_RESOLUTION_FACTOR (_CameraBufferSize.z / 1440)
+#define OUTLINE_WIDTH_MIN_COEF 0.001
+#define OUTLINE_WIDTH_MAX_COEF 0.006
 
 struct AttributesGO
 {
@@ -31,7 +35,7 @@ VaryingsGO LegacyGeometryOutlinePassVertex(AttributesGO input)
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS, true);
     float3 normalVS = TransformWorldToViewNormal(normalWS, true);
     float outlineScale = GetOutlineScale();
-    float3 scaledPositionVS = positionVS + normalVS * outlineScale * 0.02;
+    float3 scaledPositionVS = positionVS + normalVS * outlineScale * LEGACY_OUTLINE_WIDTH_COEF;
     output.positionCS_SS = TransformWViewToHClip(scaledPositionVS);
     return output;
 }
@@ -41,21 +45,21 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
     VaryingsGO output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
-    // return OriginGeometryOutlinePassVertex(input);
     float3 positionVS = TransformWorldToView(TransformObjectToWorld(input.positionOS));
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS, true);
     float4 tangentWS = TransformObjectToWorldTangent(input.tangentOS);
     float3 smoothNormalWS = NormalTangentToWorld(normalize(DecodeNormal(input.smoothNormal)),
         normalWS, tangentWS, true);
     float3 smoothNormalVS = TransformWorldToViewNormal(smoothNormalWS, true);
-    float linearDepth = -positionVS.z;
+    float linearDepth = - positionVS.z;
     float outlineScale = GetOutlineScale();
     #if defined(_ALPHA_CONTROL_WIDTH)
     outlineScale *= input.smoothNormal.a;
     #endif
-    float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * OUTLINE_RESCOEF;
-    // TODO: config
-    outlineFactor = clamp(outlineFactor, outlineScale * 0.001, outlineScale * 50);
+    float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * OUTLINE_WIDTH_RESOLUTION_FACTOR;
+    outlineFactor = clamp(outlineFactor,
+        outlineScale * OUTLINE_WIDTH_MIN_COEF,
+        outlineScale * OUTLINE_WIDTH_MAX_COEF);
     float3 scaledPositionVS = positionVS + smoothNormalVS * outlineFactor;
     output.positionCS_SS = TransformWViewToHClip(scaledPositionVS);
     return output;
@@ -63,6 +67,9 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
 
 float4 GeometryOutlinePassFragment(VaryingsGO input) : SV_TARGET
 {
+    UNITY_SETUP_INSTANCE_ID(input);
+    Fragment fragment = GetFragment(input.positionCS_SS);
+    clip(fragment.depth - fragment.bufferDepth);
     return float4(GetOutlineColor(), 1.0);
 }
 

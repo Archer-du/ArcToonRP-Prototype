@@ -101,6 +101,7 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     finalColor += GetEmission(config);
 
     // finalColor = config.fragment.linearDepth / 100.;
+    // finalColor = config.fragment.depth * 100;
     return float4(finalColor, GetFinalAlpha(surface.alpha));
 }
 

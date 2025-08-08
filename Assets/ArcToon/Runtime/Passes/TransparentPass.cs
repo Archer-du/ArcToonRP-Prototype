@@ -11,10 +11,17 @@ namespace ArcToon.Runtime.Passes
         static readonly ProfilingSampler sampler = new("Transparent");
 
         RendererListHandle baseList;
+        RendererListHandle frontFaceList;
+        RendererListHandle backFaceList;
         RendererListHandle outlineList;
         
-        private static ShaderTagId[] baseShaderTagIds =
+        private static ShaderTagId[] backFaceShaderTagIds =
         {
+            new("ToonForwardTransparentBackFace"),
+        };
+        private static ShaderTagId[] frontFaceShaderTagIds =
+        {
+            new("ToonForwardTransparentFrontFace"),
             new("ToonForward"),
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
@@ -27,7 +34,8 @@ namespace ArcToon.Runtime.Passes
         void Render(RenderGraphContext context)
         {
             context.cmd.BeginSample("Toon Base");
-            context.cmd.DrawRendererList(baseList);
+            context.cmd.DrawRendererList(backFaceList);
+            context.cmd.DrawRendererList(frontFaceList);
             context.cmd.EndSample("Toon Base");
             context.cmd.BeginSample("Toon Outline");
             context.cmd.DrawRendererList(outlineList);
@@ -49,8 +57,8 @@ namespace ArcToon.Runtime.Passes
                     renderQueueRange = RenderQueueRange.transparent,
                 })
             );
-            pass.baseList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(baseShaderTagIds, cullingResults, camera)
+            pass.backFaceList = builder.UseRendererList(renderGraph.CreateRendererList(
+                new RendererListDesc(backFaceShaderTagIds, cullingResults, camera)
                 {
                     sortingCriteria = SortingCriteria.CommonTransparent,
                     renderQueueRange = RenderQueueRange.transparent,
@@ -59,7 +67,20 @@ namespace ArcToon.Runtime.Passes
                                             PerObjectData.LightProbeProxyVolume |
                                             PerObjectData.OcclusionProbeProxyVolume |
                                             PerObjectData.ReflectionProbes,
-                }));
+                })
+            );
+            pass.frontFaceList = builder.UseRendererList(renderGraph.CreateRendererList(
+                new RendererListDesc(frontFaceShaderTagIds, cullingResults, camera)
+                {
+                    sortingCriteria = SortingCriteria.CommonTransparent,
+                    renderQueueRange = RenderQueueRange.transparent,
+                    rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+                                            PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
+                                            PerObjectData.LightProbeProxyVolume |
+                                            PerObjectData.OcclusionProbeProxyVolume |
+                                            PerObjectData.ReflectionProbes,
+                })
+            );
             builder.ReadWriteTexture(handles.colorAttachment);
             builder.ReadWriteTexture(handles.depthAttachment);
             builder.ReadTexture(handles.stencilMask);

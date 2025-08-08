@@ -1,4 +1,4 @@
-﻿Shader "ArcToon/ToonBase"
+﻿Shader "ArcToon/ToonTransparent"
 {
     Properties
     {
@@ -22,7 +22,7 @@
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
         [Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
         [Enum(Off, 0, On, 1)] _ZWrite ("Z Write", Float) = 1
-        
+
         // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
         [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
@@ -67,50 +67,25 @@
     {
         Tags
         {
-            "Queue" = "Geometry+10"
+            "Queue" = "Transparent+10"
         }
         
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
         ENDHLSL
 
-        Pass
-        {
-            Name "Toon Outline"
-            Tags
-            {
-                "LightMode" = "GeometryOutline"
-            }
-            Blend One Zero, One OneMinusSrcAlpha
-            ZTest Always
-            ZWrite On
-            Cull Front
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-            
-            #pragma shader_feature _SNCHANNEL_UV2 _SNCHANNEL_VERTCOL
-            #pragma shader_feature _ALPHA_CONTROL_WIDTH
-
-            #include "GeometryOutlinePass.hlsl"
-
-            #pragma vertex GeometryOutlinePassVertex
-            #pragma fragment GeometryOutlinePassFragment
-            ENDHLSL
-        }
+        UsePass "ArcToon/ToonBase/TOON OUTLINE"
 
         Pass
         {
-            Name "Toon Base"
+            Name "Toon Transparent Back Face"
             Tags
             {
-                "LightMode" = "ToonForward"
+                "LightMode" = "ToonForwardTransparentBackFace"
             }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
-            ZWrite [_ZWrite]
-            Cull [_Cull]
+            ZWrite Off
+            Cull Front
 
             HLSLPROGRAM
             #pragma target 4.5
@@ -123,6 +98,48 @@
             
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _CLIPPING
+            #pragma shader_feature _PREMULTIPLY_ALPHA
+            #pragma shader_feature _NORMAL_MAP
+            
+            #pragma shader_feature _RMO_MASK_MAP
+
+            #pragma shader_feature _RAMP_SET
+
+            #pragma shader_feature _DEBUG_INCOMING_LIGHT
+            #pragma shader_feature _DEBUG_DIRECT_BRDF
+            #pragma shader_feature _DEBUG_SPECULAR
+            #pragma shader_feature _DEBUG_DIFFUSE
+
+            #include "ToonBasePass.hlsl"
+
+            #pragma vertex ToonBasePassVertex
+            #pragma fragment ToonBasePassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "Toon Transparent Front Face"
+            Tags
+            {
+                "LightMode" = "ToonForwardTransparentFrontFace"
+            }
+            Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
+            ZWrite Off
+            Cull Back
+
+            HLSLPROGRAM
+            #pragma target 4.5
+
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT
+            #pragma multi_compile _ LIGHTMAP_ON
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
+            
+            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _PREMULTIPLY_ALPHA
             #pragma shader_feature _NORMAL_MAP
             
             #pragma shader_feature _RMO_MASK_MAP
@@ -148,7 +165,7 @@
                 "LightMode" = "DepthOnly"
             }
             ZWrite On
-            Cull [_Cull]
+            Cull Off
             ColorMask R
 
             HLSLPROGRAM
@@ -171,7 +188,7 @@
             }
 
             ColorMask 0
-            Cull [_Cull]
+            Cull Off
 
             HLSLPROGRAM
             #pragma target 3.5
