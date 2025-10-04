@@ -20,9 +20,7 @@ VaryingsSM EyeLashesReceiverPassVertex(AttributesSM input)
     VaryingsSM output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
-    
-    float3 positionWS = TransformObjectToWorld(input.positionOS);
-    output.positionCS_SS = TransformWorldToHClip(positionWS);
+    output.positionCS_SS = TransformObjectToHClip(input.positionOS);
     return output;
 }
 

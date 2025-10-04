@@ -302,12 +302,12 @@ float SampleTangentShiftNoise(float2 baseUV)
     return 0.0;
 }
 
-float GetFinalAlpha(InputConfig input, float finalAlpha)
+float GetFinalAlpha(InputConfig input, float baseAlpha)
 {
     #ifdef _TRANSPARENT_FRINGE
-    return lerp(1.0, GetFringeTransparentScale(), input.fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
+    return lerp(baseAlpha, GetFringeTransparentScale(), input.fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
     #endif
-    return finalAlpha;
+    return baseAlpha;
 }
 
 #endif
