@@ -73,6 +73,7 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
-/[Aa]ssets/Models/Private/*
-/[Aa]ssets/Materials/Private/*
-/[Aa]ssets/Scenes/Private/*
+/[Aa]ssets/Models/Character/*
+/[Aa]ssets/Models/Temp/*
+/[Aa]ssets/Models/Character.meta
+/[Aa]ssets/Models/Temp.meta
