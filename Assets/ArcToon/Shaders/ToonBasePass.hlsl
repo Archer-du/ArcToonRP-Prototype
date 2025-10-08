@@ -77,7 +77,7 @@ VaryingsBase ToonBasePassVertex(Attributes input)
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.normalVS = TransformWorldToViewNormal(output.normalWS);
     #if defined(_NORMAL_MAP)
-    output.tangentWS = float4(TransformObjectToWorldDir(input.tangentOS.xyz), input.tangentOS.w);
+    output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
     #endif
     output.baseUV = TransformBaseUV(input.baseUV);
     return output;
