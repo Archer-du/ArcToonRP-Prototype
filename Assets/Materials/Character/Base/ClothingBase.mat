@@ -23,8 +23,8 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: :m_CustomRenderQueue _BaseColor _MaskMapToggle _Metallic _Occlusion
-    _RimDepthBias _RimScale _RimWidth _Smoothness
+  m_LockedProperties: :m_CustomRenderQueue _MaskMapToggle _Metallic _Occlusion _RimDepthBias
+    _RimScale _RimWidth _Smoothness
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -90,6 +90,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaControlOutlineWidth: 0
     - _BumpScale: 1
     - _Clipping: 0
     - _Cull: 0
@@ -100,8 +101,10 @@ Material:
     - _DirectLightAttenSigmoidSharp: 1.25
     - _DirectLightAttenSmooth: 0.5
     - _DirectLightAttenSmoothNew: 0.5
+    - _DirectLightSpecOffset: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 0.5
+    - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
     - _GlossMapScale: 1
@@ -117,6 +120,7 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineScale: 0
     - _Parallax: 0.02
+    - _PerObjectShadowCasterID: -1
     - _PremulAlpha: 0
     - _RampSetToggle: 0
     - _ReceiveShadows: 1

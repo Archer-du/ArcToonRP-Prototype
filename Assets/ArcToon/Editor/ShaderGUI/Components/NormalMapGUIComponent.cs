@@ -1,0 +1,58 @@
+﻿using UnityEditor;
+using UnityEngine;
+
+namespace ArcToon.Editor.ShaderEditor.Components
+{
+    public class NormalMapGUIComponent : IShaderGUIComponent
+    {
+        private readonly string useNormalMapKeyword;
+        
+        private readonly string normalMapID;
+        private MaterialProperty normalMapProperty;
+        private readonly string bumpScaleID;
+        private MaterialProperty bumpScaleProperty;
+        
+        private readonly GUIContent label;
+
+        public NormalMapGUIComponent(string useNormalMapKeyword, string normalMapID, string bumpScaleID, string labelName)
+        {
+            this.useNormalMapKeyword = useNormalMapKeyword;
+            this.normalMapID = normalMapID;
+            this.bumpScaleID = bumpScaleID;
+            label = new GUIContent(labelName);
+        }
+        
+        public void FindProperties(MaterialProperty[] props)
+        {
+            normalMapProperty = MaterialEditorUtils.FindProperty(normalMapID, props, false);
+            bumpScaleProperty = MaterialEditorUtils.FindProperty(bumpScaleID, props, false);
+        }
+
+        public void DrawGUI(MaterialEditor materialEditor, Material[] materials)
+        {
+            EditorGUI.BeginChangeCheck();
+            if (normalMapProperty.textureValue != null)
+            {
+                materialEditor.TexturePropertySingleLine(label, normalMapProperty, bumpScaleProperty);
+            }
+            else
+            {
+                materialEditor.TexturePropertySingleLine(label, normalMapProperty);
+            }
+            // property of real material instance has been modified
+            if (EditorGUI.EndChangeCheck())
+            {
+                foreach (var material in materials)
+                {
+                    if (material == null) continue;
+                    bool hasNormalMap = material.GetTexture(normalMapProperty.name) != null;
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Keyword: {useNormalMapKeyword} - {hasNormalMap}");
+                    
+                    Undo.RecordObject(material, Undo.GetCurrentGroupName());
+                    material.SetKeyword(useNormalMapKeyword, hasNormalMap);
+                    EditorUtility.SetDirty(material);
+                }
+            }
+        }
+    }
+}

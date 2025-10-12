@@ -35,7 +35,7 @@ VaryingsSC ShadowCasterPassVertex(AttributesSC input)
             min(output.positionCS_SS.z, output.positionCS_SS.w * UNITY_NEAR_CLIP_VALUE);
         #else
         output.positionCS.z =
-            max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+            max(output.positionCS.z, output.positionCS_SS.w * UNITY_NEAR_CLIP_VALUE);
         #endif
     }
 

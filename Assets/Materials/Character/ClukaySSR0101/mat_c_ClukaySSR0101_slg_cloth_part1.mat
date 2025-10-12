@@ -19,6 +19,7 @@ Material:
   - _RECEIVE_SHADOWS
   - _RMO_MASK_MAP
   m_InvalidKeywords:
+  - _Clipping
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
   m_LightmapFlags: 2

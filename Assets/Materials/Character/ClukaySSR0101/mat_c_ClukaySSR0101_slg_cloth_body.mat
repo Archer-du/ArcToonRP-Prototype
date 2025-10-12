@@ -18,6 +18,7 @@ Material:
   - _RMO_MASK_MAP
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
+  - _MASK_MAP
   - _SHADOWS_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -56,22 +57,16 @@ Material:
     m_Ints: []
     m_Floats:
     - _Cull: 2
-    - _DirectLightAttenSigmoidCenter: 0.5
     - _DirectLightAttenSigmoidSharp: 0.5
     - _DirectLightAttenSmoothNew: 0.85
-    - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
-    - _LightingDebugMode: 0
-    - _MaskMapToggle: 1
-    - _Metallic: 1
     - _NormalMapToggle: 1
     - _OutlineScale: 0.2
-    - _PerObjectShadowCasterID: -1
     - _RampSetToggle: 1
-    - _RimWidth: 0.5
+    - _ReceiveShadows: 1
+    - _RimScale: 0.5
     - _Roughness: 1
     m_Colors:
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _OutlineColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

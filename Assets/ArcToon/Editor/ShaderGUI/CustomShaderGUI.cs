@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Editor.GUI
+namespace ArcToon.Editor.ShaderEditor
 {
     public class CustomShaderGUI : ShaderGUI
     {

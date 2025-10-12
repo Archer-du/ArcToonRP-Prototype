@@ -1,8 +1,11 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using ArcToon.Editor.ShaderEditor.Components;
+using ArcToon.Editor.ShaderEditor.Panels;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Editor.GUI
+namespace ArcToon.Editor.ShaderEditor
 {
     public class ArcToonShaderGUI : ShaderGUI
     {
@@ -10,6 +13,11 @@ namespace ArcToon.Editor.GUI
         private Object[] materials;
         private MaterialProperty[] properties;
 
+        private BaseFoldoutShaderGUIPanel generalFoldoutPanel = null;
+        private BaseFoldoutShaderGUIPanel shadowFoldoutPanel = null;
+        private BaseFoldoutShaderGUIPanel pbrFoldoutPanel = null;
+        private BaseFoldoutShaderGUIPanel engineFoldoutPanel = null;
+        
         enum ShadowMode
         {
             On,
@@ -30,18 +38,48 @@ namespace ArcToon.Editor.GUI
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] materialProperties)
         {
             EditorGUI.BeginChangeCheck();
-
-            base.OnGUI(materialEditor, materialProperties);
             editor = materialEditor;
             materials = materialEditor.targets;
             properties = materialProperties;
 
-            EditorGUILayout.Space();
+            generalFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("General", new List<IShaderGUIComponent>()
+            {
+                new ColorTextureGUIComponent("_BaseMap", "_BaseColor", "Base Map", false),
+                new NormalMapGUIComponent("_NORMAL_MAP", "_NormalMap", "_NormalScale", "Normal Map"),
+                new AlphaClippingGUIComponent("_CLIPPING", "_Clipping", "_Cutoff", "Alpha Clipping"),
+            });
+            
+            shadowFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Shadow", new List<IShaderGUIComponent>()
+            {
+                new BuiltinPropertyGUIComponent("_ReceiveShadows"),
+                new ShadowCasterGUIComponent("_Shadows"),
+            });
+            
+            pbrFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("PBR", new List<IShaderGUIComponent>()
+            {
+                new ColorTextureGUIComponent("_EmissionMap", "_EmissionColor", "Emission Map", true),
+            });
+            
+            engineFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Engine", new List<IShaderGUIComponent>()
+            {
+                new BuiltinPropertyGUIComponent("_Cull"),
+                new BuiltinPropertyGUIComponent("_SrcBlend"),
+                new BuiltinPropertyGUIComponent("_DstBlend"),
+                new BuiltinPropertyGUIComponent("_ZWrite"),
+                new EngineGUIComponent(),
+            });
+            
+            // EditorGUILayout.HelpBox("test", MessageType.Info);
 
+            generalFoldoutPanel.DrawGUI(materialEditor, materialProperties);
+            shadowFoldoutPanel.DrawGUI(materialEditor, materialProperties);
+            pbrFoldoutPanel.DrawGUI(materialEditor, materialProperties);
+            engineFoldoutPanel.DrawGUI(materialEditor, materialProperties);
+            
+            base.OnGUI(materialEditor, materialProperties);
             if (EditorGUI.EndChangeCheck())
             {
                 UpdateLightingDebugKeywords();
-                UpdateShadowCasterPass();
                 CopyLightMappingProperties();
             }
         }
@@ -83,20 +121,6 @@ namespace ArcToon.Editor.GUI
                     var material = (Material)obj;
                     material.DisableKeyword(keyword);
                 }
-            }
-        }
-
-        void UpdateShadowCasterPass()
-        {
-            MaterialProperty property = FindProperty("_Shadows", properties, false);
-            if (property == null || property.hasMixedValue)
-                return;
-
-            bool enabled = property.floatValue < (float)ShadowMode.Off;
-            foreach (var o in materials)
-            {
-                var material = (Material)o;
-                material.SetShaderPassEnabled("ShadowCaster", enabled);
             }
         }
 
