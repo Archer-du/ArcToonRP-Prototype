@@ -83,7 +83,7 @@ VaryingsBase ToonBasePassVertex(Attributes input)
     return output;
 }
 
-float4 ToonBasePassFragment(VaryingsBase input) : SV_TARGET
+float4 ToonBasePassFragment(VaryingsBase input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
@@ -99,15 +99,18 @@ float4 ToonBasePassFragment(VaryingsBase input) : SV_TARGET
     surface.positionWS = input.positionWS;
     surface.color = albedo.rgb;
     surface.alpha = albedo.a;
+
+    float faceSign = isFrontFace ? 1.0 : -1.0;
     #if defined(_NORMAL_MAP)
     surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
-        input.normalWS, input.tangentWS));
-    surface.interpolatedNormalWS = normalize(input.normalWS);
+        input.normalWS, input.tangentWS)) * faceSign;
+    surface.interpolatedNormalWS = normalize(input.normalWS) * faceSign;
     #else
-    surface.normalWS = normalize(input.normalWS);
-    surface.interpolatedNormalWS = surface.normalWS;
+    surface.normalWS = normalize(input.normalWS) * faceSign;
+    surface.interpolatedNormalWS = surface.normalWS * faceSign;
     #endif
-    surface.normalVS = normalize(input.normalVS);
+    surface.normalVS = normalize(input.normalVS) * faceSign;
+    
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
