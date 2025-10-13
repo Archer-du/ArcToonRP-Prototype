@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class ShadowCasterGUIComponent : IShaderGUIComponent
+    public class ShadowCasterGUIComponent : ShaderGUIComponentBase
     {
         private readonly string casterOptionPropertyID;
         private MaterialProperty casterOptionProperty = null;
@@ -21,12 +21,12 @@ namespace ArcToon.Editor.ShaderEditor.Components
             this.casterOptionPropertyID = casterOptionPropertyID;
         }
         
-        public void FindProperties(MaterialProperty[] props)
+        public override void FindProperties(MaterialProperty[] props)
         {
             casterOptionProperty = MaterialEditorUtils.FindProperty(casterOptionPropertyID, props, false);
         }
 
-        public void DrawGUI(MaterialEditor materialEditor, Material[] materials)
+        protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
             EditorGUI.BeginChangeCheck();
             if ((casterOptionProperty.flags & MaterialProperty.PropFlags.HideInInspector) == 0)
@@ -52,6 +52,11 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     EditorUtility.SetDirty(material);
                 }
             }
+        }
+
+        public override bool IsValid()
+        {
+            return casterOptionProperty != null;
         }
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class BuiltinPropertyGUIComponent : IShaderGUIComponent
+    public class BuiltinPropertyGUIComponent : ShaderGUIComponentBase
     {
         private readonly string propertyID;
         private MaterialProperty property = null;
@@ -13,17 +13,22 @@ namespace ArcToon.Editor.ShaderEditor.Components
             this.propertyID = propertyID;
         }
         
-        public void FindProperties(MaterialProperty[] props)
+        public override void FindProperties(MaterialProperty[] props)
         {
             property = MaterialEditorUtils.FindProperty(propertyID, props, false);
         }
 
-        public void DrawGUI(MaterialEditor materialEditor, Material[] materials)
+        protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
             if ((property.flags & MaterialProperty.PropFlags.HideInInspector) == 0)
             {
                 materialEditor.BuiltinShaderPropertyDrawer(property);
             }
+        }
+
+        public override bool IsValid()
+        {
+            return property != null;
         }
     }
 }

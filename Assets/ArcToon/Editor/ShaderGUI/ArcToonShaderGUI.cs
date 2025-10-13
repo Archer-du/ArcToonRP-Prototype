@@ -16,15 +16,8 @@ namespace ArcToon.Editor.ShaderEditor
         private BaseFoldoutShaderGUIPanel generalFoldoutPanel = null;
         private BaseFoldoutShaderGUIPanel shadowFoldoutPanel = null;
         private BaseFoldoutShaderGUIPanel pbrFoldoutPanel = null;
+        private BaseFoldoutShaderGUIPanel toonFoldoutPanel = null;
         private BaseFoldoutShaderGUIPanel engineFoldoutPanel = null;
-        
-        enum ShadowMode
-        {
-            On,
-            Clip,
-            Dither,
-            Off
-        }
 
         enum LightingDebugMode
         {
@@ -42,25 +35,32 @@ namespace ArcToon.Editor.ShaderEditor
             materials = materialEditor.targets;
             properties = materialProperties;
 
-            generalFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("General", new List<IShaderGUIComponent>()
+            generalFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("General", new List<ShaderGUIComponentBase>()
             {
                 new ColorTextureGUIComponent("_BaseMap", "_BaseColor", "Base Map", false),
                 new NormalMapGUIComponent("_NORMAL_MAP", "_NormalMap", "_NormalScale", "Normal Map"),
                 new AlphaClippingGUIComponent("_CLIPPING", "_Clipping", "_Cutoff", "Alpha Clipping"),
             });
             
-            shadowFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Shadow", new List<IShaderGUIComponent>()
+            shadowFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Shadow", new List<ShaderGUIComponentBase>()
             {
                 new BuiltinPropertyGUIComponent("_ReceiveShadows"),
                 new ShadowCasterGUIComponent("_Shadows"),
             });
             
-            pbrFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("PBR", new List<IShaderGUIComponent>()
+            pbrFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("PBR", new List<ShaderGUIComponentBase>()
             {
                 new ColorTextureGUIComponent("_EmissionMap", "_EmissionColor", "Emission Map", true),
             });
+
+            toonFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Toon", new List<ShaderGUIComponentBase>()
+            {
+                new RampTextureGUIComponent("_RAMP_SET", "_RampSet", "Ramp Set"),
+                new SigmoidParamGUIComponent("_DirectLightAttenOffset", "_DirectLightAttenSmoothNew", "Sigmoid Attenuation"),
+                new SigmoidParamGUIComponent("_DirectLightSpecOffset", "_DirectLightSpecSmooth", "Sigmoid Specular"),
+            });
             
-            engineFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Engine", new List<IShaderGUIComponent>()
+            engineFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Engine", new List<ShaderGUIComponentBase>()
             {
                 new BuiltinPropertyGUIComponent("_Cull"),
                 new BuiltinPropertyGUIComponent("_SrcBlend"),
@@ -71,10 +71,11 @@ namespace ArcToon.Editor.ShaderEditor
             
             // EditorGUILayout.HelpBox("test", MessageType.Info);
 
-            generalFoldoutPanel.DrawGUI(materialEditor, materialProperties);
-            shadowFoldoutPanel.DrawGUI(materialEditor, materialProperties);
-            pbrFoldoutPanel.DrawGUI(materialEditor, materialProperties);
-            engineFoldoutPanel.DrawGUI(materialEditor, materialProperties);
+            generalFoldoutPanel.OnGUI(materialEditor, materialProperties);
+            shadowFoldoutPanel.OnGUI(materialEditor, materialProperties);
+            pbrFoldoutPanel.OnGUI(materialEditor, materialProperties);
+            toonFoldoutPanel.OnGUI(materialEditor, materialProperties);
+            engineFoldoutPanel.OnGUI(materialEditor, materialProperties);
             
             base.OnGUI(materialEditor, materialProperties);
             if (EditorGUI.EndChangeCheck())
@@ -94,14 +95,6 @@ namespace ArcToon.Editor.ShaderEditor
             }
 
             return false;
-        }
-
-        void SetProperty(string name, string keyword, bool value)
-        {
-            if (SetProperty(name, value ? 1f : 0f))
-            {
-                SetKeyword(keyword, value);
-            }
         }
 
         void SetKeyword(string keyword, bool enabled)

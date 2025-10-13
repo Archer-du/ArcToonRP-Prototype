@@ -4,7 +4,7 @@
     {
         // ------------------------ general
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
+        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadow Caster Option", Float) = 0
         
         [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
@@ -252,5 +252,5 @@
         }
     }
 
-    CustomEditor "ArcToon.Editor.GUI.ArcToonShaderGUI"
+    CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"
 }

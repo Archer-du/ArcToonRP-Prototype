@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class NormalMapGUIComponent : IShaderGUIComponent
+    public class NormalMapGUIComponent : ShaderGUIComponentBase
     {
         private readonly string useNormalMapKeyword;
         
@@ -22,13 +22,13 @@ namespace ArcToon.Editor.ShaderEditor.Components
             label = new GUIContent(labelName);
         }
         
-        public void FindProperties(MaterialProperty[] props)
+        public override void FindProperties(MaterialProperty[] props)
         {
             normalMapProperty = MaterialEditorUtils.FindProperty(normalMapID, props, false);
             bumpScaleProperty = MaterialEditorUtils.FindProperty(bumpScaleID, props, false);
         }
 
-        public void DrawGUI(MaterialEditor materialEditor, Material[] materials)
+        protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
             EditorGUI.BeginChangeCheck();
             if (normalMapProperty.textureValue != null)
@@ -39,7 +39,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
             {
                 materialEditor.TexturePropertySingleLine(label, normalMapProperty);
             }
-            // property of real material instance has been modified
             if (EditorGUI.EndChangeCheck())
             {
                 foreach (var material in materials)
@@ -53,6 +52,11 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     EditorUtility.SetDirty(material);
                 }
             }
+        }
+
+        public override bool IsValid()
+        {
+            return normalMapProperty != null && bumpScaleProperty != null;
         }
     }
 }

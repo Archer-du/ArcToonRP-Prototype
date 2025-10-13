@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class AlphaClippingGUIComponent : IShaderGUIComponent
+    public class AlphaClippingGUIComponent : ShaderGUIComponentBase
     {
         private readonly string alphaClippingKeyword;
 
@@ -21,13 +21,13 @@ namespace ArcToon.Editor.ShaderEditor.Components
             this.cutOffID = cutOffID;
             label = new GUIContent(labelName);
         }
-        public void FindProperties(MaterialProperty[] props)
+        public override void FindProperties(MaterialProperty[] props)
         {
             useAlphaClipProperty = MaterialEditorUtils.FindProperty(useAlphaClipID, props, false);
             cutOffProperty = MaterialEditorUtils.FindProperty(cutOffID, props, false);
         }
 
-        public void DrawGUI(MaterialEditor materialEditor, Material[] materials)
+        protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
             bool shouldToggleGroup = !useAlphaClipProperty.hasMixedValue && Mathf.Approximately(useAlphaClipProperty.floatValue, 1);
             EditorGUI.showMixedValue = useAlphaClipProperty.hasMixedValue;
@@ -49,14 +49,16 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     EditorUtility.SetDirty(material);
                 }
             }
-            const int indentLevelOffset = 2;
-            int originIndentLevel = EditorGUI.indentLevel;
-            EditorGUI.indentLevel += indentLevelOffset;
-            
+            ShaderGUILayout.BeginGUIComponentIndent();
             materialEditor.BuiltinShaderPropertyDrawer(cutOffProperty);
+            ShaderGUILayout.EndGUIComponentIndent();
             
-            EditorGUI.indentLevel = originIndentLevel;
             ShaderGUILayout.EndTogglePropertyGroup();
+        }
+
+        public override bool IsValid()
+        {
+            return useAlphaClipProperty != null && cutOffProperty != null;
         }
     }
 }

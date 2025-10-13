@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class ColorTextureGUIComponent : IShaderGUIComponent
+    public class ColorTextureGUIComponent : ShaderGUIComponentBase
     {
         private readonly bool isHDRColor;
         
@@ -22,39 +22,26 @@ namespace ArcToon.Editor.ShaderEditor.Components
             label = new GUIContent(labelName);
         }
         
-        public void FindProperties(MaterialProperty[] props)
+        public override void FindProperties(MaterialProperty[] props)
         {
             mapProperty = MaterialEditorUtils.FindProperty(mapID, props, false);
             colorProperty = MaterialEditorUtils.FindProperty(colorID, props, false);
         }
 
-        public void DrawGUI(MaterialEditor materialEditor, Material[] materials)
+        protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
+            materialEditor.TexturePropertyWithColorProperty(label, mapProperty, colorProperty, isHDRColor);
             if (mapProperty.textureValue != null)
             {
-                DrawMiniTextureWithColorProperty(materialEditor);
-                const int indentLevelOffset = 2;
-                int originIndentLevel = EditorGUI.indentLevel;
-                EditorGUI.indentLevel += indentLevelOffset;
+                ShaderGUILayout.BeginGUIComponentIndent();
                 materialEditor.TextureScaleOffsetProperty(mapProperty);
-                EditorGUI.indentLevel = originIndentLevel;
-            }
-            else
-            {
-                DrawMiniTextureWithColorProperty(materialEditor);
+                ShaderGUILayout.EndGUIComponentIndent();
             }
         }
 
-        private void DrawMiniTextureWithColorProperty(MaterialEditor materialEditor)
+        public override bool IsValid()
         {
-            if (isHDRColor)
-            {
-                materialEditor.TexturePropertyWithHDRColor(label, mapProperty, colorProperty, true);
-            }
-            else
-            {
-                materialEditor.TexturePropertySingleLine(label, mapProperty, colorProperty);
-            }
+            return mapProperty != null && colorProperty != null;
         }
     }
 }
