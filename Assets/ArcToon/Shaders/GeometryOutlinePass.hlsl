@@ -5,7 +5,6 @@
 
 #define LEGACY_OUTLINE_WIDTH_COEF 0.02
 
-#define OUTLINE_WIDTH_RESOLUTION_FACTOR (_CameraBufferSize.z / 1440)
 #define OUTLINE_WIDTH_MIN_COEF 0.001
 #define OUTLINE_WIDTH_MAX_COEF 0.006
 
@@ -25,6 +24,11 @@ struct VaryingsGO
     float4 positionCS_SS : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
+
+float GetOutlineWidthResolutionAdapter()
+{
+    return _CameraBufferSize.z / 1440;
+}
 
 VaryingsGO LegacyGeometryOutlinePassVertex(AttributesGO input)
 {
@@ -56,7 +60,7 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
     #if defined(_ALPHA_CONTROL_WIDTH)
     outlineScale *= input.smoothNormal.a;
     #endif
-    float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * OUTLINE_WIDTH_RESOLUTION_FACTOR;
+    float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * GetOutlineWidthResolutionAdapter();
     outlineFactor = clamp(outlineFactor,
         outlineScale * OUTLINE_WIDTH_MIN_COEF,
         outlineScale * OUTLINE_WIDTH_MAX_COEF);
