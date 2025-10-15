@@ -44,9 +44,9 @@
         _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
         _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
 
-        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
+        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
@@ -147,6 +147,8 @@
             {
                 "LightMode" = "DepthOnly"
             }
+            Blend One Zero
+            ZTest LEqual
             ZWrite On
             Cull [_Cull]
             ColorMask R
@@ -169,7 +171,6 @@
             {
                 "LightMode" = "ShadowCaster"
             }
-
             ColorMask 0
             Cull [_Cull]
 
@@ -193,7 +194,6 @@
             {
                 "LightMode" = "Meta"
             }
-
             Cull Off
 
             HLSLPROGRAM

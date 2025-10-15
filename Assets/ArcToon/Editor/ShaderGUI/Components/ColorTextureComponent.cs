@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class ColorTextureGUIComponent : ShaderGUIComponentBase
+    public class ColorTextureComponent : ShaderGUIComponentBase
     {
         private readonly bool isHDRColor;
         
@@ -14,7 +14,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
         
         private readonly GUIContent label;
         
-        public ColorTextureGUIComponent(string mapID, string colorID, string labelName, bool isHDRColor)
+        public ColorTextureComponent(string mapID, string colorID, string labelName, bool isHDRColor)
         {
             this.mapID = mapID;
             this.colorID = colorID;

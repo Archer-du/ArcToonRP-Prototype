@@ -13,11 +13,11 @@ namespace ArcToon.Editor.ShaderEditor
         private Object[] materials;
         private MaterialProperty[] properties;
 
-        private BaseFoldoutShaderGUIPanel generalFoldoutPanel = null;
-        private BaseFoldoutShaderGUIPanel shadowFoldoutPanel = null;
-        private BaseFoldoutShaderGUIPanel pbrFoldoutPanel = null;
-        private BaseFoldoutShaderGUIPanel toonFoldoutPanel = null;
-        private BaseFoldoutShaderGUIPanel engineFoldoutPanel = null;
+        private BaseFoldoutShaderPanel generalFoldoutPanel = null;
+        private BaseFoldoutShaderPanel shadowFoldoutPanel = null;
+        private BaseFoldoutShaderPanel pbrFoldoutPanel = null;
+        private BaseFoldoutShaderPanel toonFoldoutPanel = null;
+        private BaseFoldoutShaderPanel engineFoldoutPanel = null;
 
         enum LightingDebugMode
         {
@@ -35,38 +35,39 @@ namespace ArcToon.Editor.ShaderEditor
             materials = materialEditor.targets;
             properties = materialProperties;
 
-            generalFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("General", new List<ShaderGUIComponentBase>()
+            generalFoldoutPanel ??= new BaseFoldoutShaderPanel("General", new List<ShaderGUIComponentBase>()
             {
-                new ColorTextureGUIComponent("_BaseMap", "_BaseColor", "Base Map", false),
-                new NormalMapGUIComponent("_NORMAL_MAP", "_NormalMap", "_NormalScale", "Normal Map"),
-                new AlphaClippingGUIComponent("_CLIPPING", "_Clipping", "_Cutoff", "Alpha Clipping"),
+                new ColorTextureComponent("_BaseMap", "_BaseColor", "Base Map", false),
+                new NormalMapComponent("_NORMAL_MAP", "_NormalMap", "_NormalScale", "Normal Map"),
+                new AlphaClippingComponent("_CLIPPING", "_Clipping", "_Cutoff", "Alpha Clipping"),
             });
             
-            shadowFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Shadow", new List<ShaderGUIComponentBase>()
+            shadowFoldoutPanel ??= new BaseFoldoutShaderPanel("Shadow", new List<ShaderGUIComponentBase>()
             {
-                new BuiltinPropertyGUIComponent("_ReceiveShadows"),
-                new ShadowCasterGUIComponent("_Shadows"),
+                new BuiltinPropertyComponent("_ReceiveShadows"),
+                new ShadowCasterComponent("_Shadows"),
             });
             
-            pbrFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("PBR", new List<ShaderGUIComponentBase>()
+            pbrFoldoutPanel ??= new BaseFoldoutShaderPanel("PBR", new List<ShaderGUIComponentBase>()
             {
-                new ColorTextureGUIComponent("_EmissionMap", "_EmissionColor", "Emission Map", true),
+                new ColorTextureComponent("_EmissionMap", "_EmissionColor", "Emission Map", true),
             });
 
-            toonFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Toon", new List<ShaderGUIComponentBase>()
+            toonFoldoutPanel ??= new BaseFoldoutShaderPanel("Toon", new List<ShaderGUIComponentBase>()
             {
-                new RampTextureGUIComponent("_RAMP_SET", "_RampSet", "Ramp Set"),
+                new RampTextureComponent("_RAMP_SET", "_RampSet", "Ramp Set"),
+                new GeometryOutlineComponent("Use Geometry Outline", "_OutlineColor", "_OutlineScale"),
                 new SigmoidParamGUIComponent("_DirectLightAttenOffset", "_DirectLightAttenSmoothNew", "Sigmoid Attenuation"),
                 new SigmoidParamGUIComponent("_DirectLightSpecOffset", "_DirectLightSpecSmooth", "Sigmoid Specular"),
             });
             
-            engineFoldoutPanel ??= new BaseFoldoutShaderGUIPanel("Engine", new List<ShaderGUIComponentBase>()
+            engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUIComponentBase>()
             {
-                new BuiltinPropertyGUIComponent("_Cull"),
-                new BuiltinPropertyGUIComponent("_SrcBlend"),
-                new BuiltinPropertyGUIComponent("_DstBlend"),
-                new BuiltinPropertyGUIComponent("_ZWrite"),
-                new EngineGUIComponent(),
+                new BuiltinPropertyComponent("_Cull"),
+                new BuiltinPropertyComponent("_SrcBlend"),
+                new BuiltinPropertyComponent("_DstBlend"),
+                new BuiltinPropertyComponent("_ZWrite"),
+                new EngineComponent(),
             });
             
             // EditorGUILayout.HelpBox("test", MessageType.Info);
@@ -83,18 +84,6 @@ namespace ArcToon.Editor.ShaderEditor
                 UpdateLightingDebugKeywords();
                 CopyLightMappingProperties();
             }
-        }
-
-        bool SetProperty(string name, float value)
-        {
-            var property = FindProperty(name, properties, false);
-            if (property != null)
-            {
-                property.floatValue = value;
-                return true;
-            }
-
-            return false;
         }
 
         void SetKeyword(string keyword, bool enabled)

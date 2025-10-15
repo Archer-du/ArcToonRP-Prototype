@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class BuiltinPropertyGUIComponent : ShaderGUIComponentBase
+    public class BuiltinPropertyComponent : ShaderGUIComponentBase
     {
         private readonly string propertyID;
         private MaterialProperty property = null;
 
-        public BuiltinPropertyGUIComponent(string propertyID)
+        public BuiltinPropertyComponent(string propertyID)
         {
             this.propertyID = propertyID;
         }

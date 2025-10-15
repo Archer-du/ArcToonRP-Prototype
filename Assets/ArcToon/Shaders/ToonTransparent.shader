@@ -16,8 +16,8 @@
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
         
-        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
-        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Destination Blend Factor", Float) = 0
         [Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
 
         // ------------------------ PBR
@@ -37,7 +37,11 @@
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
 
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
+        _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 1)) = 0.5
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
+        
+        _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
+        _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
 
         [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
@@ -46,9 +50,6 @@
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
-        
-        _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
-        _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
 
         // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]

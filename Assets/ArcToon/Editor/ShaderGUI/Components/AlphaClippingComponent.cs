@@ -3,18 +3,18 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class AlphaClippingGUIComponent : ShaderGUIComponentBase
+    public class AlphaClippingComponent : ShaderGUIComponentBase
     {
+        private readonly GUIContent label;
+        
         private readonly string alphaClippingKeyword;
 
         private readonly string useAlphaClipID;
         private MaterialProperty useAlphaClipProperty;
         private readonly string cutOffID;
         private MaterialProperty cutOffProperty;
-        
-        private readonly GUIContent label;
 
-        public AlphaClippingGUIComponent(string alphaClippingKeyword, string useAlphaClipID, string cutOffID, string labelName)
+        public AlphaClippingComponent(string alphaClippingKeyword, string useAlphaClipID, string cutOffID, string labelName)
         {
             this.alphaClippingKeyword = alphaClippingKeyword;
             this.useAlphaClipID = useAlphaClipID;
@@ -33,19 +33,19 @@ namespace ArcToon.Editor.ShaderEditor.Components
             EditorGUI.showMixedValue = useAlphaClipProperty.hasMixedValue;
             
             EditorGUI.BeginChangeCheck();
-            bool newClippingValue = ShaderGUILayout.BeginTogglePropertyGroup(label, shouldToggleGroup, EditorStyles.label);
+            bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(label, shouldToggleGroup, EditorStyles.label);
             EditorGUI.showMixedValue = false;
             
             if (EditorGUI.EndChangeCheck())
             {
-                useAlphaClipProperty.floatValue = newClippingValue ? 1f : 0f;
+                useAlphaClipProperty.floatValue = newValue ? 1f : 0f;
                 foreach (var material in materials)
                 {
                     if (material == null) continue;
-                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Clipping: {newClippingValue}");
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Clipping: {newValue}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetKeyword(alphaClippingKeyword, newClippingValue);
+                    material.SetKeyword(alphaClippingKeyword, newValue);
                     EditorUtility.SetDirty(material);
                 }
             }

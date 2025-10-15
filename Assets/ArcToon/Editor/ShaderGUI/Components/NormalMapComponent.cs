@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class NormalMapGUIComponent : ShaderGUIComponentBase
+    public class NormalMapComponent : ShaderGUIComponentBase
     {
         private readonly string useNormalMapKeyword;
         
@@ -14,7 +14,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
         
         private readonly GUIContent label;
 
-        public NormalMapGUIComponent(string useNormalMapKeyword, string normalMapID, string bumpScaleID, string labelName)
+        public NormalMapComponent(string useNormalMapKeyword, string normalMapID, string bumpScaleID, string labelName)
         {
             this.useNormalMapKeyword = useNormalMapKeyword;
             this.normalMapID = normalMapID;

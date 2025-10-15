@@ -3,24 +3,27 @@
     Properties
     {
         // ------------------------ general
-        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadow Caster Option", Float) = 0
-
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-        
-        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
-        
-        _Stencil("Stencil Ref ID", Float) = 1
-        _StencilWriteMask("Stencil Write Mask", Float) = 3
-        _StencilReadMask("Stencil Read Mask", Float) = 3
-        
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
         [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
+
+        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
+        
+        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadow Caster Option", Float) = 0
+        
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Destination Blend Factor", Float) = 0
+        [Enum(Off, 0, On, 1)] _ZWrite ("Z Write Mode", Float) = 1
+        
+        _Stencil("Stencil Ref ID", Float) = 1
+        _StencilWriteMask("Stencil Write Mask", Float) = 3
+        _StencilReadMask("Stencil Read Mask", Float) = 3
 
         // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
@@ -39,11 +42,15 @@
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
         
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
+        _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 1)) = 0.5
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
 
-        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
+        _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
+        _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
+                
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
+        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
@@ -87,8 +94,8 @@
             {
                 "LightMode" = "ToonForward"
             }
-            Blend One Zero, One OneMinusSrcAlpha
-            ZWrite On
+            Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
+            ZWrite [_ZWrite]
             Cull [_Cull]
 
             HLSLPROGRAM
@@ -126,7 +133,7 @@
                 "LightMode" = "DepthStencil"
             }
             Blend One Zero
-            ZTest On
+            ZTest LEqual
             ZWrite On
             Cull [_Cull]
             Stencil
@@ -157,7 +164,6 @@
             {
                 "LightMode" = "ShadowCaster"
             }
-
             ColorMask 0
             Cull [_Cull]
 
@@ -181,7 +187,6 @@
             {
                 "LightMode" = "Meta"
             }
-
             Cull Off
 
             HLSLPROGRAM

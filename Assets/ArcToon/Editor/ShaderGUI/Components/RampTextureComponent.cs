@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class RampTextureGUIComponent : ShaderGUIComponentBase
+    public class RampTextureComponent : ShaderGUIComponentBase
     {
         private readonly string useRampSetKeyword;
         
@@ -12,7 +12,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
         
         private readonly GUIContent label;
 
-        public RampTextureGUIComponent(string useRampSetKeyword, string rampTextureID, string labelName)
+        public RampTextureComponent(string useRampSetKeyword, string rampTextureID, string labelName)
         {
             this.useRampSetKeyword = useRampSetKeyword;
             this.rampTextureID = rampTextureID;

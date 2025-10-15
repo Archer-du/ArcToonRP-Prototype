@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Panels
 {
-    public class BaseFoldoutShaderGUIPanel
+    public class BaseFoldoutShaderPanel
     {
         private readonly string groupName;
         private readonly List<ShaderGUIComponentBase> components = null;
 
         private bool foldoutDisplay = true;
         
-        public BaseFoldoutShaderGUIPanel(string groupName, List<ShaderGUIComponentBase> components)
+        public BaseFoldoutShaderPanel(string groupName, List<ShaderGUIComponentBase> components)
         {
             this.groupName = groupName;
             this.components = components;

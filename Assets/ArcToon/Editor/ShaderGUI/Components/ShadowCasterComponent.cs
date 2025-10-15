@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class ShadowCasterGUIComponent : ShaderGUIComponentBase
+    public class ShadowCasterComponent : ShaderGUIComponentBase
     {
         private readonly string casterOptionPropertyID;
         private MaterialProperty casterOptionProperty = null;
@@ -16,7 +16,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             Off
         }
         
-        public ShadowCasterGUIComponent(string casterOptionPropertyID)
+        public ShadowCasterComponent(string casterOptionPropertyID)
         {
             this.casterOptionPropertyID = casterOptionPropertyID;
         }

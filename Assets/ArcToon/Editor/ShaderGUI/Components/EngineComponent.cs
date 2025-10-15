@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 
 namespace ArcToon.Editor.ShaderEditor.Components
 {
-    public class EngineGUIComponent : ShaderGUIComponentBase
+    public class EngineComponent : ShaderGUIComponentBase
     {
         public override void FindProperties(MaterialProperty[] props) { }
 
@@ -17,9 +17,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
             materialEditor.DoubleSidedGIField();
         }
 
-        public override bool IsValid()
-        {
-            return true;
-        }
+        public override bool IsValid() => true;
     }
 }
