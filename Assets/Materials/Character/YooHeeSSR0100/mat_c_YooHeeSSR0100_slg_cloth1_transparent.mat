@@ -18,6 +18,7 @@ Material:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _RMO_MASK_MAP
+  - _SHADOWS_DITHER
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
@@ -131,7 +132,7 @@ Material:
     - _RimScale: 0.5
     - _RimWidth: 0.5
     - _Roughness: 1
-    - _Shadows: 0
+    - _Shadows: 1
     - _Smoothness: 1
     - _SmoothnessTextureChannel: 0
     - _SpecMapToggle: 0

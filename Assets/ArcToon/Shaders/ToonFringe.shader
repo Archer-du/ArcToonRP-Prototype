@@ -14,7 +14,7 @@
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadow Caster Option", Float) = 0
+        [Enum(On, 0, Dither, 1, Off, 2)] _Shadows ("Shadow Caster Option", Float) = 0
 
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
 
@@ -223,7 +223,8 @@
 
             #pragma multi_compile_instancing
 
-            #pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _SHADOWS_DITHER
 
             #include "ShadowCasterPass.hlsl"
 

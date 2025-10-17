@@ -14,6 +14,7 @@ Material:
   m_ValidKeywords:
   - _ALPHA_CONTROL_WIDTH
   - _RAMP_SET
+  - _RECEIVE_SHADOWS
   - _SDF_LIGHT_MAP
   - _SDF_LIGHT_MAP_SPEC
   m_InvalidKeywords:
@@ -103,8 +104,10 @@ Material:
     - _DirectLightAttenSigmoidSharp: 1
     - _DirectLightAttenSmooth: 5
     - _DirectLightAttenSmoothNew: 0.99
+    - _DirectLightSpecOffset: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
+    - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
     - _FringeShadowBiasScale: 0.5
@@ -131,7 +134,7 @@ Material:
     - _PerObjectShadowCasterID: -1
     - _PremulAlpha: 0
     - _RampSetToggle: 1
-    - _ReceiveShadows: 0
+    - _ReceiveShadows: 1
     - _RimDepthBias: 3
     - _RimScale: 0.3
     - _RimWidth: 0.5

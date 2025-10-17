@@ -20,6 +20,8 @@ Material:
   - _LIGHTINGDEBUGMODE_NONE
   - _MASK_MAP
   - _SHADOWS_ON
+  - _SMOOTHNORMALSOURCE_VERTEXCOLOR
+  - _WIDTHCONTROLSOURCE_VERTEXCOLORALPHA
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0

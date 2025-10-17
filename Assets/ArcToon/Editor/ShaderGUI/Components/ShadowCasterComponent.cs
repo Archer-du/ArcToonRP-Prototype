@@ -11,7 +11,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
         enum ShadowMode
         {
             On,
-            Clip,
             Dither,
             Off
         }
@@ -46,7 +45,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     material.SetShaderPassEnabled("ShadowCaster", enabled);
                     if (enabled)
                     {
-                        material.SetKeyword("_SHADOWS_CLIP", (ShadowMode)casterOptionProperty.floatValue == ShadowMode.Clip);
                         material.SetKeyword("_SHADOWS_DITHER", (ShadowMode)casterOptionProperty.floatValue == ShadowMode.Dither);
                     }
                     EditorUtility.SetDirty(material);

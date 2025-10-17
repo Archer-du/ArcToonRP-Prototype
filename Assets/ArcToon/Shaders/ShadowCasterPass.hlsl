@@ -47,9 +47,10 @@ void ShadowCasterPassFragment(VaryingsSC input)
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
     float4 base = GetColor(config);
-    #if defined(_SHADOWS_CLIP)
+    #if defined(_CLIPPING)
     clip(base.a - GetAlphaClip(config));
-    #elif defined(_SHADOWS_DITHER)
+    #endif
+    #if defined(_SHADOWS_DITHER)
     float dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
     clip(base.a - dither);
     #endif

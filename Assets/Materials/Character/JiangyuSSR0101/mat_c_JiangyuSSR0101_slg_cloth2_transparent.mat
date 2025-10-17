@@ -131,7 +131,7 @@ Material:
     - _RimScale: 0.5
     - _RimWidth: 0.5
     - _Roughness: 1
-    - _Shadows: 2
+    - _Shadows: 1
     - _Smoothness: 1
     - _SmoothnessTextureChannel: 0
     - _SpecMapToggle: 0

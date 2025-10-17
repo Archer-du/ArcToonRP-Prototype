@@ -14,7 +14,7 @@
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadow Caster Option", Float) = 0
+        [Enum(On, 0, Dither, 1, Off, 2)] _Shadows ("Shadow Caster Option", Float) = 0
         
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 0
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
@@ -44,6 +44,10 @@
         _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
         _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
 
+        [Enum(UV1, 0, VertexColor, 1)]
+        _SmoothNormalSource ("Smooth Normal Source", Integer) = 1
+        [Enum(None, 0, VertexColorAlpha, 1)]
+        _WidthControlSource ("Width Control Source", Integer) = 1
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
         [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
@@ -121,14 +125,13 @@
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
             
-            #pragma shader_feature _RECEIVE_SHADOWS
-            #pragma shader_feature _CLIPPING
             #pragma shader_feature _NORMAL_MAP
-            
             #pragma shader_feature _RMO_MASK_MAP
-
             #pragma shader_feature _RAMP_SET
-
+            
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+            
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
             #pragma shader_feature _DEBUG_DIRECT_BRDF
             #pragma shader_feature _DEBUG_SPECULAR
@@ -179,7 +182,8 @@
 
             #pragma multi_compile_instancing
 
-            #pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _SHADOWS_DITHER
 
             #include "ShadowCasterPass.hlsl"
 

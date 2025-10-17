@@ -22,6 +22,8 @@ Material:
   - _Clipping
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
+  - _SMOOTHNORMALSOURCE_VERTEXCOLOR
+  - _WIDTHCONTROLSOURCE_VERTEXCOLORALPHA
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -92,7 +94,9 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _SmoothNormalSource: 1
+    - _WidthControlSource: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 1
     - _BumpScale: 1
