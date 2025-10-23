@@ -56,7 +56,7 @@ namespace ArcToon.Editor.ShaderEditor
             toonFoldoutPanel ??= new BaseFoldoutShaderPanel("Toon", new List<ShaderGUIComponentBase>()
             {
                 new RampTextureComponent("_RAMP_SET", "_RampSet", "Ramp Set"),
-                new GeometryOutlineComponent("Use Geometry Outline", "_OutlineColor", "_OutlineScale"),
+                new GeometryOutlineComponent("Use Geometry Outline", "_OutlineColor", "_OutlineScale", "_SmoothNormalSource", "_WidthControlSource"),
                 new SigmoidParamGUIComponent("_DirectLightAttenOffset", "_DirectLightAttenSmoothNew", "Sigmoid Attenuation"),
                 new SigmoidParamGUIComponent("_DirectLightSpecOffset", "_DirectLightSpecSmooth", "Sigmoid Specular"),
             });

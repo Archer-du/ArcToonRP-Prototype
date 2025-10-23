@@ -8,13 +8,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
         private readonly string casterOptionPropertyID;
         private MaterialProperty casterOptionProperty = null;
 
-        enum ShadowMode
-        {
-            On,
-            Dither,
-            Off
-        }
-        
         public ShadowCasterComponent(string casterOptionPropertyID)
         {
             this.casterOptionPropertyID = casterOptionPropertyID;
@@ -38,14 +31,14 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 foreach (var material in materials)
                 {
                     if (material == null) continue;
-                    bool enabled = casterOptionProperty.floatValue < (float)ShadowMode.Off;
+                    bool enabled = casterOptionProperty.floatValue < (float)ShadowCasterOption.Off;
                     MaterialEditorUtils.ArcToonGUILog($"Set {material.name} Shadow Caster Option to: {casterOptionProperty.floatValue}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
                     material.SetShaderPassEnabled("ShadowCaster", enabled);
                     if (enabled)
                     {
-                        material.SetKeyword("_SHADOWS_DITHER", (ShadowMode)casterOptionProperty.floatValue == ShadowMode.Dither);
+                        material.SetKeyword("_SHADOWS_DITHER", (ShadowCasterOption)casterOptionProperty.floatValue == ShadowCasterOption.Dither);
                     }
                     EditorUtility.SetDirty(material);
                 }

@@ -95,7 +95,8 @@
 
             #pragma multi_compile_instancing
             
-            #pragma shader_feature _SNCHANNEL_UV2 _SNCHANNEL_VERTCOL
+            #pragma shader_feature _ _SN_SOURCE_UV1 _SN_SOURCE_VERTCOL
+            #pragma shader_feature _OWC_SOURCE_VERTCOL_ALPHA
             #pragma shader_feature _ALPHA_CONTROL_WIDTH
 
             #include "GeometryOutlinePass.hlsl"

@@ -5,6 +5,25 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor
 {
+    public enum ShadowCasterOption
+    {
+        On,
+        Dither,
+        Off
+    }
+
+    public enum SmoothNormalSource
+    {
+        UV1,
+        VertexColor,
+    }
+
+    public enum WidthControlSource
+    {
+        None,
+        VertexColorAlpha,
+    }
+    
     public static class MaterialEditorUtils
     {
         public static MaterialProperty FindProperty(string propertyName, MaterialProperty[] properties, bool propertyIsMandatory)
