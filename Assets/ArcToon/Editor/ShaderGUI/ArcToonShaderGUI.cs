@@ -56,7 +56,7 @@ namespace ArcToon.Editor.ShaderEditor
             base.ValidateMaterial(material);
             
             TryInitGUIPanels();
-            Debug.Log("ArcToon ValidateMaterial");
+            
             generalFoldoutPanel.Refresh(material);
             shadowFoldoutPanel.Refresh(material);
             pbrFoldoutPanel.Refresh(material);
