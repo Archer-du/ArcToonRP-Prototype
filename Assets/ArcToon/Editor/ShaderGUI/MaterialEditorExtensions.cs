@@ -15,7 +15,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static void BuiltinShaderPropertyDrawer(this MaterialEditor editor, MaterialProperty property, bool hasLabel, string label)
         {
             editor.ShaderProperty(
-                EditorGUILayout.GetControlRect(hasLabel, editor.GetPropertyHeight(property, property.displayName), EditorStyles.layerMaskField), 
+                EditorGUILayout.GetControlRect(hasLabel, editor.GetPropertyHeight(property, label), EditorStyles.layerMaskField), 
                 property, label);
         }
         

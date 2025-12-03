@@ -34,44 +34,9 @@ namespace ArcToon.Editor.ShaderEditor
             editor = materialEditor;
             materials = materialEditor.targets;
             properties = materialProperties;
-
-            generalFoldoutPanel ??= new BaseFoldoutShaderPanel("General", new List<ShaderGUIComponentBase>()
-            {
-                new ColorTextureComponent("_BaseMap", "_BaseColor", "Base Map", false),
-                new NormalMapComponent("_NORMAL_MAP", "_NormalMap", "_NormalScale", "Normal Map"),
-                new AlphaClippingComponent("_CLIPPING", "_Clipping", "_Cutoff", "Alpha Clipping"),
-            });
             
-            shadowFoldoutPanel ??= new BaseFoldoutShaderPanel("Shadow", new List<ShaderGUIComponentBase>()
-            {
-                new BuiltinPropertyComponent("_ReceiveShadows"),
-                new ShadowCasterComponent("_Shadows"),
-            });
+            TryInitGUIPanels();
             
-            pbrFoldoutPanel ??= new BaseFoldoutShaderPanel("PBR", new List<ShaderGUIComponentBase>()
-            {
-                new ColorTextureComponent("_EmissionMap", "_EmissionColor", "Emission Map", true),
-            });
-
-            toonFoldoutPanel ??= new BaseFoldoutShaderPanel("Toon", new List<ShaderGUIComponentBase>()
-            {
-                new RampTextureComponent("_RAMP_SET", "_RampSet", "Ramp Set"),
-                new GeometryOutlineComponent("Use Geometry Outline", "_OutlineColor", "_OutlineScale", "_SmoothNormalSource", "_WidthControlSource"),
-                new SigmoidParamGUIComponent("_DirectLightAttenOffset", "_DirectLightAttenSmoothNew", "Sigmoid Attenuation"),
-                new SigmoidParamGUIComponent("_DirectLightSpecOffset", "_DirectLightSpecSmooth", "Sigmoid Specular"),
-            });
-            
-            engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUIComponentBase>()
-            {
-                new BuiltinPropertyComponent("_Cull"),
-                new BuiltinPropertyComponent("_SrcBlend"),
-                new BuiltinPropertyComponent("_DstBlend"),
-                new BuiltinPropertyComponent("_ZWrite"),
-                new EngineComponent(),
-            });
-            
-            // EditorGUILayout.HelpBox("test", MessageType.Info);
-
             generalFoldoutPanel.OnGUI(materialEditor, materialProperties);
             shadowFoldoutPanel.OnGUI(materialEditor, materialProperties);
             pbrFoldoutPanel.OnGUI(materialEditor, materialProperties);
@@ -86,6 +51,79 @@ namespace ArcToon.Editor.ShaderEditor
             }
         }
 
+        public override void ValidateMaterial(Material material)
+        {
+            base.ValidateMaterial(material);
+            
+            TryInitGUIPanels();
+            Debug.Log("ArcToon ValidateMaterial");
+            generalFoldoutPanel.Refresh(material);
+            shadowFoldoutPanel.Refresh(material);
+            pbrFoldoutPanel.Refresh(material);
+            toonFoldoutPanel.Refresh(material);
+            engineFoldoutPanel.Refresh(material);
+        }
+
+        private void TryInitGUIPanels()
+        {
+            generalFoldoutPanel ??= new BaseFoldoutShaderPanel("General", new List<ShaderGUIComponentBase>()
+            {
+                new ColorTextureComponent("Base Map", ShaderPropertyID.BaseMap, ShaderPropertyID.BaseColor, false),
+                new NormalMapComponent("Normal Map", ShaderPropertyID.NormalMap, ShaderPropertyID.NormalScale, ShaderKeywords.NORMAL_MAP),
+                new AlphaClippingComponent(),
+            });
+            
+            shadowFoldoutPanel ??= new BaseFoldoutShaderPanel("Shadow", new List<ShaderGUIComponentBase>()
+            {
+                new ShadowComponent(),
+            });
+            
+            pbrFoldoutPanel ??= new BaseFoldoutShaderPanel("PBR", new List<ShaderGUIComponentBase>()
+            {
+                new ColorTextureComponent("Emission Map", ShaderPropertyID.EmissionMap, ShaderPropertyID.EmissionColor, true),
+            });
+
+            toonFoldoutPanel ??= new BaseFoldoutShaderPanel("Toon", new List<ShaderGUIComponentBase>()
+            {
+                new RampTextureComponent("Ramp Set", ShaderPropertyID.RampSet, ShaderKeywords.RAMP_SET),
+                new GeometryOutlineComponent(),
+                new HeaderPropertyComponent("Sigmoid Attenuation", 
+                    new[] { "Offset", "Smooth" }, 
+                    new[] { ShaderPropertyID.DirectLightAttenOffset, ShaderPropertyID.DirectLightAttenSmoothNew }),
+                new HeaderPropertyComponent("Sigmoid Specular", 
+                    new[] { "Offset", "Smooth" }, 
+                    new[] { ShaderPropertyID.DirectLightSpecOffset, ShaderPropertyID.DirectLightSpecSmooth }),
+            });
+            
+            engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUIComponentBase>()
+            {
+                new DefaultPropertyComponent(ShaderPropertyID.Cull),
+                new HeaderPropertyComponent("Blend Factor",  
+                    new[] { "Source", "Destination" }, 
+                    new [] { ShaderPropertyID.SrcBlend, ShaderPropertyID.DstBlend }),
+                new DefaultPropertyComponent(ShaderPropertyID.ZWrite),
+                new EngineComponent(),
+            });
+        }
+        
+        void CopyLightMappingProperties()
+        {
+            MaterialProperty mainTex = FindProperty(ShaderPropertyID.MainTex, properties, false);
+            MaterialProperty baseMap = FindProperty(ShaderPropertyID.BaseMap, properties, false);
+            if (mainTex != null && baseMap != null)
+            {
+                mainTex.textureValue = baseMap.textureValue;
+                mainTex.textureScaleAndOffset = baseMap.textureScaleAndOffset;
+            }
+
+            MaterialProperty color = FindProperty(ShaderPropertyID.Color, properties, false);
+            MaterialProperty baseColor = FindProperty(ShaderPropertyID.BaseColor, properties, false);
+            if (color != null && baseColor != null)
+            {
+                color.colorValue = baseColor.colorValue;
+            }
+        }
+        
         void SetKeyword(string keyword, bool enabled)
         {
             if (enabled)
@@ -108,63 +146,46 @@ namespace ArcToon.Editor.ShaderEditor
 
         void UpdateLightingDebugKeywords()
         {
-            MaterialProperty property = FindProperty("_LightingDebugMode", properties, false);
+            MaterialProperty property = FindProperty(ShaderPropertyID.LightingDebugMode, properties, false);
             if (property == null || property.hasMixedValue)
                 return;
 
             switch ((LightingDebugMode)property.floatValue)
             {
                 case LightingDebugMode.IncomingLight:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", true);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
-                    SetKeyword("_DEBUG_SPECULAR", false);
-                    SetKeyword("_DEBUG_DIFFUSE", false);
+                    SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, true);
+                    SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
+                    SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
+                    SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
 
                     break;
                 case LightingDebugMode.DirectBRDF:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", true);
-                    SetKeyword("_DEBUG_SPECULAR", false);
-                    SetKeyword("_DEBUG_DIFFUSE", false);
+                    SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
+                    SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, true);
+                    SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
+                    SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
 
                     break;
                 case LightingDebugMode.Specular:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
-                    SetKeyword("_DEBUG_SPECULAR", true);
-                    SetKeyword("_DEBUG_DIFFUSE", false);
+                    SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
+                    SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
+                    SetKeyword(ShaderKeywords.DEBUG_SPECULAR, true);
+                    SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
                     break;
                 case LightingDebugMode.Diffuse:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
-                    SetKeyword("_DEBUG_SPECULAR", false);
-                    SetKeyword("_DEBUG_DIFFUSE", true);
+                    SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
+                    SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
+                    SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
+                    SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, true);
                     break;
                 default:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
-                    SetKeyword("_DEBUG_SPECULAR", false);
-                    SetKeyword("_DEBUG_DIFFUSE", false);
+                    SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
+                    SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
+                    SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
+                    SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
                     break;
             }
         }
 
-        void CopyLightMappingProperties()
-        {
-            MaterialProperty mainTex = FindProperty("_MainTex", properties, false);
-            MaterialProperty baseMap = FindProperty("_BaseMap", properties, false);
-            if (mainTex != null && baseMap != null)
-            {
-                mainTex.textureValue = baseMap.textureValue;
-                mainTex.textureScaleAndOffset = baseMap.textureScaleAndOffset;
-            }
-
-            MaterialProperty color = FindProperty("_Color", properties, false);
-            MaterialProperty baseColor = FindProperty("_BaseColor", properties, false);
-            if (color != null && baseColor != null)
-            {
-                color.colorValue = baseColor.colorValue;
-            }
-        }
     }
 }

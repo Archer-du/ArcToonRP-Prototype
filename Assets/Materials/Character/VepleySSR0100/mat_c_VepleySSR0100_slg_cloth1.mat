@@ -12,13 +12,17 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHA_CONTROL_WIDTH
   - _NORMAL_MAP
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _RMO_MASK_MAP
+  - _SN_DECODE_RGAG
+  - _SN_SRC_COLOR
+  - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
+  - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
+  - _OWC_SRC_VERTCOLORA
   - _SHADOWS_ON
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 1
@@ -59,7 +63,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 4321a9bb75752ec4ca6e698ef70d53a8, type: 3}
+        m_Texture: {fileID: 2800000, guid: 3063cd9ea538b5e47800f7d8448e88d0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -90,7 +94,12 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _SmoothNormalDecode: 1
+    - _SmoothNormalDecoder: 0
+    - _SmoothNormalSource: 1
+    - _WidthControlMode: 1
+    - _WidthControlSource: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 1
     - _BumpScale: 1

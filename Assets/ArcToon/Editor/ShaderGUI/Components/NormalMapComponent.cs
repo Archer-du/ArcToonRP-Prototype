@@ -8,13 +8,14 @@ namespace ArcToon.Editor.ShaderEditor.Components
         private readonly string useNormalMapKeyword;
         
         private readonly string normalMapID;
-        private MaterialProperty normalMapProperty;
         private readonly string bumpScaleID;
+        
+        private MaterialProperty normalMapProperty;
         private MaterialProperty bumpScaleProperty;
         
         private readonly GUIContent label;
 
-        public NormalMapComponent(string useNormalMapKeyword, string normalMapID, string bumpScaleID, string labelName)
+        public NormalMapComponent(string labelName, string normalMapID, string bumpScaleID, string useNormalMapKeyword)
         {
             this.useNormalMapKeyword = useNormalMapKeyword;
             this.normalMapID = normalMapID;

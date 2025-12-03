@@ -30,9 +30,6 @@ namespace ArcToon.Editor.ShaderEditor.Panels
             foldoutDisplay = ShaderGUILayout.DrawGUIComponentFoldoutGroup(foldoutDisplay, groupName);
             if (foldoutDisplay)
             {
-                // EditorGUILayout.Space(ShaderGUILayout.GUIComponentSpace);
-                // ShaderGUILayout.BeginGUIComponentIndent();
-
                 foreach (var component in components)
                 {
                     if (component.IsValid())
@@ -40,12 +37,17 @@ namespace ArcToon.Editor.ShaderEditor.Panels
                         component.OnGUI(materialEditor, materials);
                     }
                 }
-                
-                // ShaderGUILayout.EndGUIComponentIndent();
-                // EditorGUILayout.Space(ShaderGUILayout.GUIComponentSpace);
             }
             EditorGUILayout.EndVertical();
             EditorGUILayout.Space(6);
+        }
+
+        public void Refresh(Material material)
+        {
+            foreach (var component in components)
+            {
+                component.Refresh(material);
+            }
         }
     }
 }

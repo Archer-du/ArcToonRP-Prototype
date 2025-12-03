@@ -47,9 +47,15 @@
 
         _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
         _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
-                
+        
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
+        [Enum(UV1, 0, VertexColor, 1)]
+        _SmoothNormalSource ("Smooth Normal Source", Integer) = 1
+        [Enum(RGAG, 0, OCT, 1)]
+        _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
+        [Enum(None, 0, VertexColorAlpha, 1)]
+        _WidthControlMode ("Width Control Mode", Integer) = 1
         [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5

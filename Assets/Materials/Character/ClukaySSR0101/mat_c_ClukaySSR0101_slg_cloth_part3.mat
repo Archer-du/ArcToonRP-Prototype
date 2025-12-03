@@ -16,8 +16,12 @@ Material:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _RMO_MASK_MAP
+  - _SN_DECODE_RGAG
+  - _SN_SRC_COLOR
+  - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
+  - _OWC_SRC_VERTCOLORA
   - _SHADOWS_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -53,7 +57,8 @@ Material:
         m_Texture: {fileID: 2800000, guid: aa78dd3a9ca472346bacc40dca60bd00, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _SmoothNormalDecoder: 0
     m_Floats:
     - _AlphaControlOutlineWidth: 0
     - _Clipping: 0

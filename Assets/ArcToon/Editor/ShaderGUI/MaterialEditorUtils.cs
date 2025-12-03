@@ -17,13 +17,84 @@ namespace ArcToon.Editor.ShaderEditor
         UV1,
         VertexColor,
     }
+    
+    public enum SmoothNormalDecoder
+    {
+        RGAG,
+        OCT
+    }
 
-    public enum WidthControlSource
+    public enum WidthControlMode
     {
         None,
         VertexColorAlpha,
+        NiloOffset,
     }
     
+    public static class ShaderPropertyID
+    {
+        public const string BaseMap = "_BaseMap";
+        public const string BaseColor = "_BaseColor";
+        public const string MainTex = "_MainTex";
+        public const string Color = "_Color";
+        
+        public const string NormalMap = "_NormalMap";
+        public const string NormalScale = "_NormalScale";
+        
+        public const string Clipping = "_Clipping";
+        public const string Cutoff = "_Cutoff";
+        
+        public const string OutlineColor = "_OutlineColor";
+        public const string OutlineScale = "_OutlineScale";
+        public const string SmoothNormalSource = "_SmoothNormalSource";
+        public const string SmoothNormalDecoder = "_SmoothNormalDecoder";
+        public const string WidthControlMode = "_WidthControlMode";
+        
+        public const string ReceiveShadows = "_ReceiveShadows";
+        public const string Shadows = "_Shadows";
+        
+        public const string EmissionMap = "_EmissionMap";
+        public const string EmissionColor = "_EmissionColor";
+        
+        public const string RampSet = "_RampSet";
+        
+        public const string DirectLightAttenOffset = "_DirectLightAttenOffset";
+        public const string DirectLightAttenSmoothNew = "_DirectLightAttenSmoothNew";
+        public const string DirectLightSpecOffset = "_DirectLightSpecOffset";
+        public const string DirectLightSpecSmooth = "_DirectLightSpecSmooth";
+        
+        public const string Cull = "_Cull";
+        public const string SrcBlend = "_SrcBlend";
+        public const string DstBlend = "_DstBlend";
+        public const string ZWrite = "_ZWrite";
+        
+        public const string LightingDebugMode = "_LightingDebugMode";
+    }
+    
+    public static class ShaderKeywords
+    {
+        public const string _CLIPPING = "_CLIPPING";
+        
+        public const string NORMAL_MAP = "_NORMAL_MAP";
+        
+        public const string RAMP_SET = "_RAMP_SET";
+        
+        public const string SN_SRC_UV1 = "_SN_SRC_UV1";
+        public const string SN_SRC_COLOR = "_SN_SRC_COLOR";
+        
+        public const string SN_DECODE_RGAG = "_SN_DECODE_RGAG";
+        public const string SN_DECODE_OCT = "_SN_DECODE_OCT";
+        
+        public const string WIDTH_VERTCOLORA = "_WIDTH_VERTCOLORA";
+        
+        public const string SHADOWS_DITHER = "_SHADOWS_DITHER";
+        
+        public const string DEBUG_INCOMING_LIGHT = "_DEBUG_INCOMING_LIGHT";
+        public const string DEBUG_DIRECT_BRDF = "_DEBUG_DIRECT_BRDF";
+        public const string DEBUG_SPECULAR = "_DEBUG_SPECULAR";
+        public const string DEBUG_DIFFUSE = "_DEBUG_DIFFUSE";
+    }
+
     public static class MaterialEditorUtils
     {
         public static MaterialProperty FindProperty(string propertyName, MaterialProperty[] properties, bool propertyIsMandatory)
@@ -53,41 +124,5 @@ namespace ArcToon.Editor.ShaderEditor
                 Debug.Log("[ArcToonGUI] " + log);
             }
         }
-        
-        // public static bool ToggleKeyword(Material[] materials, string label, string keyword)
-        // {
-        //     if (materials == null || materials.Length == 0) return false;
-        //
-        //     bool mixed = false;
-        //     bool firstOrOnlyValue = materials[0].IsKeywordEnabled(keyword);
-        //     for (int i = 1; i < materials.Length; i++)
-        //     {
-        //         if (materials[i].IsKeywordEnabled(keyword) != firstOrOnlyValue)
-        //         {
-        //             mixed = true;
-        //             break;
-        //         }
-        //     }
-        //
-        //     EditorGUI.showMixedValue = mixed;
-        //     EditorGUI.BeginChangeCheck();
-        //     bool newValue = EditorGUILayout.Toggle(label, firstOrOnlyValue);
-        //     EditorGUI.showMixedValue = false;
-        //
-        //     if (EditorGUI.EndChangeCheck())
-        //     {
-        //         RegisterUndo(materials, $"Toggle {keyword}");
-        //         foreach (var mat in materials)
-        //         {
-        //             if (mat == null) continue;
-        //             if (newValue) mat.EnableKeyword(keyword);
-        //             else mat.DisableKeyword(keyword);
-        //             EditorUtility.SetDirty(mat);
-        //         }
-        //     }
-        //
-        //     return newValue;
-        // }
-
     }
 }

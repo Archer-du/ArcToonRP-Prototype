@@ -15,6 +15,9 @@ Material:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _SDF_LIGHT_MAP
+  - _SN_DECODE_RGAG
+  - _SN_SRC_COLOR
+  - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
@@ -93,7 +96,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _SmoothNormalDecoder: 0
+    - _SmoothNormalSource: 1
+    - _WidthControlMode: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 0
     - _BumpScale: 1
@@ -106,8 +112,10 @@ Material:
     - _DirectLightAttenSigmoidSharp: 0.5
     - _DirectLightAttenSmooth: 5
     - _DirectLightAttenSmoothNew: 0.98
+    - _DirectLightSpecOffset: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
+    - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
     - _FringeShadowBiasScaleX: 0.5

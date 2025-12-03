@@ -17,5 +17,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             DrawProperties(materialEditor, materials);
             EditorGUILayout.EndVertical();
         }
+        
+        public virtual void Refresh(Material material) { }
     }
 }

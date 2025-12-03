@@ -8,13 +8,14 @@ namespace ArcToon.Editor.ShaderEditor.Components
         private readonly bool isHDRColor;
         
         private readonly string mapID;
-        private MaterialProperty mapProperty;
         private readonly string colorID;
+        
+        private MaterialProperty mapProperty;
         private MaterialProperty colorProperty;
         
         private readonly GUIContent label;
         
-        public ColorTextureComponent(string mapID, string colorID, string labelName, bool isHDRColor)
+        public ColorTextureComponent(string labelName, string mapID, string colorID, bool isHDRColor)
         {
             this.mapID = mapID;
             this.colorID = colorID;

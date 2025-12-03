@@ -12,7 +12,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
         
         private readonly GUIContent label;
 
-        public RampTextureComponent(string useRampSetKeyword, string rampTextureID, string labelName)
+        public RampTextureComponent(string labelName, string rampTextureID, string useRampSetKeyword)
         {
             this.useRampSetKeyword = useRampSetKeyword;
             this.rampTextureID = rampTextureID;

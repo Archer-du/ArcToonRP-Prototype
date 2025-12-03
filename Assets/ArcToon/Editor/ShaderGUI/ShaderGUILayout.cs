@@ -22,14 +22,8 @@ namespace ArcToon.Editor.ShaderEditor
             }
         }
         
-        public static GUIStyle GUIFoldoutGroupBoxStyle
-        {
-            get
-            {
-                return new GUIStyle("ShurikenModuleTitle");
-            }
-        }
-        
+        public static GUIStyle GUIFoldoutGroupBoxStyle => new("ShurikenModuleTitle");
+
         public static bool DrawGUIComponentFoldoutGroup(bool display, string title)
         {
             var style = GUIFoldoutGroupBoxStyle;

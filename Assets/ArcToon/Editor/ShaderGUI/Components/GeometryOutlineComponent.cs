@@ -5,35 +5,22 @@ namespace ArcToon.Editor.ShaderEditor.Components
 {
     public class GeometryOutlineComponent : ShaderGUIComponentBase
     {
-        private readonly GUIContent label;
+        private static readonly GUIContent label = new("Geometry Outline");
+        private static readonly string OutlinePassName = "GeometryOutline";
 
-        private readonly string outlineColorID;
         private MaterialProperty outlineColorProperty;
-        private readonly string outlineScaleID;
         private MaterialProperty outlineScaleProperty;
-        
-        private readonly string smoothNormalSourceID;
         private MaterialProperty smoothNormalSourceProperty;
-        private readonly string widthControlSourceID;
-        private MaterialProperty widthControlSourceProperty;
-        
-        private static string OutlinePassName = "GeometryOutline";
+        private MaterialProperty smoothNormalDecoderProperty;
+        private MaterialProperty widthControlModeProperty;
 
-        public GeometryOutlineComponent(string labelName, string outlineColorID, string outlineScaleID, string smoothNormalSourceID, string widthControlSourceID)
-        {
-            this.outlineColorID = outlineColorID;
-            this.outlineScaleID = outlineScaleID;
-            this.smoothNormalSourceID = smoothNormalSourceID;
-            this.widthControlSourceID = widthControlSourceID;
-            label = new GUIContent(labelName);
-        }
-        
         public override void FindProperties(MaterialProperty[] props)
         {
-            outlineColorProperty = MaterialEditorUtils.FindProperty(outlineColorID, props, false);
-            outlineScaleProperty = MaterialEditorUtils.FindProperty(outlineScaleID, props, false);
-            smoothNormalSourceProperty = MaterialEditorUtils.FindProperty(smoothNormalSourceID, props, false);
-            widthControlSourceProperty = MaterialEditorUtils.FindProperty(widthControlSourceID, props, false);
+            outlineColorProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.OutlineColor, props, false);
+            outlineScaleProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.OutlineScale, props, false);
+            smoothNormalSourceProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SmoothNormalSource, props, false);
+            smoothNormalDecoderProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SmoothNormalDecoder, props, false);
+            widthControlModeProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.WidthControlMode, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
@@ -69,7 +56,11 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     EditorUtility.SetDirty(material);
                 }
             }
+            
             ShaderGUILayout.BeginGUIComponentIndent();
+            
+            materialEditor.BuiltinShaderPropertyDrawer(outlineColorProperty, true, "Color");
+            materialEditor.BuiltinShaderPropertyDrawer(outlineScaleProperty, true, "Scale");
             
             EditorGUI.BeginChangeCheck();
             materialEditor.BuiltinShaderPropertyDrawer(smoothNormalSourceProperty);
@@ -78,35 +69,50 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 foreach (var material in materials)
                 {
                     if (material == null) continue;
-                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Smooth Normal Source: {newValue}");
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Smooth Normal Source: {(SmoothNormalSource)smoothNormalSourceProperty.intValue}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetKeyword("_SN_SOURCE_UV1", 
+                    material.SetKeyword(ShaderKeywords.SN_SRC_UV1, 
                         (SmoothNormalSource)smoothNormalSourceProperty.intValue == SmoothNormalSource.UV1);
-                    material.SetKeyword("_SN_SOURCE_VERTCOL", 
+                    material.SetKeyword(ShaderKeywords.SN_SRC_COLOR, 
                         (SmoothNormalSource)smoothNormalSourceProperty.intValue == SmoothNormalSource.VertexColor);
                     EditorUtility.SetDirty(material);
                 }
             }
             
             EditorGUI.BeginChangeCheck();
-            materialEditor.BuiltinShaderPropertyDrawer(widthControlSourceProperty);
+            materialEditor.BuiltinShaderPropertyDrawer(smoothNormalDecoderProperty);
             if (EditorGUI.EndChangeCheck())
             {
                 foreach (var material in materials)
                 {
                     if (material == null) continue;
-                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Width Control Source: {widthControlSourceProperty.intValue}");
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Smooth Normal Decoder: {(SmoothNormalDecoder)smoothNormalDecoderProperty.intValue}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetKeyword("_OWC_SOURCE_VERTCOL_ALPHA", 
-                        (WidthControlSource)widthControlSourceProperty.intValue == WidthControlSource.VertexColorAlpha);
+                    material.SetKeyword(ShaderKeywords.SN_DECODE_RGAG, 
+                        (SmoothNormalDecoder)smoothNormalDecoderProperty.intValue == SmoothNormalDecoder.RGAG);
+                    material.SetKeyword(ShaderKeywords.SN_DECODE_OCT, 
+                        (SmoothNormalDecoder)smoothNormalDecoderProperty.intValue == SmoothNormalDecoder.OCT);
                     EditorUtility.SetDirty(material);
                 }
             }
             
-            materialEditor.BuiltinShaderPropertyDrawer(outlineColorProperty);
-            materialEditor.BuiltinShaderPropertyDrawer(outlineScaleProperty);
+            EditorGUI.BeginChangeCheck();
+            materialEditor.BuiltinShaderPropertyDrawer(widthControlModeProperty);
+            if (EditorGUI.EndChangeCheck())
+            {
+                foreach (var material in materials)
+                {
+                    if (material == null) continue;
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Width Control Mode: {(WidthControlMode)widthControlModeProperty.intValue}");
+                    
+                    Undo.RecordObject(material, Undo.GetCurrentGroupName());
+                    material.SetKeyword(ShaderKeywords.WIDTH_VERTCOLORA, 
+                        (WidthControlMode)widthControlModeProperty.intValue == WidthControlMode.VertexColorAlpha);
+                    EditorUtility.SetDirty(material);
+                }
+            }
             
             ShaderGUILayout.EndGUIComponentIndent();
             
@@ -115,7 +121,28 @@ namespace ArcToon.Editor.ShaderEditor.Components
 
         public override bool IsValid()
         {
-            return true;
+            return outlineColorProperty != null && outlineScaleProperty != null && widthControlModeProperty != null && smoothNormalSourceProperty != null;
+        }
+
+        public override void Refresh(Material material)
+        {
+            base.Refresh(material);
+            if (material == null) return;
+            int smoothNormalSourceValue = material.GetInteger(ShaderPropertyID.SmoothNormalSource);
+            material.SetKeyword(ShaderKeywords.SN_SRC_UV1, 
+                (SmoothNormalSource)smoothNormalSourceValue == SmoothNormalSource.UV1);
+            material.SetKeyword(ShaderKeywords.SN_SRC_COLOR, 
+                (SmoothNormalSource)smoothNormalSourceValue == SmoothNormalSource.VertexColor);
+            
+            int smoothNormalDecoderValue = material.GetInteger(ShaderPropertyID.SmoothNormalDecoder);
+            material.SetKeyword(ShaderKeywords.SN_DECODE_RGAG, 
+                (SmoothNormalDecoder)smoothNormalDecoderValue == SmoothNormalDecoder.RGAG);
+            material.SetKeyword(ShaderKeywords.SN_DECODE_OCT, 
+                (SmoothNormalDecoder)smoothNormalDecoderValue == SmoothNormalDecoder.OCT);
+
+            int widthControlModeValue = material.GetInteger(ShaderPropertyID.WidthControlMode);
+            material.SetKeyword(ShaderKeywords.WIDTH_VERTCOLORA, 
+                (WidthControlMode)widthControlModeValue == WidthControlMode.VertexColorAlpha);
         }
     }
 }

@@ -5,26 +5,15 @@ namespace ArcToon.Editor.ShaderEditor.Components
 {
     public class AlphaClippingComponent : ShaderGUIComponentBase
     {
-        private readonly GUIContent label;
+        private static readonly GUIContent label = new("Alpha Clipping");
         
-        private readonly string alphaClippingKeyword;
-
-        private readonly string useAlphaClipID;
         private MaterialProperty useAlphaClipProperty;
-        private readonly string cutOffID;
         private MaterialProperty cutOffProperty;
 
-        public AlphaClippingComponent(string alphaClippingKeyword, string useAlphaClipID, string cutOffID, string labelName)
-        {
-            this.alphaClippingKeyword = alphaClippingKeyword;
-            this.useAlphaClipID = useAlphaClipID;
-            this.cutOffID = cutOffID;
-            label = new GUIContent(labelName);
-        }
         public override void FindProperties(MaterialProperty[] props)
         {
-            useAlphaClipProperty = MaterialEditorUtils.FindProperty(useAlphaClipID, props, false);
-            cutOffProperty = MaterialEditorUtils.FindProperty(cutOffID, props, false);
+            useAlphaClipProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Clipping, props, false);
+            cutOffProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Cutoff, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
@@ -45,7 +34,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Clipping: {newValue}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetKeyword(alphaClippingKeyword, newValue);
+                    material.SetKeyword(ShaderKeywords._CLIPPING, newValue);
                     EditorUtility.SetDirty(material);
                 }
             }

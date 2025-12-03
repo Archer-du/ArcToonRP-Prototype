@@ -51,6 +51,18 @@ float SigmoidSharp(float x, float center, float sharp)
     return s;
 };
 
+float3 OctahedralDecode(float2 uv)
+{
+    float3 n = float3(uv.x, uv.y, 1 - abs(uv.x) - abs(uv.y));
+
+    if (n.z < 0)
+    {
+        n.xy = (1 - abs(n.yx)) * sign(n.xy);
+    }
+
+    return normalize(n);
+}
+
 float3 DecodeNormal(float4 sample, float scale = 1.0)
 {
     #if defined(UNITY_NO_DXT5nm)

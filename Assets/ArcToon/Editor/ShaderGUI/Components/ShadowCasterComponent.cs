@@ -38,7 +38,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     material.SetShaderPassEnabled("ShadowCaster", enabled);
                     if (enabled)
                     {
-                        material.SetKeyword("_SHADOWS_DITHER", (ShadowCasterOption)casterOptionProperty.floatValue == ShadowCasterOption.Dither);
+                        material.SetKeyword(ShaderKeywords.SHADOWS_DITHER, (ShadowCasterOption)casterOptionProperty.floatValue == ShadowCasterOption.Dither);
                     }
                     EditorUtility.SetDirty(material);
                 }
