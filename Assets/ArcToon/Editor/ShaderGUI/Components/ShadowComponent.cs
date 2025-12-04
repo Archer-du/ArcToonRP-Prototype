@@ -55,5 +55,15 @@ namespace ArcToon.Editor.ShaderEditor.Components
         {
             return receiveShadowsProperty != null || casterOptionProperty != null;
         }
+
+        public override void Refresh(Material material)
+        {
+            base.Refresh(material);
+            ShadowCasterOption casterOptionValue = (ShadowCasterOption)material.GetFloat(ShaderPropertyID.Shadows);
+            if (casterOptionValue < ShadowCasterOption.Off)
+            {
+                material.SetKeyword(ShaderKeywords.SHADOWS_DITHER, casterOptionValue == ShadowCasterOption.Dither);
+            }
+        }
     }
 }

@@ -5,23 +5,18 @@ namespace ArcToon.Editor.ShaderEditor.Components
 {
     public class RampTextureComponent : ShaderGUIComponentBase
     {
-        private readonly string useRampSetKeyword;
-        
-        private readonly string rampTextureID;
         private MaterialProperty rampTextureProperty;
         
         private readonly GUIContent label;
 
-        public RampTextureComponent(string labelName, string rampTextureID, string useRampSetKeyword)
+        public RampTextureComponent(string labelName)
         {
-            this.useRampSetKeyword = useRampSetKeyword;
-            this.rampTextureID = rampTextureID;
             label = new GUIContent(labelName);
         }
         
         public override void FindProperties(MaterialProperty[] props)
         {
-            rampTextureProperty = MaterialEditorUtils.FindProperty(rampTextureID, props, false);
+            rampTextureProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.RampSet, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
@@ -33,11 +28,11 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 foreach (var material in materials)
                 {
                     if (material == null) continue;
-                    bool hasRampSet = material.GetTexture(rampTextureProperty.name) != null;
-                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Keyword: {useRampSetKeyword} - {hasRampSet}");
+                    bool hasRampSet = material.GetTexture(ShaderPropertyID.RampSet) != null;
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Keyword: {ShaderKeywords.RAMP_SET} - {hasRampSet}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetKeyword(useRampSetKeyword, hasRampSet);
+                    material.SetKeyword(ShaderKeywords.RAMP_SET, hasRampSet);
                     EditorUtility.SetDirty(material);
                 }
             }
@@ -46,6 +41,14 @@ namespace ArcToon.Editor.ShaderEditor.Components
         public override bool IsValid()
         {
             return rampTextureProperty != null;
+        }
+
+        public override void Refresh(Material material)
+        {
+            base.Refresh(material);
+            if (material == null) return;
+            bool hasRampSet = material.GetTexture(ShaderPropertyID.RampSet) != null;
+            material.SetKeyword(ShaderKeywords.RAMP_SET, hasRampSet);
         }
     }
 }
