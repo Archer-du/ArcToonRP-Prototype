@@ -98,7 +98,7 @@ MonoBehaviour:
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
   OrbitStyle: 0
-  Radius: 25.5
+  Radius: 26.5
   Orbits:
     Top:
       Radius: 2
@@ -347,7 +347,7 @@ MonoBehaviour:
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
   OrbitStyle: 0
-  Radius: 12
+  Radius: 13
   Orbits:
     Top:
       Radius: 2
@@ -590,7 +590,7 @@ MonoBehaviour:
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
   OrbitStyle: 0
-  Radius: 30
+  Radius: 31
   Orbits:
     Top:
       Radius: 2
@@ -1094,7 +1094,7 @@ MonoBehaviour:
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
   OrbitStyle: 0
-  Radius: 20
+  Radius: 21
   Orbits:
     Top:
       Radius: 2
@@ -1261,7 +1261,7 @@ MonoBehaviour:
     verticalFOV: 25
     nearClipPlane: 0.3
     farClipPlane: 200
-    radius: 43
+    radius: 44
     target: {fileID: 7596700582871113003}
     targetHeight: 9.5
   upperBodyCameraData:
@@ -1269,7 +1269,7 @@ MonoBehaviour:
     verticalFOV: 20
     nearClipPlane: 0.3
     farClipPlane: 80
-    radius: 20
+    radius: 21
     target: {fileID: 8760827736867933236}
     targetHeight: 15.5
   lowerBodyCameraData:
@@ -1277,7 +1277,7 @@ MonoBehaviour:
     verticalFOV: 20
     nearClipPlane: 0.3
     farClipPlane: 80
-    radius: 30
+    radius: 31
     target: {fileID: 6557770706540904526}
     targetHeight: 5.5
   trunkFocusCameraData:
@@ -1285,7 +1285,7 @@ MonoBehaviour:
     verticalFOV: 20
     nearClipPlane: 0.3
     farClipPlane: 80
-    radius: 21
+    radius: 22
     target: {fileID: 3985814461606036662}
     targetHeight: 11.5
   faceFocusCameraData:
@@ -1293,7 +1293,7 @@ MonoBehaviour:
     verticalFOV: 20
     nearClipPlane: 0.3
     farClipPlane: 50
-    radius: 12
+    radius: 13
     target: {fileID: 2400715356002892877}
     targetHeight: 16.5
   cowboyShotCameraData:
@@ -1301,7 +1301,7 @@ MonoBehaviour:
     verticalFOV: 25
     nearClipPlane: 0.3
     farClipPlane: 120
-    radius: 25.5
+    radius: 26.5
     target: {fileID: 7448216434209663760}
     targetHeight: 13
 --- !u!1 &6097355070984098496
@@ -1329,7 +1329,7 @@ Transform:
   m_GameObject: {fileID: 6097355070984098496}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -11.682, z: 23}
+  m_LocalPosition: {x: 0, y: -11.682, z: 24}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1439,7 +1439,7 @@ MonoBehaviour:
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
   OrbitStyle: 0
-  Radius: 21
+  Radius: 22
   Orbits:
     Top:
       Radius: 2
@@ -1651,7 +1651,7 @@ MonoBehaviour:
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
   OrbitStyle: 0
-  Radius: 43
+  Radius: 44
   Orbits:
     Top:
       Radius: 2

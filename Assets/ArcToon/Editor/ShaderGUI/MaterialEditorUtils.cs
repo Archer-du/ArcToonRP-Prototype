@@ -72,6 +72,7 @@ namespace ArcToon.Editor.ShaderEditor
         public const string LightMapSDF = "_LightMapSDF";
         public const string LightMapSDFSourceUV = "_LightMapSDFSourceUV";
         public const string ShadowOffsetSDF = "_ShadowOffsetSDF";
+        public const string FaceVector = "_FaceVector";
         
         public const string Cull = "_Cull";
         public const string SrcBlend = "_SrcBlend";

@@ -57,11 +57,11 @@ DirectLightSpecData GetDirectLightSpecData(float offset, float smooth)
     return data;
 }
 
-FaceData GetFaceData(float2 faceUV)
+FaceData GetFaceData(float2 faceUV, float3 faceDirectionOS, float4 facePositionOS)
 {
     FaceData data;
-    data.directionWS = GetFaceFrontDir();
-    data.positionWS = GetFaceCenterPositionWorld();
+    data.directionWS = mul((float3x3)GetObjectToWorldMatrix(), faceDirectionOS);
+    data.positionWS = mul(GetObjectToWorldMatrix(), facePositionOS).xyz;
     data.faceUV = faceUV;
     return data;
 }

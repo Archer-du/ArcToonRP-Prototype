@@ -67,6 +67,7 @@
         [Enum(UV0, 0, UV1, 1)]
         _LightMapSDFSourceUV ("SDF Light Map UV Source", Integer) = 1
         _ShadowOffsetSDF ("SDF Light Map Attenuation Offset", Range(-1, 1)) = 0
+        _FaceVector ("Face Vector", Vector) = (0, 0, 1, 0)
         
         [Toggle(_SDF_LIGHT_MAP_SPEC)] _LightMapSpecularSDFToggle ("Use SDF Light Map Specular", Float) = 0
         _NoseSpecularStrengthSDF ("SDF Light Map Nose Specular Strength", Range(0, 1)) = 0.5

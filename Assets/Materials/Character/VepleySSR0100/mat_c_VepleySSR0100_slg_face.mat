@@ -15,6 +15,7 @@ Material:
   - _RAMP_SET
   - _SDF_LIGHT_MAP
   - _SDF_LIGHT_MAP_SPEC
+  - _SDF_UV1
   - _SN_DECODE_OCT
   - _SN_SRC_COLOR
   - _WIDTH_VERTCOLORA
@@ -95,6 +96,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints:
+    - _LightMapSDFSourceUV: 1
     - _SmoothNormalDecoder: 1
     - _SmoothNormalSource: 1
     - _WidthControlMode: 1

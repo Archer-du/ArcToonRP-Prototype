@@ -10,12 +10,14 @@ namespace ArcToon.Editor.ShaderEditor.Components
         private MaterialProperty lightMapSDFProperty;
         private MaterialProperty lightMapSDFSourceUVProperty;
         private MaterialProperty lightMapSDFOffsetProperty;
+        private MaterialProperty faceVectorProperty;
         
         public override void FindProperties(MaterialProperty[] props)
         {
             lightMapSDFProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.LightMapSDF, props, false);
             lightMapSDFSourceUVProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.LightMapSDFSourceUV, props, false);
             lightMapSDFOffsetProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ShadowOffsetSDF, props, false);
+            faceVectorProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.FaceVector, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
@@ -58,6 +60,12 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 }
             }
             materialEditor.BuiltinShaderPropertyDrawer(lightMapSDFOffsetProperty, true, "Shadow Offset");
+            EditorGUI.BeginChangeCheck();
+            var newFaceVectorValue = EditorGUILayout.Vector3Field("Face Vector", faceVectorProperty.vectorValue);
+            if (EditorGUI.EndChangeCheck())
+            {
+                faceVectorProperty.vectorValue = new Vector4(newFaceVectorValue.x, newFaceVectorValue.y, newFaceVectorValue.z, 0);
+            }
             EditorGUI.EndDisabledGroup();
             
             ShaderGUILayout.EndGUIComponentIndent();
@@ -65,7 +73,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
 
         public override bool IsValid()
         {
-            return lightMapSDFProperty != null && lightMapSDFSourceUVProperty != null && lightMapSDFOffsetProperty != null;
+            return lightMapSDFProperty != null && lightMapSDFSourceUVProperty != null && lightMapSDFOffsetProperty != null && faceVectorProperty != null;
         }
 
         public override void Refresh(Material material)

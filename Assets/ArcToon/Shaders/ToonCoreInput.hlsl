@@ -32,6 +32,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _ShadowOffsetSDF)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _FaceVector)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
     UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
@@ -260,6 +261,11 @@ float3 SampleRampSetChannel(float rampUV, float channel)
     return SAMPLE_TEXTURE2D(_RampSet, sampler_RampSet, float2(rampUV, channel)).rgb;
     #endif
     return 1.0;
+}
+
+float3 GetFaceVector()
+{
+    return INPUT_PROP(_FaceVector).xyz;
 }
 
 float SampleSDFLightMap(float2 faceUV)

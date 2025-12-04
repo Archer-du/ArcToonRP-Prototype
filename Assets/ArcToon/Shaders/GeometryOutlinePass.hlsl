@@ -3,8 +3,6 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 
-#define LEGACY_OUTLINE_WIDTH_COEF 0.02
-
 #define OUTLINE_WIDTH_MIN_COEF 0.001
 #define OUTLINE_WIDTH_MAX_COEF 0.006
 
@@ -46,20 +44,6 @@ float3 DecodeSmoothNormal(float4 sample)
     #else
     return normalize(UnpackNormalmapRGorAG(sample, 1.0));
     #endif
-}
-
-VaryingsGO LegacyGeometryOutlinePassVertex(AttributesGO input)
-{
-    VaryingsGO output;
-    UNITY_SETUP_INSTANCE_ID(input);
-    UNITY_TRANSFER_INSTANCE_ID(input, output);
-    float3 positionVS = TransformWorldToView(TransformObjectToWorld(input.positionOS));
-    float3 normalWS = TransformObjectToWorldNormal(input.normalOS, true);
-    float3 normalVS = TransformWorldToViewNormal(normalWS, true);
-    float outlineScale = GetOutlineScale();
-    float3 scaledPositionVS = positionVS + normalVS * outlineScale * LEGACY_OUTLINE_WIDTH_COEF;
-    output.positionCS_SS = TransformWViewToHClip(scaledPositionVS);
-    return output;
 }
 
 VaryingsGO GeometryOutlinePassVertex(AttributesGO input)

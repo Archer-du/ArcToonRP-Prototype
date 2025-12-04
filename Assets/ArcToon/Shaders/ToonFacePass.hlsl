@@ -49,8 +49,6 @@ float3 DirectBRDF(Surface surface, BRDF brdf, Light light, FaceData faceData)
 float3 IncomingLight(Surface surface, Light light, Fragment fragment,
     DirectLightAttenData attenData, FaceData faceData)
 {
-    float3 lightAttenuation = 0.0f;
-    
     #if defined(_SDF_LIGHT_MAP)
     float3 faceDirHWS = SafeNormalize(float3(faceData.directionWS.x, 0.0, faceData.directionWS.z));
     float3 lightDirHWS = SafeNormalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
@@ -88,9 +86,9 @@ float3 IncomingLight(Surface surface, Light light, Fragment fragment,
     attenuationUV = lerp(attenuationUV, 0, fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
     
     #if defined(_RAMP_SET)
-    lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
+    float3 lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
     #else
-    lightAttenuation = attenuationUV;
+    float lightAttenuation = attenuationUV;
     #endif
     
     // return IncomingLight(surface, light);
@@ -176,7 +174,7 @@ float4 ToonFacePassFragment(VaryingsFace input, bool isFrontFace : SV_IsFrontFac
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
-    FaceData faceData = GetFaceData(input.faceUV);
+    FaceData faceData = GetFaceData(input.faceUV, GetFaceVector(), float4(0, 0, 0, 1));
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
     
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
