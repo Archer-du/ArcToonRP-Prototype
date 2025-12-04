@@ -19,14 +19,22 @@ struct VaryingsHair
 float3 SpecularStrength(Surface surface, Light light, HairSpecData hairSpecData)
 {
     float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
-    float shiftScale = SampleTangentShiftNoise(hairSpecData.hairUV) + GetHairTangentShiftOffset();
-    float3 bitangentWS = SafeNormalize(hairSpecData.bitangentWS + shiftScale * surface.normalWS);
-    float dotTH = dot(bitangentWS, h);
-    // avoid sqrt crashes caused by floating point precision
-    float cosTH = saturate(dotTH);
-    float sinTH = sqrt(saturate(1.0 - cosTH * cosTH));
-    float dirAtten = smoothstep(-1.0, 0.0, dotTH);
-    return dirAtten * pow(sinTH, hairSpecData.gloss) * hairSpecData.scale;
+    // float shiftScale = SampleTangentShiftNoise(hairSpecData.hairUV) + GetHairTangentShiftOffset();
+    // float3 bitangentWS = SafeNormalize(hairSpecData.bitangentWS + shiftScale * surface.normalWS);
+    // float dotTH = dot(bitangentWS, h);
+    // // avoid sqrt crashes caused by floating point precision
+    // float cosTH = saturate(dotTH);
+    // float sinTH = sqrt(saturate(1.0 - cosTH * cosTH));
+    // float dirAtten = smoothstep(-1.0, 0.0, dotTH);
+    // return dirAtten * pow(sinTH, hairSpecData.gloss) * hairSpecData.scale;
+
+    float dotNH = saturate(dot(surface.normalWS, h));
+    float slide = 0.1;
+    float offset = 0;
+    float anisotropicOffsetV = - surface.viewDirectionWS.y * slide + offset;
+    float hairSpecMask = SampleHairSpecularMask(float2(hairSpecData.hairUV.x, hairSpecData.hairUV.y + anisotropicOffsetV));
+    float hairSpecStrength = GetHairSpecScale() * pow(dotNH, GetHairSpecGloss()) * hairSpecMask;
+    return hairSpecStrength;
 }
 
 float3 DirectBRDF(Surface surface, BRDF brdf, Light light, HairSpecData hairSpecData)
@@ -36,19 +44,18 @@ float3 DirectBRDF(Surface surface, BRDF brdf, Light light, HairSpecData hairSpec
 
 float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenData)
 {
-    float3 lightAttenuation = 0.0f;
-    #if defined(_RAMP_SET)
     float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
     float attenuationUV = min(
         SigmoidSharp(halfLambertFactor, attenData.offset, attenData.smooth),
         SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
     );
-    lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
-    // lightAttenuation = attenuationUV;
-    return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
+    #if defined(_RAMP_SET)
+    float3 lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
     #else
-    return IncomingLight(surface, light);
+    float lightAttenuation = attenuationUV;
     #endif
+    // return IncomingLight(surface, light);
+    return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
 }
 
 float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light, DirectLightAttenData attenData,
@@ -81,7 +88,7 @@ VaryingsHair ToonFringePassVertex(Attributes input)
     real sign = input.tangentOS.w * GetOddNegativeScale();
     output.bitangentWS = cross(output.normalWS, output.tangentWS.xyz) * sign;
     output.baseUV = TransformBaseUV(input.baseUV);
-    output.hairUV = TransformHairUV(input.baseUV);
+    output.hairUV = TransformHairUV(input.UV1);
     return output;
 }
 

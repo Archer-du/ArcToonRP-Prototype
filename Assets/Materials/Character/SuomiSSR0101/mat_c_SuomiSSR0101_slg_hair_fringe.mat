@@ -12,12 +12,15 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHA_CONTROL_WIDTH
   - _RAMP_SET
   - _RECEIVE_SHADOWS
+  - _SN_DECODE_RGAG
+  - _SN_SRC_COLOR
   - _TANGENT_SHIFT_MAP
   - _TRANSPARENT_FRINGE
+  - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
+  - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
   m_LightmapFlags: 2
@@ -90,7 +93,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 43a75af2d70576d41afc5cc14f450ccb, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _SmoothNormalDecoder: 0
+    - _SmoothNormalSource: 1
+    - _WidthControlMode: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 1
     - _BumpScale: 1

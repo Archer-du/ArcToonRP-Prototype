@@ -12,11 +12,15 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHA_CONTROL_WIDTH
   - _RAMP_SET
   - _SDF_LIGHT_MAP
   - _SDF_LIGHT_MAP_SPEC
+  - _SDF_UV1
+  - _SN_DECODE_RGAG
+  - _SN_SRC_COLOR
+  - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
+  - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
   - _RMO_MASK_MAP
   - _SHADOWS_ON
@@ -90,7 +94,11 @@ Material:
         m_Texture: {fileID: 2800000, guid: 2a31729ecaf3d4948af4ae8d13348171, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _LightMapSDFSourceUV: 1
+    - _SmoothNormalDecoder: 0
+    - _SmoothNormalSource: 1
+    - _WidthControlMode: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 1
     - _BumpScale: 1
@@ -103,8 +111,10 @@ Material:
     - _DirectLightAttenSigmoidSharp: 1
     - _DirectLightAttenSmooth: 5
     - _DirectLightAttenSmoothNew: 0.99
+    - _DirectLightSpecOffset: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
+    - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
     - _FringeShadowBiasScale: 0.5
@@ -154,6 +164,7 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FaceVector: {r: 0, g: 0, b: 1, a: 0}
     - _OutlineColor: {r: 0.2264151, g: 0.021198373, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

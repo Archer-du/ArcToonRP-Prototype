@@ -57,6 +57,7 @@
         [Toggle(_TANGENT_SHIFT_MAP)] _TangentShiftMapToggle ("Use Tangent Shift Map", Float) = 0
         _TangentShiftMap ("Tangent Shift Map", 2D) = "white" {}
         _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
+        _HairSpecMap ("Hair Spec Map", 2D) = "white" {}
 
         [Toggle(_TRANSPARENT_FRINGE)] _TransparentFringeToggle ("Use Transparent Fringe", Float) = 0
         _FringeTransparentScale ("Fringe Transparent Scale", Range(0, 1)) = 0.5

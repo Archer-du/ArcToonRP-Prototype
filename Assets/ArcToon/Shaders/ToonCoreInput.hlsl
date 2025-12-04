@@ -22,10 +22,13 @@ SAMPLER(sampler_RampSet);
 TEXTURE2D(_TangentShiftMap);
 SAMPLER(sampler_TangentShiftMap);
 
+TEXTURE2D(_HairSpecMap);
+
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _LightMapSDF_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _TangentShiftMap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _HairSpecMap_ST)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
 
@@ -242,7 +245,7 @@ float2 GetFringeShadowBiasScale()
 
 float GetHairSpecGloss()
 {
-    return INPUT_PROP(_HairSpecGloss) * 200;
+    return max(0.001, INPUT_PROP(_HairSpecGloss) * 200);
 }
 
 float GetHairSpecScale()
@@ -306,6 +309,13 @@ float SampleTangentShiftNoise(float2 baseUV)
     return clamp(-0.8, 0.8, SAMPLE_TEXTURE2D(_TangentShiftMap, sampler_TangentShiftMap, baseUV).r * 2.0 - 1.0);
     #endif
     return 0.0;
+}
+
+float SampleHairSpecularMask(float2 hairUV)
+{
+    float4 baseST = INPUT_PROP(_HairSpecMap_ST);
+    hairUV = hairUV * baseST.xy + baseST.zw;
+    return SAMPLE_TEXTURE2D(_HairSpecMap, sampler_linear_clamp, hairUV).r;
 }
 
 float GetFinalAlpha(InputConfig input, float baseAlpha)

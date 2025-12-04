@@ -58,6 +58,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _HairSpecMap:
+        m_Texture: {fileID: 2800000, guid: 59754480982397e419661ae9c59b030f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 2800000, guid: 0cd97d4f889ecad4cb54e3b530f57d59, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -122,8 +126,8 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _HairSpecGloss: 1
-    - _HairSpecScale: 0
+    - _HairSpecGloss: 0.2
+    - _HairSpecScale: 0.6
     - _LightingDebugMode: 0
     - _MaskMapToggle: 0
     - _Metallic: 0

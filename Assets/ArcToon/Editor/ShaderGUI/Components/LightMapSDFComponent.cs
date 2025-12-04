@@ -5,7 +5,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
 {
     public class LightMapSDFComponent : ShaderGUIComponentBase
     {
-        private static readonly GUIContent label = new("Light Map SDF");
+        private static readonly GUIContent label = new("SDF Light Map");
         
         private MaterialProperty lightMapSDFProperty;
         private MaterialProperty lightMapSDFSourceUVProperty;
