@@ -5,6 +5,8 @@ namespace ArcToon.Editor.ShaderEditor.Components
 {
     public class NormalMapComponent : ShaderGUIComponentBase
     {
+        private readonly GUIContent label;
+        
         private readonly string useNormalMapKeyword;
         
         private readonly string normalMapID;
@@ -12,8 +14,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
         
         private MaterialProperty normalMapProperty;
         private MaterialProperty bumpScaleProperty;
-        
-        private readonly GUIContent label;
 
         public NormalMapComponent(string labelName, string normalMapID, string bumpScaleID, string useNormalMapKeyword)
         {
@@ -58,6 +58,15 @@ namespace ArcToon.Editor.ShaderEditor.Components
         public override bool IsValid()
         {
             return normalMapProperty != null && bumpScaleProperty != null;
+        }
+        
+        
+        public override void Refresh(Material material)
+        {
+            base.Refresh(material);
+            if (material == null) return;
+            bool hasNormalMap = material.GetTexture(normalMapID) != null;
+            material.SetKeyword(useNormalMapKeyword, hasNormalMap);
         }
     }
 }

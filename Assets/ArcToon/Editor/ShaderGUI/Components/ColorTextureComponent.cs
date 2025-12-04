@@ -5,6 +5,8 @@ namespace ArcToon.Editor.ShaderEditor.Components
 {
     public class ColorTextureComponent : ShaderGUIComponentBase
     {
+        private readonly GUIContent label;
+        
         private readonly bool isHDRColor;
         
         private readonly string mapID;
@@ -12,8 +14,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
         
         private MaterialProperty mapProperty;
         private MaterialProperty colorProperty;
-        
-        private readonly GUIContent label;
         
         public ColorTextureComponent(string labelName, string mapID, string colorID, bool isHDRColor)
         {

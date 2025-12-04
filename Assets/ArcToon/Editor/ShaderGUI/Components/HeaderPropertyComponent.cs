@@ -9,6 +9,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
     public class HeaderPropertyComponent : ShaderGUIComponentBase
     {
         private readonly string headerLabel;
+        
         private readonly string[] propertyIDs;
         private readonly string[] propertyLabels;
         private readonly List<MaterialProperty> properties = new();
