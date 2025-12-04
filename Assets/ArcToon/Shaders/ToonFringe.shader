@@ -137,7 +137,7 @@
                 "LightMode" = "EyeLashesReceiver"
             }
             Blend One Zero
-            ZTest Always
+            ZTest On
             ZWrite Off
             Cull [_Cull]
             Stencil
