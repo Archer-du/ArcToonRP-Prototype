@@ -12,7 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _RAMP_SET
+  - _NORMAL_MAP
   - _RMO_MASK_MAP
   - _SN_DECODE_OCT
   - _SN_SRC_UV1
@@ -89,7 +89,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RampSet:
-        m_Texture: {fileID: 2800000, guid: 2a31729ecaf3d4948af4ae8d13348171, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints:

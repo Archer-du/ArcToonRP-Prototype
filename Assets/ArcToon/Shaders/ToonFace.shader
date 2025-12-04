@@ -63,10 +63,12 @@
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
 
         [Toggle(_SDF_LIGHT_MAP)] _LightMapSDFToggle ("Use SDF Light Map", Float) = 0
-        [Toggle(_SDF_LIGHT_MAP_SPEC)] _LightMapSpecularSDFToggle ("Use SDF Light Map Specular", Float) = 0
         _LightMapSDF ("SDF Light Map", 2D) = "white" {}
-        
+        [Enum(UV0, 0, UV1, 1)]
+        _LightMapSDFSourceUV ("SDF Light Map UV Source", Integer) = 1
         _ShadowOffsetSDF ("SDF Light Map Attenuation Offset", Range(-1, 1)) = 0
+        
+        [Toggle(_SDF_LIGHT_MAP_SPEC)] _LightMapSpecularSDFToggle ("Use SDF Light Map Specular", Float) = 0
         _NoseSpecularStrengthSDF ("SDF Light Map Nose Specular Strength", Range(0, 1)) = 0.5
         _NoseSpecularSmoothSDF ("SDF Light Map Nose Specular Smooth", Range(0, 1)) = 0.1
         
@@ -117,8 +119,10 @@
             #pragma shader_feature _CLIPPING
             
             #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _SDF_LIGHT_MAP
-            #pragma shader_feature _SDF_LIGHT_MAP_SPEC
+            
+            #pragma shader_feature_local _SDF_LIGHT_MAP
+            #pragma shader_feature_local _ _SDF_UV0 _SDF_UV1
+            #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
             #pragma shader_feature _DEBUG_DIRECT_BRDF

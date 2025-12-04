@@ -51,8 +51,6 @@ float3 IncomingLight(Surface surface, Light light, Fragment fragment,
 {
     float3 lightAttenuation = 0.0f;
     
-    #if defined(_RAMP_SET)
-    float attenuationUV = 0.0;
     #if defined(_SDF_LIGHT_MAP)
     float3 faceDirHWS = SafeNormalize(float3(faceData.directionWS.x, 0.0, faceData.directionWS.z));
     float3 lightDirHWS = SafeNormalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
@@ -66,7 +64,7 @@ float3 IncomingLight(Surface surface, Light light, Fragment fragment,
     }
     float attenFactorSDF = SampleSDFLightMap(faceUV);
     float shadowMaskFactorSDF = SampleSDFLightMapShadowMask(faceUV);
-    attenuationUV = min(
+    float attenuationUV = min(
         SigmoidSharp(attenFactorSDF, clipCenter, attenData.smooth),
         SigmoidSharp(shadowMaskFactorSDF, attenData.offset, attenData.smooth)
     );
@@ -80,7 +78,7 @@ float3 IncomingLight(Surface surface, Light light, Fragment fragment,
     }
     #else
     float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
-    attenuationUV = min(
+    float attenuationUV = min(
         SigmoidSharp(halfLambertFactor, attenData.offset, attenData.smooth),
         SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
     );
@@ -88,13 +86,15 @@ float3 IncomingLight(Surface surface, Light light, Fragment fragment,
     // attenuation compensation for transparent fringe
     // —— eyelashes covered by fringe may show incorrect shadows due to the fringe shadow caster clipping.
     attenuationUV = lerp(attenuationUV, 0, fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
+    
+    #if defined(_RAMP_SET)
     lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
-    #ifdef _TRANSPARENT_FRINGE
-    #endif
-    return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
     #else
-    return IncomingLight(surface, light);
+    lightAttenuation = attenuationUV;
     #endif
+    
+    // return IncomingLight(surface, light);
+    return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
 }
 
 float3 GetLighting(Surface surface, BRDF brdf, Light light, Fragment fragment,
@@ -124,7 +124,13 @@ VaryingsFace ToonFacePassVertex(Attributes input)
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.normalVS = TransformWorldToViewNormal(output.normalWS);
     output.baseUV = TransformBaseUV(input.baseUV);
-    output.faceUV = TransformFaceUV(input.UV2);
+    #if defined(_SDF_UV0)
+    output.faceUV = TransformFaceUV(input.baseUV);
+    #elif defined(_SDF_UV1)
+    output.faceUV = TransformFaceUV(input.UV1);
+    #else
+    output.faceUV = TransformFaceUV(input.baseUV);
+    #endif
     return output;
 }
 

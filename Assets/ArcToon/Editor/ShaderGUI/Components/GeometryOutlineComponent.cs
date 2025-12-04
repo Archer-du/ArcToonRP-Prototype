@@ -6,6 +6,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
     public class GeometryOutlineComponent : ShaderGUIComponentBase
     {
         private static readonly GUIContent label = new("Geometry Outline");
+        
         private static readonly string OutlinePassName = "GeometryOutline";
 
         private MaterialProperty outlineColorProperty;

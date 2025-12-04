@@ -30,6 +30,12 @@ namespace ArcToon.Editor.ShaderEditor
         VertexColorAlpha,
         NiloOffset,
     }
+
+    public enum SDFSourceUV
+    {
+        UV0, 
+        UV1,
+    }
     
     public static class ShaderPropertyID
     {
@@ -44,17 +50,8 @@ namespace ArcToon.Editor.ShaderEditor
         public const string Clipping = "_Clipping";
         public const string Cutoff = "_Cutoff";
         
-        public const string OutlineColor = "_OutlineColor";
-        public const string OutlineScale = "_OutlineScale";
-        public const string SmoothNormalSource = "_SmoothNormalSource";
-        public const string SmoothNormalDecoder = "_SmoothNormalDecoder";
-        public const string WidthControlMode = "_WidthControlMode";
-        
         public const string ReceiveShadows = "_ReceiveShadows";
         public const string Shadows = "_Shadows";
-        
-        public const string EmissionMap = "_EmissionMap";
-        public const string EmissionColor = "_EmissionColor";
         
         public const string RampSet = "_RampSet";
         
@@ -62,6 +59,19 @@ namespace ArcToon.Editor.ShaderEditor
         public const string DirectLightAttenSmoothNew = "_DirectLightAttenSmoothNew";
         public const string DirectLightSpecOffset = "_DirectLightSpecOffset";
         public const string DirectLightSpecSmooth = "_DirectLightSpecSmooth";
+        
+        public const string EmissionMap = "_EmissionMap";
+        public const string EmissionColor = "_EmissionColor";
+        
+        public const string OutlineColor = "_OutlineColor";
+        public const string OutlineScale = "_OutlineScale";
+        public const string SmoothNormalSource = "_SmoothNormalSource";
+        public const string SmoothNormalDecoder = "_SmoothNormalDecoder";
+        public const string WidthControlMode = "_WidthControlMode";
+
+        public const string LightMapSDF = "_LightMapSDF";
+        public const string LightMapSDFSourceUV = "_LightMapSDFSourceUV";
+        public const string ShadowOffsetSDF = "_ShadowOffsetSDF";
         
         public const string Cull = "_Cull";
         public const string SrcBlend = "_SrcBlend";
@@ -86,6 +96,10 @@ namespace ArcToon.Editor.ShaderEditor
         public const string SN_DECODE_OCT = "_SN_DECODE_OCT";
         
         public const string WIDTH_VERTCOLORA = "_WIDTH_VERTCOLORA";
+        
+        public const string SDF_LIGHT_MAP = "_SDF_LIGHT_MAP";
+        public const string SDF_UV0 = "_SDF_UV0";
+        public const string SDF_UV1 = "_SDF_UV1";
         
         public const string SHADOWS_DITHER = "_SHADOWS_DITHER";
         
