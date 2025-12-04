@@ -36,18 +36,18 @@ float3 DirectBRDF(Surface surface, BRDF brdf, Light light, DirectLightSpecData s
 float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenData)
 {
     float3 lightAttenuation = 0.0f;
-    #if defined(_RAMP_SET)
     float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
     float attenuationUV = min(
         SigmoidSharp(halfLambertFactor, attenData.offset, attenData.smooth),
         SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
     );
+    #if defined(_RAMP_SET)
     lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
-    // lightAttenuation = attenuationUV;
-    return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
     #else
-    return IncomingLight(surface, light);
+    lightAttenuation = attenuationUV;
     #endif
+    // return IncomingLight(surface, light);
+    return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
 }
 
 float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light,

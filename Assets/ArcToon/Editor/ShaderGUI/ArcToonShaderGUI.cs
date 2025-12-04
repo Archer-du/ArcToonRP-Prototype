@@ -1,8 +1,11 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using ArcToon.Editor.ShaderEditor.Components;
+using ArcToon.Editor.ShaderEditor.Panels;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Editor.GUI
+namespace ArcToon.Editor.ShaderEditor
 {
     public class ArcToonShaderGUI : ShaderGUI
     {
@@ -10,13 +13,11 @@ namespace ArcToon.Editor.GUI
         private Object[] materials;
         private MaterialProperty[] properties;
 
-        enum ShadowMode
-        {
-            On,
-            Clip,
-            Dither,
-            Off
-        }
+        private BaseFoldoutShaderPanel generalFoldoutPanel = null;
+        private BaseFoldoutShaderPanel shadowFoldoutPanel = null;
+        private BaseFoldoutShaderPanel pbrFoldoutPanel = null;
+        private BaseFoldoutShaderPanel toonFoldoutPanel = null;
+        private BaseFoldoutShaderPanel engineFoldoutPanel = null;
 
         enum LightingDebugMode
         {
@@ -30,135 +31,160 @@ namespace ArcToon.Editor.GUI
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] materialProperties)
         {
             EditorGUI.BeginChangeCheck();
-
-            base.OnGUI(materialEditor, materialProperties);
             editor = materialEditor;
             materials = materialEditor.targets;
             properties = materialProperties;
-
-            EditorGUILayout.Space();
-
+            
+            TryInitGUIPanels();
+            
+            generalFoldoutPanel.OnGUI(materialEditor, materialProperties);
+            shadowFoldoutPanel.OnGUI(materialEditor, materialProperties);
+            pbrFoldoutPanel.OnGUI(materialEditor, materialProperties);
+            toonFoldoutPanel.OnGUI(materialEditor, materialProperties);
+            engineFoldoutPanel.OnGUI(materialEditor, materialProperties);
+            
+            base.OnGUI(materialEditor, materialProperties);
             if (EditorGUI.EndChangeCheck())
             {
-                UpdateLightingDebugKeywords();
-                UpdateShadowCasterPass();
                 CopyLightMappingProperties();
             }
         }
 
-        bool SetProperty(string name, float value)
+        public override void ValidateMaterial(Material material)
         {
-            var property = FindProperty(name, properties, false);
-            if (property != null)
-            {
-                property.floatValue = value;
-                return true;
-            }
-
-            return false;
+            base.ValidateMaterial(material);
+            
+            TryInitGUIPanels();
+            
+            generalFoldoutPanel.Refresh(material);
+            shadowFoldoutPanel.Refresh(material);
+            pbrFoldoutPanel.Refresh(material);
+            toonFoldoutPanel.Refresh(material);
+            engineFoldoutPanel.Refresh(material);
         }
 
-        void SetProperty(string name, string keyword, bool value)
+        private void TryInitGUIPanels()
         {
-            if (SetProperty(name, value ? 1f : 0f))
+            generalFoldoutPanel ??= new BaseFoldoutShaderPanel("General", new List<ShaderGUIComponentBase>()
             {
-                SetKeyword(keyword, value);
-            }
+                new ColorTextureComponent("Base Map", ShaderPropertyID.BaseMap, ShaderPropertyID.BaseColor, false),
+                new NormalMapComponent("Normal Map", ShaderPropertyID.NormalMap, ShaderPropertyID.NormalScale, ShaderKeywords.NORMAL_MAP),
+                new AlphaClippingComponent(),
+            });
+            
+            shadowFoldoutPanel ??= new BaseFoldoutShaderPanel("Shadow", new List<ShaderGUIComponentBase>()
+            {
+                new ShadowComponent(),
+            });
+            
+            pbrFoldoutPanel ??= new BaseFoldoutShaderPanel("PBR", new List<ShaderGUIComponentBase>()
+            {
+                new ColorTextureComponent("Emission Map", ShaderPropertyID.EmissionMap, ShaderPropertyID.EmissionColor, true),
+            });
+
+            toonFoldoutPanel ??= new BaseFoldoutShaderPanel("Toon", new List<ShaderGUIComponentBase>()
+            {
+                new RampTextureComponent("Ramp Set"),
+                new GeometryOutlineComponent(),
+                new HeaderPropertyComponent("Sigmoid Attenuation", 
+                    new[] { "Offset", "Smooth" }, 
+                    new[] { ShaderPropertyID.DirectLightAttenOffset, ShaderPropertyID.DirectLightAttenSmoothNew }),
+                new HeaderPropertyComponent("Sigmoid Specular", 
+                    new[] { "Offset", "Smooth" }, 
+                    new[] { ShaderPropertyID.DirectLightSpecOffset, ShaderPropertyID.DirectLightSpecSmooth }),
+                new LightMapSDFComponent(),
+            });
+            
+            engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUIComponentBase>()
+            {
+                new DefaultPropertyComponent(ShaderPropertyID.Cull),
+                new HeaderPropertyComponent("Blend Factor",  
+                    new[] { "Source", "Destination" }, 
+                    new [] { ShaderPropertyID.SrcBlend, ShaderPropertyID.DstBlend }),
+                new DefaultPropertyComponent(ShaderPropertyID.ZWrite),
+                new EngineComponent(),
+            });
         }
-
-        void SetKeyword(string keyword, bool enabled)
-        {
-            if (enabled)
-            {
-                foreach (var obj in materials)
-                {
-                    var material = (Material)obj;
-                    material.EnableKeyword(keyword);
-                }
-            }
-            else
-            {
-                foreach (var obj in materials)
-                {
-                    var material = (Material)obj;
-                    material.DisableKeyword(keyword);
-                }
-            }
-        }
-
-        void UpdateShadowCasterPass()
-        {
-            MaterialProperty property = FindProperty("_Shadows", properties, false);
-            if (property == null || property.hasMixedValue)
-                return;
-
-            bool enabled = property.floatValue < (float)ShadowMode.Off;
-            foreach (var o in materials)
-            {
-                var material = (Material)o;
-                material.SetShaderPassEnabled("ShadowCaster", enabled);
-            }
-        }
-
-        void UpdateLightingDebugKeywords()
-        {
-            MaterialProperty property = FindProperty("_LightingDebugMode", properties, false);
-            if (property == null || property.hasMixedValue)
-                return;
-
-            switch ((LightingDebugMode)property.floatValue)
-            {
-                case LightingDebugMode.IncomingLight:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", true);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
-                    SetKeyword("_DEBUG_SPECULAR", false);
-                    SetKeyword("_DEBUG_DIFFUSE", false);
-
-                    break;
-                case LightingDebugMode.DirectBRDF:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", true);
-                    SetKeyword("_DEBUG_SPECULAR", false);
-                    SetKeyword("_DEBUG_DIFFUSE", false);
-
-                    break;
-                case LightingDebugMode.Specular:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
-                    SetKeyword("_DEBUG_SPECULAR", true);
-                    SetKeyword("_DEBUG_DIFFUSE", false);
-                    break;
-                case LightingDebugMode.Diffuse:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
-                    SetKeyword("_DEBUG_SPECULAR", false);
-                    SetKeyword("_DEBUG_DIFFUSE", true);
-                    break;
-                default:
-                    SetKeyword("_DEBUG_INCOMING_LIGHT", false);
-                    SetKeyword("_DEBUG_DIRECT_BRDF", false);
-                    SetKeyword("_DEBUG_SPECULAR", false);
-                    SetKeyword("_DEBUG_DIFFUSE", false);
-                    break;
-            }
-        }
-
+        
         void CopyLightMappingProperties()
         {
-            MaterialProperty mainTex = FindProperty("_MainTex", properties, false);
-            MaterialProperty baseMap = FindProperty("_BaseMap", properties, false);
+            MaterialProperty mainTex = FindProperty(ShaderPropertyID.MainTex, properties, false);
+            MaterialProperty baseMap = FindProperty(ShaderPropertyID.BaseMap, properties, false);
             if (mainTex != null && baseMap != null)
             {
                 mainTex.textureValue = baseMap.textureValue;
                 mainTex.textureScaleAndOffset = baseMap.textureScaleAndOffset;
             }
 
-            MaterialProperty color = FindProperty("_Color", properties, false);
-            MaterialProperty baseColor = FindProperty("_BaseColor", properties, false);
+            MaterialProperty color = FindProperty(ShaderPropertyID.Color, properties, false);
+            MaterialProperty baseColor = FindProperty(ShaderPropertyID.BaseColor, properties, false);
             if (color != null && baseColor != null)
             {
                 color.colorValue = baseColor.colorValue;
             }
         }
+        
+        // void SetKeyword(string keyword, bool enabled)
+        // {
+        //     if (enabled)
+        //     {
+        //         foreach (var obj in materials)
+        //         {
+        //             var material = (Material)obj;
+        //             material.EnableKeyword(keyword);
+        //         }
+        //     }
+        //     else
+        //     {
+        //         foreach (var obj in materials)
+        //         {
+        //             var material = (Material)obj;
+        //             material.DisableKeyword(keyword);
+        //         }
+        //     }
+        // }
+        //
+        // void UpdateLightingDebugKeywords()
+        // {
+        //     MaterialProperty property = FindProperty(ShaderPropertyID.LightingDebugMode, properties, false);
+        //     if (property == null || property.hasMixedValue)
+        //         return;
+        //
+        //     switch ((LightingDebugMode)property.floatValue)
+        //     {
+        //         case LightingDebugMode.IncomingLight:
+        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, true);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
+        //
+        //             break;
+        //         case LightingDebugMode.DirectBRDF:
+        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, true);
+        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
+        //
+        //             break;
+        //         case LightingDebugMode.Specular:
+        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, true);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
+        //             break;
+        //         case LightingDebugMode.Diffuse:
+        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, true);
+        //             break;
+        //         default:
+        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
+        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
+        //             break;
+        //     }
+        // }
     }
 }

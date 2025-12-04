@@ -3,14 +3,6 @@
     Properties
     {
         // ------------------------ general
-        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
-        
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-
-        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 0
-
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
@@ -18,10 +10,16 @@
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
         
-        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
-        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
-        [Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
-        [Enum(Off, 0, On, 1)] _ZWrite ("Z Write", Float) = 1
+        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
+        
+        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+        [Enum(On, 0, Dither, 1, Off, 2)] _Shadows ("Shadow Caster Option", Float) = 0
+        
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 0
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Destination Blend Factor", Float) = 0
+        [Enum(Off, 0, On, 1)] _ZWrite ("Z Write Mode", Float) = 1
         
         // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
@@ -40,23 +38,31 @@
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
 
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
+        _DirectLightAttenSmooth ("Direct Attenuation Smooth", Range(0, 1)) = 0.5
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
+        
+        _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
+        _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
 
-        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
+        [Enum(UV1, 0, VertexColor, 1)]
+        _SmoothNormalSource ("Smooth Normal Source", Integer) = 1
+        [Enum(RGAG, 0, OCT, 1)]
+        _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
+        [Enum(None, 0, VertexColorAlpha, 1)]
+        _WidthControlMode ("Width Control Mode", Integer) = 1
+        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
-        
-        _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
-        _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
 
         // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
 
+        // ------------------------ Internal
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
         
         // for hard-coded unity capacity
@@ -91,8 +97,9 @@
 
             #pragma multi_compile_instancing
             
-            #pragma shader_feature _SNCHANNEL_UV2 _SNCHANNEL_VERTCOL
-            #pragma shader_feature _ALPHA_CONTROL_WIDTH
+            #pragma shader_feature_local _ _SN_SRC_UV1 _SN_SRC_COLOR
+            #pragma shader_feature_local _ _SN_DECODE_RGAG _SN_DECODE_OCT
+            #pragma shader_feature_local _ _WIDTH_VERTCOLORA _WIDTH_NILOOFFSET
 
             #include "GeometryOutlinePass.hlsl"
 
@@ -121,14 +128,13 @@
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
             
-            #pragma shader_feature _RECEIVE_SHADOWS
-            #pragma shader_feature _CLIPPING
             #pragma shader_feature _NORMAL_MAP
-            
             #pragma shader_feature _RMO_MASK_MAP
-
             #pragma shader_feature _RAMP_SET
-
+            
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+            
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
             #pragma shader_feature _DEBUG_DIRECT_BRDF
             #pragma shader_feature _DEBUG_SPECULAR
@@ -147,6 +153,8 @@
             {
                 "LightMode" = "DepthOnly"
             }
+            Blend One Zero
+            ZTest LEqual
             ZWrite On
             Cull [_Cull]
             ColorMask R
@@ -169,7 +177,6 @@
             {
                 "LightMode" = "ShadowCaster"
             }
-
             ColorMask 0
             Cull [_Cull]
 
@@ -178,7 +185,8 @@
 
             #pragma multi_compile_instancing
 
-            #pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _SHADOWS_DITHER
 
             #include "ShadowCasterPass.hlsl"
 
@@ -193,7 +201,6 @@
             {
                 "LightMode" = "Meta"
             }
-
             Cull Off
 
             HLSLPROGRAM
@@ -207,5 +214,5 @@
         }
     }
 
-    CustomEditor "ArcToon.Editor.GUI.ArcToonShaderGUI"
+    CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"
 }

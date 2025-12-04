@@ -15,8 +15,12 @@ Material:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _SDF_LIGHT_MAP
+  - _SN_DECODE_OCT
+  - _SN_SRC_COLOR
+  - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
+  - _OWC_SRC_VERTCOLORA
   - _SHADOWS_ON
   - _TRANSPARENT_FRINGE
   m_LightmapFlags: 2
@@ -62,7 +66,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 18ae49989690a2240826d7322747fad4, type: 3}
+        m_Texture: {fileID: 2800000, guid: 517860ffd2bb11d4085cfb3bf5fc7ebd, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -93,7 +97,11 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _SmoothNormalDecoder: 1
+    - _SmoothNormalSource: 1
+    - _WidthControlMode: 1
+    - _WidthControlSource: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 0
     - _BumpScale: 1
@@ -106,8 +114,10 @@ Material:
     - _DirectLightAttenSigmoidSharp: 0.5
     - _DirectLightAttenSmooth: 5
     - _DirectLightAttenSmoothNew: 0.98
+    - _DirectLightSpecOffset: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
+    - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
     - _FringeShadowBiasScaleX: 0.5

@@ -5,7 +5,6 @@
 
 #define LEGACY_OUTLINE_WIDTH_COEF 0.02
 
-#define OUTLINE_WIDTH_RESOLUTION_FACTOR (_CameraBufferSize.z / 1440)
 #define OUTLINE_WIDTH_MIN_COEF 0.001
 #define OUTLINE_WIDTH_MAX_COEF 0.006
 
@@ -16,7 +15,14 @@ struct AttributesGO
     float4 tangentOS : TANGENT;
     float2 baseUV : TEXCOORD0;
     // smooth normal
+    #if defined(_SN_SRC_COLOR)
     float4 smoothNormal : COLOR;
+    #elif defined(_SN_SRC_UV1)
+    float4 smoothNormal : TEXCOORD1;
+    #else
+    float4 smoothNormal : COLOR;
+    #endif
+    
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -25,6 +31,22 @@ struct VaryingsGO
     float4 positionCS_SS : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
+
+float GetOutlineWidthResolutionAdapter()
+{
+    return _CameraBufferSize.z / 1440;
+}
+
+float3 DecodeSmoothNormal(float4 sample)
+{
+    #if defined(_SN_DECODE_OCT)
+    return normalize(OctahedralDecode(sample.xy));
+    #elif defined(_SN_DECODE_RGAG)
+    return normalize(UnpackNormalmapRGorAG(sample, 1.0));
+    #else
+    return normalize(UnpackNormalmapRGorAG(sample, 1.0));
+    #endif
+}
 
 VaryingsGO LegacyGeometryOutlinePassVertex(AttributesGO input)
 {
@@ -48,15 +70,15 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
     float3 positionVS = TransformWorldToView(TransformObjectToWorld(input.positionOS));
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS, true);
     float4 tangentWS = TransformObjectToWorldTangent(input.tangentOS);
-    float3 smoothNormalWS = NormalTangentToWorld(normalize(DecodeNormal(input.smoothNormal)),
+    float3 smoothNormalWS = NormalTangentToWorld(normalize(DecodeSmoothNormal(input.smoothNormal)),
         normalWS, tangentWS, true);
     float3 smoothNormalVS = TransformWorldToViewNormal(smoothNormalWS, true);
     float linearDepth = - positionVS.z;
     float outlineScale = GetOutlineScale();
-    #if defined(_ALPHA_CONTROL_WIDTH)
+    #if defined(_WIDTH_VERTCOLORA)
     outlineScale *= input.smoothNormal.a;
     #endif
-    float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * OUTLINE_WIDTH_RESOLUTION_FACTOR;
+    float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * GetOutlineWidthResolutionAdapter();
     outlineFactor = clamp(outlineFactor,
         outlineScale * OUTLINE_WIDTH_MIN_COEF,
         outlineScale * OUTLINE_WIDTH_MAX_COEF);

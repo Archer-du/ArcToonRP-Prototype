@@ -11,6 +11,13 @@
       },
       "hash": "1989771513995f46579cfe878f6aa4ea40dd9b18"
     },
+    "com.jasonma.lwgui": {
+      "version": "https://github.com/JasonMa0012/LWGUI.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "ed89e55faba570c22c3ca3b58e43ed33dd7f87cd"
+    },
     "com.unity.ai.navigation": {
       "version": "2.0.5",
       "depth": 0,

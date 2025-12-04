@@ -150,5 +150,5 @@
         }
     }
 
-    CustomEditor "ArcToon.Editor.GUI.CustomShaderGUI"
+    CustomEditor "ArcToon.Editor.ShaderEditor.CustomShaderGUI"
 }

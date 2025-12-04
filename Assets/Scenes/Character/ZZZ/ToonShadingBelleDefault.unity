@@ -1606,6 +1606,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -3026602375778647030, guid: 3ab610e9e6e1fdb408d0cc338e054431, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1072774291167120862, guid: 3ab610e9e6e1fdb408d0cc338e054431, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 9bbdf6fc4ccf4ab4dadf20cd2388f75d, type: 2}
     - target: {fileID: 919132149155446097, guid: 3ab610e9e6e1fdb408d0cc338e054431, type: 3}
       propertyPath: m_Name
       value: Avatar_Female_Size02_Belle_Model
@@ -1618,6 +1626,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[1]'
       value: 
       objectReference: {fileID: 2100000, guid: 451fad14d21c0b745a2f6b3eeb1dc199, type: 2}
+    - target: {fileID: 7991448373473828988, guid: 3ab610e9e6e1fdb408d0cc338e054431, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2b3cfd217991b7747bc50208218bc120, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

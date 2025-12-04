@@ -3,20 +3,20 @@
     Properties
     {
         // ------------------------ general
-        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
-        [KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
-        
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-
-        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
-        
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
         [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
+        
+        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
+        
+        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+        [Enum(On, 0, Dither, 1, Off, 2)] _Shadows ("Shadow Caster Option", Float) = 0
+
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
 
         // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
@@ -37,9 +37,15 @@
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
         
-        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
+        [Enum(UV1, 0, VertexColor, 1)]
+        _SmoothNormalSource ("Smooth Normal Source", Integer) = 1
+        [Enum(RGAG, 0, OCT, 1)]
+        _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
+        [Enum(None, 0, VertexColorAlpha, 1)]
+        _WidthControlMode ("Width Control Mode", Integer) = 1
+        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
@@ -223,7 +229,8 @@
 
             #pragma multi_compile_instancing
 
-            #pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _SHADOWS_DITHER
 
             #include "ShadowCasterPass.hlsl"
 
@@ -252,5 +259,5 @@
         }
     }
 
-    CustomEditor "ArcToon.Editor.GUI.ArcToonShaderGUI"
+    CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"
 }

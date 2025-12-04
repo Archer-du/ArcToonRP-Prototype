@@ -35,7 +35,7 @@ VaryingsSC ShadowCasterPassVertex(AttributesSC input)
             min(output.positionCS_SS.z, output.positionCS_SS.w * UNITY_NEAR_CLIP_VALUE);
         #else
         output.positionCS.z =
-            max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
+            max(output.positionCS.z, output.positionCS_SS.w * UNITY_NEAR_CLIP_VALUE);
         #endif
     }
 
@@ -47,9 +47,10 @@ void ShadowCasterPassFragment(VaryingsSC input)
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
     float4 base = GetColor(config);
-    #if defined(_SHADOWS_CLIP)
+    #if defined(_CLIPPING)
     clip(base.a - GetAlphaClip(config));
-    #elif defined(_SHADOWS_DITHER)
+    #endif
+    #if defined(_SHADOWS_DITHER)
     float dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
     clip(base.a - dither);
     #endif
