@@ -29,11 +29,11 @@ float3 SpecularStrength(Surface surface, Light light, HairSpecData hairSpecData)
     // return dirAtten * pow(sinTH, hairSpecData.gloss) * hairSpecData.scale;
 
     float dotNH = saturate(dot(surface.normalWS, h));
-    float slide = 0.1;
-    float offset = 0;
-    float anisotropicOffsetV = - surface.viewDirectionWS.y * slide + offset;
-    float hairSpecMask = SampleHairSpecularMask(float2(hairSpecData.hairUV.x, hairSpecData.hairUV.y + anisotropicOffsetV));
-    float hairSpecStrength = GetHairSpecScale() * pow(dotNH, GetHairSpecGloss()) * hairSpecMask;
+    float slide = GetParallaxSensitivity();
+    float offset = GetParallaxOffset();
+    float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
+    float hairSpecMask = SampleParallaxSpecularMask(float2(hairSpecData.hairUV.x, hairSpecData.hairUV.y + parallaxOffsetV));
+    float hairSpecStrength = GetSpecScale() * pow(dotNH, GetSpecGloss()) * hairSpecMask;
     return hairSpecStrength;
 }
 
@@ -131,7 +131,7 @@ float4 ToonFringePassFragment(VaryingsHair input) : SV_TARGET
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
-    HairSpecData hairSpecData = GetHairSpecData(input.hairUV, input.bitangentWS, GetHairSpecGloss(), GetHairSpecScale());
+    HairSpecData hairSpecData = GetHairSpecData(input.hairUV, input.bitangentWS, GetSpecGloss(), GetSpecScale());
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
 
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);

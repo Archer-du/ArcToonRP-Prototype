@@ -82,6 +82,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _ParallaxSpecMap:
+        m_Texture: {fileID: 2800000, guid: 59754480982397e419661ae9c59b030f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _RMOMaskMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -99,11 +103,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints:
+    - ParallaxSpecMapUV: 1
+    - _ParallaxSpecMapUV: 1
     - _SmoothNormalDecoder: 1
     - _SmoothNormalSource: 1
     - _WidthControlMode: 1
     - _WidthControlSource: 1
     m_Floats:
+    - ParallaxOffset: 0
+    - ParallaxSensitivity: 0.1
     - _AlphaControlOutlineWidth: 1
     - _BumpScale: 1
     - _Clipping: 0
@@ -138,6 +146,8 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineScale: 0.2
     - _Parallax: 0.02
+    - _ParallaxOffset: 0
+    - _ParallaxSensitivity: 0.5
     - _PerObjShadowCasterID: -1
     - _PerObjectShadowCasterID: -1
     - _RampSetToggle: 1
@@ -149,6 +159,7 @@ Material:
     - _Shadows: 0
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
+    - _SpecGloss: 0.2
     - _SpecMapToggle: 0
     - _SpecScale: 1
     - _SpecularHighlights: 1

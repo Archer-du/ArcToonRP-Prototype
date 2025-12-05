@@ -6,11 +6,10 @@
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
-        [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
         
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        _Clipping ("Alpha Clipping", Float) = 0
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
@@ -31,11 +30,13 @@
         [HDR] _EmissionColor ("Emission Color", Color) = (0.0, 0.0, 0.0, 0.0)
 
         // ------------------------ Toon
-        [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
 
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
         _DirectLightAttenSmoothNew ("Direct Attenuation Smooth New", Range(0, 1)) = 0.5
+                
+        _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
+        _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
         
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
@@ -45,23 +46,28 @@
         _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
         [Enum(None, 0, VertexColorAlpha, 1)]
         _WidthControlMode ("Width Control Mode", Integer) = 1
-        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
         
-        _HairSpecGloss ("Hair Spec Gloss", Range(0, 1)) = 0.5
-        _HairSpecScale ("Hair Spec Scale", Range(0, 1)) = 0.5
+        // Spec: General
+        _SpecGloss ("Spec Gloss", Range(0, 1)) = 0.2
+        _SpecScale ("Spec Scale", Range(0, 1)) = 0.6
         
+        // Spec: Anisotropic
         [Toggle(_TANGENT_SHIFT_MAP)] _TangentShiftMapToggle ("Use Tangent Shift Map", Float) = 0
         _TangentShiftMap ("Tangent Shift Map", 2D) = "white" {}
         _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
-        _HairSpecMap ("Hair Spec Map", 2D) = "white" {}
 
+        // Spec: Parallax
+        _ParallaxSpecMap ("Parallax Specular Map", 2D) = "white" {}
+        _ParallaxSpecMapUV ("Parallax Spec Map UV", Integer) = 1
+        _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
+        _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
+        
         [Toggle(_TRANSPARENT_FRINGE)] _TransparentFringeToggle ("Use Transparent Fringe", Float) = 0
         _FringeTransparentScale ("Fringe Transparent Scale", Range(0, 1)) = 0.5
-        
         _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
         _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
 
