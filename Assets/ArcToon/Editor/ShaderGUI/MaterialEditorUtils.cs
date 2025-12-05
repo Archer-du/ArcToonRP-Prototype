@@ -36,6 +36,13 @@ namespace ArcToon.Editor.ShaderEditor
         UV0, 
         UV1,
     }
+
+    public enum OverrideHighlightType
+    {
+        BlinnPhong,
+        KajiyaKay,
+        Parallax,
+    }
     
     public static class ShaderPropertyID
     {
@@ -80,6 +87,24 @@ namespace ArcToon.Editor.ShaderEditor
         public const string ZWrite = "_ZWrite";
         
         public const string LightingDebugMode = "_LightingDebugMode";
+        
+        public const string HighlightType = "_HighlightType";
+        public const string SpecGloss = "_SpecGloss";
+        public const string SpecScale = "_SpecScale";
+        
+        public const string TangentShiftMap = "_TangentShiftMap";
+        public const string TangentShiftMapUV = "_TangentShiftMapUV";
+        public const string TangentShiftOffset = "_TangentShiftOffset";
+        
+        public const string ParallaxSpecMap = "_ParallaxSpecMap";
+        public const string ParallaxSpecMapUV = "_ParallaxSpecMapUV";
+        public const string ParallaxSensitivity = "_ParallaxSensitivity";
+        public const string ParallaxOffset = "_ParallaxOffset";
+        
+        // Transparent Fringe
+        public const string FringeTransparentScale = "_FringeTransparentScale";
+        public const string FringeShadowBiasScaleX = "_FringeShadowBiasScaleX";
+        public const string FringeShadowBiasScaleY = "_FringeShadowBiasScaleY";
     }
     
     public static class ShaderKeywords

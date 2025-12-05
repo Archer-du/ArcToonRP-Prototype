@@ -104,11 +104,13 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints:
     - ParallaxSpecMapUV: 1
+    - _HighlightType: 2
     - _ParallaxSpecMapUV: 1
     - _SmoothNormalDecoder: 1
     - _SmoothNormalSource: 1
     - _WidthControlMode: 1
     - _WidthControlSource: 1
+    - __TangentShiftMapUV: 1
     m_Floats:
     - ParallaxOffset: 0
     - ParallaxSensitivity: 0.1
@@ -122,8 +124,10 @@ Material:
     - _DirectLightAttenOffset: 0.6
     - _DirectLightAttenSmooth: 2
     - _DirectLightAttenSmoothNew: 0.92
+    - _DirectLightSpecOffset: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
+    - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
     - _FringeShadowBiasScale: 0.5

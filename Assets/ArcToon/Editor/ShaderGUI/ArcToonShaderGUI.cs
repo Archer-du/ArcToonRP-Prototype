@@ -93,6 +93,7 @@ namespace ArcToon.Editor.ShaderEditor
                     new[] { "Offset", "Smooth" }, 
                     new[] { ShaderPropertyID.DirectLightSpecOffset, ShaderPropertyID.DirectLightSpecSmooth }),
                 new LightMapSDFComponent(),
+                new HighLightComponent(),
             });
             
             engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUIComponentBase>()

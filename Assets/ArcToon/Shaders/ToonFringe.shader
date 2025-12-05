@@ -52,17 +52,21 @@
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
         
         // Spec: General
+        _HighlightType ("Override Highlight Type", Integer) = 2
         _SpecGloss ("Spec Gloss", Range(0, 1)) = 0.2
         _SpecScale ("Spec Scale", Range(0, 1)) = 0.6
         
         // Spec: Anisotropic
         [Toggle(_TANGENT_SHIFT_MAP)] _TangentShiftMapToggle ("Use Tangent Shift Map", Float) = 0
         _TangentShiftMap ("Tangent Shift Map", 2D) = "white" {}
+        [Enum(UV0, 0, UV1, 1)]
+        _TangentShiftMapUV ("Tangent Shift Map UV", Integer) = 1
         _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
 
         // Spec: Parallax
         _ParallaxSpecMap ("Parallax Specular Map", 2D) = "white" {}
-        _ParallaxSpecMapUV ("Parallax Spec Map UV", Integer) = 1
+        [Enum(UV0, 0, UV1, 1)]
+        _ParallaxSpecMapUV ("Parallax Specular Map UV", Integer) = 1
         _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
         _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
         
