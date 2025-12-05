@@ -57,7 +57,6 @@
         _SpecScale ("Spec Scale", Range(0, 1)) = 0.6
         
         // Spec: Anisotropic
-        [Toggle(_TANGENT_SHIFT_MAP)] _TangentShiftMapToggle ("Use Tangent Shift Map", Float) = 0
         _TangentShiftMap ("Tangent Shift Map", 2D) = "white" {}
         [Enum(UV0, 0, UV1, 1)]
         _TangentShiftMapUV ("Tangent Shift Map UV", Integer) = 1
@@ -125,7 +124,10 @@
             #pragma shader_feature _RMO_MASK_MAP
             
             #pragma shader_feature _RAMP_SET
-            #pragma shader_feature _TANGENT_SHIFT_MAP
+            #pragma shader_feature_local _ _HIGHLIGHT_KAJIYA _HIGHLIGHT_PARALLAX
+            #pragma shader_feature_local _ _HIGHLIGHT_KAJIYA_UV0 _HIGHLIGHT_KAJIYA_UV1
+            #pragma shader_feature_local _ _HIGHLIGHT_PARALLAX_UV0 _HIGHLIGHT_PARALLAX_UV1
+            
             #pragma shader_feature _TRANSPARENT_FRINGE
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT

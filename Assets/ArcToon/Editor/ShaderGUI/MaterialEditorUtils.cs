@@ -31,12 +31,6 @@ namespace ArcToon.Editor.ShaderEditor
         NiloOffset,
     }
 
-    public enum SDFSourceUV
-    {
-        UV0, 
-        UV1,
-    }
-
     public enum OverrideHighlightType
     {
         BlinnPhong,
@@ -126,6 +120,13 @@ namespace ArcToon.Editor.ShaderEditor
         public const string SDF_LIGHT_MAP = "_SDF_LIGHT_MAP";
         public const string SDF_UV0 = "_SDF_UV0";
         public const string SDF_UV1 = "_SDF_UV1";
+        
+        public const string HIGHLIGHT_KAJIYA = "_HIGHLIGHT_KAJIYA";
+        public const string HIGHLIGHT_KAJIYA_UV0 = "_HIGHLIGHT_KAJIYA_UV0";
+        public const string HIGHLIGHT_KAJIYA_UV1 = "_HIGHLIGHT_KAJIYA_UV1";
+        public const string HIGHLIGHT_PARALLAX = "_HIGHLIGHT_PARALLAX";
+        public const string HIGHLIGHT_PARALLAX_UV0 = "_HIGHLIGHT_PARALLAX_UV0";
+        public const string HIGHLIGHT_PARALLAX_UV1 = "_HIGHLIGHT_PARALLAX_UV1";
         
         public const string SHADOWS_DITHER = "_SHADOWS_DITHER";
         

@@ -10,7 +10,7 @@ struct VaryingsHair
     float4 tangentWS : VAR_TANGENT;
     float3 bitangentWS : VAR_BITANGENT;
     float2 baseUV : VAR_BASE_UV;
-    float2 hairUV : VAR_HAIR_UV;
+    float2 UV1 : VAR_UV1;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     GI_VARYINGS_DATA
 };
@@ -19,22 +19,45 @@ struct VaryingsHair
 float3 SpecularStrength(Surface surface, Light light, HairSpecData hairSpecData)
 {
     float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
-    // float shiftScale = SampleTangentShiftNoise(hairSpecData.hairUV) + GetHairTangentShiftOffset();
-    // float3 bitangentWS = SafeNormalize(hairSpecData.bitangentWS + shiftScale * surface.normalWS);
-    // float dotTH = dot(bitangentWS, h);
-    // // avoid sqrt crashes caused by floating point precision
-    // float cosTH = saturate(dotTH);
-    // float sinTH = sqrt(saturate(1.0 - cosTH * cosTH));
-    // float dirAtten = smoothstep(-1.0, 0.0, dotTH);
-    // return dirAtten * pow(sinTH, hairSpecData.gloss) * hairSpecData.scale;
-
+    
+    #if defined(_HIGHLIGHT_PARALLAX)
+    float2 hairUV =
+        #if defined(_HIGHLIGHT_PARALLAX_UV0)
+        hairSpecData.UVData.xy;
+        #elif defined(_HIGHLIGHT_PARALLAX_UV1)
+        hairSpecData.UVData.zw;
+        #else
+        hairSpecData.UVData.xy;
+        #endif
     float dotNH = saturate(dot(surface.normalWS, h));
     float slide = GetParallaxSensitivity();
     float offset = GetParallaxOffset();
     float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
-    float hairSpecMask = SampleParallaxSpecularMask(float2(hairSpecData.hairUV.x, hairSpecData.hairUV.y + parallaxOffsetV));
-    float hairSpecStrength = GetSpecScale() * pow(dotNH, GetSpecGloss()) * hairSpecMask;
-    return hairSpecStrength;
+    float hairSpecMask = SampleParallaxSpecularMask(float2(hairUV.x, hairUV.y + parallaxOffsetV));
+    return hairSpecMask * GetSpecScale() * pow(dotNH, GetSpecGloss());
+    
+    #elif defined(_HIGHLIGHT_KAJIYA)
+    float2 hairUV =
+        #if defined(_HIGHLIGHT_KAJIYA_UV0)
+        hairSpecData.UVData.xy;
+        #elif defined(_HIGHLIGHT_KAJIYA_UV1)
+        hairSpecData.UVData.zw;
+        #else
+        hairSpecData.UVData.xy;
+        #endif
+    float shiftScale = SampleTangentShiftNoise(hairUV) + GetTangentShiftOffset();
+    float3 bitangentWS = SafeNormalize(hairSpecData.bitangentWS + shiftScale * surface.normalWS);
+    float dotTH = dot(bitangentWS, h);
+    // avoid sqrt crashes caused by floating point precision
+    float cosTH = saturate(dotTH);
+    float sinTH = sqrt(saturate(1.0 - cosTH * cosTH));
+    float dirAttenuation = smoothstep(-1.0, 0.0, dotTH);
+    return dirAttenuation * pow(sinTH, GetSpecGloss()) * GetSpecScale();
+    
+    #else
+    float dotNH = saturate(dot(surface.normalWS, h));
+    return GetSpecScale() * pow(dotNH, GetSpecGloss());
+    #endif
 }
 
 float3 DirectBRDF(Surface surface, BRDF brdf, Light light, HairSpecData hairSpecData)
@@ -88,7 +111,7 @@ VaryingsHair ToonFringePassVertex(Attributes input)
     real sign = input.tangentOS.w * GetOddNegativeScale();
     output.bitangentWS = cross(output.normalWS, output.tangentWS.xyz) * sign;
     output.baseUV = TransformBaseUV(input.baseUV);
-    output.hairUV = TransformHairUV(input.UV1);
+    output.UV1 = TransformHairUV(input.UV1);
     return output;
 }
 
@@ -131,7 +154,7 @@ float4 ToonFringePassFragment(VaryingsHair input) : SV_TARGET
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
-    HairSpecData hairSpecData = GetHairSpecData(input.hairUV, input.bitangentWS, GetSpecGloss(), GetSpecScale());
+    HairSpecData hairSpecData = GetHairSpecData(input.baseUV, input.UV1, input.bitangentWS);
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
 
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);

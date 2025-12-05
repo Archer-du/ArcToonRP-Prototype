@@ -299,10 +299,7 @@ float GetTangentShiftOffset()
 
 float SampleTangentShiftNoise(float2 baseUV)
 {
-    #if defined(_TANGENT_SHIFT_MAP)
     return clamp(-0.8, 0.8, SAMPLE_TEXTURE2D(_TangentShiftMap, sampler_TangentShiftMap, baseUV).r * 2.0 - 1.0);
-    #endif
-    return 0.0;
 }
 
 float GetParallaxSensitivity()

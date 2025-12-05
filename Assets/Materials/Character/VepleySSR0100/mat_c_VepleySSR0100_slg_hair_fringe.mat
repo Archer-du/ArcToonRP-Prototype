@@ -108,6 +108,7 @@ Material:
     - _ParallaxSpecMapUV: 1
     - _SmoothNormalDecoder: 1
     - _SmoothNormalSource: 1
+    - _TangentShiftMapUV: 1
     - _WidthControlMode: 1
     - _WidthControlSource: 1
     - __TangentShiftMapUV: 1

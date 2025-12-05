@@ -31,15 +31,13 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     if (material == null) continue;
                     bool hasLightMap = material.GetTexture(ShaderPropertyID.LightMapSDF) != null;
                     MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Keyword: {ShaderKeywords.SDF_LIGHT_MAP} - {hasLightMap}");
-                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} SDF Source UV: {(SDFSourceUV)lightMapSDFSourceUVProperty.intValue}");
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} SDF Source UV: {lightMapSDFSourceUVProperty.intValue}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
                     
                     material.SetKeyword(ShaderKeywords.SDF_LIGHT_MAP, hasLightMap);
-                    material.SetKeyword(ShaderKeywords.SDF_UV0, 
-                        (SDFSourceUV)lightMapSDFSourceUVProperty.intValue == SDFSourceUV.UV0);
-                    material.SetKeyword(ShaderKeywords.SDF_UV1, 
-                        (SDFSourceUV)lightMapSDFSourceUVProperty.intValue == SDFSourceUV.UV1);
+                    material.SetKeyword(ShaderKeywords.SDF_UV0, lightMapSDFSourceUVProperty.intValue == 0);
+                    material.SetKeyword(ShaderKeywords.SDF_UV1, lightMapSDFSourceUVProperty.intValue == 1);
                     
                     EditorUtility.SetDirty(material);
                 }
@@ -80,10 +78,8 @@ namespace ArcToon.Editor.ShaderEditor.Components
             if (material.HasProperty(ShaderPropertyID.LightMapSDFSourceUV))
             {
                 int value = material.GetInteger(ShaderPropertyID.LightMapSDFSourceUV);
-                material.SetKeyword(ShaderKeywords.SDF_UV0, 
-                    (SDFSourceUV)value == SDFSourceUV.UV0);
-                material.SetKeyword(ShaderKeywords.SDF_UV1, 
-                    (SDFSourceUV)value == SDFSourceUV.UV1);
+                material.SetKeyword(ShaderKeywords.SDF_UV0, value == 0);
+                material.SetKeyword(ShaderKeywords.SDF_UV1, value == 1);
             }
         }
     }
