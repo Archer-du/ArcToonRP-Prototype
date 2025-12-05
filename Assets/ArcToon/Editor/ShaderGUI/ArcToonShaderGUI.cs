@@ -86,14 +86,14 @@ namespace ArcToon.Editor.ShaderEditor
             {
                 new RampTextureComponent("Ramp Set"),
                 new GeometryOutlineComponent(),
+                new HighLightComponent(),
+                new LightMapSDFComponent(),
                 new HeaderPropertyComponent("Sigmoid Attenuation", 
                     new[] { "Offset", "Smooth" }, 
                     new[] { ShaderPropertyID.DirectLightAttenOffset, ShaderPropertyID.DirectLightAttenSmoothNew }),
                 new HeaderPropertyComponent("Sigmoid Specular", 
                     new[] { "Offset", "Smooth" }, 
                     new[] { ShaderPropertyID.DirectLightSpecOffset, ShaderPropertyID.DirectLightSpecSmooth }),
-                new LightMapSDFComponent(),
-                new HighLightComponent(),
             });
             
             engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUIComponentBase>()

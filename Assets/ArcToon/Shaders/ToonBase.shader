@@ -170,6 +170,7 @@
 
         Pass
         {
+            Name "Toon Shadow Caster"
             Tags
             {
                 "LightMode" = "ShadowCaster"
@@ -194,6 +195,7 @@
 
         Pass
         {
+            Name "Toon Meta"
             Tags
             {
                 "LightMode" = "Meta"

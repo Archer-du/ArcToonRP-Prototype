@@ -165,47 +165,9 @@
             ENDHLSL
         }
 
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "ShadowCaster"
-            }
-            ColorMask 0
-            Cull [_Cull]
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #pragma shader_feature _CLIPPING
-            #pragma shader_feature _SHADOWS_DITHER
-
-            #include "ShadowCasterPass.hlsl"
-
-            #pragma vertex ShadowCasterPassVertex
-            #pragma fragment ShadowCasterPassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "Meta"
-            }
-            Cull Off
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #include "MetaPass.hlsl"
-
-            #pragma vertex MetaPassVertex
-            #pragma fragment MetaPassFragment
-            ENDHLSL
-        }
+        UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
+        
+        UsePass "ArcToon/ToonBase/TOON META"
     }
 
     CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"
