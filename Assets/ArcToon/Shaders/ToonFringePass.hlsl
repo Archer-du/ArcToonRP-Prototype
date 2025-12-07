@@ -171,7 +171,7 @@ float4 ToonFringePassFragment(VaryingsHair input) : SV_TARGET
 
     finalColor += GetEmission(config);
 
-    return float4(finalColor, GetFinalAlpha(config, surface.alpha));
+    return float4(finalColor, lerp(surface.alpha, GetFringeTransparentScale(), config.fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES));
 }
 
 #endif

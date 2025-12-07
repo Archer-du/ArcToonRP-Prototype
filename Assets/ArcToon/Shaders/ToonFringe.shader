@@ -69,7 +69,6 @@
         _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
         _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
         
-        [Toggle(_TRANSPARENT_FRINGE)] _TransparentFringeToggle ("Use Transparent Fringe", Float) = 0
         _FringeTransparentScale ("Fringe Transparent Scale", Range(0, 1)) = 0.5
         _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
         _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
@@ -130,8 +129,6 @@
             #pragma shader_feature_local _ _HIGHLIGHT_KAJIYA_UV0 _HIGHLIGHT_KAJIYA_UV1
             #pragma shader_feature_local _ _HIGHLIGHT_PARALLAX_UV0 _HIGHLIGHT_PARALLAX_UV1
             
-            #pragma shader_feature _TRANSPARENT_FRINGE
-
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
             #pragma shader_feature _DEBUG_DIRECT_BRDF
             #pragma shader_feature _DEBUG_SPECULAR

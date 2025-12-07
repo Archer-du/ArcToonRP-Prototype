@@ -95,7 +95,6 @@ namespace ArcToon.Editor.ShaderEditor
         public const string ParallaxSensitivity = "_ParallaxSensitivity";
         public const string ParallaxOffset = "_ParallaxOffset";
         
-        // Transparent Fringe
         public const string FringeTransparentScale = "_FringeTransparentScale";
         public const string FringeShadowBiasScaleX = "_FringeShadowBiasScaleX";
         public const string FringeShadowBiasScaleY = "_FringeShadowBiasScaleY";
@@ -129,11 +128,6 @@ namespace ArcToon.Editor.ShaderEditor
         public const string HIGHLIGHT_PARALLAX_UV1 = "_HIGHLIGHT_PARALLAX_UV1";
         
         public const string SHADOWS_DITHER = "_SHADOWS_DITHER";
-        
-        public const string DEBUG_INCOMING_LIGHT = "_DEBUG_INCOMING_LIGHT";
-        public const string DEBUG_DIRECT_BRDF = "_DEBUG_DIRECT_BRDF";
-        public const string DEBUG_SPECULAR = "_DEBUG_SPECULAR";
-        public const string DEBUG_DIFFUSE = "_DEBUG_DIFFUSE";
     }
 
     public static class MaterialEditorUtils

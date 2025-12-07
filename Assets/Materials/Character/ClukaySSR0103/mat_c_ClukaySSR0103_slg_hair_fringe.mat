@@ -17,13 +17,13 @@ Material:
   - _RECEIVE_SHADOWS
   - _SN_DECODE_RGAG
   - _SN_SRC_COLOR
-  - _TRANSPARENT_FRINGE
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
   - _TANGENT_SHIFT_MAP
+  - _TRANSPARENT_FRINGE
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0

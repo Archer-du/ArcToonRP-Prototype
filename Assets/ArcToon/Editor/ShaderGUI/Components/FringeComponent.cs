@@ -5,8 +5,15 @@ namespace ArcToon.Editor.ShaderEditor.Components
 {
     public class FringeComponent : ShaderGUIComponentBase
     {
+        private MaterialProperty fringeTransparentScaleProperty;
+        private MaterialProperty fringeShadowBiasScaleXProperty;
+        private MaterialProperty fringeShadowBiasScaleYProperty;
+
         public override void FindProperties(MaterialProperty[] props)
         {
+            fringeTransparentScaleProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.FringeTransparentScale, props, false);
+            fringeShadowBiasScaleXProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.FringeShadowBiasScaleX, props, false);
+            fringeShadowBiasScaleYProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.FringeShadowBiasScaleY, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
@@ -35,6 +42,8 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 }
                 ShaderGUILayout.BeginGUIComponentIndent();
                 
+                materialEditor.BuiltinShaderPropertyDrawer(fringeTransparentScaleProperty, true, "Alpha");
+                
                 ShaderGUILayout.EndGUIComponentIndent();
                 ShaderGUILayout.EndTogglePropertyGroup();
             }
@@ -59,6 +68,15 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     }
                 }
                 ShaderGUILayout.BeginGUIComponentIndent();
+
+                var displayShadowOffsetValue = new Vector2(fringeShadowBiasScaleXProperty.floatValue, fringeShadowBiasScaleYProperty.floatValue);
+                EditorGUI.BeginChangeCheck();
+                var newShadowOffsetValue = EditorGUILayout.Vector2Field(new GUIContent("Shadow Offset"), displayShadowOffsetValue);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    fringeShadowBiasScaleXProperty.floatValue = newShadowOffsetValue.x;
+                    fringeShadowBiasScaleYProperty.floatValue = newShadowOffsetValue.y;
+                }
                 
                 ShaderGUILayout.EndGUIComponentIndent();
                 ShaderGUILayout.EndTogglePropertyGroup();
@@ -67,7 +85,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
 
         public override bool IsValid()
         {
-            return true;
+            return fringeTransparentScaleProperty != null && fringeShadowBiasScaleXProperty != null && fringeShadowBiasScaleYProperty != null;
         }
     }
 }

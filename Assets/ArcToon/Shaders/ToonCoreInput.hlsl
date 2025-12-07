@@ -325,13 +325,4 @@ float2 GetFringeShadowBiasScale()
     return data;
 }
 
-
-float GetFinalAlpha(InputConfig input, float baseAlpha)
-{
-    #if defined(_TRANSPARENT_FRINGE)
-    return lerp(baseAlpha, GetFringeTransparentScale(), input.fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
-    #endif
-    return baseAlpha;
-}
-
 #endif
