@@ -82,7 +82,7 @@ namespace ArcToon.Editor.ShaderEditor
             EditorGUI.indentLevel -= GUIComponentIndentLevel;
         }
 
-        public static void PredicateMaterialArrayBoolProperty(Material[] materials, Func<Material, bool> predicate, out bool hasMixedValue, out bool shouldToggleGroup)
+        public static void PredicateMaterialArrayBoolProperty(Material[] materials, Func<Material, bool> predicate, out bool hasMixedValue, out bool consistentValue)
         {
             hasMixedValue = false;
             bool firstOrOnlyValue = predicate(materials[0]);
@@ -94,7 +94,7 @@ namespace ArcToon.Editor.ShaderEditor
                     break;
                 }
             }
-            shouldToggleGroup = !hasMixedValue && firstOrOnlyValue;
+            consistentValue = !hasMixedValue && firstOrOnlyValue;
         }
     }
 }

@@ -13,7 +13,6 @@
         [Enum(UV0, 0, UV1, 1)]
         _SpecularMaskUV ("Parallax Specular Map UV", Integer) = 1
         
-        _UseParallaxSpecularMask("Use Parallax Specular Mask", Integer) = 0
         _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
         _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
         
@@ -121,7 +120,7 @@
 
             #pragma shader_feature_local _SPEC_MASK
             #pragma shader_feature_local _ _SPEC_MASK_UV0 _SPEC_MASK_UV1
-            #pragma shader_feature_local _PARALLAX_SPEC_MASK
+            #pragma shader_feature_local _SPEC_PARALLAX
             
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS

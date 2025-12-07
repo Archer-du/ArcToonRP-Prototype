@@ -20,37 +20,73 @@ namespace ArcToon.Editor.ShaderEditor.Components
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
-            // if (SpecularMaskProperty.textureValue != null)
-            // {
-            //     EditorGUI.BeginChangeCheck();
-            //     materialEditor.TexturePropertySingleLine(new GUIContent("Specular Mask"), SpecularMaskProperty, specularMaskUVProperty);
-            //     if (EditorGUI.EndChangeCheck())
-            //     {
-            //         foreach (var material in materials)
-            //         {
-            //             if (material == null) continue;
-            //             MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Specular Mask UV: {specularMaskUVProperty.intValue}");
-            //             Undo.RecordObject(material, Undo.GetCurrentGroupName());
-            //             
-            //             material.SetKeyword(ShaderKeywords., specularMaskUVProperty.intValue == 0);
-            //             material.SetKeyword(ShaderKeywords.HIGHLIGHT_PARALLAX_UV1, specularMaskUVProperty.intValue == 1);
-            //             
-            //             EditorUtility.SetDirty(material);
-            //         }
-            //     }
-            //     Toggle
-            //     materialEditor.BuiltinShaderPropertyDrawer(parallaxSensitivityProperty, true, "Sensitivity");
-            //     materialEditor.BuiltinShaderPropertyDrawer(parallaxOffsetProperty, true, "Offset");
-            // }
-            // else
-            // {
-            //     materialEditor.TexturePropertySingleLine(new GUIContent("Specular Mask"), SpecularMaskProperty);
-            // }
+            if (SpecularMaskProperty.textureValue != null)
+            {
+                EditorGUI.BeginChangeCheck();
+                materialEditor.TexturePropertySingleLine(new GUIContent("Specular Mask"), SpecularMaskProperty, specularMaskUVProperty);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    foreach (var material in materials)
+                    {
+                        if (material == null) continue;
+                        bool hasSpecMask = material.GetTexture(SpecularMaskProperty.name) != null;
+                        MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Specular Mask UV: {specularMaskUVProperty.intValue}");
+                        Undo.RecordObject(material, Undo.GetCurrentGroupName());
+                        
+                        material.SetKeyword(ShaderKeywords.SPEC_MASK, hasSpecMask);
+                        material.SetKeyword(ShaderKeywords.SPEC_MASK_UV0, specularMaskUVProperty.intValue == 0);
+                        material.SetKeyword(ShaderKeywords.SPEC_MASK_UV1, specularMaskUVProperty.intValue == 1);
+                        
+                        EditorUtility.SetDirty(material);
+                    }
+                }
+                
+                ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.IsKeywordEnabled(ShaderKeywords.SPEC_PARALLAX), 
+                    out var hasMixedValue, out var keywordEnabled);
+                
+                EditorGUI.showMixedValue = hasMixedValue;
+                EditorGUI.BeginChangeCheck();
+                bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(new GUIContent("Parallax Mask"), keywordEnabled, EditorStyles.label);
+                EditorGUI.showMixedValue = false;
+                if (EditorGUI.EndChangeCheck())
+                {
+                    foreach (var material in materials)
+                    {
+                        if (material == null) continue;
+                        MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Is Parallax Mask: {newValue}");
+                    
+                        Undo.RecordObject(material, Undo.GetCurrentGroupName());
+                        material.SetKeyword(ShaderKeywords.SPEC_PARALLAX, newValue);
+                        EditorUtility.SetDirty(material);
+                    }
+                }
+                
+                ShaderGUILayout.BeginGUIComponentIndent();
+                materialEditor.BuiltinShaderPropertyDrawer(parallaxSensitivityProperty, true, "Sensitivity");
+                materialEditor.BuiltinShaderPropertyDrawer(parallaxOffsetProperty, true, "Offset");
+                
+                ShaderGUILayout.EndGUIComponentIndent();
+                ShaderGUILayout.EndTogglePropertyGroup();
+            }
+            else
+            {
+                materialEditor.TexturePropertySingleLine(new GUIContent("Specular Mask"), SpecularMaskProperty);
+            }
         }
 
         public override bool IsValid()
         {
             return SpecularMaskProperty != null;
+        }
+
+        public override void Refresh(Material material)
+        {
+            base.Refresh(material);
+            if(material == null) return;
+            bool hasSpecMask = material.GetTexture(ShaderPropertyID.SpecularMask) != null;
+            material.SetKeyword(ShaderKeywords.SPEC_MASK, hasSpecMask);
+            material.SetKeyword(ShaderKeywords.SPEC_MASK_UV0, material.GetInteger(ShaderPropertyID.SpecularMaskUV) == 0);
+            material.SetKeyword(ShaderKeywords.SPEC_MASK_UV1, material.GetInteger(ShaderPropertyID.SpecularMaskUV) == 1);
         }
     }
 }

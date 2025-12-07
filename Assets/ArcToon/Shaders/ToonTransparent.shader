@@ -9,6 +9,13 @@
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
         
+        _SpecularMask ("Parallax Specular Map", 2D) = "white" {}
+        [Enum(UV0, 0, UV1, 1)]
+        _SpecularMaskUV ("Parallax Specular Map UV", Integer) = 1
+        
+        _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
+        _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
+        
         _Clipping ("Alpha Clipping", Float) = 0
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         

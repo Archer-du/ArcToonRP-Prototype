@@ -22,13 +22,16 @@ SAMPLER(sampler_RampSet);
 TEXTURE2D(_TangentShiftMap);
 SAMPLER(sampler_TangentShiftMap);
 
-TEXTURE2D(_ParallaxSpecMap);
+TEXTURE2D(_SpecularMask);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxSensitivity)
+    UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxOffset)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
 
@@ -65,10 +68,6 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _TangentShiftMap_ST)
     UNITY_DEFINE_INSTANCED_PROP(float, _TangentShiftOffset)
-
-    UNITY_DEFINE_INSTANCED_PROP(float4, _ParallaxSpecMap_ST)
-    UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxSensitivity)
-    UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxOffset)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleX)
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleY)
@@ -113,10 +112,9 @@ float2 TransformFaceUV(float2 rawFaceUV)
     return rawFaceUV * faceST.xy + faceST.zw;
 }
 
-float2 TransformHairUV(float2 rawHairUV)
+float2 TransformUV1(float2 rawUV1)
 {
-    float4 baseST = INPUT_PROP(_TangentShiftMap_ST);
-    return rawHairUV * baseST.xy + baseST.zw;
+    return rawUV1;
 }
 
 float4 GetColor(InputConfig input)
@@ -314,7 +312,8 @@ float GetParallaxOffset()
 
 float SampleParallaxSpecularMask(float2 hairUV)
 {
-    return SAMPLE_TEXTURE2D(_ParallaxSpecMap, sampler_linear_clamp, hairUV).r;
+    // TODO: channel
+    return SAMPLE_TEXTURE2D(_SpecularMask, sampler_linear_clamp, hairUV).r;
 }
 
 float2 GetFringeShadowBiasScale()

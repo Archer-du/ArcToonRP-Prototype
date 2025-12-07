@@ -49,16 +49,19 @@ float3 SpecularStrength(Surface surface, BRDF brdf, Light light, HairSpecData ha
     #if defined(_SPEC_MASK)
     float2 specUV =
         #if defined(_SPEC_MASK_UV0)
-        hairSpecData.UVData.xy;
+        surface.UV.xy;
         #elif defined(_SPEC_MASK_UV1)
-        hairSpecData.UVData.zw;
+        surface.UV.zw;
         #else
-        hairSpecData.UVData.xy;
+        surface.UV.xy;
         #endif
     float slide = GetParallaxSensitivity();
     float offset = GetParallaxOffset();
-    float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
-    float hairSpecMask = SampleParallaxSpecularMask(float2(specUV.x, specUV.y + parallaxOffsetV));
+        #if defined(_SPEC_PARALLAX)
+        float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
+        specUV.y += parallaxOffsetV;
+        #endif
+    float hairSpecMask = SampleParallaxSpecularMask(float2(specUV.x, specUV.y));
     specularStrength *= hairSpecMask;
     #endif
     
@@ -116,7 +119,7 @@ VaryingsHair ToonFringePassVertex(Attributes input)
     real sign = input.tangentOS.w * GetOddNegativeScale();
     output.bitangentWS = cross(output.normalWS, output.tangentWS.xyz) * sign;
     output.baseUV = TransformBaseUV(input.baseUV);
-    output.UV1 = TransformHairUV(input.UV1);
+    output.UV1 = TransformUV1(input.UV1);
     return output;
 }
 
@@ -136,6 +139,8 @@ float4 ToonFringePassFragment(VaryingsHair input) : SV_TARGET
     surface.positionWS = input.positionWS;
     surface.color = albedo.rgb;
     surface.alpha = albedo.a;
+    surface.UV = float4(input.baseUV.xy, input.UV1.xy);
+    
     #if defined(_NORMAL_MAP)
     surface.normalWS = normalize(NormalTangentToWorld(GetNormalTS(config),
         input.normalWS, input.tangentWS));

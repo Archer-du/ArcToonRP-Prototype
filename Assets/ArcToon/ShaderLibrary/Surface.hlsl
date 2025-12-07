@@ -9,6 +9,7 @@ struct Surface
     float3 interpolatedNormalWS;
     float3 viewDirectionWS;
     float3 color;
+    float4 UV;
     float linearDepth;
     float alpha;
     float metallic;

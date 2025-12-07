@@ -53,7 +53,6 @@ namespace ArcToon.Editor.ShaderEditor
                 
         public static readonly string SpecularMask = Auto();
         public static readonly string SpecularMaskUV = Auto();
-        public static readonly string UseParallaxSpecularMask = Auto();
         public static readonly string ParallaxSensitivity = Auto();
         public static readonly string ParallaxOffset = Auto();
         
@@ -111,11 +110,13 @@ namespace ArcToon.Editor.ShaderEditor
         
         public const string NORMAL_MAP = "_NORMAL_MAP";
         
-        public const string SPEC_MASK = "_SPEC_MASK";
+        public static readonly string SPEC_MASK = Auto();
         public static readonly string OVERRIDE_HIGHLIGHT = Auto();
-        public const string SPEC_MASK_UV0 = "_SPEC_MASK_UV0";
-        public const string SPEC_MASK_UV1 = "_SPEC_MASK_UV1";
-        public const string SPEC_PARALLAX = "_SPEC_PARALLAX";
+        public static readonly string SPEC_MASK_UV0 = Auto();
+        public static readonly string SPEC_MASK_UV1 = Auto();
+        public static readonly string SPEC_PARALLAX = Auto();
+        
+        public const string SHADOWS_DITHER = "_SHADOWS_DITHER";
         
         public const string RAMP_SET = "_RAMP_SET";
         
@@ -134,8 +135,6 @@ namespace ArcToon.Editor.ShaderEditor
         public const string TANGENT_SHIFT_MAP = "_TANGENT_SHIFT_MAP";
         public const string TANGENT_SHIFT_MAP_UV0 = "_TANGENT_SHIFT_MAP_UV0";
         public const string TANGENT_SHIFT_MAP_UV1 = "_TANGENT_SHIFT_MAP_UV1";
-        
-        public const string SHADOWS_DITHER = "_SHADOWS_DITHER";
     }
 
     public static class MaterialEditorUtils

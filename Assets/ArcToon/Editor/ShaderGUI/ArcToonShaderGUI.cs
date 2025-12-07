@@ -69,6 +69,7 @@ namespace ArcToon.Editor.ShaderEditor
             {
                 new ColorTextureComponent("Base Map", ShaderPropertyID.BaseMap, ShaderPropertyID.BaseColor, false),
                 new NormalMapComponent("Normal Map", ShaderPropertyID.NormalMap, ShaderPropertyID.NormalScale, ShaderKeywords.NORMAL_MAP),
+                new SpecularMaskComponent(),
                 new AlphaClippingComponent(),
             });
             

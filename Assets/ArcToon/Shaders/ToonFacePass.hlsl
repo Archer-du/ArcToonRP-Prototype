@@ -8,6 +8,7 @@ struct VaryingsFace
     float3 normalWS : VAR_NORMAL_WS;
     float3 normalVS : VAR_NORMAL_VS;
     float2 baseUV : VAR_BASE_UV;
+    float2 UV1 : VAR_UV1;
     float2 faceUV : VAR_FACE_UV;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     GI_VARYINGS_DATA
@@ -122,6 +123,7 @@ VaryingsFace ToonFacePassVertex(Attributes input)
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.normalVS = TransformWorldToViewNormal(output.normalWS);
     output.baseUV = TransformBaseUV(input.baseUV);
+    output.UV1 = TransformUV1(input.UV1);
     #if defined(_SDF_UV0)
     output.faceUV = TransformFaceUV(input.baseUV);
     #elif defined(_SDF_UV1)
@@ -148,6 +150,7 @@ float4 ToonFacePassFragment(VaryingsFace input, bool isFrontFace : SV_IsFrontFac
     surface.positionWS = input.positionWS;
     surface.color = albedo.rgb;
     surface.alpha = albedo.a;
+    surface.UV = float4(input.baseUV.xy, input.UV1.xy);
     
     float faceSign = isFrontFace ? 1.0 : -1.0;
     #if defined(_NORMAL_MAP)

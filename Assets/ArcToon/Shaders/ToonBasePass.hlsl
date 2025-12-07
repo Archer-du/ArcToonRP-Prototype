@@ -11,21 +11,33 @@ struct VaryingsBase
     float4 tangentWS : VAR_TANGENT;
     #endif
     float2 baseUV : VAR_BASE_UV;
+    float2 UV1 : VAR_UV1;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     GI_VARYINGS_DATA
 };
 
 float3 SpecularStrength(Surface surface, BRDF brdf, Light light, DirectLightSpecData specData)
 {
-    #if defined(_RAMP_SET)
-    // float SpecularFactor = SpecularStrength(surface, brdf, light);
-    // float specularUV = SigmoidSharp(SpecularFactor, specData.offset + 2, specData.smooth);
-    // float specularStrength = 10.0 * SampleRampSetChannel(specularUV, RAMP_DIRECT_LIGHTING_SPECULAR_CHANNEL);
-    // return specularStrength;
-    return SpecularStrength(surface, brdf, light);
-    #else
-    return SpecularStrength(surface, brdf, light);
+    float3 specularStrength = SpecularStrength(surface, brdf, light);
+    #if defined(_SPEC_MASK)
+    float2 specUV =
+        #if defined(_SPEC_MASK_UV0)
+        surface.UV.xy;
+        #elif defined(_SPEC_MASK_UV1)
+        surface.UV.zw;
+        #else
+        surface.UV.xy;
+        #endif
+    float slide = GetParallaxSensitivity();
+    float offset = GetParallaxOffset();
+    #if defined(_SPEC_PARALLAX)
+    float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
+    specUV.y += parallaxOffsetV;
     #endif
+    float hairSpecMask = SampleParallaxSpecularMask(float2(specUV.x, specUV.y));
+    specularStrength *= hairSpecMask;
+    #endif
+    return specularStrength;
 }
 
 float3 DirectBRDF(Surface surface, BRDF brdf, Light light, DirectLightSpecData specData)
@@ -79,6 +91,7 @@ VaryingsBase ToonBasePassVertex(Attributes input)
     output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
     #endif
     output.baseUV = TransformBaseUV(input.baseUV);
+    output.UV1 = TransformUV1(input.UV1);
     return output;
 }
 
@@ -98,6 +111,7 @@ float4 ToonBasePassFragment(VaryingsBase input, bool isFrontFace : SV_IsFrontFac
     surface.positionWS = input.positionWS;
     surface.color = albedo.rgb;
     surface.alpha = albedo.a;
+    surface.UV = float4(input.baseUV.xy, input.UV1.xy);
 
     float faceSign = isFrontFace ? 1.0 : -1.0;
     #if defined(_NORMAL_MAP)
