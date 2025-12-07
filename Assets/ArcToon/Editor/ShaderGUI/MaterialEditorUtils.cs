@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 
@@ -35,11 +36,13 @@ namespace ArcToon.Editor.ShaderEditor
     {
         BlinnPhong,
         KajiyaKay,
-        Parallax,
     }
     
     public static class ShaderPropertyID
     {
+        private static string Auto([CallerMemberName] string name = null)
+            => "_" + name;
+        
         public const string BaseMap = "_BaseMap";
         public const string BaseColor = "_BaseColor";
         public const string MainTex = "_MainTex";
@@ -47,6 +50,12 @@ namespace ArcToon.Editor.ShaderEditor
         
         public const string NormalMap = "_NormalMap";
         public const string NormalScale = "_NormalScale";
+                
+        public static readonly string SpecularMask = Auto();
+        public static readonly string SpecularMaskUV = Auto();
+        public static readonly string UseParallaxSpecularMask = Auto();
+        public static readonly string ParallaxSensitivity = Auto();
+        public static readonly string ParallaxOffset = Auto();
         
         public const string Clipping = "_Clipping";
         public const string Cutoff = "_Cutoff";
@@ -80,8 +89,6 @@ namespace ArcToon.Editor.ShaderEditor
         public const string DstBlend = "_DstBlend";
         public const string ZWrite = "_ZWrite";
         
-        public const string LightingDebugMode = "_LightingDebugMode";
-        
         public const string HighlightType = "_HighlightType";
         public const string SpecGloss = "_SpecGloss";
         public const string SpecScale = "_SpecScale";
@@ -90,11 +97,6 @@ namespace ArcToon.Editor.ShaderEditor
         public const string TangentShiftMapUV = "_TangentShiftMapUV";
         public const string TangentShiftOffset = "_TangentShiftOffset";
         
-        public const string ParallaxSpecMap = "_ParallaxSpecMap";
-        public const string ParallaxSpecMapUV = "_ParallaxSpecMapUV";
-        public const string ParallaxSensitivity = "_ParallaxSensitivity";
-        public const string ParallaxOffset = "_ParallaxOffset";
-        
         public const string FringeTransparentScale = "_FringeTransparentScale";
         public const string FringeShadowBiasScaleX = "_FringeShadowBiasScaleX";
         public const string FringeShadowBiasScaleY = "_FringeShadowBiasScaleY";
@@ -102,9 +104,18 @@ namespace ArcToon.Editor.ShaderEditor
     
     public static class ShaderKeywords
     {
+        private static string Auto([CallerMemberName] string name = null)
+            => "_" + name;
+        
         public const string _CLIPPING = "_CLIPPING";
         
         public const string NORMAL_MAP = "_NORMAL_MAP";
+        
+        public const string SPEC_MASK = "_SPEC_MASK";
+        public static readonly string OVERRIDE_HIGHLIGHT = Auto();
+        public const string SPEC_MASK_UV0 = "_SPEC_MASK_UV0";
+        public const string SPEC_MASK_UV1 = "_SPEC_MASK_UV1";
+        public const string SPEC_PARALLAX = "_SPEC_PARALLAX";
         
         public const string RAMP_SET = "_RAMP_SET";
         
@@ -120,12 +131,9 @@ namespace ArcToon.Editor.ShaderEditor
         public const string SDF_UV0 = "_SDF_UV0";
         public const string SDF_UV1 = "_SDF_UV1";
         
-        public const string HIGHLIGHT_KAJIYA = "_HIGHLIGHT_KAJIYA";
-        public const string HIGHLIGHT_KAJIYA_UV0 = "_HIGHLIGHT_KAJIYA_UV0";
-        public const string HIGHLIGHT_KAJIYA_UV1 = "_HIGHLIGHT_KAJIYA_UV1";
-        public const string HIGHLIGHT_PARALLAX = "_HIGHLIGHT_PARALLAX";
-        public const string HIGHLIGHT_PARALLAX_UV0 = "_HIGHLIGHT_PARALLAX_UV0";
-        public const string HIGHLIGHT_PARALLAX_UV1 = "_HIGHLIGHT_PARALLAX_UV1";
+        public const string TANGENT_SHIFT_MAP = "_TANGENT_SHIFT_MAP";
+        public const string TANGENT_SHIFT_MAP_UV0 = "_TANGENT_SHIFT_MAP_UV0";
+        public const string TANGENT_SHIFT_MAP_UV1 = "_TANGENT_SHIFT_MAP_UV1";
         
         public const string SHADOWS_DITHER = "_SHADOWS_DITHER";
     }

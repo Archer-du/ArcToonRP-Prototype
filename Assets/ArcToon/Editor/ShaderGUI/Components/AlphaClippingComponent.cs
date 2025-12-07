@@ -39,7 +39,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 }
             }
             ShaderGUILayout.BeginGUIComponentIndent();
-            materialEditor.BuiltinShaderPropertyDrawer(cutOffProperty);
+            materialEditor.BuiltinShaderPropertyDrawer(cutOffProperty, true, "Cutoff");
             ShaderGUILayout.EndGUIComponentIndent();
             
             ShaderGUILayout.EndTogglePropertyGroup();

@@ -22,7 +22,8 @@ namespace ArcToon.Editor.ShaderEditor.Components
 
             // TODO: link to global stencil settings
             {
-                ShaderGUILayout.CheckShouldToggleGroupByShaderPass(materials, "EyeLashesReceiver", out bool hasMixedValue, out bool shouldToggleGroup);
+                ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.GetShaderPassEnabled("EyeLashesReceiver"), 
+                    out bool hasMixedValue, out bool shouldToggleGroup);
                 
                 EditorGUI.showMixedValue = hasMixedValue;
                 EditorGUI.BeginChangeCheck();
@@ -49,7 +50,8 @@ namespace ArcToon.Editor.ShaderEditor.Components
             }
             
             {
-                ShaderGUILayout.CheckShouldToggleGroupByShaderPass(materials, "FringeShadowReceiver", out bool hasMixedValue, out bool shouldToggleGroup);
+                ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.GetShaderPassEnabled("FringeShadowReceiver"), 
+                    out bool hasMixedValue, out bool shouldToggleGroup);
                 
                 EditorGUI.showMixedValue = hasMixedValue;
                 EditorGUI.BeginChangeCheck();

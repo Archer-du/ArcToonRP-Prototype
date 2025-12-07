@@ -5,8 +5,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
 {
     public class HighLightComponent : ShaderGUIComponentBase
     {
-        private static readonly GUIContent label = new("Highlights");
-        
         private MaterialProperty highlightTypeProperty;
         private MaterialProperty specGlossProperty;
         private MaterialProperty specScaleProperty;
@@ -14,11 +12,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
         private MaterialProperty tangentShiftMapProperty;
         private MaterialProperty tangentShiftMapUVProperty;
         private MaterialProperty tangentShiftOffsetProperty;
-        
-        private MaterialProperty parallaxSpecMapProperty;
-        private MaterialProperty parallaxSpecMapUVProperty;
-        private MaterialProperty parallaxSensitivityProperty;
-        private MaterialProperty parallaxOffsetProperty;
         
         public override void FindProperties(MaterialProperty[] props)
         {
@@ -29,34 +22,31 @@ namespace ArcToon.Editor.ShaderEditor.Components
             tangentShiftMapProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.TangentShiftMap, props, false);
             tangentShiftMapUVProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.TangentShiftMapUV, props, false);
             tangentShiftOffsetProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.TangentShiftOffset, props, false);
-            
-            parallaxSpecMapProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ParallaxSpecMap, props, false);
-            parallaxSpecMapUVProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ParallaxSpecMapUV, props, false);
-            parallaxSensitivityProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ParallaxSensitivity, props, false);
-            parallaxOffsetProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ParallaxOffset, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
             if (materials == null || materials.Length == 0) return;
             
-            // bool hasMixedValue = false;
-            // bool firstOrOnlyValue = materials[0].GetInteger(OutlinePassName);
-            // for (int i = 1; i < materials.Length; i++)
-            // {
-            //     if (materials[i].GetShaderPassEnabled(OutlinePassName) != firstOrOnlyValue)
-            //     {
-            //         hasMixedValue = true;
-            //         break;
-            //     }
-            // }
-            // bool shouldToggleGroup = !hasMixedValue && firstOrOnlyValue;
-            // EditorGUI.showMixedValue = hasMixedValue;
-            //
-            // EditorGUI.BeginChangeCheck();
-            // bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(label, shouldToggleGroup, EditorStyles.label);
-            // EditorGUI.showMixedValue = false;
-            EditorGUILayout.LabelField("Override Highlights");
+            ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.IsKeywordEnabled(ShaderKeywords.OVERRIDE_HIGHLIGHT), 
+                out bool hasMixedValue, out bool shouldToggleGroup);
+            
+            EditorGUI.showMixedValue = hasMixedValue;
+            EditorGUI.BeginChangeCheck();
+            bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(new GUIContent("Override Highlights"), shouldToggleGroup, EditorStyles.label);
+            EditorGUI.showMixedValue = false;
+            if (EditorGUI.EndChangeCheck())
+            {
+                foreach (var material in materials)
+                {
+                    if (material == null) continue;
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Override Highlight: {newValue}");
+                    
+                    Undo.RecordObject(material, Undo.GetCurrentGroupName());
+                    material.SetKeyword(ShaderKeywords.OVERRIDE_HIGHLIGHT, newValue);
+                    EditorUtility.SetDirty(material);
+                }
+            }
             
             ShaderGUILayout.BeginGUIComponentIndent();
             EditorGUI.showMixedValue = highlightTypeProperty.hasMixedValue;
@@ -71,35 +61,21 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Highlight Type: {newHighlightTypeValue}");
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
                     
-                    material.SetKeyword(ShaderKeywords.HIGHLIGHT_KAJIYA, 
+                    material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP, 
                         (OverrideHighlightType)highlightTypeProperty.intValue == OverrideHighlightType.KajiyaKay);
-                    material.SetKeyword(ShaderKeywords.HIGHLIGHT_PARALLAX, 
-                        (OverrideHighlightType)highlightTypeProperty.intValue == OverrideHighlightType.Parallax);
                     
                     EditorUtility.SetDirty(material);
                 }
             }
             EditorGUI.showMixedValue = false;
-            ShaderGUILayout.EndGUIComponentIndent();
             
+            materialEditor.BuiltinShaderPropertyDrawer(specGlossProperty, true, "Glossiness");
+            materialEditor.BuiltinShaderPropertyDrawer(specScaleProperty, true, "Strength");
             switch (newHighlightTypeValue)
             {
                 case OverrideHighlightType.BlinnPhong:
-                    EditorGUILayout.LabelField("Blinn-Phong");
-                    ShaderGUILayout.BeginGUIComponentIndent();
-                    
-                    materialEditor.BuiltinShaderPropertyDrawer(specGlossProperty, true, "Glossiness");
-                    materialEditor.BuiltinShaderPropertyDrawer(specScaleProperty, true, "Strength");
-                    
-                    ShaderGUILayout.EndGUIComponentIndent();
                     break;
                 case OverrideHighlightType.KajiyaKay:
-                    EditorGUILayout.LabelField("Kajiya Kay");
-                    ShaderGUILayout.BeginGUIComponentIndent();
-                    
-                    materialEditor.BuiltinShaderPropertyDrawer(specGlossProperty, true, "Glossiness");
-                    materialEditor.BuiltinShaderPropertyDrawer(specScaleProperty, true, "Strength");
-                    
                     EditorGUI.BeginChangeCheck();
                     materialEditor.TexturePropertySingleLine(new GUIContent("Tangent Shift Map"), tangentShiftMapProperty, tangentShiftMapUVProperty);
                     if (EditorGUI.EndChangeCheck())
@@ -110,45 +86,17 @@ namespace ArcToon.Editor.ShaderEditor.Components
                             MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Highlight Kajiya UV: {tangentShiftMapUVProperty.intValue}");
                             Undo.RecordObject(material, Undo.GetCurrentGroupName());
                     
-                            material.SetKeyword(ShaderKeywords.HIGHLIGHT_KAJIYA_UV0, tangentShiftMapUVProperty.intValue == 0);
-                            material.SetKeyword(ShaderKeywords.HIGHLIGHT_KAJIYA_UV1, tangentShiftMapUVProperty.intValue == 1);
+                            material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP_UV0, tangentShiftMapUVProperty.intValue == 0);
+                            material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP_UV1, tangentShiftMapUVProperty.intValue == 1);
                     
                             EditorUtility.SetDirty(material);
                         }
                     }
                     materialEditor.BuiltinShaderPropertyDrawer(tangentShiftOffsetProperty, true, "Shift Offset");
-                    
-                    ShaderGUILayout.EndGUIComponentIndent();
-                    break;
-                case OverrideHighlightType.Parallax:
-                    EditorGUILayout.LabelField("Parallax");
-                    ShaderGUILayout.BeginGUIComponentIndent();
-                    
-                    materialEditor.BuiltinShaderPropertyDrawer(specGlossProperty, true, "Glossiness");
-                    materialEditor.BuiltinShaderPropertyDrawer(specScaleProperty, true, "Strength");
-                    
-                    EditorGUI.BeginChangeCheck();
-                    materialEditor.TexturePropertySingleLine(new GUIContent("Specular Mask"), parallaxSpecMapProperty, parallaxSpecMapUVProperty);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        foreach (var material in materials)
-                        {
-                            if (material == null) continue;
-                            MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Highlight Parallax UV: {parallaxSpecMapUVProperty.intValue}");
-                            Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    
-                            material.SetKeyword(ShaderKeywords.HIGHLIGHT_PARALLAX_UV0, parallaxSpecMapUVProperty.intValue == 0);
-                            material.SetKeyword(ShaderKeywords.HIGHLIGHT_PARALLAX_UV1, parallaxSpecMapUVProperty.intValue == 1);
-                    
-                            EditorUtility.SetDirty(material);
-                        }
-                    }
-                    materialEditor.BuiltinShaderPropertyDrawer(parallaxSensitivityProperty, true, "Sensitivity");
-                    materialEditor.BuiltinShaderPropertyDrawer(parallaxOffsetProperty, true, "Offset");
-                    
-                    ShaderGUILayout.EndGUIComponentIndent();
                     break;
             }
+            ShaderGUILayout.EndGUIComponentIndent();
+            ShaderGUILayout.EndTogglePropertyGroup();
         }
 
         public override bool IsValid()
@@ -162,10 +110,15 @@ namespace ArcToon.Editor.ShaderEditor.Components
             if (material == null) return;
             if (material.HasProperty(ShaderPropertyID.HighlightType))
             {
-                material.SetKeyword(ShaderKeywords.HIGHLIGHT_KAJIYA, 
+                material.SetInteger(ShaderPropertyID.HighlightType, 0);
+                material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP, 
                     (OverrideHighlightType)material.GetInteger(ShaderPropertyID.HighlightType) == OverrideHighlightType.KajiyaKay);
-                material.SetKeyword(ShaderKeywords.HIGHLIGHT_PARALLAX, 
-                    (OverrideHighlightType)material.GetInteger(ShaderPropertyID.HighlightType) == OverrideHighlightType.Parallax);
+            }
+
+            if (material.HasProperty(ShaderPropertyID.TangentShiftMapUV))
+            {
+                material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP_UV0, material.GetInteger(ShaderPropertyID.TangentShiftMapUV) == 0);
+                material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP_UV1, material.GetInteger(ShaderPropertyID.TangentShiftMapUV) == 1);
             }
         }
     }

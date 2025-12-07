@@ -26,7 +26,8 @@ namespace ArcToon.Editor.ShaderEditor.Components
         {
             if (materials == null || materials.Length == 0) return;
             
-            ShaderGUILayout.CheckShouldToggleGroupByShaderPass(materials, "GeometryOutline", out bool hasMixedValue, out bool shouldToggleGroup);
+            ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.GetShaderPassEnabled("GeometryOutline"), 
+                out bool hasMixedValue, out bool shouldToggleGroup);
             
             EditorGUI.showMixedValue = hasMixedValue;
             EditorGUI.BeginChangeCheck();

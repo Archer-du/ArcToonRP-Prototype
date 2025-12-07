@@ -9,6 +9,14 @@
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
         
+        _SpecularMask ("Parallax Specular Map", 2D) = "white" {}
+        [Enum(UV0, 0, UV1, 1)]
+        _SpecularMaskUV ("Parallax Specular Map UV", Integer) = 1
+        
+        _UseParallaxSpecularMask("Use Parallax Specular Mask", Integer) = 0
+        _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
+        _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
+        
         _Clipping ("Alpha Clipping", Float) = 0
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
@@ -52,7 +60,7 @@
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
         
         // Spec: General
-        _HighlightType ("Override Highlight Type", Integer) = 2
+        _HighlightType ("Override Highlight Type", Integer) = 0
         _SpecGloss ("Spec Gloss", Range(0, 1)) = 0.2
         _SpecScale ("Spec Scale", Range(0, 1)) = 0.6
         
@@ -61,13 +69,6 @@
         [Enum(UV0, 0, UV1, 1)]
         _TangentShiftMapUV ("Tangent Shift Map UV", Integer) = 1
         _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
-
-        // Spec: Parallax
-        _ParallaxSpecMap ("Parallax Specular Map", 2D) = "white" {}
-        [Enum(UV0, 0, UV1, 1)]
-        _ParallaxSpecMapUV ("Parallax Specular Map UV", Integer) = 1
-        _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
-        _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
         
         _FringeTransparentScale ("Fringe Transparent Scale", Range(0, 1)) = 0.5
         _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
@@ -117,6 +118,10 @@
             #pragma multi_compile _ LOD_FADE_CROSSFADE
 
             #pragma shader_feature _NORMAL_MAP
+
+            #pragma shader_feature_local _SPEC_MASK
+            #pragma shader_feature_local _ _SPEC_MASK_UV0 _SPEC_MASK_UV1
+            #pragma shader_feature_local _PARALLAX_SPEC_MASK
             
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS
@@ -125,9 +130,9 @@
             
             #pragma shader_feature _RAMP_SET
             
-            #pragma shader_feature_local _ _HIGHLIGHT_KAJIYA _HIGHLIGHT_PARALLAX
-            #pragma shader_feature_local _ _HIGHLIGHT_KAJIYA_UV0 _HIGHLIGHT_KAJIYA_UV1
-            #pragma shader_feature_local _ _HIGHLIGHT_PARALLAX_UV0 _HIGHLIGHT_PARALLAX_UV1
+            #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
+            #pragma shader_feature_local _TANGENT_SHIFT_MAP
+            #pragma shader_feature_local _ _TANGENT_SHIFT_MAP_UV0 _TANGENT_SHIFT_MAP_UV1
             
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
             #pragma shader_feature _DEBUG_DIRECT_BRDF

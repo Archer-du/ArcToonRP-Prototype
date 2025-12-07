@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor
@@ -81,13 +82,13 @@ namespace ArcToon.Editor.ShaderEditor
             EditorGUI.indentLevel -= GUIComponentIndentLevel;
         }
 
-        public static void CheckShouldToggleGroupByShaderPass(Material[] materials, string passName, out bool hasMixedValue, out bool shouldToggleGroup)
+        public static void PredicateMaterialArrayBoolProperty(Material[] materials, Func<Material, bool> predicate, out bool hasMixedValue, out bool shouldToggleGroup)
         {
             hasMixedValue = false;
-            bool firstOrOnlyValue = materials[0].GetShaderPassEnabled(passName);
+            bool firstOrOnlyValue = predicate(materials[0]);
             for (int i = 1; i < materials.Length; i++)
             {
-                if (materials[i].GetShaderPassEnabled(passName) != firstOrOnlyValue)
+                if (predicate(materials[i]) != firstOrOnlyValue)
                 {
                     hasMixedValue = true;
                     break;

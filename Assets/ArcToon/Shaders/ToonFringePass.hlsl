@@ -16,53 +16,58 @@ struct VaryingsHair
 };
 
 // overrides
-float3 SpecularStrength(Surface surface, Light light, HairSpecData hairSpecData)
+float3 SpecularStrength(Surface surface, BRDF brdf, Light light, HairSpecData hairSpecData)
 {
+    float3 specularStrength;
+    #if defined(_OVERRIDE_HIGHLIGHT)
     float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
+        #if defined(_TANGENT_SHIFT_MAP)
+        float2 hairUV =
+            #if defined(_TANGENT_SHIFT_MAP_UV0)
+            hairSpecData.UVData.xy;
+            #elif defined(_TANGENT_SHIFT_MAP_UV1)
+            hairSpecData.UVData.zw;
+            #else
+            hairSpecData.UVData.xy;
+            #endif
+        float shiftScale = SampleTangentShiftNoise(hairUV) + GetTangentShiftOffset();
+        float3 bitangentWS = SafeNormalize(hairSpecData.bitangentWS + shiftScale * surface.normalWS);
+        float dotTH = dot(bitangentWS, h);
+        // avoid sqrt crashes caused by floating point precision
+        float cosTH = saturate(dotTH);
+        float sinTH = sqrt(saturate(1.0 - cosTH * cosTH));
+        float dirAttenuation = smoothstep(-1.0, 0.0, dotTH);
+        specularStrength = dirAttenuation * pow(sinTH, GetSpecGloss()) * GetSpecScale();
+        #else
+        float dotNH = saturate(dot(surface.normalWS, h));
+        specularStrength = GetSpecScale() * pow(dotNH, GetSpecGloss());
+        #endif
+    #else
+    specularStrength = SpecularStrength(surface, brdf, light);
+    #endif
     
-    #if defined(_HIGHLIGHT_PARALLAX)
-    float2 hairUV =
-        #if defined(_HIGHLIGHT_PARALLAX_UV0)
+    #if defined(_SPEC_MASK)
+    float2 specUV =
+        #if defined(_SPEC_MASK_UV0)
         hairSpecData.UVData.xy;
-        #elif defined(_HIGHLIGHT_PARALLAX_UV1)
+        #elif defined(_SPEC_MASK_UV1)
         hairSpecData.UVData.zw;
         #else
         hairSpecData.UVData.xy;
         #endif
-    float dotNH = saturate(dot(surface.normalWS, h));
     float slide = GetParallaxSensitivity();
     float offset = GetParallaxOffset();
     float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
-    float hairSpecMask = SampleParallaxSpecularMask(float2(hairUV.x, hairUV.y + parallaxOffsetV));
-    return hairSpecMask * GetSpecScale() * pow(dotNH, GetSpecGloss());
-    
-    #elif defined(_HIGHLIGHT_KAJIYA)
-    float2 hairUV =
-        #if defined(_HIGHLIGHT_KAJIYA_UV0)
-        hairSpecData.UVData.xy;
-        #elif defined(_HIGHLIGHT_KAJIYA_UV1)
-        hairSpecData.UVData.zw;
-        #else
-        hairSpecData.UVData.xy;
-        #endif
-    float shiftScale = SampleTangentShiftNoise(hairUV) + GetTangentShiftOffset();
-    float3 bitangentWS = SafeNormalize(hairSpecData.bitangentWS + shiftScale * surface.normalWS);
-    float dotTH = dot(bitangentWS, h);
-    // avoid sqrt crashes caused by floating point precision
-    float cosTH = saturate(dotTH);
-    float sinTH = sqrt(saturate(1.0 - cosTH * cosTH));
-    float dirAttenuation = smoothstep(-1.0, 0.0, dotTH);
-    return dirAttenuation * pow(sinTH, GetSpecGloss()) * GetSpecScale();
-    
-    #else
-    float dotNH = saturate(dot(surface.normalWS, h));
-    return GetSpecScale() * pow(dotNH, GetSpecGloss());
+    float hairSpecMask = SampleParallaxSpecularMask(float2(specUV.x, specUV.y + parallaxOffsetV));
+    specularStrength *= hairSpecMask;
     #endif
+    
+    return specularStrength;
 }
 
 float3 DirectBRDF(Surface surface, BRDF brdf, Light light, HairSpecData hairSpecData)
 {
-    return SpecularStrength(surface, light, hairSpecData) * brdf.specular + brdf.diffuse;
+    return SpecularStrength(surface, brdf, light, hairSpecData) * brdf.specular + brdf.diffuse;
 }
 
 float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenData)
