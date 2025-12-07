@@ -19,6 +19,10 @@
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Destination Blend Factor", Float) = 0
         [Enum(Off, 0, On, 1)] _ZWrite ("Z Write Mode", Float) = 1
+                
+        _Stencil("Stencil Ref ID", Float) = 1
+        _StencilWriteMask("Stencil Write Mask", Float) = 3
+        _StencilReadMask("Stencil Read Mask", Float) = 3
         
         // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
@@ -126,11 +130,13 @@
             #pragma multi_compile _ LOD_FADE_CROSSFADE
             
             #pragma shader_feature _NORMAL_MAP
-            #pragma shader_feature _RMO_MASK_MAP
-            #pragma shader_feature _RAMP_SET
             
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS
+            
+            #pragma shader_feature _RMO_MASK_MAP
+            
+            #pragma shader_feature _RAMP_SET
             
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
             #pragma shader_feature _DEBUG_DIRECT_BRDF
@@ -163,10 +169,42 @@
 
             #include "ToonDepthStencilPass.hlsl"
 
-            #pragma vertex DepthOnlyPassVertex
-            #pragma fragment DepthOnlyPassFragment
+            #pragma vertex DefaultDepthStencilPassVertex
+            #pragma fragment DefaultDepthStencilPassFragment
             ENDHLSL
         }
+
+//        Pass
+//        {
+//            Tags
+//            {
+//                "LightMode" = "DepthStencil"
+//            }
+//            Blend One Zero
+//            ZTest LEqual
+//            ZWrite On
+//            Cull [_Cull]
+//            Stencil
+//            {
+//                Ref [_Stencil]
+//                Comp Always
+//                Pass Replace
+//                ReadMask [_StencilReadMask]
+//                WriteMask [_StencilWriteMask]
+//            }
+//            ColorMask R
+//
+//            HLSLPROGRAM
+//            #pragma target 3.5
+//
+//            #pragma multi_compile_instancing
+//
+//            #include "ToonDepthStencilPass.hlsl"
+//
+//            #pragma vertex DefaultDepthStencilPassVertex
+//            #pragma fragment DefaultDepthStencilPassFragment
+//            ENDHLSL
+//        }
 
         Pass
         {

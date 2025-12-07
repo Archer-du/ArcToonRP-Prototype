@@ -12,17 +12,18 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _HIGHLIGHT_PARALLAX
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _SN_DECODE_RGAG
   - _SN_SRC_COLOR
-  - _TANGENT_SHIFT_MAP
   - _TRANSPARENT_FRINGE
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
+  - _TANGENT_SHIFT_MAP
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -98,9 +99,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints:
+    - _HighlightType: 2
     - _ParallaxSpecMapUV: 1
     - _SmoothNormalDecoder: 0
     - _SmoothNormalSource: 1
+    - _TangentShiftMapUV: 1
     - _WidthControlMode: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 1

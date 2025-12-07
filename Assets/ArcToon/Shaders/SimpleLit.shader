@@ -125,8 +125,8 @@
 
             #include "ToonDepthStencilPass.hlsl"
 
-            #pragma vertex DepthOnlyPassVertex
-            #pragma fragment DepthOnlyPassFragment
+            #pragma vertex DefaultDepthStencilPassVertex
+            #pragma fragment DefaultDepthStencilPassFragment
             ENDHLSL
         }
 

@@ -12,11 +12,12 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _HIGHLIGHT_PARALLAX
+  - _HIGHLIGHT_PARALLAX_UV1
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _SN_DECODE_OCT
   - _SN_SRC_COLOR
-  - _TANGENT_SHIFT_MAP
   - _TRANSPARENT_FRINGE
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
@@ -24,6 +25,7 @@ Material:
   - _LIGHTINGDEBUGMODE_NONE
   - _OWC_SRC_VERTCOLORA
   - _SHADOWS_ON
+  - _TANGENT_SHIFT_MAP
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0

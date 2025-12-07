@@ -80,5 +80,20 @@ namespace ArcToon.Editor.ShaderEditor
         {
             EditorGUI.indentLevel -= GUIComponentIndentLevel;
         }
+
+        public static void CheckShouldToggleGroupByShaderPass(Material[] materials, string passName, out bool hasMixedValue, out bool shouldToggleGroup)
+        {
+            hasMixedValue = false;
+            bool firstOrOnlyValue = materials[0].GetShaderPassEnabled(passName);
+            for (int i = 1; i < materials.Length; i++)
+            {
+                if (materials[i].GetShaderPassEnabled(passName) != firstOrOnlyValue)
+                {
+                    hasMixedValue = true;
+                    break;
+                }
+            }
+            shouldToggleGroup = !hasMixedValue && firstOrOnlyValue;
+        }
     }
 }

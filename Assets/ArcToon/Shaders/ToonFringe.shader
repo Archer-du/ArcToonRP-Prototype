@@ -117,13 +117,15 @@
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
 
-            #pragma shader_feature _RECEIVE_SHADOWS
-            #pragma shader_feature _CLIPPING
             #pragma shader_feature _NORMAL_MAP
+            
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
             
             #pragma shader_feature _RMO_MASK_MAP
             
             #pragma shader_feature _RAMP_SET
+            
             #pragma shader_feature_local _ _HIGHLIGHT_KAJIYA _HIGHLIGHT_PARALLAX
             #pragma shader_feature_local _ _HIGHLIGHT_KAJIYA_UV0 _HIGHLIGHT_KAJIYA_UV1
             #pragma shader_feature_local _ _HIGHLIGHT_PARALLAX_UV0 _HIGHLIGHT_PARALLAX_UV1
@@ -142,6 +144,32 @@
             ENDHLSL
         }
 
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "DepthOnly"
+            }
+            ZWrite On
+            Cull [_Cull]
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #pragma multi_compile_instancing
+
+            #include "ToonDepthStencilPass.hlsl"
+
+            #pragma vertex DefaultDepthStencilPassVertex
+            #pragma fragment DefaultDepthStencilPassFragment
+            ENDHLSL
+        }
+
+        UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
+        
+        UsePass "ArcToon/ToonBase/TOON META"
+        
         Pass
         {
             Tags
@@ -205,32 +233,6 @@
             #pragma fragment FringeReceiverPassFragment
             ENDHLSL
         }
-
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "DepthOnly"
-            }
-            ZWrite On
-            Cull [_Cull]
-            ColorMask R
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #include "ToonDepthStencilPass.hlsl"
-
-            #pragma vertex DefaultDepthStencilPassVertex
-            #pragma fragment DefaultDepthStencilPassFragment
-            ENDHLSL
-        }
-
-        UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
-        
-        UsePass "ArcToon/ToonBase/TOON META"
     }
 
     CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"

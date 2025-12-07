@@ -112,13 +112,18 @@
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
 
-            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _NORMAL_MAP
+            
             #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+            
+            #pragma shader_feature _RMO_MASK_MAP
             
             #pragma shader_feature _RAMP_SET
-            
+
             #pragma shader_feature_local _SDF_LIGHT_MAP
             #pragma shader_feature_local _ _SDF_UV0 _SDF_UV1
+            
             #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
