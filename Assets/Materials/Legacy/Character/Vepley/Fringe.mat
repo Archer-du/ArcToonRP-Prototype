@@ -12,13 +12,17 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _HIGHLIGHT_PARALLAX
   - _RAMP_SET
   - _RECEIVE_SHADOWS
-  - _TANGENT_SHIFT_MAP
+  - _SN_DECODE_OCT
+  - _SN_SRC_COLOR
   - _TRANSPARENT_FRINGE
+  - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON
+  - _TANGENT_SHIFT_MAP
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -73,6 +77,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _ParallaxSpecMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _RMOMaskMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -89,18 +97,28 @@ Material:
         m_Texture: {fileID: 2800000, guid: 43a75af2d70576d41afc5cc14f450ccb, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    m_Ints:
+    - _HighlightType: 2
+    - _ParallaxSpecMapUV: 1
+    - _SmoothNormalDecoder: 1
+    - _SmoothNormalSource: 1
+    - _TangentShiftMapUV: 1
+    - _WidthControlMode: 1
     m_Floats:
+    - _AlphaControlOutlineWidth: 0
     - _BumpScale: 1
     - _Clipping: 0
     - _ColorMask: 15
+    - _Cull: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DirectLightAttenOffset: 0.6
     - _DirectLightAttenSmooth: 2
     - _DirectLightAttenSmoothNew: 0.92
+    - _DirectLightSpecOffset: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
+    - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
     - _FringeShadowBiasScale: 0.5
@@ -123,6 +141,8 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineScale: 0.18
     - _Parallax: 0.02
+    - _ParallaxOffset: 0
+    - _ParallaxSensitivity: 0.1
     - _PerObjShadowCasterID: -1
     - _PerObjectShadowCasterID: -1
     - _RampSetToggle: 1
@@ -134,6 +154,7 @@ Material:
     - _Shadows: 0
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
+    - _SpecGloss: 0.2
     - _SpecMapToggle: 0
     - _SpecScale: 1
     - _SpecularHighlights: 1

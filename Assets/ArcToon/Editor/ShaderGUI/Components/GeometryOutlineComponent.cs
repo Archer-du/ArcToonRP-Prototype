@@ -7,8 +7,6 @@ namespace ArcToon.Editor.ShaderEditor.Components
     {
         private static readonly GUIContent label = new("Geometry Outline");
         
-        private static readonly string OutlinePassName = "GeometryOutline";
-
         private MaterialProperty outlineColorProperty;
         private MaterialProperty outlineScaleProperty;
         private MaterialProperty smoothNormalSourceProperty;
@@ -28,23 +26,13 @@ namespace ArcToon.Editor.ShaderEditor.Components
         {
             if (materials == null || materials.Length == 0) return;
             
-            bool hasMixedValue = false;
-            bool firstOrOnlyValue = materials[0].GetShaderPassEnabled(OutlinePassName);
-            for (int i = 1; i < materials.Length; i++)
-            {
-                if (materials[i].GetShaderPassEnabled(OutlinePassName) != firstOrOnlyValue)
-                {
-                    hasMixedValue = true;
-                    break;
-                }
-            }
-            bool shouldToggleGroup = !hasMixedValue && firstOrOnlyValue;
-            EditorGUI.showMixedValue = hasMixedValue;
+            ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.GetShaderPassEnabled("GeometryOutline"), 
+                out bool hasMixedValue, out bool shouldToggleGroup);
             
+            EditorGUI.showMixedValue = hasMixedValue;
             EditorGUI.BeginChangeCheck();
             bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(label, shouldToggleGroup, EditorStyles.label);
             EditorGUI.showMixedValue = false;
-            
             if (EditorGUI.EndChangeCheck())
             {
                 foreach (var material in materials)
@@ -53,7 +41,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Use Geometry Outline: {newValue}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetShaderPassEnabled(OutlinePassName, newValue);
+                    material.SetShaderPassEnabled("GeometryOutline", newValue);
                     EditorUtility.SetDirty(material);
                 }
             }

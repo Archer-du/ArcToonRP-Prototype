@@ -6,11 +6,17 @@
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
-        [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
+        
+        _SpecularMask ("Parallax Specular Map", 2D) = "white" {}
+        [Enum(UV0, 0, UV1, 1)]
+        _SpecularMaskUV ("Parallax Specular Map UV", Integer) = 1
+        
+        _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
+        _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
 
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        _Clipping ("Alpha Clipping", Float) = 0
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
@@ -38,7 +44,6 @@
         [HDR] _EmissionColor ("Emission Color", Color) = (0.0, 0.0, 0.0, 0.0)
         
         // ------------------------ Toon
-        [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
         
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
@@ -56,13 +61,11 @@
         _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
         [Enum(None, 0, VertexColorAlpha, 1)]
         _WidthControlMode ("Width Control Mode", Integer) = 1
-        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
 
-        [Toggle(_SDF_LIGHT_MAP)] _LightMapSDFToggle ("Use SDF Light Map", Float) = 0
         _LightMapSDF ("SDF Light Map", 2D) = "white" {}
         [Enum(UV0, 0, UV1, 1)]
         _LightMapSDFSourceUV ("SDF Light Map UV Source", Integer) = 1
@@ -116,13 +119,18 @@
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
 
-            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _NORMAL_MAP
+            
             #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+            
+            #pragma shader_feature _RMO_MASK_MAP
             
             #pragma shader_feature _RAMP_SET
-            
+
             #pragma shader_feature_local _SDF_LIGHT_MAP
             #pragma shader_feature_local _ _SDF_UV0 _SDF_UV1
+            
             #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
@@ -169,47 +177,9 @@
             ENDHLSL
         }
 
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "ShadowCaster"
-            }
-            ColorMask 0
-            Cull [_Cull]
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #pragma shader_feature _CLIPPING
-            #pragma shader_feature _SHADOWS_DITHER
-
-            #include "ShadowCasterPass.hlsl"
-
-            #pragma vertex ShadowCasterPassVertex
-            #pragma fragment ShadowCasterPassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "Meta"
-            }
-            Cull Off
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #include "MetaPass.hlsl"
-
-            #pragma vertex MetaPassVertex
-            #pragma fragment MetaPassFragment
-            ENDHLSL
-        }
+        UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
+        
+        UsePass "ArcToon/ToonBase/TOON META"
     }
 
     CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"

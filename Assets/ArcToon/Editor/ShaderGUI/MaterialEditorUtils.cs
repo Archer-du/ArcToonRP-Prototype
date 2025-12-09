@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,14 +32,17 @@ namespace ArcToon.Editor.ShaderEditor
         NiloOffset,
     }
 
-    public enum SDFSourceUV
+    public enum OverrideHighlightType
     {
-        UV0, 
-        UV1,
+        BlinnPhong,
+        KajiyaKay,
     }
     
     public static class ShaderPropertyID
     {
+        private static string Auto([CallerMemberName] string name = null)
+            => "_" + name;
+        
         public const string BaseMap = "_BaseMap";
         public const string BaseColor = "_BaseColor";
         public const string MainTex = "_MainTex";
@@ -46,6 +50,11 @@ namespace ArcToon.Editor.ShaderEditor
         
         public const string NormalMap = "_NormalMap";
         public const string NormalScale = "_NormalScale";
+                
+        public static readonly string SpecularMask = Auto();
+        public static readonly string SpecularMaskUV = Auto();
+        public static readonly string ParallaxSensitivity = Auto();
+        public static readonly string ParallaxOffset = Auto();
         
         public const string Clipping = "_Clipping";
         public const string Cutoff = "_Cutoff";
@@ -79,14 +88,35 @@ namespace ArcToon.Editor.ShaderEditor
         public const string DstBlend = "_DstBlend";
         public const string ZWrite = "_ZWrite";
         
-        public const string LightingDebugMode = "_LightingDebugMode";
+        public const string HighlightType = "_HighlightType";
+        public const string SpecGloss = "_SpecGloss";
+        public const string SpecScale = "_SpecScale";
+        
+        public const string TangentShiftMap = "_TangentShiftMap";
+        public const string TangentShiftMapUV = "_TangentShiftMapUV";
+        public const string TangentShiftOffset = "_TangentShiftOffset";
+        
+        public const string FringeTransparentScale = "_FringeTransparentScale";
+        public const string FringeShadowBiasScaleX = "_FringeShadowBiasScaleX";
+        public const string FringeShadowBiasScaleY = "_FringeShadowBiasScaleY";
     }
     
     public static class ShaderKeywords
     {
+        private static string Auto([CallerMemberName] string name = null)
+            => "_" + name;
+        
         public const string _CLIPPING = "_CLIPPING";
         
         public const string NORMAL_MAP = "_NORMAL_MAP";
+        
+        public static readonly string SPEC_MASK = Auto();
+        public static readonly string OVERRIDE_HIGHLIGHT = Auto();
+        public static readonly string SPEC_MASK_UV0 = Auto();
+        public static readonly string SPEC_MASK_UV1 = Auto();
+        public static readonly string SPEC_PARALLAX = Auto();
+        
+        public const string SHADOWS_DITHER = "_SHADOWS_DITHER";
         
         public const string RAMP_SET = "_RAMP_SET";
         
@@ -102,12 +132,9 @@ namespace ArcToon.Editor.ShaderEditor
         public const string SDF_UV0 = "_SDF_UV0";
         public const string SDF_UV1 = "_SDF_UV1";
         
-        public const string SHADOWS_DITHER = "_SHADOWS_DITHER";
-        
-        public const string DEBUG_INCOMING_LIGHT = "_DEBUG_INCOMING_LIGHT";
-        public const string DEBUG_DIRECT_BRDF = "_DEBUG_DIRECT_BRDF";
-        public const string DEBUG_SPECULAR = "_DEBUG_SPECULAR";
-        public const string DEBUG_DIFFUSE = "_DEBUG_DIFFUSE";
+        public const string TANGENT_SHIFT_MAP = "_TANGENT_SHIFT_MAP";
+        public const string TANGENT_SHIFT_MAP_UV0 = "_TANGENT_SHIFT_MAP_UV0";
+        public const string TANGENT_SHIFT_MAP_UV1 = "_TANGENT_SHIFT_MAP_UV1";
     }
 
     public static class MaterialEditorUtils

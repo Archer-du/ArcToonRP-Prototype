@@ -17,27 +17,6 @@ struct VaryingsDS
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
-VaryingsDS DepthOnlyPassVertex(AttributesDS input)
-{
-    VaryingsDS output = (VaryingsDS)0;
-    UNITY_SETUP_INSTANCE_ID(input);
-    UNITY_TRANSFER_INSTANCE_ID(input, output);
-
-    output.positionCS_SS = TransformObjectToHClip(input.positionOS.xyz);
-    return output;
-}
-
-half DepthOnlyPassFragment(VaryingsDS input) : SV_TARGET
-{
-    UNITY_SETUP_INSTANCE_ID(input);
-
-    #if defined(LOD_FADE_CROSSFADE)
-    LODFadeCrossFade(input.positionCS);
-    #endif
-
-    return input.positionCS_SS.z;
-}
-
 VaryingsDS DefaultDepthStencilPassVertex(AttributesDS input)
 {
     VaryingsDS output = (VaryingsDS)0;

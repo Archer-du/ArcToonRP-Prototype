@@ -6,11 +6,17 @@
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 
-        [Toggle(_NORMAL_MAP)] _NormalMapToggle ("Use Normal Map", Float) = 0
         [NoScaleOffset] _NormalMap ("Normals", 2D) = "bump" {}
         _NormalScale ("Normal Scale", Range(0, 1)) = 1
         
-        [Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+        _SpecularMask ("Parallax Specular Map", 2D) = "white" {}
+        [Enum(UV0, 0, UV1, 1)]
+        _SpecularMaskUV ("Parallax Specular Map UV", Integer) = 1
+        
+        _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
+        _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
+        
+        _Clipping ("Alpha Clipping", Float) = 0
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
@@ -33,7 +39,6 @@
         [HDR] _EmissionColor ("Emission Color", Color) = (0.0, 0.0, 0.0, 0.0)
 
         // ------------------------ Toon
-        [Toggle(_RAMP_SET)] _RampSetToggle ("Use Ramp Set", Float) = 0
         [NoScaleOffset] _RampSet ("Ramp Set", 2D) = "white" {}
 
         _DirectLightAttenOffset ("Direct Attenuation Offset", Range(0, 1)) = 0.5
@@ -51,7 +56,6 @@
         _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
         [Enum(None, 0, VertexColorAlpha, 1)]
         _WidthControlMode ("Width Control Mode", Integer) = 1
-        [Toggle(_ALPHA_CONTROL_WIDTH)] _AlphaControlOutlineWidth ("Alpha Control Outline Width", Float) = 0
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
@@ -179,8 +183,8 @@
 
             #include "ToonDepthStencilPass.hlsl"
 
-            #pragma vertex DepthOnlyPassVertex
-            #pragma fragment DepthOnlyPassFragment
+            #pragma vertex DefaultDepthStencilPassVertex
+            #pragma fragment DefaultDepthStencilPassFragment
             ENDHLSL
         }
 

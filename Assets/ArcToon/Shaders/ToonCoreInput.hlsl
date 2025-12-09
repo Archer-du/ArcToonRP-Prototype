@@ -22,35 +22,23 @@ SAMPLER(sampler_RampSet);
 TEXTURE2D(_TangentShiftMap);
 SAMPLER(sampler_TangentShiftMap);
 
+TEXTURE2D(_SpecularMask);
+
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _LightMapSDF_ST)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _TangentShiftMap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
 
-    UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-
-    UNITY_DEFINE_INSTANCED_PROP(float, _ShadowOffsetSDF)
-    UNITY_DEFINE_INSTANCED_PROP(float4, _FaceVector)
+    UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxSensitivity)
+    UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxOffset)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+
     UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
     UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
-
-    UNITY_DEFINE_INSTANCED_PROP(float, _HairSpecGloss)
-    UNITY_DEFINE_INSTANCED_PROP(float, _HairSpecScale)
-
-    UNITY_DEFINE_INSTANCED_PROP(float, _TangentShiftOffset)
-
-    UNITY_DEFINE_INSTANCED_PROP(float4, _OutlineColor)
-    UNITY_DEFINE_INSTANCED_PROP(float, _OutlineScale)
-
-    UNITY_DEFINE_INSTANCED_PROP(float, _RimScale)
-    UNITY_DEFINE_INSTANCED_PROP(float, _RimWidth)
-    UNITY_DEFINE_INSTANCED_PROP(float, _RimDepthBias)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 
@@ -61,12 +49,28 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecOffset)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecSmooth)
 
+    UNITY_DEFINE_INSTANCED_PROP(float4, _OutlineColor)
+    UNITY_DEFINE_INSTANCED_PROP(float, _OutlineScale)
+
+    UNITY_DEFINE_INSTANCED_PROP(float, _RimScale)
+    UNITY_DEFINE_INSTANCED_PROP(float, _RimWidth)
+    UNITY_DEFINE_INSTANCED_PROP(float, _RimDepthBias)
+
+    UNITY_DEFINE_INSTANCED_PROP(float4, _LightMapSDF_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float, _ShadowOffsetSDF)
+    UNITY_DEFINE_INSTANCED_PROP(float4, _FaceVector)
+
     UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularStrengthSDF)
     UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularSmoothSDF)
 
+    UNITY_DEFINE_INSTANCED_PROP(float, _SpecGloss)
+    UNITY_DEFINE_INSTANCED_PROP(float, _SpecScale)
+
+    UNITY_DEFINE_INSTANCED_PROP(float4, _TangentShiftMap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float, _TangentShiftOffset)
+
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleX)
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleY)
-
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeTransparentScale)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _PerObjectShadowCasterID)
@@ -95,7 +99,7 @@ struct Attributes
     GI_ATTRIBUTES_DATA
 };
 
-// common -------------------------------------
+// common ---------------------------------------------------------------------------
 float2 TransformBaseUV(float2 rawBaseUV)
 {
     float4 baseST = INPUT_PROP(_BaseMap_ST);
@@ -108,10 +112,9 @@ float2 TransformFaceUV(float2 rawFaceUV)
     return rawFaceUV * faceST.xy + faceST.zw;
 }
 
-float2 TransformHairUV(float2 rawHairUV)
+float2 TransformUV1(float2 rawUV1)
 {
-    float4 baseST = INPUT_PROP(_TangentShiftMap_ST);
-    return rawHairUV * baseST.xy + baseST.zw;
+    return rawUV1;
 }
 
 float4 GetColor(InputConfig input)
@@ -139,10 +142,10 @@ float GetPerObjectShadowCasterID()
     return INPUT_PROP(_PerObjectShadowCasterID);
 }
 
-// PBR -------------------------------------
+// PBR ---------------------------------------------------------------------------
 float4 GetRMOMask(InputConfig input)
 {
-    #ifdef _RMO_MASK_MAP
+    #if defined(_RMO_MASK_MAP)
     return SAMPLE_TEXTURE2D(_RMOMaskMap, sampler_RMOMaskMap, input.baseUV);
     #endif
     return 1.0;
@@ -157,7 +160,7 @@ float GetMetallic(InputConfig input)
 
 float GetSmoothness(InputConfig input)
 {
-    #ifdef _RMO_MASK_MAP
+    #if defined(_RMO_MASK_MAP)
     float smoothness = PerceptualRoughnessToPerceptualSmoothness(GetRMOMask(input).r);
     smoothness *= INPUT_PROP(_Smoothness);
     #else
@@ -186,7 +189,7 @@ float3 GetEmission(InputConfig input)
     return albedo.rgb * color.rgb;
 }
 
-// Toon -------------------------------------
+// Toon ---------------------------------------------------------------------------
 float GetOutlineScale()
 {
     return INPUT_PROP(_OutlineScale) * 12.5;
@@ -232,32 +235,9 @@ float GetSDFShadowOffset()
     return INPUT_PROP(_ShadowOffsetSDF) * 0.25;
 }
 
-float2 GetFringeShadowBiasScale()
-{
-    float2 data;
-    data.x = INPUT_PROP(_FringeShadowBiasScaleX) * 0.2;
-    data.y = INPUT_PROP(_FringeShadowBiasScaleY) * 0.2;
-    return data;
-}
-
-float GetHairSpecGloss()
-{
-    return INPUT_PROP(_HairSpecGloss) * 200;
-}
-
-float GetHairSpecScale()
-{
-    return INPUT_PROP(_HairSpecScale) * 50;
-}
-
-float GetHairTangentShiftOffset()
-{
-    return INPUT_PROP(_TangentShiftOffset);
-}
-
 float3 SampleRampSetChannel(float rampUV, float channel)
 {
-    #ifdef _RAMP_SET
+    #if defined(_RAMP_SET)
     return SAMPLE_TEXTURE2D(_RampSet, sampler_RampSet, float2(rampUV, channel)).rgb;
     #endif
     return 1.0;
@@ -270,7 +250,7 @@ float3 GetFaceVector()
 
 float SampleSDFLightMap(float2 faceUV)
 {
-    #ifdef _SDF_LIGHT_MAP
+    #if defined(_SDF_LIGHT_MAP)
     return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).r;
     #endif
     return 1.0;
@@ -278,7 +258,7 @@ float SampleSDFLightMap(float2 faceUV)
 
 float SampleSDFLightMapShadowMask(float2 faceUV)
 {
-    #ifdef _SDF_LIGHT_MAP
+    #if defined(_SDF_LIGHT_MAP)
     return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).a;
     #endif
     return 1.0;
@@ -286,7 +266,7 @@ float SampleSDFLightMapShadowMask(float2 faceUV)
 
 float SampleSDFLightMapNoseSpecular1(float2 faceUV)
 {
-    #ifdef _SDF_LIGHT_MAP_SPEC
+    #if defined(_SDF_LIGHT_MAP_SPEC)
     return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).g;
     #endif
     return 0.0;
@@ -294,26 +274,54 @@ float SampleSDFLightMapNoseSpecular1(float2 faceUV)
 
 float SampleSDFLightMapNoseSpecular2(float2 faceUV)
 {
-    #ifdef _SDF_LIGHT_MAP_SPEC
+    #if defined(_SDF_LIGHT_MAP_SPEC)
     return SAMPLE_TEXTURE2D(_LightMapSDF, sampler_LightMapSDF, faceUV).b;
     #endif
     return 0.0;
 }
 
-float SampleTangentShiftNoise(float2 baseUV)
+float GetSpecGloss()
 {
-    #ifdef _TANGENT_SHIFT_MAP
-    return clamp(-0.8, 0.8, SAMPLE_TEXTURE2D(_TangentShiftMap, sampler_TangentShiftMap, baseUV).r * 2.0 - 1.0);
-    #endif
-    return 0.0;
+    return max(0.001, INPUT_PROP(_SpecGloss) * 200);
 }
 
-float GetFinalAlpha(InputConfig input, float baseAlpha)
+float GetSpecScale()
 {
-    #ifdef _TRANSPARENT_FRINGE
-    return lerp(baseAlpha, GetFringeTransparentScale(), input.fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
-    #endif
-    return baseAlpha;
+    return INPUT_PROP(_SpecScale) * 50;
+}
+
+float GetTangentShiftOffset()
+{
+    return INPUT_PROP(_TangentShiftOffset);
+}
+
+float SampleTangentShiftNoise(float2 baseUV)
+{
+    return clamp(-0.8, 0.8, SAMPLE_TEXTURE2D(_TangentShiftMap, sampler_TangentShiftMap, baseUV).r * 2.0 - 1.0);
+}
+
+float GetParallaxSensitivity()
+{
+    return INPUT_PROP(_ParallaxSensitivity) * 0.1;
+}
+
+float GetParallaxOffset()
+{
+    return INPUT_PROP(_ParallaxOffset);
+}
+
+float SampleParallaxSpecularMask(float2 hairUV)
+{
+    // TODO: channel
+    return SAMPLE_TEXTURE2D(_SpecularMask, sampler_linear_clamp, hairUV).r;
+}
+
+float2 GetFringeShadowBiasScale()
+{
+    float2 data;
+    data.x = INPUT_PROP(_FringeShadowBiasScaleX) * 0.2;
+    data.y = INPUT_PROP(_FringeShadowBiasScaleY) * 0.2;
+    return data;
 }
 
 #endif

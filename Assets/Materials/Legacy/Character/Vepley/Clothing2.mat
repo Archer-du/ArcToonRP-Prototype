@@ -16,6 +16,9 @@ Material:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _RMO_MASK_MAP
+  - _SN_DECODE_OCT
+  - _SN_SRC_COLOR
+  - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
   - _SHADOWS_ON

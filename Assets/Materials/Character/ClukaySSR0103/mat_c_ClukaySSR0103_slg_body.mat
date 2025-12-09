@@ -16,7 +16,7 @@ Material:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _RMO_MASK_MAP
-  - _SN_DECODE_OCT
+  - _SN_DECODE_RGAG
   - _SN_SRC_COLOR
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
@@ -103,7 +103,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints:
-    - _SmoothNormalDecoder: 1
+    - _SmoothNormalDecoder: 0
     - _SmoothNormalSource: 1
     - _WidthControlMode: 1
     - _WidthControlSource: 1
@@ -163,6 +163,6 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
+    - _OutlineColor: {r: 0.41509432, g: 0.061754864, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

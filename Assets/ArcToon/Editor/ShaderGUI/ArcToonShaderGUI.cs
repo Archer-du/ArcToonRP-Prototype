@@ -69,6 +69,7 @@ namespace ArcToon.Editor.ShaderEditor
             {
                 new ColorTextureComponent("Base Map", ShaderPropertyID.BaseMap, ShaderPropertyID.BaseColor, false),
                 new NormalMapComponent("Normal Map", ShaderPropertyID.NormalMap, ShaderPropertyID.NormalScale, ShaderKeywords.NORMAL_MAP),
+                new SpecularMaskComponent(),
                 new AlphaClippingComponent(),
             });
             
@@ -86,13 +87,15 @@ namespace ArcToon.Editor.ShaderEditor
             {
                 new RampTextureComponent("Ramp Set"),
                 new GeometryOutlineComponent(),
+                new HighLightComponent(),
+                new LightMapSDFComponent(),
+                new FringeComponent(),
                 new HeaderPropertyComponent("Sigmoid Attenuation", 
                     new[] { "Offset", "Smooth" }, 
                     new[] { ShaderPropertyID.DirectLightAttenOffset, ShaderPropertyID.DirectLightAttenSmoothNew }),
                 new HeaderPropertyComponent("Sigmoid Specular", 
                     new[] { "Offset", "Smooth" }, 
                     new[] { ShaderPropertyID.DirectLightSpecOffset, ShaderPropertyID.DirectLightSpecSmooth }),
-                new LightMapSDFComponent(),
             });
             
             engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUIComponentBase>()

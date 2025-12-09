@@ -15,7 +15,8 @@ Material:
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _SDF_LIGHT_MAP
-  - _SN_DECODE_OCT
+  - _SDF_UV1
+  - _SN_DECODE_RGAG
   - _SN_SRC_COLOR
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
@@ -97,7 +98,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints:
-    - _SmoothNormalDecoder: 1
+    - _LightMapSDFSourceUV: 1
+    - _SmoothNormalDecoder: 0
     - _SmoothNormalSource: 1
     - _WidthControlMode: 1
     m_Floats:
@@ -165,6 +167,7 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FaceVector: {r: 0, g: 0, b: 1, a: 0}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

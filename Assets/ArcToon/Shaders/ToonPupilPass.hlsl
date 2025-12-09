@@ -30,7 +30,7 @@ float4 ToonPupilPassFragment(VaryingsPupil input) : SV_TARGET
     clip(color.a - GetAlphaClip(config));
     #endif
     
-    return float4(color.rgb, GetFinalAlpha(config, color.a));;
+    return float4(color.rgb, color.a);
 }
 
 #endif
