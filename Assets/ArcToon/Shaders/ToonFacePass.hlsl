@@ -1,12 +1,27 @@
 ﻿#ifndef ARCTOON_TOON_FACE_PASS_INCLUDED
 #define ARCTOON_TOON_FACE_PASS_INCLUDED
 
+struct Attributes
+{
+    float3 positionOS : POSITION;
+    float3 normalOS : NORMAL;
+    float4 tangentOS : TANGENT;
+    float2 baseUV : TEXCOORD0;
+    float2 UV1 : TEXCOORD1;
+    float4 vertexColor : COLOR;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+    GI_ATTRIBUTES_DATA
+};
+
 struct VaryingsFace
 {
     float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
     float3 normalWS : VAR_NORMAL_WS;
     float3 normalVS : VAR_NORMAL_VS;
+    #if defined(_NORMAL_MAP)
+    float4 tangentWS : VAR_TANGENT;
+    #endif
     float2 baseUV : VAR_BASE_UV;
     float2 UV1 : VAR_UV1;
     float2 faceUV : VAR_FACE_UV;
@@ -122,6 +137,9 @@ VaryingsFace ToonFacePassVertex(Attributes input)
     output.positionCS_SS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.normalVS = TransformWorldToViewNormal(output.normalWS);
+    #if defined(_NORMAL_MAP)
+    output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
+    #endif
     output.baseUV = TransformBaseUV(input.baseUV);
     output.UV1 = TransformUV1(input.UV1);
     #if defined(_SDF_UV0)

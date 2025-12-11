@@ -18,6 +18,8 @@ Material:
   - _RMO_MASK_MAP
   - _SN_DECODE_RGAG
   - _SN_SRC_COLOR
+  - _SPEC_MASK_UV1
+  - _TANGENT_SHIFT_MAP_UV1
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _ALPHA_CONTROL_WIDTH

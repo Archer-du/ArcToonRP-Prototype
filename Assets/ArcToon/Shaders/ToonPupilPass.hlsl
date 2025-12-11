@@ -1,6 +1,18 @@
 ﻿#ifndef ARCTOON_TOON_PUPIL_PASS_INCLUDED
 #define ARCTOON_TOON_PUPIL_PASS_INCLUDED
 
+struct Attributes
+{
+    float3 positionOS : POSITION;
+    float3 normalOS : NORMAL;
+    float4 tangentOS : TANGENT;
+    float2 baseUV : TEXCOORD0;
+    float2 UV1 : TEXCOORD1;
+    float4 vertexColor : COLOR;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+    GI_ATTRIBUTES_DATA
+};
+
 struct VaryingsPupil
 {
     float4 positionCS_SS : SV_POSITION;

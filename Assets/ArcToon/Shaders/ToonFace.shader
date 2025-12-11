@@ -95,6 +95,7 @@
                 
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
+        #include "ToonLightingImpl.hlsl"
         ENDHLSL
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"

@@ -20,25 +20,30 @@ bool RenderingLayersOverlap(Surface surface, Light light)
     return (surface.renderingLayerMask & light.renderingLayerMask) != 0;
 }
 
-float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light, RimLightData rimData)
+// reference: com.unity.render-pipelines.universal/ShaderLibrary/BRDF.hlsl
+float SpecularStrength(Surface surface, BRDF brdf, Light light)
 {
-    float3 normalHVS = SafeNormalize(float3(surface.normalVS.x, surface.normalVS.y, 0.0));
-    float3 lightDirVS = SafeNormalize(TransformWorldToViewDir(light.directionWS));
-    float3 lightDirHVS = SafeNormalize(float3(lightDirVS.x, lightDirVS.y, 0.0));
-    float NdotLFactor = dot(normalHVS, lightDirHVS) * 0.5 + 0.5;
-    float texelNum = rimData.width / GetTexelSizeWorldSpace(fragment.linearDepth);
-    // TODO: config
-    texelNum = clamp(texelNum, rimData.width * 0.01, rimData.width * 200);
-    float2 offsetUV = float2(
-        fragment.screenUV.x + normalHVS.x * texelNum * _CameraBufferSize.x,
-        fragment.screenUV.y + normalHVS.y * texelNum * _CameraBufferSize.y);
-    float offsetBufferDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_point_clamp, offsetUV);
-    float offsetBufferLinearDepth = IsOrthographicCamera()
-                                        ? OrthographicDepthBufferToLinear(offsetBufferDepth)
-                                        : LinearEyeDepth(offsetBufferDepth, _ZBufferParams);
-    float bias = offsetBufferLinearDepth - fragment.linearDepth;
-    float rimFactor = step(rimData.depthBias, bias);
-    return rimData.scale * rimFactor * NdotLFactor * surface.color;
+    float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
+    float nh2 = Square(saturate(dot(surface.normalWS, h)));
+    float lh2 = Square(saturate(dot(light.directionWS, h)));
+    float r2 = Square(brdf.roughness);
+    float d2 = Square(nh2 * (r2 - 1.0) + 1.00001);
+    float normalization = brdf.roughness * 4.0 + 2.0;
+    return r2 / (d2 * max(0.1, lh2) * normalization);
+}
+
+float3 ToonDirectBRDF(Surface surface, BRDF brdf, Light light)
+{
+    return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
+}
+
+float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
+{
+    float fresnelStrength = surface.fresnelStrength *
+        Pow4(1.0 - saturate(dot(surface.normalWS, surface.viewDirectionWS)));
+    float3 reflection = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength);
+    reflection /= brdf.roughness * brdf.roughness + 1.0;
+    return (diffuse * brdf.diffuse + reflection) * surface.occlusion;
 }
 
 // punctual lights avoid gradient unroll
@@ -55,12 +60,12 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light)
     return IncomingLight(surface, light);
     #endif
     #if defined(_DEBUG_DIRECT_BRDF)
-    return DirectBRDF(surface, brdf, light);
+    return ToonDirectBRDF(surface, brdf, light);
     #endif
     #if defined(_DEBUG_SPECULAR)
     return SpecularStrength(surface, brdf, light) * brdf.specular;
     #endif
-    return IncomingLight(surface, light) * DirectBRDF(surface, brdf, light);
+    return IncomingLight(surface, light) * ToonDirectBRDF(surface, brdf, light);
 }
 
 void AccumulatePunctualLighting(Fragment fragment, Surface surface, BRDF brdf, GI gi,
@@ -92,7 +97,7 @@ void AccumulatePunctualLighting(Fragment fragment, Surface surface, BRDF brdf, G
     }
 }
 
-float3 GetLighting(Fragment fragment, Surface surface, BRDF brdf, GI gi)
+float3 AccumulateRealtimeLighting(Fragment fragment, Surface surface, BRDF brdf, GI gi)
 {
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
     float3 color = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);

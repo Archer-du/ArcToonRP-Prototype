@@ -1,6 +1,18 @@
 ﻿#ifndef ARCTOON_TOON_BASE_PASS_INCLUDED
 #define ARCTOON_TOON_BASE_PASS_INCLUDED
 
+struct Attributes
+{
+    float3 positionOS : POSITION;
+    float3 normalOS : NORMAL;
+    float4 tangentOS : TANGENT;
+    float2 baseUV : TEXCOORD0;
+    float2 UV1 : TEXCOORD1;
+    float4 vertexColor : COLOR;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+    GI_ATTRIBUTES_DATA
+};
+
 struct VaryingsBase
 {
     float4 positionCS_SS : SV_POSITION;
@@ -15,67 +27,6 @@ struct VaryingsBase
     UNITY_VERTEX_INPUT_INSTANCE_ID
     GI_VARYINGS_DATA
 };
-
-float3 SpecularStrength(Surface surface, BRDF brdf, Light light, DirectLightSpecData specData)
-{
-    float3 specularStrength = SpecularStrength(surface, brdf, light);
-    #if defined(_SPEC_MASK)
-    float2 specUV =
-        #if defined(_SPEC_MASK_UV0)
-        surface.UV.xy;
-        #elif defined(_SPEC_MASK_UV1)
-        surface.UV.zw;
-        #else
-        surface.UV.xy;
-        #endif
-    float slide = GetParallaxSensitivity();
-    float offset = GetParallaxOffset();
-    #if defined(_SPEC_PARALLAX)
-    float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
-    specUV.y += parallaxOffsetV;
-    #endif
-    float hairSpecMask = SampleParallaxSpecularMask(float2(specUV.x, specUV.y));
-    specularStrength *= hairSpecMask;
-    #endif
-    return specularStrength;
-}
-
-float3 DirectBRDF(Surface surface, BRDF brdf, Light light, DirectLightSpecData specData)
-{
-    return SpecularStrength(surface, brdf, light, specData) * brdf.specular + brdf.diffuse;
-}
-
-float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenData)
-{
-    float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
-    float attenuationUV = min(
-        SigmoidSharp(halfLambertFactor, attenData.offset, attenData.smooth),
-        SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
-    );
-    #if defined(_RAMP_SET)
-    float3 lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
-    #else
-    float lightAttenuation = attenuationUV;
-    #endif
-    // return IncomingLight(surface, light);
-    return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
-}
-
-float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light,
-    DirectLightAttenData attenData, DirectLightSpecData specData, RimLightData rimLightData)
-{
-    #if defined(_DEBUG_INCOMING_LIGHT)
-    return IncomingLight(surface, light, attenData);
-    #endif
-    #if defined(_DEBUG_DIRECT_BRDF)
-    return (DirectBRDF(surface, brdf, light, specData) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
-    #endif
-    #if defined(_DEBUG_SPECULAR)
-    return SpecularStrength(surface, brdf, light, specData) * brdf.specular;
-    #endif
-    return IncomingLight(surface, light, attenData) *
-        (DirectBRDF(surface, brdf, light, specData) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
-}
 
 VaryingsBase ToonBasePassVertex(Attributes input)
 {
@@ -122,8 +73,8 @@ float4 ToonBasePassFragment(VaryingsBase input, bool isFrontFace : SV_IsFrontFac
     surface.normalWS = normalize(input.normalWS) * faceSign;
     surface.interpolatedNormalWS = surface.normalWS * faceSign;
     #endif
-    surface.normalVS = normalize(input.normalVS) * faceSign;
     
+    surface.normalVS = normalize(input.normalVS) * faceSign;
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
@@ -140,19 +91,18 @@ float4 ToonBasePassFragment(VaryingsBase input, bool isFrontFace : SV_IsFrontFac
     BRDF brdf = GetBRDF(surface);
     #endif
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
-    DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
-    DirectLightSpecData specData = GetDirectLightSpecData(INPUT_PROPS_DIRECT_SPEC_PARAMS);
-    CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
-    RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
-
-    float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
     
+    DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
+    RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
+    
+    CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
+    float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
         if (RenderingLayersOverlap(surface, light))
         {
-            finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, specData, rimLightData);
+            finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, rimLightData);
         }
     }
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);

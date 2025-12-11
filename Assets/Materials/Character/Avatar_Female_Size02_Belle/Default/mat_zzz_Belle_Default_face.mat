@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _RMO_MASK_MAP
   - _SDF_LIGHT_MAP
   - _SDF_UV0
   - _SN_DECODE_OCT
@@ -20,8 +21,8 @@ Material:
   m_InvalidKeywords:
   - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
-  - _RMO_MASK_MAP
   - _SHADOWS_ON
+  - _SPEC_MASK_UV1
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -92,10 +93,15 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SpecularMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints:
     - _LightMapSDFSourceUV: 0
     - _SmoothNormalDecoder: 1
     - _SmoothNormalSource: 0
+    - _SpecularMaskUV: 1
     - _WidthControlMode: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 1
@@ -135,6 +141,8 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineScale: 0.2
     - _Parallax: 0.02
+    - _ParallaxOffset: 0
+    - _ParallaxSensitivity: 0.1
     - _PerObjShadowCasterID: -1
     - _PerObjectShadowCasterID: -1
     - _PremulAlpha: 0
@@ -144,7 +152,7 @@ Material:
     - _RimScale: 0.3
     - _RimWidth: 0.5
     - _Roughness: 0.5
-    - _ShadowOffsetSDF: 0
+    - _ShadowOffsetSDF: -0.25
     - _Shadows: 0
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0

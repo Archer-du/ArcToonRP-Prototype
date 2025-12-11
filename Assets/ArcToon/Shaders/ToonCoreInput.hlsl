@@ -3,7 +3,6 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Input/InputConfig.hlsl"
-#include "../ShaderLibrary/Light/Lighting.hlsl"
 
 TEXTURE2D(_BaseMap);
 TEXTURE2D(_NormalMap);
@@ -81,23 +80,8 @@ INPUT_PROP(_DirectLightAttenOffset), \
 INPUT_PROP(_DirectLightAttenSmooth), \
 INPUT_PROP(_DirectLightAttenSmoothNew)
 
-#define INPUT_PROPS_DIRECT_SPEC_PARAMS \
-INPUT_PROP(_DirectLightSpecOffset), \
-INPUT_PROP(_DirectLightSpecSmooth)
-
 #define STENCIL_MASK_CHANNEL_FRINGE_SHADOW g
 #define STENCIL_MASK_CHANNEL_EYE_LASHES b
-
-struct Attributes
-{
-    float3 positionOS : POSITION;
-    float3 normalOS : NORMAL;
-    float4 tangentOS : TANGENT;
-    float2 baseUV : TEXCOORD0;
-    float2 UV1 : TEXCOORD1;
-    UNITY_VERTEX_INPUT_INSTANCE_ID
-    GI_ATTRIBUTES_DATA
-};
 
 // common ---------------------------------------------------------------------------
 float2 TransformBaseUV(float2 rawBaseUV)

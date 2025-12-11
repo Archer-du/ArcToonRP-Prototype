@@ -31,6 +31,7 @@
     {
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
+        #include "ToonLightingImpl.hlsl"
         ENDHLSL
         Pass
         {

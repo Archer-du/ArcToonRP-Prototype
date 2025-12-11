@@ -23,6 +23,13 @@
         [Enum(On, 0, Dither, 1, Off, 2)] _Shadows ("Shadow Caster Option", Float) = 0
 
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Destination Blend Factor", Float) = 0
+        [Enum(Off, 0, On, 1)] _ZWrite ("Z Write Mode", Float) = 1
+        
+        _Stencil("Stencil Ref ID", Float) = 1
+        _StencilWriteMask("Stencil Write Mask", Float) = 3
+        _StencilReadMask("Stencil Read Mask", Float) = 3
 
         // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
@@ -58,12 +65,10 @@
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
         
-        // Spec: General
         _HighlightType ("Override Highlight Type", Integer) = 0
         _SpecGloss ("Spec Gloss", Range(0, 1)) = 0.2
         _SpecScale ("Spec Scale", Range(0, 1)) = 0.6
         
-        // Spec: Anisotropic
         _TangentShiftMap ("Tangent Shift Map", 2D) = "white" {}
         [Enum(UV0, 0, UV1, 1)]
         _TangentShiftMapUV ("Tangent Shift Map UV", Integer) = 1
@@ -77,6 +82,7 @@
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
         
+        // ------------------------ Internal
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
 
         // for hard-coded unity capacity
@@ -92,6 +98,7 @@
                 
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
+        #include "ToonLightingImpl.hlsl"
         ENDHLSL
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"
@@ -151,6 +158,8 @@
             {
                 "LightMode" = "DepthOnly"
             }
+            Blend One Zero
+            ZTest LEqual
             ZWrite On
             Cull [_Cull]
             ColorMask R
