@@ -21,7 +21,7 @@ bool RenderingLayersOverlap(Surface surface, Light light)
 }
 
 // reference: com.unity.render-pipelines.universal/ShaderLibrary/BRDF.hlsl
-float SpecularStrength(Surface surface, BRDF brdf, Light light)
+float MinimalCookTorranceSpecularTerm(Surface surface, BRDF brdf, Light light)
 {
     float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
     float nh2 = Square(saturate(dot(surface.normalWS, h)));
@@ -34,7 +34,7 @@ float SpecularStrength(Surface surface, BRDF brdf, Light light)
 
 float3 ToonDirectBRDF(Surface surface, BRDF brdf, Light light)
 {
-    return SpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
+    return MinimalCookTorranceSpecularTerm(surface, brdf, light) * brdf.specular + brdf.diffuse;
 }
 
 float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
@@ -63,7 +63,7 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light)
     return ToonDirectBRDF(surface, brdf, light);
     #endif
     #if defined(_DEBUG_SPECULAR)
-    return SpecularStrength(surface, brdf, light) * brdf.specular;
+    return MinimalCookTorranceSpecularTerm(surface, brdf, light) * brdf.specular;
     #endif
     return IncomingLight(surface, light) * ToonDirectBRDF(surface, brdf, light);
 }

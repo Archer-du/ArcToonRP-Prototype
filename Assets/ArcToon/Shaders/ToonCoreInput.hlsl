@@ -227,9 +227,14 @@ float3 SampleRampSetChannel(float rampUV, float channel)
     return 1.0;
 }
 
-float3 GetFaceVector()
+float3 GetFaceDirectionOS()
 {
     return INPUT_PROP(_FaceVector).xyz;
+}
+
+float4 GetFacePositionOS()
+{
+    return float4(0, 0, 0, 1);
 }
 
 float SampleSDFLightMap(float2 faceUV)

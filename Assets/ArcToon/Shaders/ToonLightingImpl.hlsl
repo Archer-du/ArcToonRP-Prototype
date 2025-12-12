@@ -31,19 +31,60 @@ float MinimalCookTorranceSpecularTerm(Surface surface, BRDF brdf, Light light)
     return r2 / (d2 * max(0.1, lh2) * normalization);
 }
 
+float3 GF2FaceSpecularStrength(Surface surface, Light light)
+{
+    if (!light.isMainLight) return 0.0;
+    float3 faceDirectionWS = mul((float3x3)GetObjectToWorldMatrix(), GetFaceDirectionOS());
+    float3 facePositionWS = mul(GetObjectToWorldMatrix(), GetFacePositionOS()).xyz;
+    float3 faceDirHWS = SafeNormalize(float3(faceDirectionWS.x, 0.0, faceDirectionWS.z));
+    float3 lightDirHWS = SafeNormalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
+    float3 viewDirWS = SafeNormalize(_WorldSpaceCameraPos - facePositionWS);
+    float3 viewDirHWS = SafeNormalize(float3(viewDirWS.x, 0.0, viewDirWS.z));
+    float3 halfVecHWS = SafeNormalize(viewDirHWS + lightDirHWS);
+    float HdotN = dot(halfVecHWS, faceDirHWS);
+    float clipCenter = clamp(-1.7071 * 1.5 * (HdotN - 1.0), 0.001, 0.999);
+    float flipSign = cross(halfVecHWS, faceDirHWS).y;
+    float2 faceUV =
+        #if defined(_SDF_UV0)
+        surface.UV.xy;
+        #elif defined(_SDF_UV1)
+        surface.UV.zw;
+        #else
+        surface.UV.xy;
+        #endif
+    if (flipSign > 0.0f)
+    {
+        faceUV.x = 1 - faceUV.x;
+    }
+    float specFactorNoseSDF1 = SampleSDFLightMapNoseSpecular1(faceUV);
+    float specFactorNoseSDF2 = SampleSDFLightMapNoseSpecular2(faceUV);
+    float specularUV =
+        SigmoidSharp(specFactorNoseSDF1, clipCenter, GetNoseSpecularSmooth()) *
+        SigmoidSharp(specFactorNoseSDF2, 1 - clipCenter, GetNoseSpecularSmooth());
+    float specularStrength = specularUV;
+    // TODO: config nose spec attenuation
+    if (HdotN < 0.6095) specularStrength = lerp(specularStrength, 0, saturate((0.6095 - HdotN) * 20));
+    return specularStrength * GetNoseSpecularStrength();
+}
+
 float3 ToonSpecularStrength(Surface surface, BRDF brdf, Light light)
 {
+    // TODO: config
+    #if defined(_SDF_LIGHT_MAP)
+    return GF2FaceSpecularStrength(surface, light);
+    #endif
+    
     float3 specularStrength;
     #if defined(_OVERRIDE_HIGHLIGHT)
     float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
         #if defined(_TANGENT_SHIFT_MAP)
         float2 hairUV =
             #if defined(_TANGENT_SHIFT_MAP_UV0)
-            hairSpecData.UVData.xy;
+            surface.UV.xy;
             #elif defined(_TANGENT_SHIFT_MAP_UV1)
-            hairSpecData.UVData.zw;
+            surface.UV.zw;
             #else
-            hairSpecData.UVData.xy;
+            surface.UV.xy;
             #endif
         float shiftScale = SampleTangentShiftNoise(hairUV) + GetTangentShiftOffset();
         float3 bitangentWS = SafeNormalize(surface.bitangentWS + shiftScale * surface.normalWS);
@@ -97,19 +138,59 @@ float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
     return (diffuse * brdf.diffuse + reflection) * surface.occlusion;
 }
 
-float3 IncomingLight(Surface surface, Light light, DirectLightAttenData attenData)
+float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLightAttenData attenData)
 {
+    #if defined(_SDF_LIGHT_MAP)
+    float3 faceDirectionWS = mul((float3x3)GetObjectToWorldMatrix(), GetFaceDirectionOS());
+    float3 faceDirHWS = SafeNormalize(float3(faceDirectionWS.x, 0.0, faceDirectionWS.z));
+    float3 lightDirHWS = SafeNormalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
+    float FdotL = dot(faceDirHWS, lightDirHWS);
+    float clipCenter = - FdotL * 0.5 + 0.5 + GetSDFShadowOffset();
+    float flipSign = cross(faceDirHWS, lightDirHWS).y;
+    float2 faceUV =
+        #if defined(_SDF_UV0)
+        surface.UV.xy;
+        #elif defined(_SDF_UV1)
+        surface.UV.zw;
+        #else
+        surface.UV.xy;
+        #endif
+    if (flipSign > 0.0f)
+    {
+        faceUV.x = 1 - faceUV.x;
+    }
+    float attenFactorSDF = SampleSDFLightMap(faceUV);
+    float shadowMaskFactorSDF = SampleSDFLightMapShadowMask(faceUV);
+    float attenuationUV = min(
+        SigmoidSharp(attenFactorSDF, clipCenter, attenData.smooth),
+        SigmoidSharp(shadowMaskFactorSDF, attenData.offset, attenData.smooth)
+    );
+    if (light.isMainLight)
+    {
+        attenuationUV = min(
+            attenuationUV,
+            SigmoidSharp(1 - fragment.stencilMask.STENCIL_MASK_CHANNEL_FRINGE_SHADOW,
+                attenData.offset, attenData.smooth)
+        );
+    }
+    #else
     float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
     float attenuationUV = min(
         SigmoidSharp(halfLambertFactor, attenData.offset, attenData.smooth),
         SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
     );
+    #endif
+
+    // attenuation compensation for transparent fringe
+    // —— eyelashes covered by fringe may show incorrect shadows due to the fringe shadow caster clipping.
+    attenuationUV = lerp(attenuationUV, 0, fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
+    
     #if defined(_RAMP_SET)
     float3 lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
     #else
     float lightAttenuation = attenuationUV;
     #endif
-    // return IncomingLight(surface, light);
+    
     return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
 }
 
@@ -138,7 +219,7 @@ float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light,
                    DirectLightAttenData attenData, RimLightData rimLightData)
 {
     #if defined(_DEBUG_INCOMING_LIGHT)
-    return IncomingLight(surface, light, attenData);
+    return IncomingLight(surface, fragment, light, attenData);
     #endif
     #if defined(_DEBUG_DIRECT_BRDF)
     return (ToonDirectBRDF(surface, brdf, light) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
@@ -146,7 +227,7 @@ float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light,
     #if defined(_DEBUG_SPECULAR)
     return ToonSpecularStrength(surface, brdf, light) * brdf.specular;
     #endif
-    return IncomingLight(surface, light, attenData) *
+    return IncomingLight(surface, fragment, light, attenData) *
         (ToonDirectBRDF(surface, brdf, light) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
 }
 

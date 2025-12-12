@@ -28,59 +28,6 @@ struct VaryingsHair
     GI_VARYINGS_DATA
 };
 
-// // overrides
-// float3 SpecularStrength(Surface surface, BRDF brdf, Light light)
-// {
-//     float3 specularStrength;
-//     #if defined(_OVERRIDE_HIGHLIGHT)
-//     float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
-//         #if defined(_TANGENT_SHIFT_MAP)
-//         float2 hairUV =
-//             #if defined(_TANGENT_SHIFT_MAP_UV0)
-//             hairSpecData.UVData.xy;
-//             #elif defined(_TANGENT_SHIFT_MAP_UV1)
-//             hairSpecData.UVData.zw;
-//             #else
-//             hairSpecData.UVData.xy;
-//             #endif
-//         float shiftScale = SampleTangentShiftNoise(hairUV) + GetTangentShiftOffset();
-//         float3 bitangentWS = SafeNormalize(surface.bitangentWS + shiftScale * surface.normalWS);
-//         float dotTH = dot(bitangentWS, h);
-//         // avoid sqrt crashes caused by floating point precision
-//         float cosTH = saturate(dotTH);
-//         float sinTH = sqrt(saturate(1.0 - cosTH * cosTH));
-//         float dirAttenuation = smoothstep(-1.0, 0.0, dotTH);
-//         specularStrength = dirAttenuation * pow(sinTH, GetSpecGloss()) * GetSpecScale();
-//         #else
-//         float dotNH = saturate(dot(surface.normalWS, h));
-//         specularStrength = GetSpecScale() * pow(dotNH, GetSpecGloss());
-//         #endif
-//     #else
-//     specularStrength = SpecularStrength(surface, brdf, light);
-//     #endif
-//     
-//     #if defined(_SPEC_MASK)
-//     float2 specUV =
-//         #if defined(_SPEC_MASK_UV0)
-//         surface.UV.xy;
-//         #elif defined(_SPEC_MASK_UV1)
-//         surface.UV.zw;
-//         #else
-//         surface.UV.xy;
-//         #endif
-//     float slide = GetParallaxSensitivity();
-//     float offset = GetParallaxOffset();
-//         #if defined(_SPEC_PARALLAX)
-//         float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
-//         specUV.y += parallaxOffsetV;
-//         #endif
-//     float hairSpecMask = SampleParallaxSpecularMask(float2(specUV.x, specUV.y));
-//     specularStrength *= hairSpecMask;
-//     #endif
-//     
-//     return specularStrength;
-// }
-
 VaryingsHair ToonFringePassVertex(Attributes input)
 {
     VaryingsHair output;
