@@ -95,6 +95,7 @@
                 
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
+        #define IS_FACE
         #include "ToonLightingImpl.hlsl"
         ENDHLSL
 
@@ -122,6 +123,10 @@
 
             #pragma shader_feature _NORMAL_MAP
             
+            #pragma shader_feature_local _SPEC_MASK
+            #pragma shader_feature_local _ _SPEC_MASK_UV0 _SPEC_MASK_UV1
+            #pragma shader_feature_local _SPEC_PARALLAX
+            
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS
             
@@ -129,6 +134,10 @@
             
             #pragma shader_feature _RAMP_SET
 
+            #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
+            #pragma shader_feature_local _TANGENT_SHIFT_MAP
+            #pragma shader_feature_local _ _TANGENT_SHIFT_MAP_UV0 _TANGENT_SHIFT_MAP_UV1
+            
             #pragma shader_feature_local _SDF_LIGHT_MAP
             #pragma shader_feature_local _ _SDF_UV0 _SDF_UV1
             

@@ -117,8 +117,8 @@ float3 ToonSpecularStrength(Surface surface, BRDF brdf, Light light)
         float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
         specUV.y += parallaxOffsetV;
         #endif
-    float hairSpecMask = SampleParallaxSpecularMask(float2(specUV.x, specUV.y));
-    specularStrength *= hairSpecMask;
+    float3 specMask = SampleParallaxSpecularMask(float2(specUV.x, specUV.y));
+    specularStrength *= specMask;
     #endif
     
     return specularStrength;
@@ -183,7 +183,12 @@ float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLigh
 
     // attenuation compensation for transparent fringe
     // —— eyelashes covered by fringe may show incorrect shadows due to the fringe shadow caster clipping.
-    attenuationUV = lerp(attenuationUV, 0, fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
+    #if defined(IS_FACE)
+    if (light.isMainLight)
+    {
+        attenuationUV = lerp(attenuationUV, 0, fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
+    }
+    #endif
     
     #if defined(_RAMP_SET)
     float3 lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);

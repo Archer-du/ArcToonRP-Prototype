@@ -299,10 +299,10 @@ float GetParallaxOffset()
     return INPUT_PROP(_ParallaxOffset);
 }
 
-float SampleParallaxSpecularMask(float2 hairUV)
+float3 SampleParallaxSpecularMask(float2 hairUV)
 {
     // TODO: channel
-    return SAMPLE_TEXTURE2D(_SpecularMask, sampler_linear_clamp, hairUV).r;
+    return SAMPLE_TEXTURE2D(_SpecularMask, sampler_linear_clamp, hairUV).rgb;
 }
 
 float2 GetFringeShadowBiasScale()
