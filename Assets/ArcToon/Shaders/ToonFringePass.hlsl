@@ -50,7 +50,7 @@ float4 ToonFringePassFragment(VaryingsHair input, bool isFrontFace : SV_IsFrontF
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
     ClipLOD(config.fragment, unity_LODFade.x);
 
-    float4 albedo = GetColor(config);
+    float4 albedo = GetAlbedo(config);
     #if defined(_CLIPPING)
     clip(albedo.a - GetAlphaClip(config));
     #endif

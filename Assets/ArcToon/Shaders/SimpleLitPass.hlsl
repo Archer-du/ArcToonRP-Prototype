@@ -60,7 +60,7 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     config.detailUV = input.detailUV;
     #endif
     
-    float4 color = GetColor(config);
+    float4 color = GetAlbedo(config);
     #if defined(_CLIPPING)
     clip(color.a - GetAlphaClip(config));
     #endif

@@ -20,7 +20,7 @@ float2 TransformBaseUV(float2 rawBaseUV)
     return rawBaseUV * baseST.xy + baseST.zw;
 }
 
-float4 GetColor(InputConfig input)
+float4 GetAlbedo(InputConfig input)
 {
     float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
     float4 color = INPUT_PROP(_BaseColor);
@@ -49,7 +49,7 @@ float GetFresnel(InputConfig input)
 
 float3 GetEmission(InputConfig input)
 {
-    return GetColor(input).rgb;
+    return GetAlbedo(input).rgb;
 }
 
 float GetFinalAlpha(float alpha)

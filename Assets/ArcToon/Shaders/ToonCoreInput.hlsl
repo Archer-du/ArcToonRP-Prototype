@@ -101,9 +101,29 @@ float2 TransformUV1(float2 rawUV1)
     return rawUV1;
 }
 
-float4 GetColor(InputConfig input)
+float4 GetAlbedo(InputConfig input)
 {
     float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
+    float4 color = INPUT_PROP(_BaseColor);
+    return albedo * color;
+}
+
+float GenerateSphereUVMask(float2 UV)
+{
+    UV = mad(UV, 2, -1);
+    float distance = dot(UV, UV);
+    float sphereMask = 1 - SigmoidSharp(distance, 0.7f, 0.4f);
+    return sphereMask;
+}
+
+float4 GetParallaxRefractionAlbedo(InputConfig input, float3 viewDirectionWS, float3x3 tangentToWorld)
+{
+    float2 baseUV = input.baseUV;
+    float mask = GenerateSphereUVMask(baseUV);
+    float3 viewDirectionTS = TransformWorldToTangentDir(viewDirectionWS, tangentToWorld, true);
+    viewDirectionTS *= 0.4;
+    float2 offsetUV = baseUV - viewDirectionTS.xy;
+    float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, lerp(baseUV, offsetUV, mask));
     float4 color = INPUT_PROP(_BaseColor);
     return albedo * color;
 }

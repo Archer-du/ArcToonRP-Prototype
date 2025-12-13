@@ -33,7 +33,7 @@ float4 UnlitPassFragment(Varyings input) : SV_TARGET
     UNITY_SETUP_INSTANCE_ID(input);
     
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
-    float4 color = GetColor(config);
+    float4 color = GetAlbedo(config);
     
     #if defined(_CLIPPING)
     clip(color.a - GetAlphaClip(config));

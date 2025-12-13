@@ -19,12 +19,9 @@ struct VaryingsFace
     float3 positionWS : VAR_POSITION;
     float3 normalWS : VAR_NORMAL_WS;
     float3 normalVS : VAR_NORMAL_VS;
-    #if defined(_NORMAL_MAP)
     float4 tangentWS : VAR_TANGENT;
-    #endif
     float2 baseUV : VAR_BASE_UV;
     float2 UV1 : VAR_UV1;
-    float2 faceUV : VAR_FACE_UV;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     GI_VARYINGS_DATA
 };
@@ -39,28 +36,29 @@ VaryingsFace ToonFacePassVertex(Attributes input)
     output.positionCS_SS = TransformWorldToHClip(output.positionWS);
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.normalVS = TransformWorldToViewNormal(output.normalWS);
-    #if defined(_NORMAL_MAP)
     output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
-    #endif
     output.baseUV = TransformBaseUV(input.baseUV);
     output.UV1 = TransformUV1(input.UV1);
-    #if defined(_SDF_UV0)
-    output.faceUV = TransformFaceUV(input.baseUV);
-    #elif defined(_SDF_UV1)
-    output.faceUV = TransformFaceUV(input.UV1);
-    #else
-    output.faceUV = TransformFaceUV(input.baseUV);
-    #endif
     return output;
 }
 
 float4 ToonFacePassFragment(VaryingsFace input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
+    // float2 baseUV = input.baseUV;
+    // #if defined(_SPEC_MASK)
+    // float3 viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
+    // float parallaxOffsetV = - viewDirectionWS.y * 0.07 + 0;
+    // baseUV.y += parallaxOffsetV;
+    // float parallaxOffsetU = - viewDirectionWS.x * 0.07 + 0;
+    // baseUV.x += parallaxOffsetU;
+    // #endif
+    
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.UV1.xy);
     ClipLOD(config.fragment, unity_LODFade.x);
     
-    float4 albedo = GetColor(config);
+    float3x3 tangentToWorld = CreateTangentToWorld(input.normalWS, input.tangentWS.xyz, input.tangentWS.w);
+    float4 albedo = GetParallaxRefractionAlbedo(config, normalize(_WorldSpaceCameraPos - input.positionWS), tangentToWorld);
     #if defined(_CLIPPING)
     clip(albedo.a - GetAlphaClip(config));
     #endif
@@ -81,8 +79,8 @@ float4 ToonFacePassFragment(VaryingsFace input, bool isFrontFace : SV_IsFrontFac
     surface.normalWS = normalize(input.normalWS) * faceSign;
     surface.interpolatedNormalWS = surface.normalWS * faceSign;
     #endif
-    surface.normalVS = normalize(input.normalVS) * faceSign;
     
+    surface.normalVS = normalize(input.normalVS) * faceSign;
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
@@ -112,7 +110,7 @@ float4 ToonFacePassFragment(VaryingsFace input, bool isFrontFace : SV_IsFrontFac
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);
     
     finalColor += GetEmission(config);
-
+    
     return float4(finalColor, surface.alpha);
 }
 
