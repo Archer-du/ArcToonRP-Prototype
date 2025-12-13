@@ -14,7 +14,7 @@ namespace ArcToon.Scripts.Character
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.LeftAlt))
+            if (Input.GetKeyDown(KeyCode.C))
             {
                 TogglePause();
             }
