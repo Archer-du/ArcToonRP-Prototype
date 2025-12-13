@@ -139,7 +139,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Stencil: 1
+    - _Stencil: 3
     - _StencilReadMask: 3
     - _StencilWriteMask: 3
     - _UVSec: 0

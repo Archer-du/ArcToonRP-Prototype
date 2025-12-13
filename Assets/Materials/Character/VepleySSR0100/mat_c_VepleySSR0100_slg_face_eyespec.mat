@@ -18,6 +18,7 @@ Material:
   - _SN_SRC_COLOR
   - _SPEC_MASK
   - _SPEC_MASK_UV0
+  - _SPEC_PARALLAX
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
@@ -25,11 +26,11 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2050
   stringTagMap: {}
   disabledShaderPasses:
   - GeometryOutline
-  m_LockedProperties: 
+  m_LockedProperties: :m_EnableInstancingVariants
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -140,7 +141,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Stencil: 1
+    - _Stencil: 3
     - _StencilReadMask: 3
     - _StencilWriteMask: 3
     - _UVSec: 0
