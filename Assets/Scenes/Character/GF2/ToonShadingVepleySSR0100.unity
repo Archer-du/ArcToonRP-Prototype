@@ -4489,6 +4489,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ebe855541e2066847a043c14be969ce4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1952828549}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ebe855541e2066847a043c14be969ce4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1952828550}
   m_SourcePrefab: {fileID: 100100000, guid: ebe855541e2066847a043c14be969ce4, type: 3}
 --- !u!4 &213872338 stripped
 Transform:
@@ -4723,53 +4726,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 156140048813075904, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: HorizontalAxis.Center
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1333145391175684354, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: HorizontalAxis.Center
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3120355254450399785, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: HorizontalAxis.Center
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4069533767688601135, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: HorizontalAxis.Center
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4131849331886834378, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: currentActiveMode
-      value: 5
-      objectReference: {fileID: 0}
     - target: {fileID: 5165502310405497967, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: m_Name
       value: CameraController
-      objectReference: {fileID: 0}
-    - target: {fileID: 6174373427549981288, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: HorizontalAxis.Center
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7100634267731530039, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.3179998
-      objectReference: {fileID: 0}
-    - target: {fileID: 7100634267731530039, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -2.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7180066287527941596, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: field of view
-      value: 25
-      objectReference: {fileID: 0}
-    - target: {fileID: 7180066287527941596, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: far clip plane
-      value: 120
-      objectReference: {fileID: 0}
-    - target: {fileID: 7624310740099951257, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: HorizontalAxis.Center
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9064227431101291512, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4931,6 +4890,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1952828550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1952828548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeba926fd5a83964cbd87554e5c6c6ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
