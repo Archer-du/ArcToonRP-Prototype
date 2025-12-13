@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _EYE_REFRACTION
   - _RECEIVE_SHADOWS
   - _SDF_UV1
   - _SN_DECODE_OCT
@@ -114,6 +115,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _IsEye: 1
     - _LightMapSpecularSDFToggle: 0
     - _LightingDebugMode: 0
     - _MaskMapToggle: 0

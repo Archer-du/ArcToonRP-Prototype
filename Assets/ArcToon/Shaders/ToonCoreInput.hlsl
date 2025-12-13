@@ -121,7 +121,8 @@ float4 GetParallaxRefractionAlbedo(InputConfig input, float3 viewDirectionWS, fl
     float2 baseUV = input.baseUV;
     float mask = GenerateSphereUVMask(baseUV);
     float3 viewDirectionTS = TransformWorldToTangentDir(viewDirectionWS, tangentToWorld, true);
-    viewDirectionTS *= 0.4;
+    viewDirectionTS *= 0.2;
+    viewDirectionTS.x *= -1;
     float2 offsetUV = baseUV - viewDirectionTS.xy;
     float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, lerp(baseUV, offsetUV, mask));
     float4 color = INPUT_PROP(_BaseColor);

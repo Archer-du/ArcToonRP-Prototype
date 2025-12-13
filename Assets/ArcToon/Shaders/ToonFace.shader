@@ -76,6 +76,8 @@
         _NoseSpecularStrengthSDF ("SDF Light Map Nose Specular Strength", Range(0, 1)) = 0.5
         _NoseSpecularSmoothSDF ("SDF Light Map Nose Specular Smooth", Range(0, 1)) = 0.1
         
+        [Toggle(_EYE_REFRACTION)] _IsEye ("Is Eye", Float) = 0
+        
         // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
         _LightingDebugMode ("Lighting Debug Mode", Float) = 0
@@ -140,7 +142,8 @@
             
             #pragma shader_feature_local _SDF_LIGHT_MAP
             #pragma shader_feature_local _ _SDF_UV0 _SDF_UV1
-            
+
+            #pragma shader_feature_local _EYE_REFRACTION
             #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT

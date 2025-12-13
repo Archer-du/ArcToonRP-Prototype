@@ -18,7 +18,6 @@ Material:
   - _SN_SRC_COLOR
   - _SPEC_MASK
   - _SPEC_MASK_UV0
-  - _SPEC_PARALLAX
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _LIGHTINGDEBUGMODE_NONE
@@ -116,6 +115,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _IsEye: 0
     - _LightMapSpecularSDFToggle: 0
     - _LightingDebugMode: 0
     - _MaskMapToggle: 0

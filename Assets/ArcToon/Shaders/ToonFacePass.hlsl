@@ -56,9 +56,14 @@ float4 ToonFacePassFragment(VaryingsFace input, bool isFrontFace : SV_IsFrontFac
     
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.UV1.xy);
     ClipLOD(config.fragment, unity_LODFade.x);
-    
+
+    #if defined(_EYE_REFRACTION)
     float3x3 tangentToWorld = CreateTangentToWorld(input.normalWS, input.tangentWS.xyz, input.tangentWS.w);
     float4 albedo = GetParallaxRefractionAlbedo(config, normalize(_WorldSpaceCameraPos - input.positionWS), tangentToWorld);
+    #else
+    float4 albedo = GetAlbedo(config);
+    #endif
+    
     #if defined(_CLIPPING)
     clip(albedo.a - GetAlphaClip(config));
     #endif
