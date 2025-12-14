@@ -20,6 +20,7 @@
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+        [Toggle(_RECEIVE_FRINGE_SHADOWS)] _ReceiveFringeShadows ("Receive Fringe Shadows", Float) = 0
         [Enum(On, 0, Dither, 1, Off, 2)] _Shadows ("Shadow Caster Option", Float) = 0
         
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 0
@@ -153,6 +154,7 @@
             
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _RECEIVE_FRINGE_SHADOWS
             
             #pragma shader_feature _RMO_MASK_MAP
             

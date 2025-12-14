@@ -174,10 +174,7 @@ float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLigh
     );
     #endif
 
-    // attenuation compensation for transparent fringe
-    // —— eyelashes covered by fringe may show incorrect shadows due to the fringe shadow caster clipping.
-    // TODO: IS_FACE keyword optimize
-    #if defined(IS_FACE)
+    #if defined(_RECEIVE_FRINGE_SHADOWS)
     if (light.isMainLight)
     {
         attenuationUV = min(
@@ -185,6 +182,7 @@ float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLigh
             SigmoidSharp(1 - fragment.stencilMask.STENCIL_MASK_CHANNEL_FRINGE_SHADOW,
                 attenData.offset, attenData.smooth)
         );
+        // attenuation compensation for transparent fringe —— eyelashes covered by fringe may show incorrect shadows due to the fringe shadow caster clipping.
         attenuationUV = lerp(attenuationUV, 0, fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
     }
     #endif

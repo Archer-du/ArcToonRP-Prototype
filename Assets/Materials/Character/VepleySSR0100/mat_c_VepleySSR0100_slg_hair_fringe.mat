@@ -168,6 +168,7 @@ Material:
     - _PerObjShadowCasterID: -1
     - _PerObjectShadowCasterID: -1
     - _RampSetToggle: 1
+    - _ReceiveFringeShadows: 0
     - _ReceiveShadows: 1
     - _RimDepthBias: 3
     - _RimScale: 1
