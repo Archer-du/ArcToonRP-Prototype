@@ -39,6 +39,7 @@ VaryingsSM FringeReceiverPassVertex(AttributesSM input)
 
     float3 mainLightDirectionWS = normalize(GetMainLightDirection());
     float3 mainLightDirectionVS = normalize(TransformWorldToViewDir(mainLightDirectionWS));
+    // TODO:
     float3 cameraDirectionOS = normalize(TransformWorldToObject(_WorldSpaceCameraPos));
     // float camDirFactor = 1 - smoothstep(0.1, 0.9, cameraDirectionOS.y);
         

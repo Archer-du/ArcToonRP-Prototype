@@ -15,7 +15,7 @@ struct Attributes
     GI_ATTRIBUTES_DATA
 };
 
-struct VaryingsHair
+struct Varyings
 {
     float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
@@ -28,9 +28,9 @@ struct VaryingsHair
     GI_VARYINGS_DATA
 };
 
-VaryingsHair ToonFringePassVertex(Attributes input)
+Varyings ToonFringePassVertex(Attributes input)
 {
-    VaryingsHair output;
+    Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input, output);
@@ -44,10 +44,10 @@ VaryingsHair ToonFringePassVertex(Attributes input)
     return output;
 }
 
-float4 ToonFringePassFragment(VaryingsHair input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
+float4 ToonFringePassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.UV1.xy);
     ClipLOD(config.fragment, unity_LODFade.x);
 
     float4 albedo = GetAlbedo(config);
@@ -58,12 +58,9 @@ float4 ToonFringePassFragment(VaryingsHair input, bool isFrontFace : SV_IsFrontF
     Surface surface;
     ZERO_INITIALIZE(Surface, surface)
     surface.positionWS = input.positionWS;
-    surface.color = albedo.rgb;
-    surface.alpha = albedo.a;
     surface.UV = float4(input.baseUV.xy, input.UV1.xy);
     
     float faceSign = isFrontFace ? 1.0 : -1.0;
-
     #if defined(_NORMAL_MAP)
     float3x3 tangentToWorld = CreateTangentToWorld(input.normalWS, input.tangentWS.xyz, input.tangentWS.w);
     surface.normalWS = normalize(mul(GetNormalTS(config), tangentToWorld)) * faceSign;
@@ -75,10 +72,12 @@ float4 ToonFringePassFragment(VaryingsHair input, bool isFrontFace : SV_IsFrontF
     float sign = input.tangentWS.w * GetOddNegativeScale();
     surface.bitangentWS = cross(input.normalWS, input.tangentWS.xyz) * sign;
     #endif
-    
     surface.normalVS = normalize(input.normalVS);
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
+    
+    surface.color = albedo.rgb;
+    surface.alpha = albedo.a;
     surface.metallic = GetMetallic(config);
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.occlusion = GetOcclusion(config);

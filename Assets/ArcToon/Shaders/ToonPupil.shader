@@ -67,7 +67,12 @@
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
         
-        [Toggle(_EYE_REFRACTION)] _IsEye ("Is Eye", Float) = 0
+        _RefractionType ("Refraction Type", Integer) = 1
+        _AnteriorChamberHeight ("Anterior Chamber Height", Range(0, 1)) = 0.2
+        _RefractionEdge ("Refraction Edge", Range(0, 1)) = 0.7
+        _RefractionSmooth ("Refraction Edge Smooth", Range(0, 1)) = 0.4
+        _ParallaxFlipSignX ("Parallax Flip Sign X", Integer) = -1
+        _ParallaxFlipSignY ("Parallax Flip Sign Y", Integer) = 1
         
         // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
@@ -142,10 +147,10 @@
             #pragma shader_feature _DEBUG_SPECULAR
             #pragma shader_feature _DEBUG_DIFFUSE
 
-            #include "ToonFacePass.hlsl"
+            #include "ToonPupilPass.hlsl"
 
-            #pragma vertex ToonFacePassVertex
-            #pragma fragment ToonFacePassFragment
+            #pragma vertex ToonPupilPassVertex
+            #pragma fragment ToonPupilPassFragment
             ENDHLSL
         }
         

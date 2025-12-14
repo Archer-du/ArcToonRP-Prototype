@@ -4,22 +4,15 @@
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Input/InputConfig.hlsl"
 
-TEXTURE2D(_BaseMap);
+TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
+
 TEXTURE2D(_NormalMap);
 TEXTURE2D(_EmissionMap);
-SAMPLER(sampler_BaseMap);
 
-TEXTURE2D(_RMOMaskMap);
-SAMPLER(sampler_RMOMaskMap);
-
-TEXTURE2D(_LightMapSDF);
-SAMPLER(sampler_LightMapSDF);
-
-TEXTURE2D(_RampSet);
-SAMPLER(sampler_RampSet);
-
-TEXTURE2D(_TangentShiftMap);
-SAMPLER(sampler_TangentShiftMap);
+TEXTURE2D(_RMOMaskMap); SAMPLER(sampler_RMOMaskMap);
+TEXTURE2D(_LightMapSDF); SAMPLER(sampler_LightMapSDF);
+TEXTURE2D(_RampSet); SAMPLER(sampler_RampSet);
+TEXTURE2D(_TangentShiftMap); SAMPLER(sampler_TangentShiftMap);
 
 TEXTURE2D(_SpecularMask);
 
@@ -72,6 +65,12 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleY)
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeTransparentScale)
 
+    UNITY_DEFINE_INSTANCED_PROP(float, _AnteriorChamberHeight)
+    UNITY_DEFINE_INSTANCED_PROP(float, _RefractionEdge)
+    UNITY_DEFINE_INSTANCED_PROP(float, _RefractionSmooth)
+    UNITY_DEFINE_INSTANCED_PROP(int, _ParallaxFlipSignX)
+    UNITY_DEFINE_INSTANCED_PROP(int, _ParallaxFlipSignY)
+
     UNITY_DEFINE_INSTANCED_PROP(float, _PerObjectShadowCasterID)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -108,15 +107,9 @@ float4 GetAlbedo(InputConfig input)
     return albedo * color;
 }
 
-float4 GetParallaxRefractionAlbedo(InputConfig input, float3 viewDirectionWS, float3x3 tangentToWorld)
+float4 GetAlbedo(float2 baseUV)
 {
-    float2 baseUV = input.baseUV;
-    float mask = GenerateSphereDistanceMaskByUV(baseUV, 0.7, 0.4);
-    float3 viewDirectionTS = TransformWorldToTangentDir(viewDirectionWS, tangentToWorld, true);
-    viewDirectionTS *= 0.2;
-    viewDirectionTS.x *= -1;
-    float2 offsetUV = baseUV - viewDirectionTS.xy;
-    float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, lerp(baseUV, offsetUV, mask));
+    float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
     float4 color = INPUT_PROP(_BaseColor);
     return albedo * color;
 }

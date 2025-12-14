@@ -20,6 +20,17 @@ bool RenderingLayersOverlap(Surface surface, Light light)
     return (surface.renderingLayerMask & light.renderingLayerMask) != 0;
 }
 
+float2 GetParallaxRefractionUV(float2 baseUV, float3 viewDirectionWS, float3x3 tangentToWorld)
+{
+    float mask = GenerateSphereDistanceMaskByUV(baseUV, INPUT_PROP(_RefractionEdge), INPUT_PROP(_RefractionSmooth));
+    float3 viewDirectionTS = TransformWorldToTangentDir(viewDirectionWS, tangentToWorld, true);
+    viewDirectionTS *= INPUT_PROP(_AnteriorChamberHeight);
+    viewDirectionTS.x *= INPUT_PROP(_ParallaxFlipSignX);
+    viewDirectionTS.y *= INPUT_PROP(_ParallaxFlipSignY);
+    float2 offsetUV = baseUV - viewDirectionTS.xy;
+    return lerp(baseUV, offsetUV, mask);
+}
+
 float MinimalCookTorranceSpecularTerm(Surface surface, BRDF brdf, Light light)
 {
     float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
@@ -232,6 +243,13 @@ float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light,
     return IncomingLight(surface, fragment, light, attenData) *
         (ToonDirectBRDF(surface, brdf, light) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
 }
+
+
+
+
+
+
+
 
 
 

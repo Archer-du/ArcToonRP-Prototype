@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _RECEIVE_FRINGE_SHADOWS
   - _SDF_UV1
   - _SN_DECODE_OCT
   - _SN_SRC_COLOR
@@ -130,6 +131,7 @@ Material:
     - _ParallaxOffset: 0
     - _ParallaxSensitivity: 0.1
     - _PerObjectShadowCasterID: -1
+    - _ReceiveFringeShadows: 1
     - _ReceiveShadows: 0
     - _RimDepthBias: 3
     - _RimScale: 0.5

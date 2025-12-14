@@ -100,6 +100,13 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string FringeTransparentScale = "_FringeTransparentScale";
         public static readonly string FringeShadowBiasScaleX = "_FringeShadowBiasScaleX";
         public static readonly string FringeShadowBiasScaleY = "_FringeShadowBiasScaleY";
+        
+        public static readonly string RefractionType = Auto();
+        public static readonly string AnteriorChamberHeight = Auto();
+        public static readonly string RefractionEdge = Auto();
+        public static readonly string RefractionSmooth = Auto();
+        public static readonly string ParallaxFlipSignX = Auto();
+        public static readonly string ParallaxFlipSignY = Auto();
     }
     
     public static class ShaderKeywords

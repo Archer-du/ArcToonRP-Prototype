@@ -13,7 +13,7 @@ struct Attributes
     GI_ATTRIBUTES_DATA
 };
 
-struct VaryingsBase
+struct Varyings
 {
     float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
@@ -28,9 +28,9 @@ struct VaryingsBase
     GI_VARYINGS_DATA
 };
 
-VaryingsBase ToonBasePassVertex(Attributes input)
+Varyings ToonBasePassVertex(Attributes input)
 {
-    VaryingsBase output;
+    Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input, output);
@@ -46,10 +46,10 @@ VaryingsBase ToonBasePassVertex(Attributes input)
     return output;
 }
 
-float4 ToonBasePassFragment(VaryingsBase input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
+float4 ToonBasePassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.UV1.xy);
     ClipLOD(config.fragment, unity_LODFade.x);
 
     float4 albedo = GetAlbedo(config);
@@ -60,8 +60,6 @@ float4 ToonBasePassFragment(VaryingsBase input, bool isFrontFace : SV_IsFrontFac
     Surface surface;
     ZERO_INITIALIZE(Surface, surface)
     surface.positionWS = input.positionWS;
-    surface.color = albedo.rgb;
-    surface.alpha = albedo.a;
     surface.UV = float4(input.baseUV.xy, input.UV1.xy);
 
     float faceSign = isFrontFace ? 1.0 : -1.0;
@@ -73,10 +71,12 @@ float4 ToonBasePassFragment(VaryingsBase input, bool isFrontFace : SV_IsFrontFac
     surface.normalWS = normalize(input.normalWS) * faceSign;
     surface.interpolatedNormalWS = surface.normalWS * faceSign;
     #endif
-    
     surface.normalVS = normalize(input.normalVS) * faceSign;
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
+    
+    surface.color = albedo.rgb;
+    surface.alpha = albedo.a;
     surface.metallic = GetMetallic(config);
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.occlusion = GetOcclusion(config);

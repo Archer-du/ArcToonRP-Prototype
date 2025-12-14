@@ -13,7 +13,7 @@ struct Attributes
     GI_ATTRIBUTES_DATA
 };
 
-struct VaryingsFace
+struct Varyings
 {
     float4 positionCS_SS : SV_POSITION;
     float3 positionWS : VAR_POSITION;
@@ -26,9 +26,9 @@ struct VaryingsFace
     GI_VARYINGS_DATA
 };
 
-VaryingsFace ToonFacePassVertex(Attributes input)
+Varyings ToonFacePassVertex(Attributes input)
 {
-    VaryingsFace output;
+    Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     TRANSFER_GI_DATA(input, output);
@@ -42,28 +42,13 @@ VaryingsFace ToonFacePassVertex(Attributes input)
     return output;
 }
 
-float4 ToonFacePassFragment(VaryingsFace input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
+float4 ToonFacePassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    // float2 baseUV = input.baseUV;
-    // #if defined(_SPEC_MASK)
-    // float3 viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
-    // float parallaxOffsetV = - viewDirectionWS.y * 0.07 + 0;
-    // baseUV.y += parallaxOffsetV;
-    // float parallaxOffsetU = - viewDirectionWS.x * 0.07 + 0;
-    // baseUV.x += parallaxOffsetU;
-    // #endif
-    
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.UV1.xy);
     ClipLOD(config.fragment, unity_LODFade.x);
 
-    #if defined(_EYE_REFRACTION)
-    float3x3 tangentToWorld = CreateTangentToWorld(input.normalWS, input.tangentWS.xyz, input.tangentWS.w);
-    float4 albedo = GetParallaxRefractionAlbedo(config, normalize(_WorldSpaceCameraPos - input.positionWS), tangentToWorld);
-    #else
     float4 albedo = GetAlbedo(config);
-    #endif
-    
     #if defined(_CLIPPING)
     clip(albedo.a - GetAlphaClip(config));
     #endif
@@ -71,8 +56,6 @@ float4 ToonFacePassFragment(VaryingsFace input, bool isFrontFace : SV_IsFrontFac
     Surface surface;
     ZERO_INITIALIZE(Surface, surface)
     surface.positionWS = input.positionWS;
-    surface.color = albedo.rgb;
-    surface.alpha = albedo.a;
     surface.UV = float4(input.baseUV.xy, input.UV1.xy);
     
     float faceSign = isFrontFace ? 1.0 : -1.0;
@@ -84,10 +67,12 @@ float4 ToonFacePassFragment(VaryingsFace input, bool isFrontFace : SV_IsFrontFac
     surface.normalWS = normalize(input.normalWS) * faceSign;
     surface.interpolatedNormalWS = surface.normalWS * faceSign;
     #endif
-    
     surface.normalVS = normalize(input.normalVS) * faceSign;
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
+    
+    surface.color = albedo.rgb;
+    surface.alpha = albedo.a;
     surface.metallic = GetMetallic(config);
     surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
     surface.occlusion = GetOcclusion(config);
