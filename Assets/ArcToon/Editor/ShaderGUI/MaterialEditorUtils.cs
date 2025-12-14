@@ -37,6 +37,12 @@ namespace ArcToon.Editor.ShaderEditor
         BlinnPhong,
         KajiyaKay,
     }
+
+    public enum RefractionType
+    {
+        Physic,
+        Parallax,
+    }
     
     public static class ShaderPropertyID
     {
@@ -114,7 +120,7 @@ namespace ArcToon.Editor.ShaderEditor
         private static string Auto([CallerMemberName] string name = null)
             => "_" + name;
         
-        public static readonly string _CLIPPING = "_CLIPPING";
+        public static readonly string CLIPPING = "_CLIPPING";
         
         public static readonly string NORMAL_MAP = "_NORMAL_MAP";
         
@@ -143,6 +149,8 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string TANGENT_SHIFT_MAP = "_TANGENT_SHIFT_MAP";
         public static readonly string TANGENT_SHIFT_MAP_UV0 = "_TANGENT_SHIFT_MAP_UV0";
         public static readonly string TANGENT_SHIFT_MAP_UV1 = "_TANGENT_SHIFT_MAP_UV1";
+        
+        public static readonly string EYE_REFRACTION = Auto();
     }
 
     public static class MaterialEditorUtils

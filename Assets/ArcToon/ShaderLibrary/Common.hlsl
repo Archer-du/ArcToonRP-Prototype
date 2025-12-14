@@ -104,7 +104,7 @@ float3 GenerateSphereNormalByUV(float2 UV, float edge, out bool outOfBound)
     UV = mad(UV, 2, -1);
     float distanceSquare = dot(UV, UV);
     if (distanceSquare > edge) outOfBound = true;
-    float z = sqrt(1.0 - distanceSquare);
+    float z = sqrt(saturate(1.0 - distanceSquare));
     float3 sphereNormalOS = normalize(float3(UV.x, UV.y, z));
     return sphereNormalOS;
 }

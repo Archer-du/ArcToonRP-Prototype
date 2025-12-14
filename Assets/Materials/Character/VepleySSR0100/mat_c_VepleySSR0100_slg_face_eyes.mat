@@ -139,7 +139,7 @@ Material:
     - _PerObjectShadowCasterID: -1
     - _ReceiveFringeShadows: 1
     - _ReceiveShadows: 0
-    - _RefractionEdge: 0.7
+    - _RefractionEdge: 0.625
     - _RefractionSmooth: 0.4
     - _RimDepthBias: 3
     - _RimScale: 0.5

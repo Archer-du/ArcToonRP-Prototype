@@ -76,8 +76,12 @@ float4 ToonPupilPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) 
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
 
-    float2 refractionUV = GetParallaxRefractionUV(config.baseUV, surface.viewDirectionWS, tangentToWorld);
-    float4 albedo = GetAlbedo(refractionUV);
+    // TODO: UV post process
+    float2 baseUV = config.baseUV;
+    #if defined(_EYE_REFRACTION)
+    baseUV = GetParallaxRefractionUV(config.baseUV, surface.viewDirectionWS, tangentToWorld);
+    #endif
+    float4 albedo = GetAlbedo(baseUV);
     #if defined(_CLIPPING)
     clip(albedo.a - GetAlphaClip(config));
     #endif
