@@ -160,19 +160,12 @@ float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLigh
         faceUV.x = 1 - faceUV.x;
     }
     float attenFactorSDF = SampleSDFLightMap(faceUV);
+    // TODO: shadow mask channel
     float shadowMaskFactorSDF = SampleSDFLightMapShadowMask(faceUV);
     float attenuationUV = min(
         SigmoidSharp(attenFactorSDF, clipCenter, attenData.smooth),
         SigmoidSharp(shadowMaskFactorSDF, attenData.offset, attenData.smooth)
     );
-    if (light.isMainLight)
-    {
-        attenuationUV = min(
-            attenuationUV,
-            SigmoidSharp(1 - fragment.stencilMask.STENCIL_MASK_CHANNEL_FRINGE_SHADOW,
-                attenData.offset, attenData.smooth)
-        );
-    }
     #else
     float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
     float attenuationUV = min(
@@ -183,9 +176,15 @@ float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLigh
 
     // attenuation compensation for transparent fringe
     // —— eyelashes covered by fringe may show incorrect shadows due to the fringe shadow caster clipping.
+    // TODO: IS_FACE keyword optimize
     #if defined(IS_FACE)
     if (light.isMainLight)
     {
+        attenuationUV = min(
+            attenuationUV,
+            SigmoidSharp(1 - fragment.stencilMask.STENCIL_MASK_CHANNEL_FRINGE_SHADOW,
+                attenData.offset, attenData.smooth)
+        );
         attenuationUV = lerp(attenuationUV, 0, fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
     }
     #endif

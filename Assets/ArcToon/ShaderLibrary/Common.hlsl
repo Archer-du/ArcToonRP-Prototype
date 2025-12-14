@@ -51,7 +51,7 @@ float SigmoidSharp(float x, float center, float sharp)
     return s;
 };
 
-float3 OctahedralDecode(float2 uv)
+float3 DecodeOctahedral(float2 uv)
 {
     float3 n = float3(uv.x, uv.y, 1 - abs(uv.x) - abs(uv.y));
 
@@ -72,12 +72,6 @@ float3 DecodeNormal(float4 sample, float scale = 1.0)
     #endif
 }
 
-float GetHalfLambertFactor(float3 normal, float3 lightDir)
-{
-    float NdotL = dot(normal, lightDir);
-    return NdotL * 0.5 + 0.5;
-}
-
 float4 TransformObjectToWorldTangent(float4 tangentOS)
 {
     return float4(TransformObjectToWorldDir(tangentOS.xyz), tangentOS.w);
@@ -94,6 +88,31 @@ float GetTexelSizeWorldSpace(float linearDepth)
 {
     float size = 2.0 * linearDepth / (_CameraBufferSize.z * GetViewToHClipMatrix()._m00);
     return size;
+}
+
+float GenerateSphereDistanceMaskByUV(float2 UV, float edge, float sharp)
+{
+    UV = mad(UV, 2, -1);
+    float distanceSquare = dot(UV, UV);
+    float sphereMask = 1 - SigmoidSharp(distanceSquare, edge, sharp);
+    return sphereMask;
+}
+
+float3 GenerateSphereNormalByUV(float2 UV, float edge, out bool outOfBound)
+{
+    outOfBound = false;
+    UV = mad(UV, 2, -1);
+    float distanceSquare = dot(UV, UV);
+    if (distanceSquare > edge) outOfBound = true;
+    float z = sqrt(1.0 - distanceSquare);
+    float3 sphereNormalOS = normalize(float3(UV.x, UV.y, z));
+    return sphereNormalOS;
+}
+
+float GetHalfLambertFactor(float3 normal, float3 lightDir)
+{
+    float NdotL = dot(normal, lightDir);
+    return NdotL * 0.5 + 0.5;
 }
 
 // void poissonDiskSamples(const in float2 randomSeed, int sampleNum, out real disk)

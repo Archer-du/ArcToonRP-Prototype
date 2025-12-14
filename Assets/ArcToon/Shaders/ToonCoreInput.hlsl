@@ -108,18 +108,10 @@ float4 GetAlbedo(InputConfig input)
     return albedo * color;
 }
 
-float GenerateSphereUVMask(float2 UV)
-{
-    UV = mad(UV, 2, -1);
-    float distance = dot(UV, UV);
-    float sphereMask = 1 - SigmoidSharp(distance, 0.7f, 0.4f);
-    return sphereMask;
-}
-
 float4 GetParallaxRefractionAlbedo(InputConfig input, float3 viewDirectionWS, float3x3 tangentToWorld)
 {
     float2 baseUV = input.baseUV;
-    float mask = GenerateSphereUVMask(baseUV);
+    float mask = GenerateSphereDistanceMaskByUV(baseUV, 0.7, 0.4);
     float3 viewDirectionTS = TransformWorldToTangentDir(viewDirectionWS, tangentToWorld, true);
     viewDirectionTS *= 0.2;
     viewDirectionTS.x *= -1;

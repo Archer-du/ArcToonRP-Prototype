@@ -4726,9 +4726,41 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2400715356002892877, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 4131849331886834378, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
+      propertyPath: currentActiveMode
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4131849331886834378, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
+      propertyPath: faceFocusCameraData.targetHeight
+      value: 16
+      objectReference: {fileID: 0}
     - target: {fileID: 5165502310405497967, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: m_Name
       value: CameraController
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866696015727420409, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4.318
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100634267731530039, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4.318
+      objectReference: {fileID: 0}
+    - target: {fileID: 7100634267731530039, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 7180066287527941596, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
+      propertyPath: field of view
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 7180066287527941596, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
+      propertyPath: far clip plane
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 9064227431101291512, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: m_LocalPosition.x
