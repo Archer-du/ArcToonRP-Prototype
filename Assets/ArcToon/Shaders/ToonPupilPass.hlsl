@@ -77,11 +77,12 @@ float4 ToonPupilPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) 
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
 
     // TODO: UV post process
-    float2 baseUV = config.baseUV;
+    float2 refractedUV = config.baseUV;
     #if defined(_EYE_REFRACTION)
-    baseUV = GetParallaxRefractionUV(config.baseUV, surface.viewDirectionWS, tangentToWorld);
+    refractedUV = GetParallaxRefractionUV(config.baseUV, surface.viewDirectionWS, tangentToWorld);
     #endif
-    float4 albedo = GetAlbedo(baseUV);
+    
+    float4 albedo = GetAlbedo(refractedUV);
     #if defined(_CLIPPING)
     clip(albedo.a - GetAlphaClip(config));
     #endif
@@ -115,7 +116,10 @@ float4 ToonPupilPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) 
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);
     
     finalColor += GetEmission(config);
-    
+
+    float2 matCapUV = GetMatCapUV(config.baseUV, surface.normalVS);
+    finalColor = PostProcessFinalColor(finalColor, matCapUV);
+
     return float4(finalColor, surface.alpha);
 }
 

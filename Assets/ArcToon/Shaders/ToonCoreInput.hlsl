@@ -16,6 +16,8 @@ TEXTURE2D(_TangentShiftMap); SAMPLER(sampler_TangentShiftMap);
 
 TEXTURE2D(_SpecularMask);
 
+TEXTURE2D(_MatCap); SAMPLER(sampler_MatCap);
+
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
@@ -71,6 +73,8 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(int, _ParallaxFlipSignX)
     UNITY_DEFINE_INSTANCED_PROP(int, _ParallaxFlipSignY)
 
+    UNITY_DEFINE_INSTANCED_PROP(float4, _MatCap_ST)
+
     UNITY_DEFINE_INSTANCED_PROP(float, _PerObjectShadowCasterID)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -112,6 +116,12 @@ float4 GetAlbedo(float2 baseUV)
     float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
     float4 color = INPUT_PROP(_BaseColor);
     return albedo * color;
+}
+
+float4 GetMatCap(float2 UV)
+{
+    float4 matCap = SAMPLE_TEXTURE2D(_MatCap, sampler_MatCap, UV);
+    return matCap;
 }
 
 float3 GetNormalTS(InputConfig input)

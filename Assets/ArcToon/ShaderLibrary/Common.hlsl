@@ -90,21 +90,20 @@ float GetTexelSizeWorldSpace(float linearDepth)
     return size;
 }
 
-float GenerateSphereDistanceMaskByUV(float2 UV, float edge, float sharp)
+float GenerateSphereDistanceMaskByUV(float2 UV, float radiusSquare, float sharp)
 {
     UV = mad(UV, 2, -1);
     float distanceSquare = dot(UV, UV);
-    float sphereMask = 1 - SigmoidSharp(distanceSquare, edge, sharp);
+    float sphereMask = 1 - SigmoidSharp(distanceSquare, radiusSquare, sharp);
     return sphereMask;
 }
 
-float3 GenerateSphereNormalByUV(float2 UV, float edge, out bool outOfBound)
+float3 GenerateSphereNormalByUV(float2 UV, float radiusSquare = 1.0, float2 scale = float2(1.0, 1.0))
 {
-    outOfBound = false;
     UV = mad(UV, 2, -1);
+    UV *= scale;
     float distanceSquare = dot(UV, UV);
-    if (distanceSquare > edge) outOfBound = true;
-    float z = sqrt(saturate(1.0 - distanceSquare));
+    float z = sqrt(max(0, radiusSquare - distanceSquare));
     float3 sphereNormalOS = normalize(float3(UV.x, UV.y, z));
     return sphereNormalOS;
 }

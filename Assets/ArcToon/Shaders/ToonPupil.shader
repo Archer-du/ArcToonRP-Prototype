@@ -66,6 +66,15 @@
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
+                
+        _HighlightType ("Override Highlight Type", Integer) = 0
+        _SpecGloss ("Spec Gloss", Range(0, 1)) = 0.2
+        _SpecScale ("Spec Scale", Range(0, 1)) = 0.6
+        
+        _TangentShiftMap ("Tangent Shift Map", 2D) = "white" {}
+        [Enum(UV0, 0, UV1, 1)]
+        _TangentShiftMapUV ("Tangent Shift Map UV", Integer) = 1
+        _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
         
         _RefractionType ("Refraction Type", Integer) = 1
         _AnteriorChamberHeight ("Anterior Chamber Height", Range(0, 1)) = 0.2
@@ -73,6 +82,8 @@
         _RefractionSmooth ("Refraction Edge Smooth", Range(0, 1)) = 0.4
         _ParallaxFlipSignX ("Parallax Flip Sign X", Integer) = -1
         _ParallaxFlipSignY ("Parallax Flip Sign Y", Integer) = 1
+        
+        _MatCap ("MatCap", 2D) = "white" {}
         
         // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
