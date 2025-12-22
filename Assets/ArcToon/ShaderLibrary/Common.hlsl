@@ -29,7 +29,7 @@ SAMPLER(sampler_point_clamp);
 #include "Fragment.hlsl"
 #include "ForwardPlus.hlsl"
 
-#define COLOR_BLEND_NORMAL 0
+#define COLOR_BLEND_LERP 0
 #define COLOR_BLEND_MULTIPLY 1
 #define COLOR_BLEND_ADD 2
 #define COLOR_BLEND_OVERLAY 3
@@ -160,8 +160,8 @@ float3 BlendColor(float3 color1, float3 color2, float alpha, int blendMode)
     float3 blendedColor = color1;
     switch (blendMode)
     {
-        case COLOR_BLEND_NORMAL:
-            blendedColor = lerp(color1, color1 + color2, alpha);
+        case COLOR_BLEND_LERP:
+            blendedColor = lerp(color1, color2, alpha);
             break;
         case COLOR_BLEND_MULTIPLY:
             blendedColor = lerp(color1, color1 * color2, alpha);

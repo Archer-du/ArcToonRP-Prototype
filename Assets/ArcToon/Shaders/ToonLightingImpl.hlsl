@@ -34,14 +34,14 @@ float2 GetParallaxRefractionUV(float2 baseUV, float3 viewDirectionWS, float3x3 t
 float2 GetMatCapUV(float2 baseUV, float3 normalVS)
 {
     float3 matCapNormalVS = normalVS;
-    #if defined(_MATCAP_SPH_NORMAL)
+    // #if defined(_MATCAP_SPH_NORMAL)
     // TODO: config
     // TODO: use sphere normal?
     float radiusSquare = 1;
     float3 sphereNormalOS = GenerateSphereNormalByUV(baseUV, radiusSquare, float2(1, 0.8));
     float3 sphereNormalVS = TransformWorldToViewNormal(TransformObjectToWorldNormal(sphereNormalOS, true), true);
     matCapNormalVS = sphereNormalVS;
-    #endif
+    // #endif
 
     float2 matCapUV = mad(matCapNormalVS.xy, 0.5, 0.5);
     return matCapUV;

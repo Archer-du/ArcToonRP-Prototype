@@ -6,6 +6,23 @@ using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor
 {
+    public enum ColorBlendMode
+    {
+        Lerp = 0,
+        Multiply = 1,
+        Add = 2,
+        Overlay = 3,
+        Screen = 4,
+        SoftLight = 5,
+        HardLight = 6,
+        ColorDodge = 7,
+        ColorBurn = 8,
+        Darken = 9,
+        Lighten = 10,
+        Difference = 11,
+        Exclusion = 12
+    }
+    
     public enum ShadowCasterOption
     {
         On,

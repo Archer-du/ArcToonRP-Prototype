@@ -7,10 +7,12 @@ namespace ArcToon.Editor.ShaderEditor.Components
     {
         private MaterialProperty matCapProperty;
         private MaterialProperty matCapStrengthProperty;
+        private MaterialProperty matCapBlendModeProperty;
         public override void FindProperties(MaterialProperty[] props)
         {
             matCapProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.MatCap, props, false);
             matCapStrengthProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.MatCapStrength, props, false);
+            matCapBlendModeProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.MatCapBlendMode, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
@@ -26,6 +28,17 @@ namespace ArcToon.Editor.ShaderEditor.Components
             {
                 materialEditor.TexturePropertySingleLine(new GUIContent("MatCap"), matCapProperty);
             }
+            
+            ShaderGUILayout.BeginGUIComponentIndent();
+            EditorGUI.showMixedValue = matCapBlendModeProperty.hasMixedValue;
+            EditorGUI.BeginChangeCheck();
+            var newBlendModeValue = (ColorBlendMode)EditorGUILayout.EnumPopup("Blend Mode", (ColorBlendMode)matCapBlendModeProperty.intValue);
+            if (EditorGUI.EndChangeCheck())
+            {
+                matCapBlendModeProperty.intValue = (int)newBlendModeValue;
+            }
+            EditorGUI.showMixedValue = false;
+            ShaderGUILayout.EndGUIComponentIndent();
             
             ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.IsKeywordEnabled(ShaderKeywords.MATCAP_SPH_NORMAL), 
                 out bool hasMixedValue, out bool shouldToggleGroup);

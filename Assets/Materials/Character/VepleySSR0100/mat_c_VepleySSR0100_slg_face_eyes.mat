@@ -107,6 +107,7 @@ Material:
     - ParallaxFlipSignY: 0
     - _HighlightType: 0
     - _LightMapSDFSourceUV: 1
+    - _MatCapBlendMode: 5
     - _ParallaxFlipSignX: -1
     - _ParallaxFlipSignY: 1
     - _RefractionType: 1
@@ -136,6 +137,7 @@ Material:
     - _LightMapSpecularSDFToggle: 0
     - _LightingDebugMode: 0
     - _MaskMapToggle: 0
+    - _MatCapStrength: 0.4
     - _Metallic: 0
     - _Mode: 0
     - _NormalScale: 1
