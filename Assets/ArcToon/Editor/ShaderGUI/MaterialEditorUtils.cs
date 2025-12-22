@@ -60,6 +60,12 @@ namespace ArcToon.Editor.ShaderEditor
         Physic,
         Parallax,
     }
+
+    public enum MatCapNormalSource
+    {
+        Origin,
+        SphericalUV,
+    }
     
     public static class ShaderPropertyID
     {
@@ -173,6 +179,7 @@ namespace ArcToon.Editor.ShaderEditor
         
         public static readonly string EYE_REFRACTION = Auto();
         
+        public static readonly string MATCAP = Auto();
         public static readonly string MATCAP_SPH_NORMAL = Auto();
     }
 

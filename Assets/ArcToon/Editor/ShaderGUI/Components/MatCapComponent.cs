@@ -17,31 +17,43 @@ namespace ArcToon.Editor.ShaderEditor.Components
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
+            EditorGUI.BeginChangeCheck();
             if (matCapProperty.textureValue != null)
             {
                 materialEditor.TexturePropertySingleLine(new GUIContent("MatCap"), matCapProperty, matCapStrengthProperty);
+                
                 ShaderGUILayout.BeginGUIComponentIndent();
-                materialEditor.TextureScaleOffsetProperty(matCapProperty);
+                {
+                    materialEditor.TextureScaleOffsetProperty(matCapProperty);
+                    
+                    EditorGUI.showMixedValue = matCapBlendModeProperty.hasMixedValue;
+                    EditorGUI.BeginChangeCheck();
+                    var newBlendModeValue = (ColorBlendMode)EditorGUILayout.EnumPopup("Blend Mode", (ColorBlendMode)matCapBlendModeProperty.intValue);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        matCapBlendModeProperty.intValue = (int)newBlendModeValue;
+                    }
+                    EditorGUI.showMixedValue = false;
+                }
                 ShaderGUILayout.EndGUIComponentIndent();
             }
             else
             {
                 materialEditor.TexturePropertySingleLine(new GUIContent("MatCap"), matCapProperty);
             }
-            
-            ShaderGUILayout.BeginGUIComponentIndent();
-            EditorGUI.showMixedValue = matCapBlendModeProperty.hasMixedValue;
-            EditorGUI.BeginChangeCheck();
-            var newBlendModeValue = (ColorBlendMode)EditorGUILayout.EnumPopup("Blend Mode", (ColorBlendMode)matCapBlendModeProperty.intValue);
             if (EditorGUI.EndChangeCheck())
             {
-                matCapBlendModeProperty.intValue = (int)newBlendModeValue;
+                foreach (var material in materials)
+                {
+                    if (material == null) continue;
+                    bool hasMatCap = material.GetTexture(matCapProperty.name) != null;
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Keyword: {ShaderKeywords.MATCAP} - {hasMatCap}");
+                    
+                    Undo.RecordObject(material, Undo.GetCurrentGroupName());
+                    material.SetKeyword(ShaderKeywords.MATCAP, hasMatCap);
+                    EditorUtility.SetDirty(material);
+                }
             }
-            EditorGUI.showMixedValue = false;
-            ShaderGUILayout.EndGUIComponentIndent();
-            
-            ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.IsKeywordEnabled(ShaderKeywords.MATCAP_SPH_NORMAL), 
-                out bool hasMixedValue, out bool shouldToggleGroup);
         }
 
         public override bool IsValid()

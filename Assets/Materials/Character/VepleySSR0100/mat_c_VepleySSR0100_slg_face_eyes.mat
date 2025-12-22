@@ -13,6 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _EYE_REFRACTION
+  - _MATCAP
   - _RECEIVE_FRINGE_SHADOWS
   - _SDF_UV1
   - _SN_DECODE_OCT

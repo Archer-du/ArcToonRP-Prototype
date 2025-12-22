@@ -153,6 +153,8 @@
             #pragma shader_feature_local _ _SDF_UV0 _SDF_UV1
 
             #pragma shader_feature_local _EYE_REFRACTION
+            
+            #pragma shader_feature_local _MATCAP
             #pragma shader_feature_local _MATCAP_SPH_NORMAL
             
             #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC

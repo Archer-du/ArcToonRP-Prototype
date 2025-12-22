@@ -117,8 +117,10 @@ float4 ToonPupilPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) 
     
     finalColor += GetEmission(config);
 
+    #if defined(_MATCAP)
     float3 matCapColor = GetMatCap(GetMatCapUV(config.baseUV, surface.normalVS));
     finalColor = BlendColor(finalColor, matCapColor, INPUT_PROP(_MatCapStrength), INPUT_PROP(_MatCapBlendMode));
+    #endif
 
     return float4(finalColor, surface.alpha);
 }
