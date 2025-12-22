@@ -113,6 +113,10 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string RefractionSmooth = Auto();
         public static readonly string ParallaxFlipSignX = Auto();
         public static readonly string ParallaxFlipSignY = Auto();
+        
+        public static readonly string MatCap = Auto();
+        public static readonly string MatCapStrength = Auto();
+        public static readonly string MatCapBlendMode = Auto();
     }
     
     public static class ShaderKeywords
@@ -151,6 +155,8 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string TANGENT_SHIFT_MAP_UV1 = "_TANGENT_SHIFT_MAP_UV1";
         
         public static readonly string EYE_REFRACTION = Auto();
+        
+        public static readonly string MATCAP_SPH_NORMAL = Auto();
     }
 
     public static class MaterialEditorUtils

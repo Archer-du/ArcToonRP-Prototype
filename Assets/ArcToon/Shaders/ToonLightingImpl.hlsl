@@ -33,29 +33,18 @@ float2 GetParallaxRefractionUV(float2 baseUV, float3 viewDirectionWS, float3x3 t
 
 float2 GetMatCapUV(float2 baseUV, float3 normalVS)
 {
-    // TODO: config
-    float radiusSquare = 1;
     float3 matCapNormalVS = normalVS;
+    #if defined(_MATCAP_SPH_NORMAL)
+    // TODO: config
     // TODO: use sphere normal?
+    float radiusSquare = 1;
     float3 sphereNormalOS = GenerateSphereNormalByUV(baseUV, radiusSquare, float2(1, 0.8));
     float3 sphereNormalVS = TransformWorldToViewNormal(TransformObjectToWorldNormal(sphereNormalOS, true), true);
-    
     matCapNormalVS = sphereNormalVS;
-    
-    // float3 NormalBlend_MatcapUV_Detail = sphereNormalVS * float3(-1,-1,1);
-    // float3 NormalBlend_MatcapUV_Base = (mul(UNITY_MATRIX_V, float4(surface.viewDirectionWS, 0)).xyz * float3(-1, -1, 1)) + float3(0, 0, 1);
-    // float3 noSknewViewNormal = NormalBlend_MatcapUV_Base * dot(NormalBlend_MatcapUV_Base, NormalBlend_MatcapUV_Detail) / NormalBlend_MatcapUV_Base.z - NormalBlend_MatcapUV_Detail;
-    // float2 ViewNormalAsMatCapUV = noSknewViewNormal.rg * 0.5 + 0.5;
+    #endif
 
     float2 matCapUV = mad(matCapNormalVS.xy, 0.5, 0.5);
     return matCapUV;
-}
-
-float3 PostProcessFinalColor(float3 finalColor, float2 matCapUV)
-{
-    // TODO: MatCap blend mode
-    finalColor = finalColor * 1 + GetMatCap(matCapUV) * 0.2;
-    return finalColor;
 }
 
 float MinimalCookTorranceSpecularTerm(Surface surface, BRDF brdf, Light light)

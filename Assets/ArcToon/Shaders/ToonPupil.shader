@@ -84,6 +84,8 @@
         _ParallaxFlipSignY ("Parallax Flip Sign Y", Integer) = 1
         
         _MatCap ("MatCap", 2D) = "white" {}
+        _MatCapStrength ("MatCap Strength", Range(0, 1)) = 0.2
+        _MatCapBlendMode ("MatCap Blend Mode", Integer) = 1
         
         // ------------------------ Debug
         [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
@@ -151,6 +153,8 @@
             #pragma shader_feature_local _ _SDF_UV0 _SDF_UV1
 
             #pragma shader_feature_local _EYE_REFRACTION
+            #pragma shader_feature_local _MATCAP_SPH_NORMAL
+            
             #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT

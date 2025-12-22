@@ -91,6 +91,7 @@ namespace ArcToon.Editor.ShaderEditor
                 new LightMapSDFComponent(),
                 new FringeComponent(),
                 new RefractionComponent(),
+                new MatCapComponent(),
                 new HeaderPropertyComponent("Sigmoid Attenuation", 
                     new[] { "Offset", "Smooth" }, 
                     new[] { ShaderPropertyID.DirectLightAttenOffset, ShaderPropertyID.DirectLightAttenSmoothNew }),

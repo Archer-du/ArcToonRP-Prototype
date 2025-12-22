@@ -29,6 +29,20 @@ SAMPLER(sampler_point_clamp);
 #include "Fragment.hlsl"
 #include "ForwardPlus.hlsl"
 
+#define COLOR_BLEND_NORMAL 0
+#define COLOR_BLEND_MULTIPLY 1
+#define COLOR_BLEND_ADD 2
+#define COLOR_BLEND_OVERLAY 3
+#define COLOR_BLEND_SCREEN 4
+#define COLOR_BLEND_SOFT_LIGHT 5
+#define COLOR_BLEND_HARD_LIGHT 6
+#define COLOR_BLEND_COLOR_DODGE 7
+#define COLOR_BLEND_COLOR_BURN 8
+#define COLOR_BLEND_DARKEN 9
+#define COLOR_BLEND_LIGHTEN 10
+#define COLOR_BLEND_DIFFERENCE 11
+#define COLOR_BLEND_EXCLUSION 12
+
 // basic math helpers --------------------------
 float Square(float v)
 {
@@ -138,6 +152,87 @@ void ClipLOD(Fragment fragment, float fade)
     float dither = InterleavedGradientNoise(fragment.positionSS.xy, 0);;
     clip((fade < 0 ? fade + 1 : fade) - dither);
     #endif
+}
+
+float3 BlendColor(float3 color1, float3 color2, float alpha, int blendMode)
+{
+    alpha = saturate(alpha);
+    float3 blendedColor = color1;
+    switch (blendMode)
+    {
+        case COLOR_BLEND_NORMAL:
+            blendedColor = lerp(color1, color1 + color2, alpha);
+            break;
+        case COLOR_BLEND_MULTIPLY:
+            blendedColor = lerp(color1, color1 * color2, alpha);
+            break;
+        case COLOR_BLEND_ADD:
+            blendedColor = lerp(color1, color1 + color2, alpha);
+            break;
+        case COLOR_BLEND_OVERLAY:
+            {
+                float3 overlay = lerp(
+                    2.0 * color1 * color2,
+                    1.0 - 2.0 * (1.0 - color1) * (1.0 - color2),
+                    step(0.5, color1)
+                );
+                blendedColor = lerp(color1, overlay, alpha);
+            }
+            break;
+        case COLOR_BLEND_SCREEN:
+            {
+                float3 screen = 1.0 - (1.0 - color1) * (1.0 - color2);
+                blendedColor = lerp(color1, screen, alpha);
+            }
+            break;
+        case COLOR_BLEND_SOFT_LIGHT:
+            {
+                float3 softLight = lerp(
+                    2.0 * color1 * color2 + color1 * color1 * (1.0 - 2.0 * color2),
+                    sqrt(color1) * (2.0 * color2 - 1.0) + 2.0 * color1 * (1.0 - color2),
+                    step(0.5, color2)
+                );
+                blendedColor = lerp(color1, softLight, alpha);
+            }
+            break;
+        case COLOR_BLEND_HARD_LIGHT:
+            {
+                float3 hardLight = lerp(
+                    2.0 * color1 * color2,
+                    1.0 - 2.0 * (1.0 - color1) * (1.0 - color2),
+                    step(0.5, color2)
+                );
+                blendedColor = lerp(color1, hardLight, alpha);
+            }
+            break;
+        case COLOR_BLEND_COLOR_DODGE:
+            {
+                float3 colorDodge = color1 / (1.0001 - color2);
+                blendedColor = lerp(color1, colorDodge, alpha);
+            }
+            break;
+        case COLOR_BLEND_COLOR_BURN:
+            {
+                float3 colorBurn = 1.0 - (1.0 - color1) / (color2 + 0.0001);
+                blendedColor = lerp(color1, colorBurn, alpha);
+            }
+            break;
+        case COLOR_BLEND_DARKEN:
+            blendedColor = lerp(color1, min(color1, color2), alpha);
+            break;
+        case COLOR_BLEND_LIGHTEN:
+            blendedColor = lerp(color1, max(color1, color2), alpha);
+            break;
+        case COLOR_BLEND_DIFFERENCE:
+            blendedColor = lerp(color1, abs(color1 - color2), alpha);
+            break;
+        case COLOR_BLEND_EXCLUSION:
+            blendedColor = lerp(color1, color1 + color2 - 2.0 * color1 * color2, alpha);
+            break;
+        default:
+            break;
+    }
+    return saturate(blendedColor);
 }
 
 #endif
