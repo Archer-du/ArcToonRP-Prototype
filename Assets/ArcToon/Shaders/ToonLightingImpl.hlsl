@@ -141,6 +141,7 @@ float3 ToonSpecularStrength(Surface surface, BRDF brdf, Light light)
     float slide = GetParallaxSensitivity();
     float offset = GetParallaxOffset();
         #if defined(_SPEC_PARALLAX)
+        // TODO: use local space viewDirection.y
         float parallaxOffsetV = - surface.viewDirectionWS.y * slide + offset;
         specUV.y += parallaxOffsetV;
         #endif

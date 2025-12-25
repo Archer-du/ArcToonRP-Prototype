@@ -12,13 +12,19 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHA_CONTROL_WIDTH
   - _RAMP_SET
+  - _RMO_MASK_MAP
   - _SDF_LIGHT_MAP
   - _SDF_LIGHT_MAP_SPEC
+  - _SDF_UV1
+  - _SN_DECODE_OCT
+  - _SN_SRC_COLOR
+  - _SPEC_MASK_UV1
+  - _TANGENT_SHIFT_MAP_UV1
+  - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
+  - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
-  - _RMO_MASK_MAP
   - _SHADOWS_ON
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 1
@@ -94,7 +100,22 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Ints: []
+    - _SpecularMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TangentShiftMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints:
+    - _HighlightType: 0
+    - _LightMapSDFSourceUV: 1
+    - _SmoothNormalDecoder: 1
+    - _SmoothNormalSource: 1
+    - _SpecularMaskUV: 1
+    - _TangentShiftMapUV: 1
+    - _WidthControlMode: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 1
     - _BumpScale: 1
@@ -107,8 +128,10 @@ Material:
     - _DirectLightAttenSigmoidSharp: 1
     - _DirectLightAttenSmooth: 5
     - _DirectLightAttenSmoothNew: 0.99
+    - _DirectLightSpecOffset: 0.5
     - _DirectLightSpecSigmoidCenter: 0.5
     - _DirectLightSpecSigmoidSharp: 1
+    - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
     - _FringeShadowBiasScaleX: 0.5
@@ -131,10 +154,13 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineScale: 0.2
     - _Parallax: 0.02
+    - _ParallaxOffset: 0
+    - _ParallaxSensitivity: 0.1
     - _PerObjShadowCasterID: -1
     - _PerObjectShadowCasterID: -1
     - _PremulAlpha: 0
     - _RampSetToggle: 1
+    - _ReceiveFringeShadows: 0
     - _ReceiveShadows: 0
     - _RimDepthBias: 3
     - _RimScale: 0.3
@@ -144,6 +170,7 @@ Material:
     - _Shadows: 0
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
+    - _SpecGloss: 0.2
     - _SpecMapToggle: 0
     - _SpecScale: 1
     - _SpecularHighlights: 1
@@ -151,6 +178,7 @@ Material:
     - _Stencil: 1
     - _StencilReadMask: 3
     - _StencilWriteMask: 3
+    - _TangentShiftOffset: 0
     - _TransparentFringeToggle: 1
     - _UVSec: 0
     - _ZWrite: 1
@@ -158,6 +186,7 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FaceVector: {r: 0, g: 0, b: 1, a: 0}
     - _OutlineColor: {r: 0.2264151, g: 0.021198373, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
