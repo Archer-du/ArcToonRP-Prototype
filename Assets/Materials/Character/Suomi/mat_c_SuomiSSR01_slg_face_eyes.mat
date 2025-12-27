@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: mat_c_ClukaySSR01_slg_face_eyes
+  m_Name: mat_c_SuomiSSR01_slg_face_eyes
   m_Shader: {fileID: 4800000, guid: 760783e945564e8895faa2847b815b7b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -36,7 +36,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 91a4ee7e8390ee04f85ee7202d33febe, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4f2d483eea8c8ca4999a7cad43ffe909, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:

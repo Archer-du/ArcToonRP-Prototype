@@ -7,36 +7,37 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: mat_c_ClukaySSR01_slg_face_eyes
-  m_Shader: {fileID: 4800000, guid: 760783e945564e8895faa2847b815b7b, type: 3}
+  m_Name: mat_c_SuomiSSR0102_slg_P3_cloth
+  m_Shader: {fileID: 4800000, guid: fe7cc458bdb942f9a629995bef3c6590, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _EYE_REFRACTION
-  - _MATCAP
-  - _RECEIVE_FRINGE_SHADOWS
-  - _SN_DECODE_OCT
+  - _NORMAL_MAP
+  - _RAMP_SET
+  - _RECEIVE_SHADOWS
+  - _RMO_MASK_MAP
+  - _SN_DECODE_RGAG
   - _SN_SRC_COLOR
   - _SPEC_MASK_UV1
   - _TANGENT_SHIFT_MAP_UV1
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
+  - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
-  - _SHADOWS_OFF
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  - _OWC_SRC_VERTCOLORA
+  - _SHADOWS_ON
+  m_LightmapFlags: 2
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
-  disabledShaderPasses:
-  - SHADOWCASTER
-  - GeometryOutline
+  disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 91a4ee7e8390ee04f85ee7202d33febe, type: 3}
+        m_Texture: {fileID: 2800000, guid: 5d1bc383e0f90644d8aac3a860c9dec2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -59,12 +60,12 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 91a4ee7e8390ee04f85ee7202d33febe, type: 3}
+    - _MODSMaskMap:
+        m_Texture: {fileID: 2800000, guid: b508b0d33faab59479a6ab5589c77cbc, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _MatCap:
-        m_Texture: {fileID: 2800000, guid: 2068d81fe4a28a44292687242c4724c9, type: 3}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 5d1bc383e0f90644d8aac3a860c9dec2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -72,7 +73,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 5da6c593b34cec24eb0d340172e49b56, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -84,10 +85,14 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RMOMaskMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 08275a0e3a932294a9e73e785f8f4bfc, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RampSet:
+        m_Texture: {fileID: 2800000, guid: aa78dd3a9ca472346bacc40dca60bd00, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SpecMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -101,26 +106,28 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints:
     - _HighlightType: 0
-    - _MatCapBlendMode: 5
-    - _ParallaxFlipSignX: -1
-    - _ParallaxFlipSignY: 1
-    - _RefractionType: 1
-    - _SmoothNormalDecoder: 1
+    - _SmoothNormalDecode: 1
+    - _SmoothNormalDecoder: 0
     - _SmoothNormalSource: 1
     - _SpecularMaskUV: 1
     - _TangentShiftMapUV: 1
     - _WidthControlMode: 1
+    - _WidthControlSource: 1
     m_Floats:
-    - _AnteriorChamberHeight: 0.2
+    - _AlphaControlOutlineWidth: 1
     - _BumpScale: 1
     - _Clipping: 0
     - _Cull: 2
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
-    - _DirectLightAttenOffset: 0.3
+    - _DirectLightAttenOffset: 0.5
+    - _DirectLightAttenSigmoidCenter: 0.5
+    - _DirectLightAttenSigmoidSharp: 0.5
     - _DirectLightAttenSmooth: 0.5
-    - _DirectLightAttenSmoothNew: 0.99
+    - _DirectLightAttenSmoothNew: 0.85
     - _DirectLightSpecOffset: 0.5
+    - _DirectLightSpecSigmoidCenter: 0.5
+    - _DirectLightSpecSigmoidSharp: 1
     - _DirectLightSpecSmooth: 0.5
     - _DstBlend: 0
     - _Fresnel: 1
@@ -128,33 +135,35 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _LightingDebugMode: 0
-    - _MaskMapToggle: 0
-    - _MatCapStrength: 0.2
-    - _Metallic: 0
+    - _MaskMapToggle: 1
+    - _Metallic: 1
     - _Mode: 0
+    - _NormalMapToggle: 1
     - _NormalScale: 1
     - _Occlusion: 1
     - _OcclusionStrength: 1
-    - _OutlineScale: 0.1
+    - _OutlineScale: 0.2
     - _Parallax: 0.02
     - _ParallaxOffset: 0
     - _ParallaxSensitivity: 0.1
     - _PerObjectShadowCasterID: -1
-    - _ReceiveFringeShadows: 1
-    - _ReceiveShadows: 0
-    - _RefractionEdge: 0.6
-    - _RefractionSmooth: 0.4
+    - _PremulAlpha: 0
+    - _RampSetToggle: 1
+    - _ReceiveFringeShadows: 0
+    - _ReceiveShadows: 1
     - _RimDepthBias: 3
     - _RimScale: 0.5
     - _RimWidth: 0.5
-    - _Shadows: 3
+    - _Roughness: 1
+    - _Shadows: 0
     - _Smoothness: 1
     - _SmoothnessTextureChannel: 0
     - _SpecGloss: 0.2
-    - _SpecScale: 0.6
+    - _SpecMapToggle: 0
+    - _SpecScale: 1
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Stencil: 3
+    - _Stencil: 1
     - _StencilReadMask: 3
     - _StencilWriteMask: 3
     - _TangentShiftOffset: 0
@@ -164,6 +173,6 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _OutlineColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

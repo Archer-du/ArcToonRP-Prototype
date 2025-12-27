@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: mat_c_ClukaySSR01_slg_face_eyes
+  m_Name: mat_c_ClukaySSR0103_slg_face_eyes
   m_Shader: {fileID: 4800000, guid: 760783e945564e8895faa2847b815b7b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -102,7 +102,7 @@ Material:
     m_Ints:
     - _HighlightType: 0
     - _MatCapBlendMode: 5
-    - _ParallaxFlipSignX: -1
+    - _ParallaxFlipSignX: 1
     - _ParallaxFlipSignY: 1
     - _RefractionType: 1
     - _SmoothNormalDecoder: 1
