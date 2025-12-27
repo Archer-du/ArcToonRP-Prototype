@@ -29,6 +29,20 @@ SAMPLER(sampler_point_clamp);
 #include "Fragment.hlsl"
 #include "ForwardPlus.hlsl"
 
+#define COLOR_BLEND_LERP 0
+#define COLOR_BLEND_MULTIPLY 1
+#define COLOR_BLEND_ADD 2
+#define COLOR_BLEND_OVERLAY 3
+#define COLOR_BLEND_SCREEN 4
+#define COLOR_BLEND_SOFT_LIGHT 5
+#define COLOR_BLEND_HARD_LIGHT 6
+#define COLOR_BLEND_COLOR_DODGE 7
+#define COLOR_BLEND_COLOR_BURN 8
+#define COLOR_BLEND_DARKEN 9
+#define COLOR_BLEND_LIGHTEN 10
+#define COLOR_BLEND_DIFFERENCE 11
+#define COLOR_BLEND_EXCLUSION 12
+
 // basic math helpers --------------------------
 float Square(float v)
 {
@@ -51,7 +65,7 @@ float SigmoidSharp(float x, float center, float sharp)
     return s;
 };
 
-float3 OctahedralDecode(float2 uv)
+float3 DecodeOctahedral(float2 uv)
 {
     float3 n = float3(uv.x, uv.y, 1 - abs(uv.x) - abs(uv.y));
 
@@ -72,12 +86,6 @@ float3 DecodeNormal(float4 sample, float scale = 1.0)
     #endif
 }
 
-float GetHalfLambertFactor(float3 normal, float3 lightDir)
-{
-    float NdotL = dot(normal, lightDir);
-    return NdotL * 0.5 + 0.5;
-}
-
 float4 TransformObjectToWorldTangent(float4 tangentOS)
 {
     return float4(TransformObjectToWorldDir(tangentOS.xyz), tangentOS.w);
@@ -94,6 +102,30 @@ float GetTexelSizeWorldSpace(float linearDepth)
 {
     float size = 2.0 * linearDepth / (_CameraBufferSize.z * GetViewToHClipMatrix()._m00);
     return size;
+}
+
+float GenerateSphereDistanceMaskByUV(float2 UV, float radiusSquare, float sharp)
+{
+    UV = mad(UV, 2, -1);
+    float distanceSquare = dot(UV, UV);
+    float sphereMask = 1 - SigmoidSharp(distanceSquare, radiusSquare, sharp);
+    return sphereMask;
+}
+
+float3 GenerateSphereNormalByUV(float2 UV, float radiusSquare = 1.0, float2 scale = float2(1.0, 1.0))
+{
+    UV = mad(UV, 2, -1);
+    UV *= scale;
+    float distanceSquare = dot(UV, UV);
+    float z = sqrt(max(0, radiusSquare - distanceSquare));
+    float3 sphereNormalOS = normalize(float3(UV.x, UV.y, z));
+    return sphereNormalOS;
+}
+
+float GetHalfLambertFactor(float3 normal, float3 lightDir)
+{
+    float NdotL = dot(normal, lightDir);
+    return NdotL * 0.5 + 0.5;
 }
 
 // void poissonDiskSamples(const in float2 randomSeed, int sampleNum, out real disk)
@@ -120,6 +152,87 @@ void ClipLOD(Fragment fragment, float fade)
     float dither = InterleavedGradientNoise(fragment.positionSS.xy, 0);;
     clip((fade < 0 ? fade + 1 : fade) - dither);
     #endif
+}
+
+float3 BlendColor(float3 color1, float3 color2, float alpha, int blendMode)
+{
+    alpha = saturate(alpha);
+    float3 blendedColor = color1;
+    switch (blendMode)
+    {
+        case COLOR_BLEND_LERP:
+            blendedColor = lerp(color1, color2, alpha);
+            break;
+        case COLOR_BLEND_MULTIPLY:
+            blendedColor = lerp(color1, color1 * color2, alpha);
+            break;
+        case COLOR_BLEND_ADD:
+            blendedColor = lerp(color1, color1 + color2, alpha);
+            break;
+        case COLOR_BLEND_OVERLAY:
+            {
+                float3 overlay = lerp(
+                    2.0 * color1 * color2,
+                    1.0 - 2.0 * (1.0 - color1) * (1.0 - color2),
+                    step(0.5, color1)
+                );
+                blendedColor = lerp(color1, overlay, alpha);
+            }
+            break;
+        case COLOR_BLEND_SCREEN:
+            {
+                float3 screen = 1.0 - (1.0 - color1) * (1.0 - color2);
+                blendedColor = lerp(color1, screen, alpha);
+            }
+            break;
+        case COLOR_BLEND_SOFT_LIGHT:
+            {
+                float3 softLight = lerp(
+                    2.0 * color1 * color2 + color1 * color1 * (1.0 - 2.0 * color2),
+                    sqrt(color1) * (2.0 * color2 - 1.0) + 2.0 * color1 * (1.0 - color2),
+                    step(0.5, color2)
+                );
+                blendedColor = lerp(color1, softLight, alpha);
+            }
+            break;
+        case COLOR_BLEND_HARD_LIGHT:
+            {
+                float3 hardLight = lerp(
+                    2.0 * color1 * color2,
+                    1.0 - 2.0 * (1.0 - color1) * (1.0 - color2),
+                    step(0.5, color2)
+                );
+                blendedColor = lerp(color1, hardLight, alpha);
+            }
+            break;
+        case COLOR_BLEND_COLOR_DODGE:
+            {
+                float3 colorDodge = color1 / (1.0001 - color2);
+                blendedColor = lerp(color1, colorDodge, alpha);
+            }
+            break;
+        case COLOR_BLEND_COLOR_BURN:
+            {
+                float3 colorBurn = 1.0 - (1.0 - color1) / (color2 + 0.0001);
+                blendedColor = lerp(color1, colorBurn, alpha);
+            }
+            break;
+        case COLOR_BLEND_DARKEN:
+            blendedColor = lerp(color1, min(color1, color2), alpha);
+            break;
+        case COLOR_BLEND_LIGHTEN:
+            blendedColor = lerp(color1, max(color1, color2), alpha);
+            break;
+        case COLOR_BLEND_DIFFERENCE:
+            blendedColor = lerp(color1, abs(color1 - color2), alpha);
+            break;
+        case COLOR_BLEND_EXCLUSION:
+            blendedColor = lerp(color1, color1 + color2 - 2.0 * color1 * color2, alpha);
+            break;
+        default:
+            break;
+    }
+    return saturate(blendedColor);
 }
 
 #endif

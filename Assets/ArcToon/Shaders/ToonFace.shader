@@ -20,6 +20,7 @@
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
+        [Toggle(_RECEIVE_FRINGE_SHADOWS)] _ReceiveFringeShadows ("Receive Fringe Shadows", Float) = 0
         [Enum(On, 0, Dither, 1, Off, 2)] _Shadows ("Shadow Caster Option", Float) = 0
         
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
@@ -65,7 +66,16 @@
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
         _RimDepthBias ("Screen Space Rim Light Depth Bias", Float) = 3
-
+        
+        _HighlightType ("Override Highlight Type", Integer) = 0
+        _SpecGloss ("Spec Gloss", Range(0, 1)) = 0.2
+        _SpecScale ("Spec Scale", Range(0, 1)) = 0.6
+        
+        _TangentShiftMap ("Tangent Shift Map", 2D) = "white" {}
+        [Enum(UV0, 0, UV1, 1)]
+        _TangentShiftMapUV ("Tangent Shift Map UV", Integer) = 1
+        _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
+        
         _LightMapSDF ("SDF Light Map", 2D) = "white" {}
         [Enum(UV0, 0, UV1, 1)]
         _LightMapSDFSourceUV ("SDF Light Map UV Source", Integer) = 1
@@ -95,6 +105,7 @@
                 
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
+        #include "ToonLightingImpl.hlsl"
         ENDHLSL
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"
@@ -121,16 +132,25 @@
 
             #pragma shader_feature _NORMAL_MAP
             
+            #pragma shader_feature_local _SPEC_MASK
+            #pragma shader_feature_local _ _SPEC_MASK_UV0 _SPEC_MASK_UV1
+            #pragma shader_feature_local _SPEC_PARALLAX
+            
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _RECEIVE_FRINGE_SHADOWS
             
             #pragma shader_feature _RMO_MASK_MAP
             
             #pragma shader_feature _RAMP_SET
 
+            #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
+            #pragma shader_feature_local _TANGENT_SHIFT_MAP
+            #pragma shader_feature_local _ _TANGENT_SHIFT_MAP_UV0 _TANGENT_SHIFT_MAP_UV1
+            
             #pragma shader_feature_local _SDF_LIGHT_MAP
             #pragma shader_feature_local _ _SDF_UV0 _SDF_UV1
-            
+
             #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT

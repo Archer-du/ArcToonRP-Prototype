@@ -117,7 +117,7 @@ MonoBehaviour:
     Range: {x: -180, y: 180}
     Wrap: 1
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -127,7 +127,7 @@ MonoBehaviour:
     Range: {x: -45, y: 45}
     Wrap: 0
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -366,7 +366,7 @@ MonoBehaviour:
     Range: {x: -180, y: 180}
     Wrap: 1
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -376,7 +376,7 @@ MonoBehaviour:
     Range: {x: -45, y: 45}
     Wrap: 0
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -609,7 +609,7 @@ MonoBehaviour:
     Range: {x: -180, y: 180}
     Wrap: 1
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -619,7 +619,7 @@ MonoBehaviour:
     Range: {x: -45, y: 45}
     Wrap: 0
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -1113,7 +1113,7 @@ MonoBehaviour:
     Range: {x: -180, y: 180}
     Wrap: 1
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -1123,7 +1123,7 @@ MonoBehaviour:
     Range: {x: -45, y: 45}
     Wrap: 0
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -1458,7 +1458,7 @@ MonoBehaviour:
     Range: {x: -180, y: 180}
     Wrap: 1
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -1468,7 +1468,7 @@ MonoBehaviour:
     Range: {x: -45, y: 45}
     Wrap: 0
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -1670,7 +1670,7 @@ MonoBehaviour:
     Range: {x: -180, y: 180}
     Wrap: 1
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0
@@ -1680,7 +1680,7 @@ MonoBehaviour:
     Range: {x: -45, y: 45}
     Wrap: 0
     Recentering:
-      Enabled: 1
+      Enabled: 0
       Wait: 2
       Time: 2
     Restrictions: 0

@@ -34,7 +34,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Clipping: {newValue}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetKeyword(ShaderKeywords._CLIPPING, newValue);
+                    material.SetKeyword(ShaderKeywords.CLIPPING, newValue);
                     EditorUtility.SetDirty(material);
                 }
             }

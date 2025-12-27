@@ -67,7 +67,7 @@ namespace ArcToon.Editor.ShaderEditor
         {
             generalFoldoutPanel ??= new BaseFoldoutShaderPanel("General", new List<ShaderGUIComponentBase>()
             {
-                new ColorTextureComponent("Base Map", ShaderPropertyID.BaseMap, ShaderPropertyID.BaseColor, false),
+                new ColorTextureComponent("Base Map", ShaderPropertyID.BaseMap, ShaderPropertyID.BaseColor, true),
                 new NormalMapComponent("Normal Map", ShaderPropertyID.NormalMap, ShaderPropertyID.NormalScale, ShaderKeywords.NORMAL_MAP),
                 new SpecularMaskComponent(),
                 new AlphaClippingComponent(),
@@ -90,6 +90,8 @@ namespace ArcToon.Editor.ShaderEditor
                 new HighLightComponent(),
                 new LightMapSDFComponent(),
                 new FringeComponent(),
+                new RefractionComponent(),
+                new MatCapComponent(),
                 new HeaderPropertyComponent("Sigmoid Attenuation", 
                     new[] { "Offset", "Smooth" }, 
                     new[] { ShaderPropertyID.DirectLightAttenOffset, ShaderPropertyID.DirectLightAttenSmoothNew }),

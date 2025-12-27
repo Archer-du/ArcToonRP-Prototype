@@ -38,7 +38,7 @@ float GetOutlineWidthResolutionAdapter()
 float3 DecodeSmoothNormal(float4 sample)
 {
     #if defined(_SN_DECODE_OCT)
-    return normalize(OctahedralDecode(sample.xy));
+    return normalize(DecodeOctahedral(sample.xy));
     #elif defined(_SN_DECODE_RGAG)
     return normalize(UnpackNormalmapRGorAG(sample, 1.0));
     #else

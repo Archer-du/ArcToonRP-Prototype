@@ -60,7 +60,7 @@ float4 GetMODSMask(InputConfig input)
     return 1.0;
 }
 
-float4 GetColor(InputConfig input)
+float4 GetAlbedo(InputConfig input)
 {
     float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
     #if defined(_DETAIL_MAP)

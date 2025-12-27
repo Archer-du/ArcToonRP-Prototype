@@ -33,6 +33,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             EditorGUI.BeginChangeCheck();
             bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(label, shouldToggleGroup, EditorStyles.label);
             EditorGUI.showMixedValue = false;
+            
             if (EditorGUI.EndChangeCheck())
             {
                 foreach (var material in materials)

@@ -2,7 +2,6 @@
 #define ARCTOON_TOON_DEPTH_STENCIL_PASS_INCLUDED
 
 #include "../ShaderLibrary/Common.hlsl"
-#include "../ShaderLibrary/Light/Lighting.hlsl"
 
 struct AttributesDS
 {

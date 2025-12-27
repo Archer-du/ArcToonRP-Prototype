@@ -3,26 +3,20 @@
 
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Input/InputConfig.hlsl"
-#include "../ShaderLibrary/Light/Lighting.hlsl"
 
-TEXTURE2D(_BaseMap);
+TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
+
 TEXTURE2D(_NormalMap);
 TEXTURE2D(_EmissionMap);
-SAMPLER(sampler_BaseMap);
 
-TEXTURE2D(_RMOMaskMap);
-SAMPLER(sampler_RMOMaskMap);
-
-TEXTURE2D(_LightMapSDF);
-SAMPLER(sampler_LightMapSDF);
-
-TEXTURE2D(_RampSet);
-SAMPLER(sampler_RampSet);
-
-TEXTURE2D(_TangentShiftMap);
-SAMPLER(sampler_TangentShiftMap);
+TEXTURE2D(_RMOMaskMap); SAMPLER(sampler_RMOMaskMap);
+TEXTURE2D(_LightMapSDF); SAMPLER(sampler_LightMapSDF);
+TEXTURE2D(_RampSet); SAMPLER(sampler_RampSet);
+TEXTURE2D(_TangentShiftMap); SAMPLER(sampler_TangentShiftMap);
 
 TEXTURE2D(_SpecularMask);
+
+TEXTURE2D(_MatCap); SAMPLER(sampler_MatCap);
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
@@ -73,6 +67,16 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleY)
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeTransparentScale)
 
+    UNITY_DEFINE_INSTANCED_PROP(float, _AnteriorChamberHeight)
+    UNITY_DEFINE_INSTANCED_PROP(float, _RefractionEdge)
+    UNITY_DEFINE_INSTANCED_PROP(float, _RefractionSmooth)
+    UNITY_DEFINE_INSTANCED_PROP(int, _ParallaxFlipSignX)
+    UNITY_DEFINE_INSTANCED_PROP(int, _ParallaxFlipSignY)
+
+    UNITY_DEFINE_INSTANCED_PROP(float4, _MatCap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(float, _MatCapStrength)
+    UNITY_DEFINE_INSTANCED_PROP(int, _MatCapBlendMode)
+
     UNITY_DEFINE_INSTANCED_PROP(float, _PerObjectShadowCasterID)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
@@ -81,23 +85,8 @@ INPUT_PROP(_DirectLightAttenOffset), \
 INPUT_PROP(_DirectLightAttenSmooth), \
 INPUT_PROP(_DirectLightAttenSmoothNew)
 
-#define INPUT_PROPS_DIRECT_SPEC_PARAMS \
-INPUT_PROP(_DirectLightSpecOffset), \
-INPUT_PROP(_DirectLightSpecSmooth)
-
 #define STENCIL_MASK_CHANNEL_FRINGE_SHADOW g
 #define STENCIL_MASK_CHANNEL_EYE_LASHES b
-
-struct Attributes
-{
-    float3 positionOS : POSITION;
-    float3 normalOS : NORMAL;
-    float4 tangentOS : TANGENT;
-    float2 baseUV : TEXCOORD0;
-    float2 UV1 : TEXCOORD1;
-    UNITY_VERTEX_INPUT_INSTANCE_ID
-    GI_ATTRIBUTES_DATA
-};
 
 // common ---------------------------------------------------------------------------
 float2 TransformBaseUV(float2 rawBaseUV)
@@ -117,11 +106,24 @@ float2 TransformUV1(float2 rawUV1)
     return rawUV1;
 }
 
-float4 GetColor(InputConfig input)
+float4 GetAlbedo(InputConfig input)
 {
     float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
     float4 color = INPUT_PROP(_BaseColor);
     return albedo * color;
+}
+
+float4 GetAlbedo(float2 baseUV)
+{
+    float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
+    float4 color = INPUT_PROP(_BaseColor);
+    return albedo * color;
+}
+
+float4 GetMatCap(float2 UV)
+{
+    float4 matCap = SAMPLE_TEXTURE2D(_MatCap, sampler_MatCap, UV);
+    return matCap;
 }
 
 float3 GetNormalTS(InputConfig input)
@@ -243,9 +245,14 @@ float3 SampleRampSetChannel(float rampUV, float channel)
     return 1.0;
 }
 
-float3 GetFaceVector()
+float3 GetFaceDirectionOS()
 {
     return INPUT_PROP(_FaceVector).xyz;
+}
+
+float4 GetFacePositionOS()
+{
+    return float4(0, 0, 0, 1);
 }
 
 float SampleSDFLightMap(float2 faceUV)
@@ -310,10 +317,10 @@ float GetParallaxOffset()
     return INPUT_PROP(_ParallaxOffset);
 }
 
-float SampleParallaxSpecularMask(float2 hairUV)
+float3 SampleParallaxSpecularMask(float2 hairUV)
 {
     // TODO: channel
-    return SAMPLE_TEXTURE2D(_SpecularMask, sampler_linear_clamp, hairUV).r;
+    return SAMPLE_TEXTURE2D(_SpecularMask, sampler_linear_clamp, hairUV).rgb;
 }
 
 float2 GetFringeShadowBiasScale()

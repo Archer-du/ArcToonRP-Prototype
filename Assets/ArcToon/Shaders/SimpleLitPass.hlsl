@@ -2,7 +2,6 @@
 #define ARCTOON_SIMPLELIT_PASS_INCLUDED
 
 #include "../ShaderLibrary/Shadow.hlsl"
-#include "../ShaderLibrary/Light/Lighting.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
 
 struct Attributes
@@ -61,7 +60,7 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     config.detailUV = input.detailUV;
     #endif
     
-    float4 color = GetColor(config);
+    float4 color = GetAlbedo(config);
     #if defined(_CLIPPING)
     clip(color.a - GetAlphaClip(config));
     #endif
@@ -97,7 +96,7 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     BRDF brdf = GetBRDF(surface);
     #endif
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
-    float3 finalColor = GetLighting(config.fragment, surface, brdf, gi);
+    float3 finalColor = AccumulateRealtimeLighting(config.fragment, surface, brdf, gi);
     finalColor += GetEmission(config);
 
     // finalColor = config.fragment.linearDepth / 100.;

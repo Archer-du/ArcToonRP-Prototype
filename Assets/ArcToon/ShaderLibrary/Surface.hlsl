@@ -5,8 +5,9 @@ struct Surface
 {
     float3 positionWS;
     float3 normalWS;
-    float3 normalVS;
     float3 interpolatedNormalWS;
+    float3 bitangentWS;
+    float3 normalVS;
     float3 viewDirectionWS;
     float3 color;
     float4 UV;

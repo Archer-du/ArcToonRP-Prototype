@@ -46,7 +46,7 @@ void ShadowCasterPassFragment(VaryingsSC input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
-    float4 base = GetColor(config);
+    float4 base = GetAlbedo(config);
     #if defined(_CLIPPING)
     clip(base.a - GetAlphaClip(config));
     #endif

@@ -48,6 +48,7 @@
     {
         HLSLINCLUDE
 		#include "SimpleLitInput.hlsl"
+        #include "../ShaderLibrary/Light/Lighting.hlsl"
 		ENDHLSL
 
         Pass

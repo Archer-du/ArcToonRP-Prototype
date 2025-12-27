@@ -8,21 +8,18 @@ namespace ArcToon.Editor.ShaderEditor.Components
         private static readonly GUIContent label = new("Shadows");
         
         private MaterialProperty receiveShadowsProperty;
+        private MaterialProperty receiveFringeShadowsProperty;
         private MaterialProperty casterOptionProperty;
 
         public override void FindProperties(MaterialProperty[] props)
         {
             receiveShadowsProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ReceiveShadows, props, false);
+            receiveFringeShadowsProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ReceiveFringeShadows, props, false);
             casterOptionProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Shadows, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
-            if (receiveShadowsProperty != null && (receiveShadowsProperty.flags & MaterialProperty.PropFlags.HideInInspector) == 0)
-            {
-                materialEditor.BuiltinShaderPropertyDrawer(receiveShadowsProperty);
-            }
-            
             if (casterOptionProperty != null)
             {
                 EditorGUI.BeginChangeCheck();
@@ -48,6 +45,14 @@ namespace ArcToon.Editor.ShaderEditor.Components
                         EditorUtility.SetDirty(material);
                     }
                 }
+            }
+            if (receiveShadowsProperty != null && (receiveShadowsProperty.flags & MaterialProperty.PropFlags.HideInInspector) == 0)
+            {
+                materialEditor.BuiltinShaderPropertyDrawer(receiveShadowsProperty);
+            }
+            if (receiveFringeShadowsProperty != null && (receiveFringeShadowsProperty.flags & MaterialProperty.PropFlags.HideInInspector) == 0)
+            {
+                materialEditor.BuiltinShaderPropertyDrawer(receiveFringeShadowsProperty);
             }
         }
 

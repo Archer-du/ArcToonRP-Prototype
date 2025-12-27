@@ -16,12 +16,14 @@ Material:
   - _RMO_MASK_MAP
   - _SN_DECODE_OCT
   - _SN_SRC_UV1
+  - _SPEC_MASK_UV1
   - _WIDTH_VERTCOLORA
   m_InvalidKeywords:
   - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
   - _SDF_LIGHT_MAP
   - _SHADOWS_ON
+  - _TANGENT_SHIFT_MAP_UV1
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -92,9 +94,20 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SpecularMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TangentShiftMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints:
+    - _HighlightType: 0
     - _SmoothNormalDecoder: 1
     - _SmoothNormalSource: 0
+    - _SpecularMaskUV: 1
+    - _TangentShiftMapUV: 1
     - _WidthControlMode: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 1
@@ -134,6 +147,8 @@ Material:
     - _OcclusionStrength: 1
     - _OutlineScale: 0.2
     - _Parallax: 0.02
+    - _ParallaxOffset: 0
+    - _ParallaxSensitivity: 0.1
     - _PerObjShadowCasterID: -1
     - _PerObjectShadowCasterID: -1
     - _PremulAlpha: 0
@@ -147,6 +162,8 @@ Material:
     - _Shadows: 0
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
+    - _SpecGloss: 0.2
+    - _SpecScale: 0.6
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _Stencil: 1
@@ -155,6 +172,7 @@ Material:
     - _StencilReadMask: 3
     - _StencilRef: 1
     - _StencilWriteMask: 3
+    - _TangentShiftOffset: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

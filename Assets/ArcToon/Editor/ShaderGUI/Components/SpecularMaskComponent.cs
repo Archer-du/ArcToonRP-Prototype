@@ -46,7 +46,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 
                 EditorGUI.showMixedValue = hasMixedValue;
                 EditorGUI.BeginChangeCheck();
-                bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(new GUIContent("Parallax Mask"), keywordEnabled, EditorStyles.label);
+                bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(new GUIContent("Parallax"), keywordEnabled, EditorStyles.label);
                 EditorGUI.showMixedValue = false;
                 if (EditorGUI.EndChangeCheck())
                 {

@@ -24,12 +24,6 @@ struct FaceData
     float3 positionWS;
 };
 
-struct HairSpecData
-{
-    float4 UVData;
-    float3 bitangentWS;
-};
-
 struct RimLightData
 {
     float scale;
@@ -61,14 +55,6 @@ FaceData GetFaceData(float2 faceUV, float3 faceDirectionOS, float4 facePositionO
     data.directionWS = mul((float3x3)GetObjectToWorldMatrix(), faceDirectionOS);
     data.positionWS = mul(GetObjectToWorldMatrix(), facePositionOS).xyz;
     data.faceUV = faceUV;
-    return data;
-}
-
-HairSpecData GetHairSpecData(float2 UV0, float2 UV1, float3 bitangentWS)
-{
-    HairSpecData data;
-    data.UVData = float4(UV0, UV1);
-    data.bitangentWS = SafeNormalize(bitangentWS);
     return data;
 }
 

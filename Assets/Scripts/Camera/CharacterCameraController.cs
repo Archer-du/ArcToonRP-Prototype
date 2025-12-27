@@ -137,6 +137,7 @@ namespace ArcToon.Scripts.Camera
                 }
             }
             targetCamera.Priority = HighPriority;
+            ResetCameraAxis(targetCamera);
 
             currentActiveCamera = targetCamera;
             lastOperateTime = Time.time;
@@ -156,12 +157,17 @@ namespace ArcToon.Scripts.Camera
             else
             {
                 Cursor.lockState = CursorLockMode.None;
-                var orbitalFollow = targetCamera.GetComponent<CinemachineOrbitalFollow>();
-                if (orbitalFollow != null)
-                {
-                    orbitalFollow.HorizontalAxis.Value = orbitalFollow.HorizontalAxis.Center;
-                    orbitalFollow.VerticalAxis.Value = orbitalFollow.VerticalAxis.Center;
-                }
+                ResetCameraAxis(targetCamera);
+            }
+        }
+
+        private void ResetCameraAxis(CinemachineCamera targetCamera)
+        {
+            var orbitalFollow = targetCamera.GetComponent<CinemachineOrbitalFollow>();
+            if (orbitalFollow != null)
+            {
+                orbitalFollow.HorizontalAxis.Value = orbitalFollow.HorizontalAxis.Center;
+                orbitalFollow.VerticalAxis.Value = orbitalFollow.VerticalAxis.Center;
             }
         }
     }

@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _OVERRIDE_HIGHLIGHT
   - _RAMP_SET
   - _RECEIVE_SHADOWS
   - _SN_DECODE_OCT
@@ -167,6 +168,7 @@ Material:
     - _PerObjShadowCasterID: -1
     - _PerObjectShadowCasterID: -1
     - _RampSetToggle: 1
+    - _ReceiveFringeShadows: 0
     - _ReceiveShadows: 1
     - _RimDepthBias: 3
     - _RimScale: 1
@@ -180,6 +182,7 @@ Material:
     - _SpecScale: 1
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _Stencil: 3
     - _StencilComp: 8
     - _StencilOp: 2
     - _StencilReadMask: 3
