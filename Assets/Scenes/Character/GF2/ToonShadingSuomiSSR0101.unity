@@ -439,6 +439,43 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
+--- !u!1 &1993105765 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6b35b85a57dd42b4c940230a1b31c7c0, type: 3}
+  m_PrefabInstance: {fileID: 2041183710}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1993105768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1993105765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43bf25425ff44114b28a7b7b8aa91767, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clothType: 0
+  shoesType: 0
+  showWeapon: 0
+  clothFightMeshRenderers: []
+  clothDormMeshRenderers: []
+  shoesFightMeshRenderers: []
+  shoesDormMeshRenderers: []
+  weaponObject: {fileID: 0}
+--- !u!114 &1993105769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1993105765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeba926fd5a83964cbd87554e5c6c6ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2041183710
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2527,7 +2564,13 @@ PrefabInstance:
     - {fileID: 8028744265746562322, guid: 6b35b85a57dd42b4c940230a1b31c7c0, type: 3}
     - {fileID: 7509943875529561836, guid: 6b35b85a57dd42b4c940230a1b31c7c0, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6b35b85a57dd42b4c940230a1b31c7c0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1993105769}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6b35b85a57dd42b4c940230a1b31c7c0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1993105768}
   m_SourcePrefab: {fileID: 100100000, guid: 6b35b85a57dd42b4c940230a1b31c7c0, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
