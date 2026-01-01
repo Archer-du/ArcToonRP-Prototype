@@ -10,7 +10,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime
 {
-    public partial class CameraRenderer
+    public class CameraRenderer
     {
         private Camera camera;
         private PerObjectShadowCasterManager perObjectShadowCasterManager = new();
