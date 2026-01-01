@@ -2,6 +2,7 @@
 using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
+using ArcToon.Runtime.Utils.Extensions;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;

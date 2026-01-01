@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Utils
+namespace ArcToon.Runtime.Utils.Extensions
 {
     public static class CullingResultsExtensions
     {

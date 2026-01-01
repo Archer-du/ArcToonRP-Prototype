@@ -9,26 +9,22 @@ namespace ArcToon.Runtime
 {
     public partial class ArcToonRenderPipelineInstance : RenderPipeline
     {
-        readonly RenderGraph renderGraph = new("Arc Toon Render Graph");
+        private readonly RenderPipelineSettings settings;
         
-        readonly RenderPipelineSettings settings;
+        private readonly RenderGraph renderGraph;
         
         private CameraRenderer cameraRenderer;
 
         public ArcToonRenderPipelineInstance(RenderPipelineSettings settings)
         {
             this.settings = settings;
-            cameraRenderer = new CameraRenderer(settings.cameraCopyShader, settings.cameraDebugShader);
+            renderGraph = new RenderGraph("Arc Toon Render Graph");
+            cameraRenderer = new CameraRenderer(settings.cameraDebugShader);
             
             GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
 
             InitializeForEditor();
-        }
-
-        protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
-        {
-            Render(renderContext, new List<Camera>(cameras));
         }
 
         protected override void Render(ScriptableRenderContext renderContext, List<Camera> cameras)
@@ -38,6 +34,11 @@ namespace ArcToon.Runtime
                 cameraRenderer.Render(renderGraph, renderContext, cameras[i], settings);
             }
             renderGraph.EndFrame();
+        }
+
+        protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
+        {
+            Render(renderContext, new List<Camera>(cameras));
         }
 
         protected override void Dispose(bool disposing)

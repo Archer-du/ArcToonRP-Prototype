@@ -1,7 +1,6 @@
 ﻿using ArcToon.Runtime.Overrides;
 using ArcToon.Runtime.Passes;
 using ArcToon.Runtime.Passes.Lighting;
-using ArcToon.Runtime.Passes.PostProcess;
 using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
 using UnityEngine;
@@ -19,20 +18,15 @@ namespace ArcToon.Runtime
 
         public const float renderScaleMin = 0.1f, renderScaleMax = 2f;
 
-        private Material cameraCopyMaterial;
-
-        public CameraRenderer(Shader cameraCopyShader, Shader cameraDebuggerShader)
+        public CameraRenderer(Shader cameraDebuggerShader)
         {
-            cameraCopyMaterial = CoreUtils.CreateEngineMaterial(cameraCopyShader);
             CameraDebugger.Initialize(cameraDebuggerShader);
         }
 
         public void Dispose()
         {
-            CoreUtils.Destroy(cameraCopyMaterial);
             CameraDebugger.Cleanup();
         }
-
 
         public void Render(RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
             RenderPipelineSettings settings)
@@ -86,7 +80,7 @@ namespace ArcToon.Runtime
                 scriptableRenderContext = context,
                 rendererListCulling = true,
             };
-            CameraAttachmentCopier copier = new(cameraCopyMaterial, camera);
+            CameraAttachmentCopier copier = new(ShaderResourceManager.AcquireTransientMaterial(InternalShaderHelpers.Path.CameraCopy), camera);
 
             renderGraph.BeginRecording(renderGraphParameters);
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
