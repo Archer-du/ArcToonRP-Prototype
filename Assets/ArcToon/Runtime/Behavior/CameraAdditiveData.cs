@@ -3,48 +3,49 @@ using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Overrides
+namespace ArcToon.Runtime.Behavior
 {
     [Serializable]
-    public class CameraSettings
+    public class CameraAdditiveData
     {
-        [Serializable]
-        public struct FinalBlendMode
-        {
-            public BlendMode source, destination;
-        }
+        public bool maskLights;
 
+        public RenderingLayerMask renderingLayerMask = -1;
+
+        public const float renderScaleMin = 0.1f, renderScaleMax = 2f;
+        
         public enum RenderScaleMode
         {
             Inherit,
             Multiply,
             Override
         }
-        public bool maskLights = false;
-
-        public RenderingLayerMask renderingLayerMask = -1;
 
         public RenderScaleMode renderScaleMode = RenderScaleMode.Inherit;
-
+        
         [Range(0.1f, 2f)] public float renderScale = 1f;
 
         public bool copyDepth = true;
         public bool copyColor = true;
 
-        public bool overridePostFX = false;
+        public PostFXConfig overridePostFXConfig;
 
-        public PostFXSettings postFXSettings = default;
-
-        public FinalBlendMode finalBlendMode = new FinalBlendMode
+        [Serializable]
+        public struct FinalBlendMode
+        {
+            public BlendMode source, destination;
+        }
+        
+        public FinalBlendMode finalBlendMode = new()
         {
             source = BlendMode.One,
             destination = BlendMode.Zero
         };
 
         // FXAA
-        public bool allowFXAA = false;
+        public bool allowFXAA;
         
-        public bool keepAlpha = false;
+        public bool keepAlpha;
 
         public float GetRenderScale(float globalRenderScale)
         {

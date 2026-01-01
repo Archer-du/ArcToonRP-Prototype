@@ -1,5 +1,5 @@
-﻿using ArcToon.Runtime.Data;
-using ArcToon.Runtime.Overrides;
+﻿using ArcToon.Runtime.Behavior;
+using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Utils;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -15,7 +15,7 @@ namespace ArcToon.Runtime.Passes
         TextureHandle source;
         TextureHandle result;
 
-        CameraSettings.FinalBlendMode finalBlendMode;
+        CameraAdditiveData.FinalBlendMode finalBlendMode;
 
         bool bicubicSampling;
 
@@ -28,7 +28,7 @@ namespace ArcToon.Runtime.Passes
         }
 
         public static void Record(RenderGraph renderGraph, 
-            CameraSettings.FinalBlendMode finalBlendMode, bool bicubicSampling,
+            CameraAdditiveData.FinalBlendMode finalBlendMode, bool bicubicSampling,
             in TextureHandle srcHandle,
             CameraAttachmentCopier copier)
         {

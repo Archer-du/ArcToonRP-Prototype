@@ -10,7 +10,7 @@ namespace ArcToon.Runtime.Settings
         
         public CameraBufferSettings cameraBufferSettings = new()
         {
-            allowHDR = true,
+            enableHDR = true,
             renderScale = 1f,
             fxaaSettings = new CameraBufferSettings.FXAASettings
             {
@@ -22,16 +22,11 @@ namespace ArcToon.Runtime.Settings
 
         public ShadowSettings globalShadowSettings;
 
-        public bool enablePostProcessing = true;
-
-        public PostFXSettings globalPostFXSettings;
+        [FormerlySerializedAs("globalPostFXSettings")] public PostFXConfig globalPostFXConfig;
         
         public ForwardPlusSettings forwardPlusSettings = new()
         {
             maxLightsPerTile = 30,
         };
-
-        public Shader cameraCopyShader;
-        public Shader cameraDebugShader;
     }
 }

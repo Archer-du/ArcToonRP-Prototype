@@ -19,7 +19,7 @@ namespace ArcToon.Runtime
         {
             this.settings = settings;
             renderGraph = new RenderGraph("Arc Toon Render Graph");
-            cameraRenderer = new CameraRenderer(settings.cameraDebugShader);
+            cameraRenderer = new CameraRenderer();
             
             GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;

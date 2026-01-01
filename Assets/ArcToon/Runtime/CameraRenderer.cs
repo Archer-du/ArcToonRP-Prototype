@@ -1,4 +1,4 @@
-﻿using ArcToon.Runtime.Overrides;
+﻿using ArcToon.Runtime.Behavior;
 using ArcToon.Runtime.Passes;
 using ArcToon.Runtime.Passes.Lighting;
 using ArcToon.Runtime.Settings;
@@ -12,15 +12,18 @@ namespace ArcToon.Runtime
     public class CameraRenderer
     {
         private Camera camera;
+
+        private CameraBufferSettings bufferSettings;
+        private ShadowSettings shadowSettings;
+        private ForwardPlusSettings forwardPlusSettings;
+        
+        private CameraAdditiveData cameraAdditiveData;
+        
         private PerObjectShadowCasterManager perObjectShadowCasterManager = new();
 
-        static CameraSettings defaultCameraSettings = new();
-
-        public const float renderScaleMin = 0.1f, renderScaleMax = 2f;
-
-        public CameraRenderer(Shader cameraDebuggerShader)
+        public CameraRenderer()
         {
-            CameraDebugger.Initialize(cameraDebuggerShader);
+            CameraDebugger.Initialize();
         }
 
         public void Dispose()
@@ -32,19 +35,28 @@ namespace ArcToon.Runtime
             RenderPipelineSettings settings)
         {
             this.camera = camera;
-            CameraBufferSettings bufferSettings = settings.cameraBufferSettings;
-            PostFXSettings postFXSettings = settings.enablePostProcessing ? settings.globalPostFXSettings : null;
-            ShadowSettings shadowSettings = settings.globalShadowSettings;
-            ForwardPlusSettings forwardPlusSettings = settings.forwardPlusSettings;
-            var additiveCameraData = camera.GetComponent<ArcToonAdditiveCameraData>();
-            CameraSettings cameraSettings = additiveCameraData ? additiveCameraData.Settings : defaultCameraSettings;
-            postFXSettings = cameraSettings.overridePostFX ? cameraSettings.postFXSettings : postFXSettings;
-            var cameraSampler =
-                additiveCameraData ? additiveCameraData.Sampler : ProfilingSampler.Get(camera.cameraType);
-            bool useHDR = bufferSettings.allowHDR && camera.allowHDR;
+            
+            bufferSettings = settings.cameraBufferSettings;
+            shadowSettings = settings.globalShadowSettings;
+            forwardPlusSettings = settings.forwardPlusSettings;
+            
+            var cameraRenderController = camera.GetComponent<CameraRenderController>();
+            if (!cameraRenderController)
+            {
+                Debug.LogError("[ArcToonRP] Camera does not have ArcToonAdditiveCameraData attached.");
+                return;
+            }
+            cameraAdditiveData = cameraRenderController.AdditiveData;
+            
+            PostFXConfig postFXConfig = settings.globalPostFXConfig;
+            if (cameraAdditiveData.overridePostFXConfig != null)
+            {
+                postFXConfig = cameraAdditiveData.overridePostFXConfig;
+            }
+            bool useHDR = bufferSettings.enableHDR && camera.allowHDR;
 
             // render scale
-            var bufferSize = GetCameraBufferSize(cameraSettings, bufferSettings);
+            var bufferSize = GetCameraBufferSize(cameraAdditiveData.GetRenderScale(bufferSettings.renderScale));
 
             // prepare scene data
 #if UNITY_EDITOR
@@ -62,8 +74,8 @@ namespace ArcToon.Runtime
             }
             else
             {
-                copyDepthTexture = bufferSettings.copyDepth && cameraSettings.copyDepth;
-                copyColorTexture = bufferSettings.copyColor && cameraSettings.copyColor;
+                copyDepthTexture = bufferSettings.copyDepth && cameraAdditiveData.copyDepth;
+                copyColorTexture = bufferSettings.copyColor && cameraAdditiveData.copyColor;
             }
 
             // cull
@@ -72,6 +84,7 @@ namespace ArcToon.Runtime
                 return;
             }
 
+            var cameraSampler = cameraRenderController.Sampler;
             var renderGraphParameters = new RenderGraphParameters
             {
                 commandBuffer = CommandBufferPool.Get(),
@@ -105,7 +118,7 @@ namespace ArcToon.Runtime
 
                 // post fx
                 var texture = PostFXPass.Record(renderGraph, camera, cullingResults, bufferSize,
-                    cameraSettings, bufferSettings, postFXSettings, useHDR,
+                    cameraAdditiveData, bufferSettings, postFXConfig, useHDR,
                     attachmentHandles.colorAttachment);
 
                 var bicubicRescalingMode = bufferSettings.bicubicRescalingMode;
@@ -113,7 +126,7 @@ namespace ArcToon.Runtime
                     bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||
                     bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpOnly &&
                     bufferSize.x < camera.pixelWidth;
-                CopyFinalPass.Record(renderGraph, cameraSettings.finalBlendMode, bicubicSampling, texture, copier);
+                CopyFinalPass.Record(renderGraph, cameraAdditiveData.finalBlendMode, bicubicSampling, texture, copier);
 
                 DebugPass.Record(renderGraph, camera, lightingHandles);
 
@@ -127,10 +140,9 @@ namespace ArcToon.Runtime
             CommandBufferPool.Release(renderGraphParameters.commandBuffer);
         }
 
-        private Vector2Int GetCameraBufferSize(CameraSettings cameraSettings, CameraBufferSettings bufferSettings)
+        private Vector2Int GetCameraBufferSize(float renderScale)
         {
-            float renderScale = cameraSettings.GetRenderScale(bufferSettings.renderScale);
-            renderScale = Mathf.Clamp(renderScale, renderScaleMin, renderScaleMax);
+            renderScale = Mathf.Clamp(renderScale, CameraAdditiveData.renderScaleMin, CameraAdditiveData.renderScaleMax);
             bool useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)

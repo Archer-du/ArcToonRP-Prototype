@@ -1,4 +1,4 @@
-﻿using ArcToon.Runtime.Overrides;
+﻿using ArcToon.Runtime.Behavior;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -52,7 +52,7 @@ namespace ArcToon.Runtime.Utils
         }
 
         public void CopyFinal(CommandBuffer commandBuffer, 
-            RenderTargetIdentifier srcHandle, CameraSettings.FinalBlendMode finalBlendMode, bool bicubicSampling)
+            RenderTargetIdentifier srcHandle, CameraAdditiveData.FinalBlendMode finalBlendMode, bool bicubicSampling)
         {
             commandBuffer.SetGlobalFloat(finalSrcBlendID, (float)finalBlendMode.source);
             commandBuffer.SetGlobalFloat(finalDstBlendID, (float)finalBlendMode.destination);

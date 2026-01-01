@@ -8,16 +8,16 @@ public static class CameraDebugger
 {
     const string panelName = "Tiled Forward+";
     
+    static bool showDebugTile;
+    
     static readonly int debugTileOpacityID = Shader.PropertyToID("_DebugOpacity");
-
-    static bool showTiles;
 
     static float debugTileOpacity = 0.5f;
 
-    public static bool IsActive => showTiles && debugTileOpacity > 0f;
+    public static bool IsActive => showDebugTile && debugTileOpacity > 0f;
 
     [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
-    public static void Initialize(Shader cameraDebugShader)
+    public static void Initialize()
     {
         DebugManager.instance.GetPanel(panelName, true).children.Add(
             new DebugUI.FloatField
@@ -33,8 +33,8 @@ public static class CameraDebugger
             {
                 displayName = "Show Tiles",
                 tooltip = "Whether the debug overlay is shown.",
-                getter = static () => showTiles,
-                setter = static value => showTiles = value
+                getter = static () => showDebugTile,
+                setter = static value => showDebugTile = value
             }
         );
     }

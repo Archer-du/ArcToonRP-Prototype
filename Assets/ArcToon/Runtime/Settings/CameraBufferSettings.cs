@@ -7,7 +7,7 @@ namespace ArcToon.Runtime.Settings
     [Serializable]
     public struct CameraBufferSettings
     {
-        public bool allowHDR;
+        [FormerlySerializedAs("allowHDR")] public bool enableHDR;
 
         public bool copyDepth, copyDepthReflection;
         public bool copyColor, copyColorReflection;
