@@ -22,8 +22,6 @@ namespace ArcToon.Runtime.Utils
 
         public Camera Camera => camera;
 
-        readonly Material copyMaterial;
-
         readonly Camera camera;
 
         public enum CopyChannel
@@ -32,9 +30,8 @@ namespace ArcToon.Runtime.Utils
             ColorAttachment = 2,
         }
 
-        public CameraAttachmentCopier(Material copyMaterial, Camera camera)
+        public CameraAttachmentCopier(Camera camera)
         {
-            this.copyMaterial = copyMaterial;
             this.camera = camera;
         }
 
@@ -69,7 +66,8 @@ namespace ArcToon.Runtime.Utils
             );
             commandBuffer.SetViewport(camera.pixelRect);
             commandBuffer.DrawProcedural(
-                Matrix4x4.identity, copyMaterial, 0,
+                Matrix4x4.identity, 
+                ShaderResourceManager.AcquireTransientMaterial(InternalShaderHelpers.Path.CameraCopy), 0,
                 MeshTopology.Triangles, 3
             );
         }
@@ -81,7 +79,8 @@ namespace ArcToon.Runtime.Utils
             commandBuffer.SetRenderTarget(dstHandle,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
             commandBuffer.DrawProcedural(
-                Matrix4x4.identity, copyMaterial, (int)channel,
+                Matrix4x4.identity, 
+                ShaderResourceManager.AcquireTransientMaterial(InternalShaderHelpers.Path.CameraCopy), (int)channel,
                 MeshTopology.Triangles, 3
             );
         }

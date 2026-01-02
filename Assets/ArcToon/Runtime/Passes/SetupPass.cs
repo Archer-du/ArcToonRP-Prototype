@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -18,11 +19,8 @@ namespace ArcToon.Runtime.Passes
 
         CameraClearFlags clearFlags;
 
-        static readonly int attachmentSizeID = Shader.PropertyToID("_CameraBufferSize");
-
         void Render(RenderGraphContext context)
         {
-            // set up render target
             context.renderContext.SetupCameraProperties(camera);
             CommandBuffer commandBuffer = context.cmd;
             commandBuffer.SetRenderTarget(
@@ -37,7 +35,7 @@ namespace ArcToon.Runtime.Passes
                 clearFlags <= CameraClearFlags.Color,
                 clearFlags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
 
-            commandBuffer.SetGlobalVector(attachmentSizeID, new Vector4(
+            commandBuffer.SetGlobalVector(InternalShaderHelpers.PropertyID.CameraBufferSize, new Vector4(
                 1f / attachmentSize.x, 1f / attachmentSize.y,
                 attachmentSize.x, attachmentSize.y
             ));
@@ -76,7 +74,6 @@ namespace ArcToon.Runtime.Passes
                 colorCopy = renderGraph.CreateTexture(desc);
             }
             desc.depthBufferBits = DepthBits.Depth32;
-            desc.name = "Depth Attachment Buffer";
             var depthAttachment = pass.depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
             if (copyDepth)
             {

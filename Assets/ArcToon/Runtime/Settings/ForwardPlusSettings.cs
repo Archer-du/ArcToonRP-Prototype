@@ -3,7 +3,7 @@
 namespace ArcToon.Runtime.Settings
 {
     [System.Serializable]
-    public struct ForwardPlusSettings
+    public class ForwardPlusSettings
     {
         public enum TileSize
         {
@@ -15,6 +15,6 @@ namespace ArcToon.Runtime.Settings
         
         [Range(0, 99)]
         [Tooltip("Maximum allowed lights per tile, 0 means default, which is 30.")]
-        public int maxLightsPerTile;
+        public int maxLightsPerTile = 30;
     }
 }

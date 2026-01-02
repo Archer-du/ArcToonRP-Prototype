@@ -145,7 +145,8 @@ namespace ArcToon.Runtime.Passes
             forwardPlusTileData.Dispose();
         }
 
-        public static LightingDataHandles Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults,
+        public static LightingDataHandles Record(RenderGraph renderGraph, CameraRenderer cameraRenderer, Camera camera,
+            CullingResults cullingResults,
             Vector2Int attachmentSize,
             ShadowSettings shadowSettings,
             ForwardPlusSettings forwardPlusSettings,

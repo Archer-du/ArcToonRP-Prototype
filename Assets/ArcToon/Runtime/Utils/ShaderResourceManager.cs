@@ -88,6 +88,7 @@ namespace ArcToon.Runtime.Utils
                 {
                     if (kvp.Value != null)
                     {
+                        Debug.Log($"Destroy Engine Material: '{kvp.Key}'");
                         CoreUtils.Destroy(kvp.Value);
                     }
                 }

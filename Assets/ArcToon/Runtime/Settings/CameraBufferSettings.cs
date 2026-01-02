@@ -5,14 +5,14 @@ using UnityEngine.Serialization;
 namespace ArcToon.Runtime.Settings
 {
     [Serializable]
-    public struct CameraBufferSettings
+    public class CameraBufferSettings
     {
-        [FormerlySerializedAs("allowHDR")] public bool enableHDR;
+        [FormerlySerializedAs("allowHDR")] public bool enableHDR = true;
 
         public bool copyDepth, copyDepthReflection;
         public bool copyColor, copyColorReflection;
 
-        [Range(0.5f, 2f)] public float renderScale;
+        [Range(0.5f, 2f)] public float renderScale = 1f;
         
         public enum BicubicRescalingMode { Off, UpOnly, UpAndDown }
         
@@ -37,6 +37,11 @@ namespace ArcToon.Runtime.Settings
             public Quality quality;
         }
 
-        public FXAASettings fxaaSettings;
+        public FXAASettings fxaaSettings = new()
+        {
+            fixedThreshold = 0.0833f,
+            relativeThreshold = 0.166f,
+            subpixelBlending = 0.75f,
+        };
     }
 }

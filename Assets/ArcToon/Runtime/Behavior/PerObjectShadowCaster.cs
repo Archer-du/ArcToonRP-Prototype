@@ -66,7 +66,7 @@ namespace ArcToon.Runtime.Behavior
                     for (int i = 0; i < materialList.Count; i++)
                     {
                         Material material = materialList[i];
-                        material.SetFloat(PropertyIDs._PerObjectShadowCasterID, perObjectShadowCasterID);
+                        material.SetFloat(PropertyIDs.PerObjectShadowCasterID, perObjectShadowCasterID);
                     }
                 }
                 finally
@@ -188,13 +188,13 @@ namespace ArcToon.Runtime.Behavior
 
         private static class ShaderTagIds
         {
-            public static readonly ShaderTagId LightMode = MemberNameHelpers.ShaderTagId();
-            public static readonly ShaderTagId ShadowCaster = MemberNameHelpers.ShaderTagId();
+            public static readonly ShaderTagId LightMode = InternalShaderHelpers.ShaderTagId();
+            public static readonly ShaderTagId ShadowCaster = InternalShaderHelpers.ShaderTagId();
         }
 
         private static class PropertyIDs
         {
-            public static readonly int _PerObjectShadowCasterID = MemberNameHelpers.ShaderPropertyID();
+            public static readonly int PerObjectShadowCasterID = InternalShaderHelpers.ShaderPropertyID();
         }
     }
 }
