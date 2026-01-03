@@ -12,19 +12,16 @@ namespace ArcToon.Runtime.Passes
     {
         static readonly ProfilingSampler sampler = new("Prepass");
 
-        static readonly int depthStencilID = Shader.PropertyToID("_CameraDepthTexture");
-        static readonly int stencilMaskID = Shader.PropertyToID("_StencilMaskTexture");
-        
         private static ShaderTagId[] depthPrePassShaderTagIds =
         {
-            new("DepthOnly"),
-            new("StencilOnly"),
-            new("DepthStencil"),
+            InternalShader.TagId.DepthOnly,
+            InternalShader.TagId.StencilOnly,
+            InternalShader.TagId.DepthStencil,
         };
         private static ShaderTagId[] stencilMaskShaderTagIds =
         {
-            new("FringeShadowReceiver"),
-            new("EyeLashesReceiver")
+            InternalShader.TagId.FringeShadowReceiver,
+            InternalShader.TagId.EyeLashesReceiver
         };
 
         private RendererListHandle opaqueDepthPrepassList;
@@ -66,9 +63,9 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.BeginSample("Stencil Mask");
             commandBuffer.DrawRendererList(stencilMaskList);
             commandBuffer.EndSample("Stencil Mask");
-            
-            commandBuffer.SetGlobalTexture(depthStencilID, depthStencilBuffer);
-            commandBuffer.SetGlobalTexture(stencilMaskID, stencilMask);
+
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.CameraDepthTexture, depthStencilBuffer);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.StencilMaskTexture, stencilMask);
 
             // reset
             commandBuffer.SetRenderTarget(
