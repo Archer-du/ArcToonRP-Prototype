@@ -35,7 +35,7 @@ namespace ArcToon.Runtime.Passes
                 clearFlags <= CameraClearFlags.Color,
                 clearFlags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
 
-            commandBuffer.SetGlobalVector(InternalShaderHelpers.PropertyID.CameraBufferSize, new Vector4(
+            commandBuffer.SetGlobalVector(InternalShader.PropertyID.CameraBufferSize, new Vector4(
                 1f / attachmentSize.x, 1f / attachmentSize.y,
                 attachmentSize.x, attachmentSize.y
             ));

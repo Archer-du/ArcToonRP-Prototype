@@ -4,6 +4,7 @@ using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Jobs;
 using ArcToon.Runtime.Passes.Lighting;
 using ArcToon.Runtime.Settings;
+using ArcToon.Runtime.Utils;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -24,69 +25,50 @@ namespace ArcToon.Runtime.Passes
         private PerObjectShadowCasterManager perObjectShadowCasterManager;
 
         #region DirectionalLight
-
         int directionalLightCount;
         private const int maxDirectionalLightCount = 4;
 
         private static readonly DirectionalLightBufferData[] directionalLightData =
             new DirectionalLightBufferData[maxDirectionalLightCount];
 
-        private static int directionalLightCountID = Shader.PropertyToID("_DirectionalLightCount");
-        private static int directionalLightDataID = Shader.PropertyToID("_DirectionalLightData");
         BufferHandle directionalLightDataHandle;
-
         #endregion
 
         #region SpotLight
-
         int spotLightCount;
         private const int maxSpotLightCount = 64;
 
         private static readonly SpotLightBufferData[] spotLightData = new SpotLightBufferData[maxSpotLightCount];
 
-        private static int spotLightCountID = Shader.PropertyToID("_SpotLightCount");
-        private static int spotLightDataID = Shader.PropertyToID("_SpotLightData");
         BufferHandle spotLightDataHandle;
-
         #endregion
 
         #region PointLight
-
         int pointLightCount;
         private const int maxPointLightCount = 16;
 
         private static readonly PointLightBufferData[] pointLightData = new PointLightBufferData[maxPointLightCount];
 
-        private static int pointLightCountID = Shader.PropertyToID("_PointLightCount");
-        private static int pointLightDataID = Shader.PropertyToID("_PointLightData");
         BufferHandle pointLightDataHandle;
-
         #endregion
 
+        #region PerObjectShadow
         int perObjectCasterCount;
         private const int maxPerObjectCasterCount = 16;
 
         private static readonly PerObjectCasterBufferData[] perObjectCasterData =
             new PerObjectCasterBufferData[maxPerObjectCasterCount];
 
-        private static int perObjectShadowCasterCountID = Shader.PropertyToID("_PerObjectShadowCasterCount");
-
-        private static int perObjectShadowCasterDataID = Shader.PropertyToID("_PerObjectShadowCasterData");
         BufferHandle perObjectShadowCasterDataHandle;
-
-
-        // tile job
+        #endregion
 
         #region TileForward+
-
         JobHandle forwardPlusJobHandle;
 
         NativeArray<float4> spotLightBounds;
         NativeArray<float4> pointLightBounds;
 
         NativeArray<int> forwardPlusTileData;
-        private static int forwardPlusTileDataID = Shader.PropertyToID("_ForwardPlusTileData");
-        private static int forwardPlusTileSettingsID = Shader.PropertyToID("_ForwardPlusTileSettings");
 
         BufferHandle forwardPlusTileBufferHandle;
 
@@ -97,31 +79,30 @@ namespace ArcToon.Runtime.Passes
 
         Vector2Int tileCount;
         int TileCount => tileCount.x * tileCount.y;
-
         #endregion
 
         void Render(RenderGraphContext context)
         {
             CommandBuffer commandBuffer = context.cmd;
-            commandBuffer.SetGlobalInt(directionalLightCountID, directionalLightCount);
+            commandBuffer.SetGlobalInt(InternalShader.PropertyID.DirectionalLightCount, directionalLightCount);
             commandBuffer.SetBufferData(directionalLightDataHandle, directionalLightData,
                 0, 0, directionalLightCount);
-            commandBuffer.SetGlobalBuffer(directionalLightDataID, directionalLightDataHandle);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.DirectionalLightData, directionalLightDataHandle);
 
-            commandBuffer.SetGlobalInt(perObjectShadowCasterCountID, perObjectCasterCount);
+            commandBuffer.SetGlobalInt(InternalShader.PropertyID.PerObjectShadowCasterCount, perObjectCasterCount);
             commandBuffer.SetBufferData(perObjectShadowCasterDataHandle, perObjectCasterData, 
                 0, 0, perObjectCasterCount);
-            commandBuffer.SetGlobalBuffer(perObjectShadowCasterDataID, perObjectShadowCasterDataHandle);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PerObjectShadowCasterData, perObjectShadowCasterDataHandle);
 
-            commandBuffer.SetGlobalInt(spotLightCountID, spotLightCount);
+            commandBuffer.SetGlobalInt(InternalShader.PropertyID.SpotLightCount, spotLightCount);
             commandBuffer.SetBufferData(spotLightDataHandle, spotLightData,
                 0, 0, spotLightCount);
-            commandBuffer.SetGlobalBuffer(spotLightDataID, spotLightDataHandle);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.SpotLightData, spotLightDataHandle);
 
-            commandBuffer.SetGlobalInt(pointLightCountID, pointLightCount);
+            commandBuffer.SetGlobalInt(InternalShader.PropertyID.PointLightCount, pointLightCount);
             commandBuffer.SetBufferData(pointLightDataHandle, pointLightData,
                 0, 0, pointLightCount);
-            commandBuffer.SetGlobalBuffer(pointLightDataID, pointLightDataHandle);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PointLightData, pointLightDataHandle);
 
             shadowMapRenderer.RenderShadowMap(context);
 
@@ -129,8 +110,8 @@ namespace ArcToon.Runtime.Passes
             forwardPlusJobHandle.Complete();
             commandBuffer.SetBufferData(forwardPlusTileBufferHandle, forwardPlusTileData,
                 0, 0, forwardPlusTileData.Length);
-            commandBuffer.SetGlobalBuffer(forwardPlusTileDataID, forwardPlusTileBufferHandle);
-            commandBuffer.SetGlobalVector(forwardPlusTileSettingsID,
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.ForwardPlusTileData, forwardPlusTileBufferHandle);
+            commandBuffer.SetGlobalVector(InternalShader.PropertyID.ForwardPlusTileSettings,
                 new Vector4(screenUVToTileCoordinates.x, screenUVToTileCoordinates.y,
                     asfloat(tileCount.x),
                     asfloat(tileDataSize)
@@ -192,11 +173,11 @@ namespace ArcToon.Runtime.Passes
                     name = "Forward+ Tiles",
                 }));
 
-            builder.AllowPassCulling(false);
-            builder.SetRenderFunc<LightingPass>(static (pass, context) => pass.Render(context));
-
             ShadowMapHandles shadowMapHandles =
                 pass.shadowMapRenderer.Record(renderGraph, builder, context);
+
+            builder.AllowPassCulling(false);
+            builder.SetRenderFunc<LightingPass>(static (pass, context) => pass.Render(context));
 
             return new LightingDataHandles(
                 pass.directionalLightDataHandle, 

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e612373677478a846b8eeadf532b9ab9, type: 3}
   m_Name: Arc Toon Render Pipeline Asset
   m_EditorClassIdentifier: 
-  settings:
+  config:
     useSRPBatcher: 1
     cameraBufferSettings:
       enableHDR: 1
@@ -46,7 +46,7 @@ MonoBehaviour:
       filterQuality: 3
       maxDistance: 80
       distanceFade: 0.1
-    globalPostFXConfig: {fileID: 11400000, guid: c11cd6f2791f04b428fa2e0d92a8490a, type: 2}
     forwardPlusSettings:
       tileSize: 64
       maxLightsPerTile: 14
+    globalPostFXConfig: {fileID: 11400000, guid: c11cd6f2791f04b428fa2e0d92a8490a, type: 2}

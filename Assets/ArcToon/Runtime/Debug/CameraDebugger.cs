@@ -52,7 +52,7 @@ public static class CameraDebugger
         commandBuffer.SetGlobalFloat(debugTileOpacityID, debugTileOpacity);
         commandBuffer.DrawProcedural(
             Matrix4x4.identity, 
-            ShaderResourceManager.AcquireTransientMaterial(InternalShaderHelpers.Path.CameraDebug), 
+            ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraDebug), 
             0, MeshTopology.Triangles, 3);
         context.renderContext.ExecuteCommandBuffer(commandBuffer);
         commandBuffer.Clear();

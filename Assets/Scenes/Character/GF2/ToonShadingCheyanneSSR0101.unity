@@ -4810,7 +4810,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4131849331886834378, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: currentActiveMode
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4131849331886834378, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: faceFocusCameraData.targetHeight
@@ -4826,11 +4826,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7100634267731530039, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.3179998
+      value: -2.1820002
       objectReference: {fileID: 0}
     - target: {fileID: 7100634267731530039, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.5
+      value: -20
       objectReference: {fileID: 0}
     - target: {fileID: 7180066287527941596, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: field of view
@@ -4838,7 +4838,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7180066287527941596, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: far clip plane
-      value: 120
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 9064227431101291512, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: m_LocalPosition.x

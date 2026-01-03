@@ -8,6 +8,8 @@ namespace ArcToon.Runtime.Behavior
     [Serializable]
     public class CameraAdditiveData
     {
+        public static CameraAdditiveData DefaultAdditiveData = new();
+        
         public bool maskLights;
 
         public RenderingLayerMask renderingLayerMask = -1;
