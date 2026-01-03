@@ -104,6 +104,12 @@ float GetTexelSizeWorldSpace(float linearDepth)
     return size;
 }
 
+float3 GetObjectCenterWorldPosition()
+{
+    float3 objectCenterWS = mul(GetObjectToWorldMatrix(), float4(0, 0, 0, 1)).xyz;
+    return objectCenterWS;
+}
+
 float GenerateSphereDistanceMaskByUV(float2 UV, float radiusSquare, float sharp)
 {
     UV = mad(UV, 2, -1);

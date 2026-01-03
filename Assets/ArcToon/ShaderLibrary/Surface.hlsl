@@ -20,6 +20,21 @@ struct Surface
     float dither;
     uint renderingLayerMask;
     float perObjectCasterID;
+
+    float3 GetSphereNormalWS()
+    {
+        float3 sphereNormalWS = normalize(positionWS - GetObjectCenterWorldPosition());
+        return sphereNormalWS;
+    }
+
+    float3 GetGISampleNormalWS()
+    {
+        float3 SampleGINormalWS = normalWS;
+        #if defined(_SDF_LIGHT_MAP)
+        SampleGINormalWS = GetSphereNormalWS();
+        #endif
+        return SampleGINormalWS;
+    }
 };
 
 #endif
