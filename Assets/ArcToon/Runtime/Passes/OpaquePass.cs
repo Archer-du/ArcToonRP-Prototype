@@ -9,6 +9,7 @@ namespace ArcToon.Runtime.Passes
     public class OpaquePass
     {
         static readonly ProfilingSampler sampler = new("Opaque");
+        private RenderGraphResourceData resourceData;
 
         RendererListHandle baseList;
         RendererListHandle outlineList;
@@ -36,12 +37,16 @@ namespace ArcToon.Runtime.Passes
             context.cmd.Clear();
         }
 
-        public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults,
-            in CameraAttachmentHandles handles, in LightingDataHandles lightingData)
+        public static void Record(CameraRenderer renderer, RenderGraph renderGraph, Camera camera,
+            RenderGraphResourceData resourceData,
+            CullingResults cullingResults,
+            in LightingDataHandles lightingData)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out OpaquePass pass, sampler);
 
+            pass.resourceData = resourceData;
+            
             pass.outlineList = builder.UseRendererList(renderGraph.CreateRendererList(
                 new RendererListDesc(outlineShaderTagIds, cullingResults, camera)
                 {
@@ -61,9 +66,10 @@ namespace ArcToon.Runtime.Passes
                                             PerObjectData.ReflectionProbes,
                 })
             );
-            builder.ReadWriteTexture(handles.colorAttachment);
-            builder.ReadWriteTexture(handles.depthAttachment);
-            builder.ReadTexture(handles.stencilMask);
+            builder.ReadWriteTexture(resourceData.colorAttachment);
+            builder.ReadWriteTexture(resourceData.depthAttachment);
+            builder.ReadTexture(resourceData.stencilMask);
+            
             builder.ReadTexture(lightingData.shadowMapHandles.directionalAtlas);
             builder.ReadTexture(lightingData.shadowMapHandles.spotAtlas);
             builder.ReadTexture(lightingData.shadowMapHandles.pointAtlas);

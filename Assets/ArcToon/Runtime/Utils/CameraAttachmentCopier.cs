@@ -15,11 +15,6 @@ namespace ArcToon.Runtime.Utils
         
         static readonly Rect fullViewRect = new(0f, 0f, 1f, 1f);
 
-        static readonly bool copyTextureSupported =
-            SystemInfo.copyTextureSupport > CopyTextureSupport.None;
-
-        public static bool RequiresRenderTargetResetAfterCopy => !copyTextureSupported;
-
         public Camera Camera => camera;
 
         readonly Camera camera;
@@ -38,7 +33,7 @@ namespace ArcToon.Runtime.Utils
         public void Copy(CommandBuffer commandBuffer,
             RenderTargetIdentifier srcHandle, RenderTargetIdentifier dstHandle, CopyChannel channel)
         {
-            if (copyTextureSupported)
+            if (RenderPipelineInfo.CopyTextureSupported)
             {
                 commandBuffer.CopyTexture(srcHandle, dstHandle);
             }

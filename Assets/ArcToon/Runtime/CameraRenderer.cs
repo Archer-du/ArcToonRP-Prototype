@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Behavior;
+using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Passes;
 using ArcToon.Runtime.Passes.Lighting;
 using ArcToon.Runtime.Settings;
@@ -92,10 +93,12 @@ namespace ArcToon.Runtime
             renderGraph.BeginRecording(renderGraphParameters);
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
             {
-                var lightingHandles = LightingPass.Record(renderGraph, this, camera, CullingResults, AttachmentSize,
+                RenderGraphResourceData resourceData = new();
+                
+                var lightingHandles = LightingPass.Record(this, renderGraph, camera, CullingResults,
+                    AttachmentSize,
                     ShadowSettings,
-                    ForwardPlusSettings,
-                    context, perObjectShadowCasterManager);
+                    ForwardPlusSettings, context, perObjectShadowCasterManager);
 
                 bool useHDR = BufferSettings.enableHDR && camera.allowHDR;
                 bool copyColor, copyDepth;
@@ -109,23 +112,20 @@ namespace ArcToon.Runtime
                     copyDepth = BufferSettings.copyDepth && CameraAdditiveData.copyDepth;
                     copyColor = BufferSettings.copyColor && CameraAdditiveData.copyColor;
                 }
-                var attachmentHandles = SetupPass.Record(renderGraph, camera, AttachmentSize,
-                    copyColor, copyDepth, useHDR);
+                SetupPass.Record(this, renderGraph, camera, resourceData, AttachmentSize, copyColor, copyDepth, useHDR);
 
-                DepthStencilPrePass.Record(renderGraph, camera, CullingResults, copyDepth, attachmentHandles);
+                DepthStencilPrePass.Record(this, renderGraph, camera, resourceData, CullingResults, copyDepth);
 
-                OpaquePass.Record(renderGraph, camera, CullingResults, attachmentHandles, lightingHandles);
+                OpaquePass.Record(this, renderGraph, camera, resourceData, CullingResults, lightingHandles);
 
-                SkyboxPass.Record(renderGraph, camera, CullingResults, attachmentHandles);
+                SkyboxPass.Record(this, renderGraph, camera, resourceData, CullingResults);
 
-                TransparentPass.Record(renderGraph, camera, CullingResults, attachmentHandles, lightingHandles);
+                TransparentPass.Record(this, renderGraph, camera, resourceData, CullingResults, lightingHandles);
 
                 UnsupportedPass.Record(renderGraph, camera, CullingResults);
-
-                // post fx
-                var texture = PostFXPass.Record(renderGraph, camera, CullingResults, AttachmentSize,
-                    CameraAdditiveData, BufferSettings, PostFXConfig, useHDR,
-                    attachmentHandles.colorAttachment);
+                
+                var postFXResult = PostFXPass.Record(this, renderGraph, camera, resourceData, CullingResults, AttachmentSize,
+                    CameraAdditiveData, BufferSettings, PostFXConfig, useHDR);
 
                 CameraAttachmentCopier copier = new(camera);
                 var bicubicRescalingMode = BufferSettings.bicubicRescalingMode;
@@ -133,11 +133,11 @@ namespace ArcToon.Runtime
                     bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||
                     bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpOnly &&
                     AttachmentSize.x < camera.pixelWidth;
-                CopyFinalPass.Record(renderGraph, CameraAdditiveData.finalBlendMode, bicubicSampling, texture, copier);
+                CopyFinalPass.Record(renderGraph, resourceData, postFXResult, CameraAdditiveData.finalBlendMode, bicubicSampling, copier);
 
                 DebugPass.Record(renderGraph, camera, lightingHandles);
 
-                GizmosPass.Record(renderGraph, attachmentHandles, copier);
+                GizmosPass.Record(renderGraph, resourceData, copier);
             }
 
             renderGraph.EndRecordingAndExecute();
@@ -146,61 +146,17 @@ namespace ArcToon.Runtime
             CommandBufferPool.Release(renderGraphParameters.commandBuffer);
         }
 
-        private void RecordRenderPass<T>(RenderGraph renderGraph, string passName) where T : RenderGraphPassDataBase, new()
+        private void RecordRenderPass<TRenderPass>(RenderGraph renderGraph, RenderGraphResourceData resourceData, string passName, 
+            bool allowPassCulling = true) 
+            where TRenderPass : RenderGraphPassBase, new()
         {
-            // using (RenderGraphBuilder builder = renderGraph.AddRenderPass(
-            //     passName, out T passData))
-            // {
-            //     pass.Setup(cullingResults, camera, attachmentSize, shadowSettings, forwardPlusSettings,
-            //         perObjectShadowCasterManager);
-            //     pass.spotLightDataHandle = builder.WriteBuffer(
-            //         renderGraph.CreateBuffer(new BufferDesc(maxSpotLightCount, SpotLightBufferData.stride)
-            //         {
-            //             name = "Spot Light Data",
-            //             target = GraphicsBuffer.Target.Structured
-            //         })
-            //     );
-            //     pass.pointLightDataHandle = builder.WriteBuffer(
-            //         renderGraph.CreateBuffer(new BufferDesc(maxPointLightCount, PointLightBufferData.stride)
-            //         {
-            //             name = "Point Light Data",
-            //             target = GraphicsBuffer.Target.Structured
-            //         })
-            //     );
-            //     pass.directionalLightDataHandle = builder.WriteBuffer(
-            //         renderGraph.CreateBuffer(new BufferDesc(maxDirectionalLightCount, DirectionalLightBufferData.stride)
-            //         {
-            //             name = "Directional Light Data",
-            //             target = GraphicsBuffer.Target.Structured
-            //         })
-            //     );
-            //     pass.perObjectShadowCasterDataHandle = builder.WriteBuffer(
-            //         renderGraph.CreateBuffer(new BufferDesc(maxPerObjectCasterCount, PerObjectCasterBufferData.stride)
-            //         {
-            //             name = "Per Object Shadow Caster Data",
-            //             target = GraphicsBuffer.Target.Structured
-            //         })
-            //     );
-            //     pass.forwardPlusTileBufferHandle = builder.WriteBuffer(
-            //         renderGraph.CreateBuffer(new BufferDesc(pass.TileCount * pass.tileDataSize, 4)
-            //         {
-            //             name = "Forward+ Tiles",
-            //         }));
-            //
-            //     builder.AllowPassCulling(false);
-            //     builder.SetRenderFunc<LightingPass>(static (pass, context) => pass.Render(context));
-            //
-            //     ShadowMapHandles shadowMapHandles =
-            //         pass.shadowMapRenderer.Record(renderGraph, builder, context);
-            //
-            //     return new LightingDataHandles(
-            //         pass.directionalLightDataHandle, 
-            //         pass.spotLightDataHandle,
-            //         pass.pointLightDataHandle,
-            //         pass.perObjectShadowCasterDataHandle,
-            //         pass.forwardPlusTileBufferHandle,
-            //         shadowMapHandles);
-            // }
+            using RenderGraphBuilder builder = renderGraph.AddRenderPass(passName, out TRenderPass passData);
+            passData.Initialize(resourceData, this);
+            passData.AcquireResource(renderGraph);
+            passData.DeclareResourceUsage(builder);
+
+            builder.AllowPassCulling(allowPassCulling);
+            builder.SetRenderFunc<TRenderPass>(static (pass, context) => pass.Render(context));
         }
 
         private Vector2Int GetCameraBufferSize(float renderScale)

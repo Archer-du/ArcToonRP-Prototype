@@ -28,7 +28,7 @@ namespace ArcToon.Runtime.Passes
         int directionalLightCount;
 
         private static readonly DirectionalLightBufferData[] directionalLightData =
-            new DirectionalLightBufferData[RenderPipelineConfig.MaxDirectionalLightCount];
+            new DirectionalLightBufferData[RenderPipelineInfo.MaxDirectionalLightCount];
 
         BufferHandle directionalLightDataHandle;
         #endregion
@@ -36,7 +36,7 @@ namespace ArcToon.Runtime.Passes
         #region SpotLight
         int spotLightCount;
 
-        private static readonly SpotLightBufferData[] spotLightData = new SpotLightBufferData[RenderPipelineConfig.MaxSpotLightCount];
+        private static readonly SpotLightBufferData[] spotLightData = new SpotLightBufferData[RenderPipelineInfo.MaxSpotLightCount];
 
         BufferHandle spotLightDataHandle;
         #endregion
@@ -44,7 +44,7 @@ namespace ArcToon.Runtime.Passes
         #region PointLight
         int pointLightCount;
 
-        private static readonly PointLightBufferData[] pointLightData = new PointLightBufferData[RenderPipelineConfig.MaxPointLightCount];
+        private static readonly PointLightBufferData[] pointLightData = new PointLightBufferData[RenderPipelineInfo.MaxPointLightCount];
 
         BufferHandle pointLightDataHandle;
         #endregion
@@ -53,7 +53,7 @@ namespace ArcToon.Runtime.Passes
         int perObjectCasterCount;
 
         private static readonly PerObjectCasterBufferData[] perObjectCasterData =
-            new PerObjectCasterBufferData[RenderPipelineConfig.MaxPerObjectCasterCount];
+            new PerObjectCasterBufferData[RenderPipelineInfo.MaxPerObjectCasterCount];
 
         BufferHandle perObjectShadowCasterDataHandle;
         #endregion
@@ -122,7 +122,7 @@ namespace ArcToon.Runtime.Passes
             forwardPlusTileData.Dispose();
         }
 
-        public static LightingDataHandles Record(RenderGraph renderGraph, CameraRenderer cameraRenderer, Camera camera,
+        public static LightingDataHandles Record(CameraRenderer cameraRenderer, RenderGraph renderGraph, Camera camera,
             CullingResults cullingResults,
             Vector2Int attachmentSize,
             ShadowSettings shadowSettings,
@@ -136,28 +136,28 @@ namespace ArcToon.Runtime.Passes
             pass.Setup(cullingResults, camera, attachmentSize, shadowSettings, forwardPlusSettings,
                 perObjectShadowCasterManager);
             pass.spotLightDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineConfig.MaxSpotLightCount, SpotLightBufferData.stride)
+                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxSpotLightCount, SpotLightBufferData.stride)
                 {
                     name = "Spot Light Data",
                     target = GraphicsBuffer.Target.Structured
                 })
             );
             pass.pointLightDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineConfig.MaxPointLightCount, PointLightBufferData.stride)
+                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxPointLightCount, PointLightBufferData.stride)
                 {
                     name = "Point Light Data",
                     target = GraphicsBuffer.Target.Structured
                 })
             );
             pass.directionalLightDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineConfig.MaxDirectionalLightCount, DirectionalLightBufferData.stride)
+                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxDirectionalLightCount, DirectionalLightBufferData.stride)
                 {
                     name = "Directional Light Data",
                     target = GraphicsBuffer.Target.Structured
                 })
             );
             pass.perObjectShadowCasterDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineConfig.MaxPerObjectCasterCount, PerObjectCasterBufferData.stride)
+                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxPerObjectCasterCount, PerObjectCasterBufferData.stride)
                 {
                     name = "Per Object Shadow Caster Data",
                     target = GraphicsBuffer.Target.Structured
@@ -194,10 +194,10 @@ namespace ArcToon.Runtime.Passes
             maxLightCountPerTile = forwardPlusSettings.maxLightsPerTile;
             tileDataSize = maxLightCountPerTile + 2;
 
-            spotLightBounds = new NativeArray<float4>(RenderPipelineConfig.MaxSpotLightCount,
+            spotLightBounds = new NativeArray<float4>(RenderPipelineInfo.MaxSpotLightCount,
                 Allocator.TempJob,
                 NativeArrayOptions.UninitializedMemory);
-            pointLightBounds = new NativeArray<float4>(RenderPipelineConfig.MaxPointLightCount,
+            pointLightBounds = new NativeArray<float4>(RenderPipelineInfo.MaxPointLightCount,
                 Allocator.TempJob,
                 NativeArrayOptions.UninitializedMemory);
             float tileScreenPixelSize = forwardPlusSettings.tileSize <= 0 ? 64f : (float)forwardPlusSettings.tileSize;
@@ -225,18 +225,18 @@ namespace ArcToon.Runtime.Passes
                 Light light = visibleLights[i].light;
                 switch (visibleLights[i].lightType)
                 {
-                    case LightType.Directional when directionalLightCount < RenderPipelineConfig.MaxDirectionalLightCount:
+                    case LightType.Directional when directionalLightCount < RenderPipelineInfo.MaxDirectionalLightCount:
                         directionalLightData[directionalLightCount++] =
                             DirectionalLightBufferData.GenerateStructuredData(visibleLights[i], light,
                                 perLightDataCollector.ReservePerLightShadowDataDirectional(light, i));
                         break;
-                    case LightType.Spot when spotLightCount < RenderPipelineConfig.MaxSpotLightCount:
+                    case LightType.Spot when spotLightCount < RenderPipelineInfo.MaxSpotLightCount:
                         SetupForwardPlusSpot(spotLightCount, visibleLights[i]);
                         spotLightData[spotLightCount++] =
                             SpotLightBufferData.GenerateStructuredData(visibleLights[i], light,
                                 perLightDataCollector.ReservePerLightShadowDataSpot(light, i));
                         break;
-                    case LightType.Point when pointLightCount < RenderPipelineConfig.MaxPointLightCount:
+                    case LightType.Point when pointLightCount < RenderPipelineInfo.MaxPointLightCount:
                         SetupForwardPlusPoint(pointLightCount, visibleLights[i]);
                         pointLightData[pointLightCount++] =
                             PointLightBufferData.GenerateStructuredData(visibleLights[i], light,
@@ -250,7 +250,7 @@ namespace ArcToon.Runtime.Passes
             for (int i = 0; i < visiblePerObjectShadowCasters.Count; i++)
             {
                 var caster = visiblePerObjectShadowCasters[i];
-                if (perObjectCasterCount < RenderPipelineConfig.MaxPerObjectCasterCount)
+                if (perObjectCasterCount < RenderPipelineInfo.MaxPerObjectCasterCount)
                 {
                     perObjectCasterData[perObjectCasterCount++] =
                         PerObjectCasterBufferData.GenerateStructuredData(

@@ -27,9 +27,9 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.Clear();
         }
 
-        public static void Record(RenderGraph renderGraph, 
+        public static void Record(RenderGraph renderGraph,
+            RenderGraphResourceData resourceData, TextureHandle postFXResult,
             CameraAdditiveData.FinalBlendMode finalBlendMode, bool bicubicSampling,
-            in TextureHandle srcHandle,
             CameraAttachmentCopier copier)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
@@ -38,7 +38,8 @@ namespace ArcToon.Runtime.Passes
             pass.finalBlendMode = finalBlendMode;
             pass.bicubicSampling = bicubicSampling;
             pass.copier = copier;
-            pass.source = builder.ReadTexture(srcHandle);
+            
+            pass.source = builder.ReadTexture(postFXResult);
             pass.result = builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
             
             builder.SetRenderFunc<CopyFinalPass>(static (pass, context) => pass.Render(context));

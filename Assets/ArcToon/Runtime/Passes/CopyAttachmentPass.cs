@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -37,7 +38,7 @@ namespace ArcToon.Runtime.Passes
                 commandBuffer.SetGlobalTexture(depthCopyID, depthCopy);
             }
 
-            if (CameraAttachmentCopier.RequiresRenderTargetResetAfterCopy)
+            if (!RenderPipelineInfo.CopyTextureSupported)
             {
                 commandBuffer.SetRenderTarget(
                     colorAttachment,

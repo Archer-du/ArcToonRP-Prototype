@@ -32,7 +32,7 @@ namespace ArcToon.Runtime.Passes
 #endif
         [Conditional("UNITY_EDITOR")]
         public static void Record(RenderGraph renderGraph,
-            in CameraAttachmentHandles handles,
+            RenderGraphResourceData resourceData,
             CameraAttachmentCopier copier)
         {
 #if UNITY_EDITOR
@@ -42,7 +42,7 @@ namespace ArcToon.Runtime.Passes
                     sampler.name, out GizmosPass pass, sampler);
                 
                 pass.copier = copier;
-                pass.depthAttachment = builder.ReadTexture(handles.depthAttachment);
+                pass.depthAttachment = builder.ReadTexture(resourceData.depthAttachment);
                 
                 builder.SetRenderFunc<GizmosPass>(static (pass, context) => pass.Render(context));
             }

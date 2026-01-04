@@ -26,7 +26,7 @@ namespace ArcToon.Runtime.Passes.Lighting
         }
 
         private ShadowMapDataDirectional[] shadowMapDataDirectionals =
-            new ShadowMapDataDirectional[RenderPipelineConfig.MaxShadowedDirectionalLightCount];
+            new ShadowMapDataDirectional[RenderPipelineInfo.MaxShadowedDirectionalLightCount];
 
         public ShadowMapDataDirectional[] ShadowMapDataDirectionals => shadowMapDataDirectionals;
 
@@ -36,7 +36,7 @@ namespace ArcToon.Runtime.Passes.Lighting
         }
 
         private ShadowMapDataPerObjectCaster[] shadowMapDataPerObjectCasters =
-            new ShadowMapDataPerObjectCaster[RenderPipelineConfig.MaxPerObjectShadowCasterCount];
+            new ShadowMapDataPerObjectCaster[RenderPipelineInfo.MaxPerObjectShadowCasterCount];
 
         public ShadowMapDataPerObjectCaster[] ShadowMapDataPerObjectCasters => shadowMapDataPerObjectCasters;
         
@@ -49,7 +49,7 @@ namespace ArcToon.Runtime.Passes.Lighting
         }
 
         private ShadowMapDataSpot[] shadowMapDataSpots =
-            new ShadowMapDataSpot[RenderPipelineConfig.MaxShadowedSpotLightCount];
+            new ShadowMapDataSpot[RenderPipelineInfo.MaxShadowedSpotLightCount];
 
         public ShadowMapDataSpot[] ShadowMapDataSpots => shadowMapDataSpots;
 
@@ -62,7 +62,7 @@ namespace ArcToon.Runtime.Passes.Lighting
         }
 
         private ShadowMapDataPoint[] shadowMapDataPoints =
-            new ShadowMapDataPoint[RenderPipelineConfig.MaxShadowedPointLightCount];
+            new ShadowMapDataPoint[RenderPipelineInfo.MaxShadowedPointLightCount];
 
         public ShadowMapDataPoint[] ShadowMapDataPoints => shadowMapDataPoints;
 
@@ -91,7 +91,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                 }
 
                 // only baked shadows are used
-                if (shadowedDirectionalLightCount >= RenderPipelineConfig.MaxShadowedDirectionalLightCount ||
+                if (shadowedDirectionalLightCount >= RenderPipelineInfo.MaxShadowedDirectionalLightCount ||
                     !cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
                 {
                     // a trick to only sample baked shadow
@@ -143,7 +143,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                     maskChannel = lightBaking.occlusionMaskChannel;
                 }
 
-                if (shadowedSpotLightCount >= RenderPipelineConfig.MaxShadowedSpotLightCount ||
+                if (shadowedSpotLightCount >= RenderPipelineInfo.MaxShadowedSpotLightCount ||
                     !cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
                 {
                     return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
@@ -179,7 +179,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                     maskChannel = lightBaking.occlusionMaskChannel;
                 }
 
-                if (shadowedPointLightCount >= RenderPipelineConfig.MaxShadowedPointLightCount ||
+                if (shadowedPointLightCount >= RenderPipelineInfo.MaxShadowedPointLightCount ||
                     !cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
                 {
                     return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);

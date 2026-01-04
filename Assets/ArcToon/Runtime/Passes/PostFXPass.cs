@@ -12,22 +12,22 @@ namespace ArcToon.Runtime.Passes
     {
         static readonly ProfilingSampler sampler = new("Post FX");
 
-        public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
+        public static TextureHandle Record(CameraRenderer renderer, RenderGraph renderGraph, Camera camera,
+            RenderGraphResourceData resourceData,
             CullingResults cullingResults, Vector2Int bufferSize,
             CameraAdditiveData cameraAdditiveData,
             CameraBufferSettings bufferSettings,
             PostFXConfig postFXConfig,
-            bool useHDR,
-            in TextureHandle srcHandle)
+            bool useHDR)
         {
             bool hasActivePostFX =
                 postFXConfig != null && PostFXConfig.AreApplicableTo(camera);
-            if (!hasActivePostFX) return srcHandle;
+            if (!hasActivePostFX) return resourceData.colorAttachment;
             
             using (new RenderGraphProfilingScope(renderGraph, sampler))
             {
                 PostFXStack postFXStack = new PostFXStack(postFXConfig.PostProcessStackMaterial);
-                TextureHandle handle = srcHandle;
+                TextureHandle handle = resourceData.colorAttachment;
                 handle = BloomPass.Record(renderGraph, camera, cullingResults, bufferSize, 
                     cameraAdditiveData, bufferSettings, postFXConfig, useHDR,
                     handle, postFXStack);

@@ -11,6 +11,7 @@ namespace ArcToon.Runtime.Passes
     public class DepthStencilPrePass
     {
         static readonly ProfilingSampler sampler = new("Prepass");
+        private RenderGraphResourceData resourceData;
 
         private static ShaderTagId[] depthPrePassShaderTagIds =
         {
@@ -28,17 +29,12 @@ namespace ArcToon.Runtime.Passes
         private RendererListHandle transparentDepthPrepassList;
         private RendererListHandle stencilMaskList;
 
-        private TextureHandle colorAttachment, depthAttachment;
-        
-        private TextureHandle depthStencilBuffer;
-        private TextureHandle stencilMask;
-
         void Render(RenderGraphContext context)
         {
             CommandBuffer commandBuffer = context.cmd;
             
             commandBuffer.SetRenderTarget(
-                depthStencilBuffer,
+                resourceData.depthCopy,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             
@@ -52,9 +48,9 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.EndSample("Transparent Depth Stencil");
 
             commandBuffer.SetRenderTarget(
-                stencilMask,
+                resourceData.stencilMask,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                depthStencilBuffer,
+                resourceData.depthCopy,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
             );
             
@@ -64,14 +60,14 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.DrawRendererList(stencilMaskList);
             commandBuffer.EndSample("Stencil Mask");
 
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.CameraDepthTexture, depthStencilBuffer);
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.StencilMaskTexture, stencilMask);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.CameraDepthTexture, resourceData.depthCopy);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.StencilMaskTexture, resourceData.stencilMask);
 
             // reset
             commandBuffer.SetRenderTarget(
-                colorAttachment,
+                resourceData.colorAttachment,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store,
-                depthAttachment,
+                resourceData.depthAttachment,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
             );
 
@@ -79,14 +75,18 @@ namespace ArcToon.Runtime.Passes
             context.cmd.Clear();
         }
 
-        public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults,
-            bool preCopyDepth,
-            in CameraAttachmentHandles handles)
+        public static void Record(CameraRenderer renderer, RenderGraph renderGraph, Camera camera,
+            RenderGraphResourceData resourceData,
+            CullingResults cullingResults,
+            bool preCopyDepth)
         {
             if (!preCopyDepth) return;
 
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out DepthStencilPrePass pass, sampler);
+
+            // TODO: force initialize
+            pass.resourceData = resourceData;
             
             pass.opaqueDepthPrepassList = builder.UseRendererList(renderGraph.CreateRendererList(
                 new RendererListDesc(depthPrePassShaderTagIds, cullingResults, camera)
@@ -110,11 +110,11 @@ namespace ArcToon.Runtime.Passes
                 })
             );
 
-            pass.colorAttachment = builder.ReadTexture(handles.colorAttachment);
-            pass.depthAttachment = builder.ReadTexture(handles.depthAttachment);
+            builder.ReadTexture(resourceData.colorAttachment);
+            builder.ReadTexture(resourceData.depthAttachment);
 
-            pass.depthStencilBuffer = builder.ReadWriteTexture(handles.depthStencilBuffer);
-            pass.stencilMask = builder.WriteTexture(handles.stencilMask);
+            builder.ReadWriteTexture(resourceData.depthCopy);
+            builder.WriteTexture(resourceData.stencilMask);
 
             builder.SetRenderFunc<DepthStencilPrePass>(static (pass, context) => pass.Render(context));
         }

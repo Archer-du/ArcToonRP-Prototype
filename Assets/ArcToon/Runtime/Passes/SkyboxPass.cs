@@ -8,6 +8,7 @@ namespace ArcToon.Runtime.Passes
     public class SkyboxPass
     {
         static readonly ProfilingSampler sampler = new("Skybox");
+        private RenderGraphResourceData resourceData;
 
         RendererListHandle list;
 
@@ -18,15 +19,19 @@ namespace ArcToon.Runtime.Passes
             context.cmd.Clear();
         }
 
-        public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults, 
-            in CameraAttachmentHandles handles)
+        public static void Record(CameraRenderer renderer, RenderGraph renderGraph, Camera camera,
+            RenderGraphResourceData resourceData,
+            CullingResults cullingResults)
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(
                 sampler.name, out SkyboxPass pass, sampler);
 
+            pass.resourceData = resourceData;
+            
             pass.list = builder.UseRendererList(renderGraph.CreateSkyboxRendererList(camera));
-            builder.ReadWriteTexture(handles.colorAttachment);
-            builder.ReadTexture(handles.depthAttachment);
+            
+            builder.ReadWriteTexture(resourceData.colorAttachment);
+            builder.ReadTexture(resourceData.depthAttachment);
 
             builder.AllowPassCulling(false);
             builder.SetRenderFunc<SkyboxPass>(static (pass, context) => pass.Render(context));
