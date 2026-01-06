@@ -1,5 +1,4 @@
 ﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -8,7 +7,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 using static ArcToon.Runtime.Settings.PostFXConfig;
 using static ArcToon.Runtime.PostFXStack;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Runtime.Passes.PostProcessing
 {
     public class BloomPass
     {

@@ -1,48 +1,67 @@
 ﻿using ArcToon.Runtime.Behavior;
 using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
+using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class CopyFinalPass
+    public class CopyFinalPass : RenderGraphPassBase
     {
-        static readonly ProfilingSampler sampler = new("Copy Final");
-
-        CameraAttachmentCopier copier;
+        public override ProfilingSampler Sampler => new("Copy Final");
 
         TextureHandle source;
-        TextureHandle result;
+        TextureHandle backBuffer;
 
         CameraAdditiveData.FinalBlendMode finalBlendMode;
 
         bool bicubicSampling;
 
-        void Render(RenderGraphContext context)
+        public override void Initialize(RenderGraphResourceHandle resourceHandle, CameraRenderer renderer)
         {
-            CommandBuffer commandBuffer = context.cmd;
-            copier.CopyFinal(commandBuffer, source, finalBlendMode, bicubicSampling);
-            context.renderContext.ExecuteCommandBuffer(commandBuffer);
-            commandBuffer.Clear();
+            base.Initialize(resourceHandle, renderer);
+            var bicubicRescalingMode = renderer.BufferSettings.bicubicRescalingMode;
+            bicubicSampling =
+                bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||
+                bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpOnly &&
+                AttachmentSize.x < Camera.pixelWidth;
+            finalBlendMode = renderer.CameraAdditiveData.finalBlendMode;
         }
 
-        public static void Record(RenderGraph renderGraph,
-            RenderGraphResourceData resourceData, TextureHandle postFXResult,
-            CameraAdditiveData.FinalBlendMode finalBlendMode, bool bicubicSampling,
-            CameraAttachmentCopier copier)
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out CopyFinalPass pass, sampler);
+            commandBuffer.SetGlobalFloat(InternalShader.PropertyID.FinalSrcBlend, (float)finalBlendMode.source);
+            commandBuffer.SetGlobalFloat(InternalShader.PropertyID.FinalDstBlend, (float)finalBlendMode.destination);
+
+            commandBuffer.SetGlobalFloat(InternalShader.PropertyID.CopyBicubic, bicubicSampling ? 1f : 0f);
             
-            pass.finalBlendMode = finalBlendMode;
-            pass.bicubicSampling = bicubicSampling;
-            pass.copier = copier;
-            
-            pass.source = builder.ReadTexture(postFXResult);
-            pass.result = builder.WriteTexture(renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget));
-            
-            builder.SetRenderFunc<CopyFinalPass>(static (pass, context) => pass.Render(context));
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.SourceTexture, resourceHandle.postFXResult);
+            commandBuffer.SetRenderTarget(
+                BuiltinRenderTextureType.CameraTarget,
+                finalBlendMode.destination == BlendMode.Zero && Camera.rect == RenderPipelineInfo.FullViewRect
+                    ? RenderBufferLoadAction.DontCare
+                    : RenderBufferLoadAction.Load,
+                RenderBufferStoreAction.Store
+            );
+            commandBuffer.SetViewport(Camera.pixelRect);
+            commandBuffer.DrawProcedural(
+                Matrix4x4.identity, 
+                ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraCopy), 0,
+                MeshTopology.Triangles, 3
+            );
+        }
+
+        public override void AcquireResource(RenderGraph renderGraph)
+        {
+            backBuffer = renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget);
+        }
+
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        {
+            builder.ReadTexture(resourceHandle.postFXResult);
+            builder.WriteTexture(backBuffer);
         }
     }
 }

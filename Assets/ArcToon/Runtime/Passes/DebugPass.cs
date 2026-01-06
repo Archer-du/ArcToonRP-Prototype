@@ -1,33 +1,34 @@
 ﻿using System.Diagnostics;
 using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class DebugPass
+    public class DebugPass : RenderGraphPassBase
     {
-        static readonly ProfilingSampler sampler = new("Debug");
+        public override ProfilingSampler Sampler => new("Debug");
 
-        [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
-        public static void Record(
-            RenderGraph renderGraph,
-            Camera camera,
-            in LightingDataHandles lightingData)
+        public override bool IsValid()
         {
-            if (CameraDebugger.IsActive &&
-                camera.cameraType <= CameraType.SceneView)
-            {
-                using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                    sampler.name, out DebugPass pass, sampler);
-                
-                builder.ReadBuffer(lightingData.forwardPlusTileBufferHandle);
-                
-                builder.SetRenderFunc<DebugPass>(
-                    static (pass, context) => CameraDebugger.Render(context));
-            }
+            return base.IsValid() && CameraDebugger.IsActive && Camera.cameraType <= CameraType.SceneView;
+        }
+
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
+        {
+            CameraDebugger.Render(commandBuffer, context);
+        }
+
+        public override void AcquireResource(RenderGraph renderGraph)
+        {
+        }
+
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        {
+            builder.ReadBuffer(resourceHandle.forwardPlusTileBuffer);
         }
     }
 }

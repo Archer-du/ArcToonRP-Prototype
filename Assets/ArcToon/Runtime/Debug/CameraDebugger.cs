@@ -46,15 +46,12 @@ public static class CameraDebugger
     }
 
     [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
-    public static void Render(RenderGraphContext context)
+    public static void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
     {
-        CommandBuffer commandBuffer = context.cmd;
         commandBuffer.SetGlobalFloat(debugTileOpacityID, debugTileOpacity);
         commandBuffer.DrawProcedural(
             Matrix4x4.identity, 
             ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraDebug), 
             0, MeshTopology.Triangles, 3);
-        context.renderContext.ExecuteCommandBuffer(commandBuffer);
-        commandBuffer.Clear();
     }
 }

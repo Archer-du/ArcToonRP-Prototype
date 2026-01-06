@@ -22,7 +22,7 @@
             #pragma target 3.5
 
             #pragma vertex DefaultPassVertex
-            #pragma fragment CopyPassFragment
+            #pragma fragment CopyFinalPassFragment
             ENDHLSL
         }
 
@@ -37,7 +37,7 @@
             #pragma target 3.5
 
             #pragma vertex DefaultPassVertex
-            #pragma fragment CopyDepthPassFragment
+            #pragma fragment CopyPassFragment
             ENDHLSL
         }
 
@@ -52,7 +52,7 @@
             #pragma target 3.5
 
             #pragma vertex DefaultPassVertex
-            #pragma fragment CopyDepthPassFragment
+            #pragma fragment CopyPassFragment
             ENDHLSL
         }
     }

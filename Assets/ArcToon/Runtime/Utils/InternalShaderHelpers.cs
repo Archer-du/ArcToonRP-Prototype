@@ -18,6 +18,7 @@ namespace ArcToon.Runtime.Utils
         
         public static class Path
         {
+            public static readonly string InternalError = "Hidden/InternalErrorShader";
             public static readonly string CameraCopy = "Hidden/ArcToon/Camera Copy";
             public static readonly string CameraDebug = "Hidden/ArcToon/Camera Debug";
             public static readonly string PostFXStack = "Hidden/ArcToon/Post FX Stack";
@@ -27,7 +28,7 @@ namespace ArcToon.Runtime.Utils
         {
             public static readonly int CameraBufferSize = ShaderPropertyID();
 
-            #region LightingPass
+            #region Lighting
             public static readonly int DirectionalLightCount = ShaderPropertyID();
             public static readonly int DirectionalLightData = ShaderPropertyID();
 
@@ -45,12 +46,7 @@ namespace ArcToon.Runtime.Utils
             public static readonly int ForwardPlusTileSettings = ShaderPropertyID();
             #endregion
 
-            #region DepthStencilPrePass
-            public static readonly int CameraDepthTexture = ShaderPropertyID();
-            public static readonly int StencilMaskTexture = ShaderPropertyID();
-            #endregion
-
-            #region ShadowMapRenderer
+            #region ShadowMap
             public static readonly int ShadowDistanceFade = ShaderPropertyID();
             public static readonly int ShadowPancaking = ShaderPropertyID();
 
@@ -71,6 +67,21 @@ namespace ArcToon.Runtime.Utils
             public static readonly int PointShadowData = ShaderPropertyID();
             public static readonly int PointShadowAtlasSize = ShaderPropertyID();
             public static readonly int PointShadowAtlas = ShaderPropertyID();
+            #endregion
+
+            #region Prepass
+            public static readonly int CameraDepthTexture = ShaderPropertyID();
+            public static readonly int StencilMaskTexture = ShaderPropertyID();
+            #endregion
+            
+            #region Blit
+            public static readonly int SourceTexture = ShaderPropertyID();
+            #endregion
+
+            #region Final
+            public static readonly int FinalSrcBlend = ShaderPropertyID();
+            public static readonly int FinalDstBlend = ShaderPropertyID();
+            public static readonly int CopyBicubic = ShaderPropertyID();
             #endregion
         }
         

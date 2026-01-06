@@ -7,7 +7,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 using static ArcToon.Runtime.Settings.PostFXConfig;
 using static ArcToon.Runtime.PostFXStack;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Runtime.Passes.PostProcessing
 {
     public class ColorGradingPass
     {

@@ -2,7 +2,7 @@
 
 namespace ArcToon.Runtime.Data
 {
-    public readonly ref struct LightingDataHandles
+    public readonly struct LightingDataHandles
     {
         public readonly BufferHandle directionalLightDataHandle;
         public readonly BufferHandle spotLightDataHandle;
@@ -12,7 +12,7 @@ namespace ArcToon.Runtime.Data
 
         public readonly BufferHandle forwardPlusTileBufferHandle;
 
-        public readonly ShadowMapHandles shadowMapHandles;
+        public readonly ShadowMapHandle shadowMapHandle;
 
         public LightingDataHandles(
             BufferHandle directionalLightDataHandle, 
@@ -20,14 +20,14 @@ namespace ArcToon.Runtime.Data
             BufferHandle pointLightDataHandle, 
             BufferHandle perObjectShadowCasterDataHandle,
             BufferHandle forwardPlusTileBufferHandle,
-            ShadowMapHandles shadowMapHandles)
+            ShadowMapHandle shadowMapHandle)
         {
             this.directionalLightDataHandle = directionalLightDataHandle;
             this.spotLightDataHandle = spotLightDataHandle;
             this.pointLightDataHandle = pointLightDataHandle;
             this.perObjectShadowCasterDataHandle = perObjectShadowCasterDataHandle;
             this.forwardPlusTileBufferHandle = forwardPlusTileBufferHandle;
-            this.shadowMapHandles = shadowMapHandles;
+            this.shadowMapHandle = shadowMapHandle;
         }
     }
 }

@@ -6,15 +6,9 @@ using UnityEngine.Rendering.RendererUtils;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class TransparentPass
+    public class TransparentPass : RenderGraphPassBase
     {
-        static readonly ProfilingSampler sampler = new("Transparent");
-        private RenderGraphResourceData resourceData;
-
-        RendererListHandle baseList;
-        RendererListHandle frontFaceList;
-        RendererListHandle backFaceList;
-        RendererListHandle outlineList;
+        public override ProfilingSampler Sampler => new("Transparent");
         
         private static ShaderTagId[] backFaceShaderTagIds =
         {
@@ -32,90 +26,86 @@ namespace ArcToon.Runtime.Passes
             new("GeometryOutline"),
         };
 
-        void Render(RenderGraphContext context)
+        RendererListHandle baseList;
+        RendererListHandle frontFaceList;
+        RendererListHandle backFaceList;
+        RendererListHandle outlineList;
+
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
-            context.cmd.BeginSample("Toon Base");
-            context.cmd.DrawRendererList(backFaceList);
-            context.cmd.DrawRendererList(frontFaceList);
-            context.cmd.EndSample("Toon Base");
-            context.cmd.BeginSample("Toon Outline");
-            context.cmd.DrawRendererList(outlineList);
-            context.cmd.EndSample("Toon Outline");
-            context.renderContext.ExecuteCommandBuffer(context.cmd);
-            context.cmd.Clear();
+            commandBuffer.BeginSample("Toon Base");
+            commandBuffer.DrawRendererList(backFaceList);
+            commandBuffer.DrawRendererList(frontFaceList);
+            commandBuffer.EndSample("Toon Base");
+            
+            commandBuffer.BeginSample("Toon Outline");
+            commandBuffer.DrawRendererList(outlineList);
+            commandBuffer.EndSample("Toon Outline");
         }
 
-        public static void Record(CameraRenderer renderer, RenderGraph renderGraph, Camera camera,
-            RenderGraphResourceData resourceData,
-            CullingResults cullingResults,
-            in LightingDataHandles lightingData)
+        public override void AcquireResource(RenderGraph renderGraph)
         {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out TransparentPass pass, sampler);
-            
-            pass.resourceData = resourceData;
+            outlineList = renderGraph.CreateRendererList(new RendererListDesc(outlineShaderTagIds, renderer.CullingResults, Camera)
+            {
+                sortingCriteria = SortingCriteria.CommonTransparent,
+                renderQueueRange = RenderQueueRange.transparent,
+            });
+            backFaceList = renderGraph.CreateRendererList(new RendererListDesc(backFaceShaderTagIds, renderer.CullingResults, Camera)
+            {
+                sortingCriteria = SortingCriteria.CommonTransparent,
+                renderQueueRange = RenderQueueRange.transparent,
+                rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+                                        PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
+                                        PerObjectData.LightProbeProxyVolume |
+                                        PerObjectData.OcclusionProbeProxyVolume |
+                                        PerObjectData.ReflectionProbes,
+            });
+            frontFaceList = renderGraph.CreateRendererList(new RendererListDesc(frontFaceShaderTagIds, renderer.CullingResults, Camera)
+            {
+                sortingCriteria = SortingCriteria.CommonTransparent,
+                renderQueueRange = RenderQueueRange.transparent,
+                rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+                                        PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
+                                        PerObjectData.LightProbeProxyVolume |
+                                        PerObjectData.OcclusionProbeProxyVolume |
+                                        PerObjectData.ReflectionProbes,
+            });
+        }
 
-            pass.outlineList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(outlineShaderTagIds, cullingResults, camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonTransparent,
-                    renderQueueRange = RenderQueueRange.transparent,
-                })
-            );
-            pass.backFaceList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(backFaceShaderTagIds, cullingResults, camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonTransparent,
-                    renderQueueRange = RenderQueueRange.transparent,
-                    rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
-                                            PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-                                            PerObjectData.LightProbeProxyVolume |
-                                            PerObjectData.OcclusionProbeProxyVolume |
-                                            PerObjectData.ReflectionProbes,
-                })
-            );
-            pass.frontFaceList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(frontFaceShaderTagIds, cullingResults, camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonTransparent,
-                    renderQueueRange = RenderQueueRange.transparent,
-                    rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
-                                            PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-                                            PerObjectData.LightProbeProxyVolume |
-                                            PerObjectData.OcclusionProbeProxyVolume |
-                                            PerObjectData.ReflectionProbes,
-                })
-            );
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        {
+            builder.UseRendererList(outlineList);
+            builder.UseRendererList(backFaceList);
+            builder.UseRendererList(frontFaceList);
             
-            builder.ReadWriteTexture(resourceData.colorAttachment);
-            builder.ReadWriteTexture(resourceData.depthAttachment);
-            builder.ReadTexture(resourceData.stencilMask);
-            if (resourceData.colorCopy.IsValid())
+            builder.ReadWriteTexture(resourceHandle.colorAttachment);
+            builder.ReadWriteTexture(resourceHandle.depthAttachment);
+            builder.ReadTexture(resourceHandle.stencilMask);
+            if (resourceHandle.colorCopy.IsValid())
             {
-                builder.ReadTexture(resourceData.colorCopy);
+                builder.ReadTexture(resourceHandle.colorCopy);
             }
-            if (resourceData.depthCopy.IsValid())
+            if (resourceHandle.depthCopy.IsValid())
             {
-                builder.ReadTexture(resourceData.depthCopy);
+                builder.ReadTexture(resourceHandle.depthCopy);
             }
             
-            builder.ReadTexture(lightingData.shadowMapHandles.directionalAtlas);
-            builder.ReadTexture(lightingData.shadowMapHandles.spotAtlas);
-            builder.ReadTexture(lightingData.shadowMapHandles.pointAtlas);
-            builder.ReadTexture(lightingData.shadowMapHandles.perObjectAtlas);
+            builder.ReadTexture(resourceHandle.shadowMapHandle.directionalAtlas);
+            builder.ReadTexture(resourceHandle.shadowMapHandle.spotAtlas);
+            builder.ReadTexture(resourceHandle.shadowMapHandle.pointAtlas);
+            builder.ReadTexture(resourceHandle.shadowMapHandle.perObjectAtlas);
 
-            builder.ReadBuffer(lightingData.directionalLightDataHandle);
-            builder.ReadBuffer(lightingData.spotLightDataHandle);
-            builder.ReadBuffer(lightingData.pointLightDataHandle);
-            builder.ReadBuffer(lightingData.perObjectShadowCasterDataHandle);
-            builder.ReadBuffer(lightingData.forwardPlusTileBufferHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.cascadeShadowDataHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.directionalShadowMatricesHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.spotShadowDataHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.pointShadowDataHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.perObjectShadowDataHandle);
-
-            builder.SetRenderFunc<TransparentPass>(static (pass, context) => pass.Render(context));
+            builder.ReadBuffer(resourceHandle.lightDataDirectional);
+            builder.ReadBuffer(resourceHandle.lightDataSpot);
+            builder.ReadBuffer(resourceHandle.lightDataPoint);
+            builder.ReadBuffer(resourceHandle.perObjectShadowCasterData);
+            builder.ReadBuffer(resourceHandle.forwardPlusTileBuffer);
+            
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.cascadeShadowDataHandle);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.directionalShadowMatricesHandle);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.spotShadowDataHandle);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.pointShadowDataHandle);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.perObjectShadowDataHandle);
         }
     }
 }

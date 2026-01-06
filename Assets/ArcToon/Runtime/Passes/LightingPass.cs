@@ -15,47 +15,41 @@ using static Unity.Mathematics.math;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class LightingPass
+    public class LightingPass : RenderGraphPassBase
     {
-        static readonly ProfilingSampler sampler = new("Lighting");
+        public override ProfilingSampler Sampler => new("Lighting");
 
-        private CullingResults cullingResults;
         private ShadowMapRenderer shadowMapRenderer = new();
         private PerLightDataCollector perLightDataCollector = new();
-        private PerObjectShadowCasterManager perObjectShadowCasterManager;
+        
+        private RenderGraph renderGraph;
 
         #region DirectionalLight
         int directionalLightCount;
 
-        private static readonly DirectionalLightBufferData[] directionalLightData =
+        private static readonly DirectionalLightBufferData[] DirectionalLightData =
             new DirectionalLightBufferData[RenderPipelineInfo.MaxDirectionalLightCount];
-
-        BufferHandle directionalLightDataHandle;
         #endregion
 
         #region SpotLight
         int spotLightCount;
 
-        private static readonly SpotLightBufferData[] spotLightData = new SpotLightBufferData[RenderPipelineInfo.MaxSpotLightCount];
-
-        BufferHandle spotLightDataHandle;
+        private static readonly SpotLightBufferData[] SpotLightData = 
+            new SpotLightBufferData[RenderPipelineInfo.MaxSpotLightCount];
         #endregion
 
         #region PointLight
         int pointLightCount;
 
-        private static readonly PointLightBufferData[] pointLightData = new PointLightBufferData[RenderPipelineInfo.MaxPointLightCount];
-
-        BufferHandle pointLightDataHandle;
+        private static readonly PointLightBufferData[] PointLightData = 
+            new PointLightBufferData[RenderPipelineInfo.MaxPointLightCount];
         #endregion
 
         #region PerObjectShadow
         int perObjectCasterCount;
 
-        private static readonly PerObjectCasterBufferData[] perObjectCasterData =
+        private static readonly PerObjectCasterBufferData[] PerObjectCasterData =
             new PerObjectCasterBufferData[RenderPipelineInfo.MaxPerObjectCasterCount];
-
-        BufferHandle perObjectShadowCasterDataHandle;
         #endregion
 
         #region TileForward+
@@ -66,8 +60,6 @@ namespace ArcToon.Runtime.Passes
 
         NativeArray<int> forwardPlusTileData;
 
-        BufferHandle forwardPlusTileBufferHandle;
-
         private int maxLightCountPerTile;
         private int tileDataSize;
 
@@ -77,121 +69,11 @@ namespace ArcToon.Runtime.Passes
         int TileCount => tileCount.x * tileCount.y;
         #endregion
 
-        void Render(RenderGraphContext context)
+        public override void Initialize(RenderGraphResourceHandle resourceHandle, CameraRenderer renderer)
         {
-            CommandBuffer commandBuffer = context.cmd;
-            commandBuffer.SetGlobalInt(InternalShader.PropertyID.DirectionalLightCount, directionalLightCount);
-            commandBuffer.SetBufferData(directionalLightDataHandle, directionalLightData,
-                0, 0, directionalLightCount);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.DirectionalLightData, directionalLightDataHandle);
+            base.Initialize(resourceHandle, renderer);
 
-            commandBuffer.SetGlobalInt(InternalShader.PropertyID.PerObjectShadowCasterCount, perObjectCasterCount);
-            commandBuffer.SetBufferData(perObjectShadowCasterDataHandle, perObjectCasterData, 
-                0, 0, perObjectCasterCount);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PerObjectShadowCasterData, perObjectShadowCasterDataHandle);
-
-            commandBuffer.SetGlobalInt(InternalShader.PropertyID.SpotLightCount, spotLightCount);
-            commandBuffer.SetBufferData(spotLightDataHandle, spotLightData,
-                0, 0, spotLightCount);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.SpotLightData, spotLightDataHandle);
-
-            commandBuffer.SetGlobalInt(InternalShader.PropertyID.PointLightCount, pointLightCount);
-            commandBuffer.SetBufferData(pointLightDataHandle, pointLightData,
-                0, 0, pointLightCount);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PointLightData, pointLightDataHandle);
-
-            shadowMapRenderer.RenderShadowMap(context);
-
-            // block waiting for job result
-            forwardPlusJobHandle.Complete();
-            commandBuffer.SetBufferData(forwardPlusTileBufferHandle, forwardPlusTileData,
-                0, 0, forwardPlusTileData.Length);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.ForwardPlusTileData, forwardPlusTileBufferHandle);
-            commandBuffer.SetGlobalVector(InternalShader.PropertyID.ForwardPlusTileSettings,
-                new Vector4(screenUVToTileCoordinates.x, screenUVToTileCoordinates.y,
-                    asfloat(tileCount.x),
-                    asfloat(tileDataSize)
-                )
-            );
-
-            context.renderContext.ExecuteCommandBuffer(commandBuffer);
-            commandBuffer.Clear();
-
-            spotLightBounds.Dispose();
-            pointLightBounds.Dispose();
-            forwardPlusTileData.Dispose();
-        }
-
-        public static LightingDataHandles Record(CameraRenderer cameraRenderer, RenderGraph renderGraph, Camera camera,
-            CullingResults cullingResults,
-            Vector2Int attachmentSize,
-            ShadowSettings shadowSettings,
-            ForwardPlusSettings forwardPlusSettings,
-            ScriptableRenderContext context,
-            PerObjectShadowCasterManager perObjectShadowCasterManager)
-        {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out LightingPass pass, sampler);
-
-            pass.Setup(cullingResults, camera, attachmentSize, shadowSettings, forwardPlusSettings,
-                perObjectShadowCasterManager);
-            pass.spotLightDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxSpotLightCount, SpotLightBufferData.stride)
-                {
-                    name = "Spot Light Data",
-                    target = GraphicsBuffer.Target.Structured
-                })
-            );
-            pass.pointLightDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxPointLightCount, PointLightBufferData.stride)
-                {
-                    name = "Point Light Data",
-                    target = GraphicsBuffer.Target.Structured
-                })
-            );
-            pass.directionalLightDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxDirectionalLightCount, DirectionalLightBufferData.stride)
-                {
-                    name = "Directional Light Data",
-                    target = GraphicsBuffer.Target.Structured
-                })
-            );
-            pass.perObjectShadowCasterDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxPerObjectCasterCount, PerObjectCasterBufferData.stride)
-                {
-                    name = "Per Object Shadow Caster Data",
-                    target = GraphicsBuffer.Target.Structured
-                })
-            );
-            pass.forwardPlusTileBufferHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(pass.TileCount * pass.tileDataSize, 4)
-                {
-                    name = "Forward+ Tiles",
-                }));
-
-            ShadowMapHandles shadowMapHandles =
-                pass.shadowMapRenderer.Record(renderGraph, builder, context);
-
-            builder.AllowPassCulling(false);
-            builder.SetRenderFunc<LightingPass>(static (pass, context) => pass.Render(context));
-
-            return new LightingDataHandles(
-                pass.directionalLightDataHandle, 
-                pass.spotLightDataHandle,
-                pass.pointLightDataHandle,
-                pass.perObjectShadowCasterDataHandle,
-                pass.forwardPlusTileBufferHandle,
-                shadowMapHandles);
-        }
-
-        public void Setup(CullingResults cullingResults, Camera camera, Vector2Int attachmentSize,
-            ShadowSettings shadowSettings, ForwardPlusSettings forwardPlusSettings,
-            PerObjectShadowCasterManager perObjectShadowCasterManager)
-        {
-            this.cullingResults = cullingResults;
-            this.perObjectShadowCasterManager = perObjectShadowCasterManager;
-
-            maxLightCountPerTile = forwardPlusSettings.maxLightsPerTile;
+            maxLightCountPerTile = renderer.ForwardPlusSettings.maxLightsPerTile;
             tileDataSize = maxLightCountPerTile + 2;
 
             spotLightBounds = new NativeArray<float4>(RenderPipelineInfo.MaxSpotLightCount,
@@ -200,22 +82,105 @@ namespace ArcToon.Runtime.Passes
             pointLightBounds = new NativeArray<float4>(RenderPipelineInfo.MaxPointLightCount,
                 Allocator.TempJob,
                 NativeArrayOptions.UninitializedMemory);
-            float tileScreenPixelSize = forwardPlusSettings.tileSize <= 0 ? 64f : (float)forwardPlusSettings.tileSize;
-            screenUVToTileCoordinates.x = attachmentSize.x / tileScreenPixelSize;
-            screenUVToTileCoordinates.y = attachmentSize.y / tileScreenPixelSize;
+            
+            float tileScreenPixelSize = renderer.ForwardPlusSettings.tileSize <= 0 ? 64f : (float)renderer.ForwardPlusSettings.tileSize;
+            screenUVToTileCoordinates.x = renderer.AttachmentSize.x / tileScreenPixelSize;
+            screenUVToTileCoordinates.y = renderer.AttachmentSize.y / tileScreenPixelSize;
             tileCount.x = Mathf.CeilToInt(screenUVToTileCoordinates.x);
             tileCount.y = Mathf.CeilToInt(screenUVToTileCoordinates.y);
 
-            perLightDataCollector.Setup(cullingResults, shadowSettings);
+            perLightDataCollector.Setup(renderer.CullingResults, renderer.ShadowSettings);
             CollectPerLightData();
 
-            shadowMapRenderer.Setup(cullingResults, camera, shadowSettings, perLightDataCollector,
-                perObjectShadowCasterManager);
+            shadowMapRenderer.Initialize(renderer.CullingResults, Camera, renderer.ShadowSettings, perLightDataCollector,
+                renderer.PerObjectShadowCasterManager);
+        }
+
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
+        {
+            commandBuffer.SetGlobalInt(InternalShader.PropertyID.DirectionalLightCount, directionalLightCount);
+            commandBuffer.SetBufferData(resourceHandle.lightDataDirectional, DirectionalLightData,
+                0, 0, directionalLightCount);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.DirectionalLightData, resourceHandle.lightDataDirectional);
+
+            commandBuffer.SetGlobalInt(InternalShader.PropertyID.PerObjectShadowCasterCount, perObjectCasterCount);
+            commandBuffer.SetBufferData(resourceHandle.perObjectShadowCasterData, PerObjectCasterData, 
+                0, 0, perObjectCasterCount);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PerObjectShadowCasterData, resourceHandle.perObjectShadowCasterData);
+
+            commandBuffer.SetGlobalInt(InternalShader.PropertyID.SpotLightCount, spotLightCount);
+            commandBuffer.SetBufferData(resourceHandle.lightDataSpot, SpotLightData,
+                0, 0, spotLightCount);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.SpotLightData, resourceHandle.lightDataSpot);
+
+            commandBuffer.SetGlobalInt(InternalShader.PropertyID.PointLightCount, pointLightCount);
+            commandBuffer.SetBufferData(resourceHandle.lightDataPoint, PointLightData,
+                0, 0, pointLightCount);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PointLightData, resourceHandle.lightDataPoint);
+
+            shadowMapRenderer.RenderShadowMap(commandBuffer, context);
+
+            // block waiting for job result
+            forwardPlusJobHandle.Complete();
+            commandBuffer.SetBufferData(resourceHandle.forwardPlusTileBuffer, forwardPlusTileData,
+                0, 0, forwardPlusTileData.Length);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.ForwardPlusTileData, resourceHandle.forwardPlusTileBuffer);
+            commandBuffer.SetGlobalVector(InternalShader.PropertyID.ForwardPlusTileSettings,
+                new Vector4(screenUVToTileCoordinates.x, screenUVToTileCoordinates.y,
+                    asfloat(tileCount.x),
+                    asfloat(tileDataSize)
+                )
+            );
+
+            spotLightBounds.Dispose();
+            pointLightBounds.Dispose();
+            forwardPlusTileData.Dispose();
+        }
+
+        public override void AcquireResource(RenderGraph renderGraph)
+        {
+            this.renderGraph = renderGraph;
+            resourceHandle.lightDataSpot = renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxSpotLightCount, SpotLightBufferData.stride)
+            {
+                name = "Spot Light Data",
+                target = GraphicsBuffer.Target.Structured
+            });
+            resourceHandle.lightDataPoint = renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxPointLightCount, PointLightBufferData.stride)
+            {
+                name = "Point Light Data",
+                target = GraphicsBuffer.Target.Structured
+            });
+            resourceHandle.lightDataDirectional = renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxDirectionalLightCount, DirectionalLightBufferData.stride)
+            {
+                name = "Directional Light Data",
+                target = GraphicsBuffer.Target.Structured
+            });
+            resourceHandle.perObjectShadowCasterData = renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxPerObjectCasterCount, PerObjectCasterBufferData.stride)
+            {
+                name = "Per Object Shadow Caster Data",
+                target = GraphicsBuffer.Target.Structured
+            });
+            resourceHandle.forwardPlusTileBuffer = renderGraph.CreateBuffer(new BufferDesc(TileCount * tileDataSize, 4)
+            {
+                name = "Forward+ Tiles",
+                target = GraphicsBuffer.Target.Structured
+            });
+        }
+
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        {
+            builder.WriteBuffer(resourceHandle.lightDataSpot);
+            builder.WriteBuffer(resourceHandle.lightDataPoint);
+            builder.WriteBuffer(resourceHandle.lightDataDirectional);
+            builder.WriteBuffer(resourceHandle.perObjectShadowCasterData);
+            builder.WriteBuffer(resourceHandle.forwardPlusTileBuffer);
+
+            resourceHandle.shadowMapHandle = shadowMapRenderer.Record(renderGraph, builder, renderer.Context);
         }
 
         private void CollectPerLightData()
         {
-            NativeArray<VisibleLight> visibleLights = cullingResults.visibleLights;
+            NativeArray<VisibleLight> visibleLights = renderer.CullingResults.visibleLights;
 
             directionalLightCount = 0;
             spotLightCount = 0;
@@ -226,33 +191,33 @@ namespace ArcToon.Runtime.Passes
                 switch (visibleLights[i].lightType)
                 {
                     case LightType.Directional when directionalLightCount < RenderPipelineInfo.MaxDirectionalLightCount:
-                        directionalLightData[directionalLightCount++] =
+                        DirectionalLightData[directionalLightCount++] =
                             DirectionalLightBufferData.GenerateStructuredData(visibleLights[i], light,
                                 perLightDataCollector.ReservePerLightShadowDataDirectional(light, i));
                         break;
                     case LightType.Spot when spotLightCount < RenderPipelineInfo.MaxSpotLightCount:
                         SetupForwardPlusSpot(spotLightCount, visibleLights[i]);
-                        spotLightData[spotLightCount++] =
+                        SpotLightData[spotLightCount++] =
                             SpotLightBufferData.GenerateStructuredData(visibleLights[i], light,
                                 perLightDataCollector.ReservePerLightShadowDataSpot(light, i));
                         break;
                     case LightType.Point when pointLightCount < RenderPipelineInfo.MaxPointLightCount:
                         SetupForwardPlusPoint(pointLightCount, visibleLights[i]);
-                        pointLightData[pointLightCount++] =
+                        PointLightData[pointLightCount++] =
                             PointLightBufferData.GenerateStructuredData(visibleLights[i], light,
                                 perLightDataCollector.ReservePerLightShadowDataPoint(light, i));
                         break;
                 }
             }
 
-            var visiblePerObjectShadowCasters = perObjectShadowCasterManager.visibleCasters;
+            var visiblePerObjectShadowCasters = renderer.PerObjectShadowCasterManager.visibleCasters;
             perObjectCasterCount = 0;
             for (int i = 0; i < visiblePerObjectShadowCasters.Count; i++)
             {
                 var caster = visiblePerObjectShadowCasters[i];
                 if (perObjectCasterCount < RenderPipelineInfo.MaxPerObjectCasterCount)
                 {
-                    perObjectCasterData[perObjectCasterCount++] =
+                    PerObjectCasterData[perObjectCasterCount++] =
                         PerObjectCasterBufferData.GenerateStructuredData(
                             perLightDataCollector.ReservePerObjectShadowCasterData(caster, i));
                 }
@@ -275,13 +240,13 @@ namespace ArcToon.Runtime.Passes
             }.ScheduleParallel(TileCount, tileCount.x, default);
         }
 
-        void SetupForwardPlusSpot(int spotlightIndex, in VisibleLight visibleLight)
+        private void SetupForwardPlusSpot(int spotlightIndex, in VisibleLight visibleLight)
         {
             Rect r = visibleLight.screenRect;
             spotLightBounds[spotlightIndex] = float4(r.xMin, r.yMin, r.xMax, r.yMax);
         }
 
-        void SetupForwardPlusPoint(int pointlightIndex, in VisibleLight visibleLight)
+        private void SetupForwardPlusPoint(int pointlightIndex, in VisibleLight visibleLight)
         {
             Rect r = visibleLight.screenRect;
             pointLightBounds[pointlightIndex] = float4(r.xMin, r.yMin, r.xMax, r.yMax);

@@ -2,7 +2,7 @@
 
 namespace ArcToon.Runtime.Data
 {
-    public readonly ref struct ShadowMapHandles
+    public readonly struct ShadowMapHandle
     {
         public readonly TextureHandle directionalAtlas;
         public readonly TextureHandle spotAtlas;
@@ -19,7 +19,7 @@ namespace ArcToon.Runtime.Data
         
         public readonly BufferHandle perObjectShadowDataHandle;
 
-        public ShadowMapHandles(
+        public ShadowMapHandle(
             TextureHandle directionalAtlas,
             TextureHandle spotAtlas,
             TextureHandle pointAtlas,

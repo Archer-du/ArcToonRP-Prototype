@@ -7,28 +7,31 @@ namespace ArcToon.Runtime.Passes
 {
     public abstract class RenderGraphPassBase
     {
-        protected virtual ProfilingSampler Sampler { get; }
+        public abstract ProfilingSampler Sampler { get; }
         
-        protected RenderGraphResourceData resourceData;
+        // TODO: readonly ref
+        protected RenderGraphResourceHandle resourceHandle;
 
         protected CameraRenderer renderer;
+        
+        protected Camera Camera => renderer.RenderCamera;
+        protected Vector2Int AttachmentSize => renderer.AttachmentSize;
 
-        public bool IsValid()
+        public virtual bool IsValid()
         {
-            return resourceData != null && renderer != null;
+            return resourceHandle != null && renderer != null;
         }
 
-        public virtual void Initialize(RenderGraphResourceData resourceData, CameraRenderer renderer)
+        public virtual void Initialize(RenderGraphResourceHandle resourceHandle, CameraRenderer renderer)
         {
-            this.resourceData = resourceData;
+            this.resourceHandle = resourceHandle;
             this.renderer = renderer;
         }
         
-        public abstract void Render(RenderGraphContext context);
+        public abstract void Render(CommandBuffer commandBuffer, ScriptableRenderContext context);
 
         public abstract void AcquireResource(RenderGraph renderGraph);
         
         public abstract void DeclareResourceUsage(RenderGraphBuilder builder);
-
     }
 }

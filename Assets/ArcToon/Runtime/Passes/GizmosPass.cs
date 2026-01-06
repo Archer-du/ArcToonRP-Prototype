@@ -7,45 +7,35 @@ using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class GizmosPass
+    public class GizmosPass : RenderGraphPassBase
     {
-#if UNITY_EDITOR
-        static readonly ProfilingSampler sampler = new("Gizmos");
-
-        CameraAttachmentCopier copier;
-
-        TextureHandle depthAttachment;
-
-        void Render(RenderGraphContext context)
+        public override ProfilingSampler Sampler => new("Gizmos");
+        
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
-            CommandBuffer buffer = context.cmd;
-            ScriptableRenderContext renderContext = context.renderContext;
-            copier.CopyCameraTexture(buffer, depthAttachment, BuiltinRenderTextureType.CameraTarget,
-                CameraAttachmentCopier.CopyChannel.DepthAttachment);
+#if UNITY_EDITOR
+            RenderTextureHelpers.BlitTexture(commandBuffer, 
+                resourceHandle.depthAttachment, 
+                BuiltinRenderTextureType.CameraTarget,
+                ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraCopy), 
+                (int)RenderTextureHelpers.CopyChannel.DepthAttachment);
 
-            renderContext.ExecuteCommandBuffer(buffer);
-            buffer.Clear();
+            context.ExecuteCommandBuffer(commandBuffer);
+            commandBuffer.Clear();
 
-            renderContext.DrawGizmos(copier.Camera, GizmoSubset.PreImageEffects);
-            renderContext.DrawGizmos(copier.Camera, GizmoSubset.PostImageEffects);
-        }
+            context.DrawGizmos(Camera, GizmoSubset.PreImageEffects);
+            context.DrawGizmos(Camera, GizmoSubset.PostImageEffects);
 #endif
-        [Conditional("UNITY_EDITOR")]
-        public static void Record(RenderGraph renderGraph,
-            RenderGraphResourceData resourceData,
-            CameraAttachmentCopier copier)
+        }
+
+        public override void AcquireResource(RenderGraph renderGraph)
         {
+        }
+
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        { 
 #if UNITY_EDITOR
-            if (Handles.ShouldRenderGizmos())
-            {
-                using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                    sampler.name, out GizmosPass pass, sampler);
-                
-                pass.copier = copier;
-                pass.depthAttachment = builder.ReadTexture(resourceData.depthAttachment);
-                
-                builder.SetRenderFunc<GizmosPass>(static (pass, context) => pass.Render(context));
-            }
+            builder.ReadTexture(resourceHandle.depthAttachment);
 #endif
         }
     }

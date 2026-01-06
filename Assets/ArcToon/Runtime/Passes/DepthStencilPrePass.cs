@@ -8,18 +8,17 @@ using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class DepthStencilPrePass
+    public class DepthStencilPrePass : RenderGraphPassBase
     {
-        static readonly ProfilingSampler sampler = new("Prepass");
-        private RenderGraphResourceData resourceData;
+        public override ProfilingSampler Sampler => new("Prepass");
 
-        private static ShaderTagId[] depthPrePassShaderTagIds =
+        private static ShaderTagId[] DepthPrePassShaderTagIds =
         {
             InternalShader.TagId.DepthOnly,
             InternalShader.TagId.StencilOnly,
             InternalShader.TagId.DepthStencil,
         };
-        private static ShaderTagId[] stencilMaskShaderTagIds =
+        private static ShaderTagId[] StencilMaskShaderTagIds =
         {
             InternalShader.TagId.FringeShadowReceiver,
             InternalShader.TagId.EyeLashesReceiver
@@ -29,12 +28,10 @@ namespace ArcToon.Runtime.Passes
         private RendererListHandle transparentDepthPrepassList;
         private RendererListHandle stencilMaskList;
 
-        void Render(RenderGraphContext context)
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
-            CommandBuffer commandBuffer = context.cmd;
-            
             commandBuffer.SetRenderTarget(
-                resourceData.depthCopy,
+                resourceHandle.depthCopy,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             
@@ -43,14 +40,15 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.BeginSample("Opaque Depth Stencil");
             commandBuffer.DrawRendererList(opaqueDepthPrepassList);
             commandBuffer.EndSample("Opaque Depth Stencil");
+            
             commandBuffer.BeginSample("Transparent Depth Stencil");
             commandBuffer.DrawRendererList(transparentDepthPrepassList);
             commandBuffer.EndSample("Transparent Depth Stencil");
 
             commandBuffer.SetRenderTarget(
-                resourceData.stencilMask,
+                resourceHandle.stencilMask,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                resourceData.depthCopy,
+                resourceHandle.depthCopy,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
             );
             
@@ -60,63 +58,47 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.DrawRendererList(stencilMaskList);
             commandBuffer.EndSample("Stencil Mask");
 
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.CameraDepthTexture, resourceData.depthCopy);
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.StencilMaskTexture, resourceData.stencilMask);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.CameraDepthTexture, resourceHandle.depthCopy);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.StencilMaskTexture, resourceHandle.stencilMask);
 
-            // reset
             commandBuffer.SetRenderTarget(
-                resourceData.colorAttachment,
+                resourceHandle.colorAttachment,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store,
-                resourceData.depthAttachment,
+                resourceHandle.depthAttachment,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
             );
-
-            context.renderContext.ExecuteCommandBuffer(context.cmd);
-            context.cmd.Clear();
         }
 
-        public static void Record(CameraRenderer renderer, RenderGraph renderGraph, Camera camera,
-            RenderGraphResourceData resourceData,
-            CullingResults cullingResults,
-            bool preCopyDepth)
+        public override void AcquireResource(RenderGraph renderGraph)
         {
-            if (!preCopyDepth) return;
+            opaqueDepthPrepassList = renderGraph.CreateRendererList(new RendererListDesc(DepthPrePassShaderTagIds, renderer.CullingResults, Camera)
+            {
+                sortingCriteria = SortingCriteria.CommonOpaque,
+                renderQueueRange = RenderQueueRange.opaque,
+            });
+            transparentDepthPrepassList = renderGraph.CreateRendererList(new RendererListDesc(DepthPrePassShaderTagIds, renderer.CullingResults, Camera)
+            {
+                sortingCriteria = SortingCriteria.CommonTransparent,
+                renderQueueRange = RenderQueueRange.transparent,
+            });
+            stencilMaskList = renderGraph.CreateRendererList(new RendererListDesc(StencilMaskShaderTagIds, renderer.CullingResults, Camera)
+            {
+                sortingCriteria = SortingCriteria.CommonOpaque,
+                renderQueueRange = RenderQueueRange.opaque,
+            });
+        }
 
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out DepthStencilPrePass pass, sampler);
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        {
+            builder.UseRendererList(opaqueDepthPrepassList);
+            builder.UseRendererList(transparentDepthPrepassList);
+            builder.UseRendererList(stencilMaskList);
 
-            // TODO: force initialize
-            pass.resourceData = resourceData;
-            
-            pass.opaqueDepthPrepassList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(depthPrePassShaderTagIds, cullingResults, camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonOpaque,
-                    renderQueueRange = RenderQueueRange.opaque,
-                })
-            );
-            pass.transparentDepthPrepassList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(depthPrePassShaderTagIds, cullingResults, camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonTransparent,
-                    renderQueueRange = RenderQueueRange.transparent,
-                })
-            );
-            pass.stencilMaskList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(stencilMaskShaderTagIds, cullingResults, camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonOpaque,
-                    renderQueueRange = RenderQueueRange.opaque,
-                })
-            );
+            builder.ReadTexture(resourceHandle.colorAttachment);
+            builder.ReadTexture(resourceHandle.depthAttachment);
 
-            builder.ReadTexture(resourceData.colorAttachment);
-            builder.ReadTexture(resourceData.depthAttachment);
-
-            builder.ReadWriteTexture(resourceData.depthCopy);
-            builder.WriteTexture(resourceData.stencilMask);
-
-            builder.SetRenderFunc<DepthStencilPrePass>(static (pass, context) => pass.Render(context));
+            builder.ReadWriteTexture(resourceHandle.depthCopy);
+            builder.WriteTexture(resourceHandle.stencilMask);
         }
     }
 }
