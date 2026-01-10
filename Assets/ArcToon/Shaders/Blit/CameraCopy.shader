@@ -37,7 +37,7 @@
             #pragma target 3.5
 
             #pragma vertex DefaultPassVertex
-            #pragma fragment CopyPassFragment
+            #pragma fragment CopyDepthPassFragment
             ENDHLSL
         }
 
@@ -45,14 +45,25 @@
         {
             Name "Copy Color"
 
-            ColorMask 0
-            ZWrite On
-
             HLSLPROGRAM
             #pragma target 3.5
 
             #pragma vertex DefaultPassVertex
-            #pragma fragment CopyPassFragment
+            #pragma fragment CopyColorPassFragment
+            ENDHLSL
+        }
+        
+        Pass
+        {
+            Name "Composite Weighted Average"
+            
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #include "WeightedAverageCompositePass.hlsl"
+            
+            #pragma vertex DefaultPassVertex
+            #pragma fragment WeightedAverageCompositePassFragment
             ENDHLSL
         }
     }

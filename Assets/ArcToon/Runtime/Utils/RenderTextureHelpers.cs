@@ -7,14 +7,14 @@ namespace ArcToon.Runtime.Utils
 {
     public readonly struct RenderTextureHelpers
     {
-        public enum CopyChannel
+        public enum CopyMode
         {
             DepthAttachment = 1,
             ColorAttachment = 2,
         }
 
         public static void CopyTexture(CommandBuffer commandBuffer,
-            RenderTargetIdentifier srcHandle, RenderTargetIdentifier dstHandle, CopyChannel channel)
+            RenderTargetIdentifier srcHandle, RenderTargetIdentifier dstHandle, CopyMode mode)
         {
             if (RenderPipelineInfo.CopyTextureSupported)
             {
@@ -23,7 +23,7 @@ namespace ArcToon.Runtime.Utils
             else
             {
                 BlitTexture(commandBuffer, srcHandle, dstHandle, 
-                    ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraCopy), (int)channel);
+                    ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraCopy), (int)mode);
             }
         }
 
@@ -31,6 +31,17 @@ namespace ArcToon.Runtime.Utils
             RenderTargetIdentifier srcHandle, RenderTargetIdentifier dstHandle, Material material, int shaderPass)
         {
             commandBuffer.SetGlobalTexture(InternalShader.PropertyID.SourceTexture, srcHandle);
+            commandBuffer.SetRenderTarget(dstHandle,
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+            commandBuffer.DrawProcedural(
+                Matrix4x4.identity, 
+                material, shaderPass,
+                MeshTopology.Triangles, 3
+            );
+        }
+        
+        public static void BlitTexture(CommandBuffer commandBuffer, RenderTargetIdentifier dstHandle, Material material, int shaderPass)
+        {
             commandBuffer.SetRenderTarget(dstHandle,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
             commandBuffer.DrawProcedural(

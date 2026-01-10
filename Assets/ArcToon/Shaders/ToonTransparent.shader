@@ -171,14 +171,24 @@
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
             
-            #pragma shader_feature _RECEIVE_SHADOWS
-            #pragma shader_feature _CLIPPING
-            #pragma shader_feature _PREMULTIPLY_ALPHA
             #pragma shader_feature _NORMAL_MAP
+            
+            #pragma shader_feature_local _SPEC_MASK
+            #pragma shader_feature_local _ _SPEC_MASK_UV0 _SPEC_MASK_UV1
+            #pragma shader_feature_local _SPEC_PARALLAX
+            
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _RECEIVE_FRINGE_SHADOWS
+            #pragma shader_feature _PREMULTIPLY_ALPHA
             
             #pragma shader_feature _RMO_MASK_MAP
 
             #pragma shader_feature _RAMP_SET
+            
+            #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
+            #pragma shader_feature_local _TANGENT_SHIFT_MAP
+            #pragma shader_feature_local _ _TANGENT_SHIFT_MAP_UV0 _TANGENT_SHIFT_MAP_UV1
 
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
             #pragma shader_feature _DEBUG_DIRECT_BRDF
@@ -194,11 +204,64 @@
 
         Pass
         {
+            Name "Toon Weighted Average"
+            Tags
+            {
+                "LightMode" = "ToonForwardWeightedAverage"
+            }
+            Blend 0 One One, One One
+            Blend 1 One One
+            ZTest On
+            ZWrite Off
+            Cull Off
+
+            HLSLPROGRAM
+            #pragma target 4.5
+
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT
+            #pragma multi_compile _ LIGHTMAP_ON
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
+            
+            #pragma shader_feature _NORMAL_MAP
+            
+            #pragma shader_feature_local _SPEC_MASK
+            #pragma shader_feature_local _ _SPEC_MASK_UV0 _SPEC_MASK_UV1
+            #pragma shader_feature_local _SPEC_PARALLAX
+            
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _RECEIVE_FRINGE_SHADOWS
+            
+            #pragma shader_feature _RMO_MASK_MAP
+            
+            #pragma shader_feature _RAMP_SET
+            
+            #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
+            #pragma shader_feature_local _TANGENT_SHIFT_MAP
+            #pragma shader_feature_local _ _TANGENT_SHIFT_MAP_UV0 _TANGENT_SHIFT_MAP_UV1
+            
+            #pragma shader_feature _DEBUG_INCOMING_LIGHT
+            #pragma shader_feature _DEBUG_DIRECT_BRDF
+            #pragma shader_feature _DEBUG_SPECULAR
+            #pragma shader_feature _DEBUG_DIFFUSE
+
+            #include "ToonTransparentPass.hlsl"
+
+            #pragma vertex ToonTransparentPassVertex
+            #pragma fragment ToonTransparentPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
             Tags
             {
                 "LightMode" = "DepthOnly"
             }
             ZWrite On
+            // TODO:
             Cull Off
             ColorMask R
 
@@ -221,6 +284,7 @@
                 "LightMode" = "ShadowCaster"
             }
             ColorMask 0
+            // TODO:
             Cull Off
 
             HLSLPROGRAM
@@ -238,24 +302,7 @@
             ENDHLSL
         }
 
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "Meta"
-            }
-
-            Cull Off
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #include "MetaPass.hlsl"
-
-            #pragma vertex MetaPassVertex
-            #pragma fragment MetaPassFragment
-            ENDHLSL
-        }
+        UsePass "ArcToon/ToonBase/TOON META"
     }
 
     CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"

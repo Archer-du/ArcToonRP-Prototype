@@ -61,6 +61,15 @@ namespace ArcToon.Runtime.Passes
             
             builder.ReadWriteTexture(resourceHandle.colorAttachment);
             builder.ReadWriteTexture(resourceHandle.depthAttachment);
+            
+            if (resourceHandle.colorCopy.IsValid())
+            {
+                builder.ReadTexture(resourceHandle.colorCopy);
+            }
+            if (resourceHandle.depthCopy.IsValid())
+            {
+                builder.ReadTexture(resourceHandle.depthCopy);
+            }
             builder.ReadTexture(resourceHandle.stencilMask);
             
             builder.ReadTexture(resourceHandle.shadowMapHandle.directionalAtlas);

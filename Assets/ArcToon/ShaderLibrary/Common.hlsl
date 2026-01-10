@@ -77,6 +77,15 @@ float3 DecodeOctahedral(float2 uv)
     return normalize(n);
 }
 
+void ClipFragmentDepthTest(float depth, float bufferDepth)
+{
+    #if UNITY_REVERSED_Z
+    clip(depth - bufferDepth);
+    #else
+    clip(bufferDepth - depth);
+    #endif
+}
+
 float3 DecodeNormal(float4 sample, float scale = 1.0)
 {
     #if defined(UNITY_NO_DXT5nm)

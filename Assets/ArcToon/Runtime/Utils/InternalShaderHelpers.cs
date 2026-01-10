@@ -73,6 +73,12 @@ namespace ArcToon.Runtime.Utils
             public static readonly int CameraDepthTexture = ShaderPropertyID();
             public static readonly int StencilMaskTexture = ShaderPropertyID();
             #endregion
+
+            #region Transparency
+            public static readonly int AccumulateRGBA = ShaderPropertyID();
+            public static readonly int AccumulateComplexity = ShaderPropertyID();
+            public static readonly int BackGroundColor = ShaderPropertyID();
+            #endregion
             
             #region Blit
             public static readonly int SourceTexture = ShaderPropertyID();

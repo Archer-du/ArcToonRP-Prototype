@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   config:
     useSRPBatcher: 1
+    transparencyMode: 1
     cameraBufferSettings:
       enableHDR: 1
       copyDepth: 1

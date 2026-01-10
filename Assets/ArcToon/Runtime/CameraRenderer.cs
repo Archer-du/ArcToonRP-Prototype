@@ -31,6 +31,9 @@ namespace ArcToon.Runtime
         internal bool copyDepth { private set; get; }
         internal bool copyColor { private set; get; }
         
+        //TODO:
+        internal TransparencyMode mode;
+        
         // TODO: Singleton
         internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
 
@@ -78,6 +81,8 @@ namespace ArcToon.Runtime
             {
                 PostFXConfig = CameraAdditiveData.overridePostFXConfig;
             }
+
+            mode = config.transparencyMode;
 
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
@@ -141,7 +146,7 @@ namespace ArcToon.Runtime
                 RecordRenderPass<UnsupportedPass>("Unsupported", 
                     renderGraph, resourceHandle);
                 
-                resourceHandle.postFXResult = PostFXPass.Record(this, renderGraph, RenderCamera, resourceHandle, CullingResults, AttachmentSize,
+                resourceHandle.postFXResult = PostFXPass.Record(this, renderGraph, RenderCamera, resourceHandle.geometryResult, CullingResults, AttachmentSize,
                     CameraAdditiveData, BufferSettings, PostFXConfig, useHDR);
                 
                 RecordRenderPass<CopyFinalPass>("Final",
