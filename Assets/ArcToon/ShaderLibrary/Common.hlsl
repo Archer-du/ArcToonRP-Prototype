@@ -43,6 +43,31 @@ SAMPLER(sampler_point_clamp);
 #define COLOR_BLEND_DIFFERENCE 11
 #define COLOR_BLEND_EXCLUSION 12
 
+struct Varyings_Default
+{
+    float4 positionCS_SS : SV_POSITION;
+    float2 screenUV : VAR_SCREEN_UV;
+};
+
+Varyings_Default DefaultPassVertex(uint vertexID : SV_VertexID)
+{
+    Varyings_Default output;
+    output.positionCS_SS = float4(
+        vertexID <= 1 ? -1.0 : 3.0,
+        vertexID == 1 ? 3.0 : -1.0,
+        0.0, 1.0
+    );
+    output.screenUV = float2(
+        vertexID <= 1 ? 0.0 : 2.0,
+        vertexID == 1 ? 2.0 : 0.0
+    );
+    if (_ProjectionParams.x < 0.0)
+    {
+        output.screenUV.y = 1.0 - output.screenUV.y;
+    }
+    return output;
+}
+
 // basic math helpers --------------------------
 float Square(float v)
 {
@@ -65,6 +90,7 @@ float SigmoidSharp(float x, float center, float sharp)
     return s;
 };
 
+// decoder helpers -------------------------------
 float3 DecodeOctahedral(float2 uv)
 {
     float3 n = float3(uv.x, uv.y, 1 - abs(uv.x) - abs(uv.y));
@@ -75,15 +101,6 @@ float3 DecodeOctahedral(float2 uv)
     }
 
     return normalize(n);
-}
-
-void ClipFragmentDepthTest(float depth, float bufferDepth)
-{
-    #if UNITY_REVERSED_Z
-    clip(depth - bufferDepth);
-    #else
-    clip(bufferDepth - depth);
-    #endif
 }
 
 float3 DecodeNormal(float4 sample, float scale = 1.0)
@@ -154,6 +171,15 @@ float GetHalfLambertFactor(float3 normal, float3 lightDir)
 // }
 
 // feature helpers --------------------------
+
+void ClipFragmentDepthTest(float depth, float bufferDepth)
+{
+    #if UNITY_REVERSED_Z
+    clip(depth - bufferDepth);
+    #else
+    clip(bufferDepth - depth);
+    #endif
+}
 
 void ClipLOD(Fragment fragment, float fade)
 {

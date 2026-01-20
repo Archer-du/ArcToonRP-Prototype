@@ -5,7 +5,7 @@ TEXTURE2D(_AccumulateRGBA);
 TEXTURE2D(_AccumulateComplexity);
 TEXTURE2D(_BackGroundColor);
 
-float4 WeightedAverageCompositePassFragment(Varyings input) : SV_TARGET
+float4 WeightedAverageCompositePassFragment(Varyings_Default input) : SV_TARGET
 {
     float4 accumulateRGBA = SAMPLE_TEXTURE2D(_AccumulateRGBA, sampler_point_clamp, input.screenUV);
     float accumulateComplexity = SAMPLE_TEXTURE2D(_AccumulateComplexity, sampler_point_clamp, input.screenUV);

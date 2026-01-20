@@ -5,35 +5,11 @@
 
 #include "PostFXStackInput.hlsl"
 
-struct Varyings
-{
-    float4 positionCS_SS : SV_POSITION;
-    float2 screenUV : VAR_SCREEN_UV;
-};
-
-Varyings DefaultPassVertex(uint vertexID : SV_VertexID)
-{
-    Varyings output;
-    output.positionCS_SS = float4(
-        vertexID <= 1 ? -1.0 : 3.0,
-        vertexID == 1 ? 3.0 : -1.0,
-        0.0, 1.0
-    );
-    output.screenUV = float2(
-        vertexID <= 1 ? 0.0 : 2.0,
-        vertexID == 1 ? 2.0 : 0.0
-    );
-    if (_ProjectionParams.x < 0.0)
-    {
-        output.screenUV.y = 1.0 - output.screenUV.y;
-    }
-    return output;
-}
 
 // Post Processors --------------------
 
 // copy -------------------------------
-float4 CopyPassFragment(Varyings input) : SV_TARGET
+float4 CopyPassFragment(Varyings_Default input) : SV_TARGET
 {
     return SampleSource(input.screenUV);
 }
@@ -60,7 +36,7 @@ float3 KneeCurveFilter(float3 color)
     return color * weight;
 }
 
-float4 BloomHorizontalPassFragment(Varyings input) : SV_TARGET
+float4 BloomHorizontalPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 color = 0.0;
     float offsets[] =
@@ -80,7 +56,7 @@ float4 BloomHorizontalPassFragment(Varyings input) : SV_TARGET
     return float4(color, 1.0);
 }
 
-float4 BloomVerticalPassFragment(Varyings input) : SV_TARGET
+float4 BloomVerticalPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 color = 0.0;
     float offsets[] =
@@ -99,13 +75,13 @@ float4 BloomVerticalPassFragment(Varyings input) : SV_TARGET
     return float4(color, 1.0);
 }
 
-float4 BloomPrefilterPassFragment(Varyings input) : SV_TARGET
+float4 BloomPrefilterPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 color = KneeCurveFilter(SampleSource(input.screenUV).rgb);
     return float4(color, 1.0);
 }
 
-float4 BloomPrefilterFirefliesPassFragment(Varyings input) : SV_TARGET
+float4 BloomPrefilterFirefliesPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 finalColor = 0.0;
     float weightSum = 0.0;
@@ -127,7 +103,7 @@ float4 BloomPrefilterFirefliesPassFragment(Varyings input) : SV_TARGET
     return float4(finalColor, 1.0);
 }
 
-float4 BloomAdditiveCombinePassFragment(Varyings input) : SV_TARGET
+float4 BloomAdditiveCombinePassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 lowRes;
     if (_BloomBicubicUpsampling)
@@ -142,7 +118,7 @@ float4 BloomAdditiveCombinePassFragment(Varyings input) : SV_TARGET
     return float4(lowRes + highRes, 1.0);
 }
 
-float4 BloomAdditiveCombineFinalPassFragment(Varyings input) : SV_TARGET
+float4 BloomAdditiveCombineFinalPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 lowRes;
     if (_BloomBicubicUpsampling)
@@ -157,7 +133,7 @@ float4 BloomAdditiveCombineFinalPassFragment(Varyings input) : SV_TARGET
     return float4(lowRes * _BloomScale + highRes.rgb, highRes.a);
 }
 
-float4 BloomScatterCombinePassFragment(Varyings input) : SV_TARGET
+float4 BloomScatterCombinePassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 lowRes;
     if (_BloomBicubicUpsampling)
@@ -172,7 +148,7 @@ float4 BloomScatterCombinePassFragment(Varyings input) : SV_TARGET
     return float4(lerp(highRes, lowRes, _BloomScatter), 1.0);
 }
 
-float4 BloomScatterCombineFinalPassFragment(Varyings input) : SV_TARGET
+float4 BloomScatterCombineFinalPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 lowRes;
     if (_BloomBicubicUpsampling)
@@ -299,27 +275,27 @@ float3 GetColorGradedLUT(float2 uv, bool useACES = false)
     return ColorGrade(_ColorGradingLUTInLogC ? LogCToLinear(color) : color, useACES);
 }
 
-float4 ColorGradingOnlyPassFragment(Varyings input) : SV_TARGET
+float4 ColorGradingOnlyPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 color = GetColorGradedLUT(input.screenUV);
     return float4(color, 1.0);
 }
 
-float4 ColorGradingReinhardPassFragment(Varyings input) : SV_TARGET
+float4 ColorGradingReinhardPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 color = GetColorGradedLUT(input.screenUV);
     color /= color + 1.0;
     return float4(color, 1.0);
 }
 
-float4 ColorGradingNeutralPassFragment(Varyings input) : SV_TARGET
+float4 ColorGradingNeutralPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 color = GetColorGradedLUT(input.screenUV);
     color = NeutralTonemap(color);
     return float4(color, 1.0);
 }
 
-float4 ColorGradingACESPassFragment(Varyings input) : SV_TARGET
+float4 ColorGradingACESPassFragment(Varyings_Default input) : SV_TARGET
 {
     float3 color = GetColorGradedLUT(input.screenUV, true);
     color = AcesTonemap(color);
@@ -335,7 +311,7 @@ float3 ApplyColorGradingLUT(float3 color)
     );
 }
 
-float4 ColorGradingFinalPassFragment(Varyings input) : SV_TARGET
+float4 ColorGradingFinalPassFragment(Varyings_Default input) : SV_TARGET
 {
     float4 color = SampleSource(input.screenUV);
     color.rgb = ApplyColorGradingLUT(color.rgb);

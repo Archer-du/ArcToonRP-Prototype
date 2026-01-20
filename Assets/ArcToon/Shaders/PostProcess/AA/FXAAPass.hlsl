@@ -207,7 +207,7 @@ LumaNeighborhood GetLumaNeighborhood(float2 screenUV)
     return neighbor;
 }
 
-float4 FXAAPassFragment(Varyings input) : SV_TARGET
+float4 FXAAPassFragment(Varyings_Default input) : SV_TARGET
 {
     LumaNeighborhood luma = GetLumaNeighborhood(input.screenUV);
 
