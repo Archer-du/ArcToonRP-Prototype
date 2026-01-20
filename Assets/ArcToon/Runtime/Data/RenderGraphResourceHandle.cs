@@ -22,8 +22,6 @@ namespace ArcToon.Runtime.Data
         public ShadowMapHandle shadowMapHandle;
         
         // TODO: ref
-        public TextureHandle geometryResult;
-        // TODO: ref
         public TextureHandle postFXResult;
     }
 }

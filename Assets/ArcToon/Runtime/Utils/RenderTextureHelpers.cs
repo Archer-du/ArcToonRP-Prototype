@@ -22,6 +22,7 @@ namespace ArcToon.Runtime.Utils
             }
             else
             {
+                Debug.LogWarning("copying texture without DMA copying texture supported.");
                 BlitTexture(commandBuffer, srcHandle, dstHandle, 
                     ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), (int)mode);
             }

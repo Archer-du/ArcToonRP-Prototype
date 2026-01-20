@@ -210,7 +210,7 @@
                 "LightMode" = "ToonForwardWeightedAverage"
             }
             Blend 0 One One, One One
-            Blend 1 One One
+            Blend 1 Zero OneMinusSrcColor
             ZTest On
             ZWrite Off
             Cull Off

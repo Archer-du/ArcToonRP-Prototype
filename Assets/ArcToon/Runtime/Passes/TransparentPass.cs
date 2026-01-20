@@ -42,7 +42,7 @@ namespace ArcToon.Runtime.Passes
         private TextureHandle backgroundColor;
         
         private TextureHandle accumulateRGBA;
-        private TextureHandle accumulateComplexity;
+        private TextureHandle revealage;
         
         private RendererListHandle geometryList;
         #endregion
@@ -74,17 +74,20 @@ namespace ArcToon.Runtime.Passes
             else if (transparencyMode == TransparencyMode.WeightedAverage)
             {
                 commandBuffer.SetRenderTarget(
-                    new RenderTargetIdentifier[]{ accumulateRGBA, accumulateComplexity, }, 
+                    new RenderTargetIdentifier[]{ accumulateRGBA, revealage, }, 
                     resourceHandle.depthAttachment);
-                commandBuffer.ClearRenderTarget(false, true, Color.clear);
+                commandBuffer.ClearRenderTarget(RTClearFlags.Color, 
+                    new[]{ Color.clear, Color.white, });
                 commandBuffer.DrawRendererList(geometryList);
                 
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateRGBA, accumulateRGBA);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, accumulateComplexity);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, resourceHandle.colorAttachment);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, revealage);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, backgroundColor);
+                
+                RenderTextureHelpers.CopyTexture(commandBuffer, resourceHandle.colorAttachment, backgroundColor, RenderTextureHelpers.CopyMode.ColorAttachment);
                 
                 commandBuffer.SetRenderTarget(
-                    resourceHandle.geometryResult,
+                    resourceHandle.colorAttachment,
                     RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                     resourceHandle.depthAttachment,
                     RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
@@ -141,7 +144,6 @@ namespace ArcToon.Runtime.Passes
                                             PerObjectData.OcclusionProbeProxyVolume |
                                             PerObjectData.ReflectionProbes,
                 });
-                resourceHandle.geometryResult = resourceHandle.colorAttachment;
             }
             else if (transparencyMode == TransparencyMode.WeightedAverage)
             {
@@ -160,14 +162,14 @@ namespace ArcToon.Runtime.Passes
                     name = "Weighted Average Accumulate RGBA",
                     colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
                 });
-                accumulateComplexity = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
+                revealage = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
                 {
-                    name = "Weighted Average Accumulate Complexity",
-                    format = GraphicsFormat.R16_SFloat,
+                    name = "Weighted Average Revealage",
+                    format = GraphicsFormat.R16_UNorm,
                 });
-                resourceHandle.geometryResult = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
+                backgroundColor = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
                 {
-                    name = "Weighted Average Composition",
+                    name = "Weighted Average Background Color",
                     colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
                 });
             }
@@ -207,9 +209,9 @@ namespace ArcToon.Runtime.Passes
             {
                 builder.UseRendererList(geometryList);
                 
-                builder.ReadWriteTexture(accumulateComplexity);
+                builder.ReadWriteTexture(revealage);
                 builder.ReadWriteTexture(accumulateRGBA);
-                builder.ReadWriteTexture(resourceHandle.geometryResult);
+                builder.ReadWriteTexture(backgroundColor);
             }
             
             builder.ReadWriteTexture(resourceHandle.colorAttachment);

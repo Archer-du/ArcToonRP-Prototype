@@ -147,7 +147,7 @@ namespace ArcToon.Runtime
                     renderGraph, resourceHandle);
                 
                 // post process
-                resourceHandle.postFXResult = PostFXPass.Record(this, renderGraph, RenderCamera, resourceHandle.geometryResult, CullingResults, AttachmentSize,
+                resourceHandle.postFXResult = PostFXPass.Record(this, renderGraph, RenderCamera, resourceHandle.colorAttachment, CullingResults, AttachmentSize,
                     CameraAdditiveData, BufferSettings, PostFXConfig, useHDR);
                 
                 // final
