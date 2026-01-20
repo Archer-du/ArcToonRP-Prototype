@@ -1,4 +1,4 @@
-﻿Shader "Hidden/ArcToon/Camera Copy"
+﻿Shader "Hidden/ArcToon/Blitter"
 {
 
     SubShader

@@ -83,11 +83,11 @@ namespace ArcToon.Runtime.Passes
             builder.ReadBuffer(resourceHandle.perObjectShadowCasterData);
             builder.ReadBuffer(resourceHandle.forwardPlusTileBuffer);
             
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.cascadeShadowDataHandle);
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.directionalShadowMatricesHandle);
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.spotShadowDataHandle);
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.pointShadowDataHandle);
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.perObjectShadowDataHandle);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.cascadeShadowData);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.directionalShadowMatrices);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.spotShadowData);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.pointShadowData);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.perObjectShadowData);
         }
     }
 }

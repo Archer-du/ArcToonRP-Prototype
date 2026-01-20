@@ -10,36 +10,36 @@ namespace ArcToon.Runtime.Data
         public readonly TextureHandle perObjectAtlas;
 
 
-        public readonly BufferHandle cascadeShadowDataHandle;
-        public readonly BufferHandle directionalShadowMatricesHandle;
+        public readonly BufferHandle cascadeShadowData;
+        public readonly BufferHandle directionalShadowMatrices;
 
-        public readonly BufferHandle spotShadowDataHandle;
+        public readonly BufferHandle spotShadowData;
 
-        public readonly BufferHandle pointShadowDataHandle;
+        public readonly BufferHandle pointShadowData;
         
-        public readonly BufferHandle perObjectShadowDataHandle;
+        public readonly BufferHandle perObjectShadowData;
 
         public ShadowMapHandle(
             TextureHandle directionalAtlas,
             TextureHandle spotAtlas,
             TextureHandle pointAtlas,
             TextureHandle perObjectAtlas,
-            BufferHandle cascadeShadowDataHandle,
-            BufferHandle directionalShadowMatricesHandle,
-            BufferHandle spotShadowDataHandle,
-            BufferHandle pointShadowDataHandle,
-            BufferHandle perObjectShadowDataHandle
+            BufferHandle cascadeShadowData,
+            BufferHandle directionalShadowMatrices,
+            BufferHandle spotShadowData,
+            BufferHandle pointShadowData,
+            BufferHandle perObjectShadowData
             )
         {
             this.directionalAtlas = directionalAtlas;
             this.spotAtlas = spotAtlas;
             this.pointAtlas = pointAtlas;
             this.perObjectAtlas = perObjectAtlas;
-            this.cascadeShadowDataHandle = cascadeShadowDataHandle;
-            this.directionalShadowMatricesHandle = directionalShadowMatricesHandle;
-            this.spotShadowDataHandle = spotShadowDataHandle;
-            this.pointShadowDataHandle = pointShadowDataHandle;
-            this.perObjectShadowDataHandle = perObjectShadowDataHandle;
+            this.cascadeShadowData = cascadeShadowData;
+            this.directionalShadowMatrices = directionalShadowMatrices;
+            this.spotShadowData = spotShadowData;
+            this.pointShadowData = pointShadowData;
+            this.perObjectShadowData = perObjectShadowData;
         }
     }
 }

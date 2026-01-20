@@ -48,7 +48,7 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.SetViewport(Camera.pixelRect);
             commandBuffer.DrawProcedural(
                 Matrix4x4.identity, 
-                ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraCopy), 0,
+                ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 0,
                 MeshTopology.Triangles, 3
             );
         }

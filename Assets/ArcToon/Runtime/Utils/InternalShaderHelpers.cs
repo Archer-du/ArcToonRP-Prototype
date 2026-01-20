@@ -19,7 +19,7 @@ namespace ArcToon.Runtime.Utils
         public static class Path
         {
             public static readonly string InternalError = "Hidden/InternalErrorShader";
-            public static readonly string CameraCopy = "Hidden/ArcToon/Camera Copy";
+            public static readonly string Blitter = "Hidden/ArcToon/Blitter";
             public static readonly string CameraDebug = "Hidden/ArcToon/Camera Debug";
             public static readonly string PostFXStack = "Hidden/ArcToon/Post FX Stack";
         }

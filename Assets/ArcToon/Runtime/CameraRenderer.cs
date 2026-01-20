@@ -50,13 +50,13 @@ namespace ArcToon.Runtime
         public void Render(RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
             RenderPipelineConfig config)
         {
-            if (SetupRenderInfo(context, camera, config))
+            if (SetupRenderData(context, camera, config))
             {
                 ExecuteRenderPass(renderGraph);
             }
         }
 
-        private bool SetupRenderInfo(ScriptableRenderContext context, Camera camera,
+        private bool SetupRenderData(ScriptableRenderContext context, Camera camera,
             RenderPipelineConfig config)
         {
             RenderCamera = camera;
@@ -141,8 +141,9 @@ namespace ArcToon.Runtime
                     renderGraph, resourceHandle);
                 RecordRenderPass<SkyboxPass>("Skybox", 
                     renderGraph, resourceHandle, false);
+                // TODO: 
                 RecordRenderPass<TransparentPass>("Transparent", 
-                    renderGraph, resourceHandle);
+                    renderGraph, resourceHandle, false);
                 RecordRenderPass<UnsupportedPass>("Unsupported", 
                     renderGraph, resourceHandle);
                 

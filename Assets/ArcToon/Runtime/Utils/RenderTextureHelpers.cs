@@ -23,7 +23,7 @@ namespace ArcToon.Runtime.Utils
             else
             {
                 BlitTexture(commandBuffer, srcHandle, dstHandle, 
-                    ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraCopy), (int)mode);
+                    ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), (int)mode);
             }
         }
 
