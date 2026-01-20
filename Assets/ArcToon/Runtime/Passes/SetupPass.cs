@@ -23,6 +23,8 @@ namespace ArcToon.Runtime.Passes
             }
         }
 
+        public override bool AllowCulling() => false;
+
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             context.SetupCameraProperties(Camera);
@@ -57,6 +59,7 @@ namespace ArcToon.Runtime.Passes
                 name = "Depth Attachment Buffer",
                 depthBufferBits = DepthBits.Depth32,
             });
+            
             if (renderer.copyColor)
             {
                 resourceHandle.colorCopy = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
@@ -65,15 +68,12 @@ namespace ArcToon.Runtime.Passes
                     colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
                 });
             }
-            if (renderer.copyDepth)
-            {
-                resourceHandle.depthCopy = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
-                {
-                    name = "Depth Copy",
-                    depthBufferBits = DepthBits.Depth32,
-                });
-            }
             
+            resourceHandle.preDepthStencil = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
+            {
+                name = "Depth Copy",
+                depthBufferBits = DepthBits.Depth32,
+            });
             resourceHandle.stencilMask = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
             {
                 name = "Stencil Mask",

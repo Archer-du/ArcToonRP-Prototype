@@ -261,7 +261,7 @@
                 "LightMode" = "DepthOnly"
             }
             ZWrite On
-            // TODO:
+            // TODO: set cull through c#
             Cull Off
             ColorMask R
 
@@ -284,7 +284,7 @@
                 "LightMode" = "ShadowCaster"
             }
             ColorMask 0
-            // TODO:
+            // TODO: set cull through c#
             Cull Off
 
             HLSLPROGRAM

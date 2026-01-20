@@ -12,10 +12,7 @@ namespace ArcToon.Runtime.Passes
     {
         public override ProfilingSampler Sampler => new("Debug");
 
-        public override bool IsValid()
-        {
-            return base.IsValid() && CameraDebugger.IsActive && Camera.cameraType <= CameraType.SceneView;
-        }
+        public override bool AllowCulling() => true;
 
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {

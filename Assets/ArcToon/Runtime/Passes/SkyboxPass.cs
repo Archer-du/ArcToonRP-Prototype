@@ -11,6 +11,8 @@ namespace ArcToon.Runtime.Passes
 
         RendererListHandle list;
 
+        public override bool AllowCulling() => false;
+
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.DrawRendererList(list);

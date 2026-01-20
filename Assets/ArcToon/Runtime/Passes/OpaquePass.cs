@@ -24,6 +24,8 @@ namespace ArcToon.Runtime.Passes
         RendererListHandle baseList;
         RendererListHandle outlineList;
 
+        public override bool AllowCulling() => true;
+
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.BeginSample("Toon Base");
@@ -66,9 +68,9 @@ namespace ArcToon.Runtime.Passes
             {
                 builder.ReadTexture(resourceHandle.colorCopy);
             }
-            if (resourceHandle.depthCopy.IsValid())
+            if (resourceHandle.preDepthStencil.IsValid())
             {
-                builder.ReadTexture(resourceHandle.depthCopy);
+                builder.ReadTexture(resourceHandle.preDepthStencil);
             }
             builder.ReadTexture(resourceHandle.stencilMask);
             

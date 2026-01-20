@@ -17,16 +17,12 @@ namespace ArcToon.Runtime.Passes
         protected Camera Camera => renderer.RenderCamera;
         protected Vector2Int AttachmentSize => renderer.AttachmentSize;
 
-        public virtual bool IsValid()
-        {
-            return resourceHandle != null && renderer != null;
-        }
-
         public virtual void Initialize(RenderGraphResourceHandle resourceHandle, CameraRenderer renderer)
         {
             this.resourceHandle = resourceHandle;
             this.renderer = renderer;
         }
+        public abstract bool AllowCulling();
         
         public abstract void Render(CommandBuffer commandBuffer, ScriptableRenderContext context);
 

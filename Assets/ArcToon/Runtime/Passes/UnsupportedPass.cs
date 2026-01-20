@@ -23,6 +23,8 @@ namespace ArcToon.Runtime.Passes
             new("VertexLM")
         };
 
+        public override bool AllowCulling() => true;
+
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
 #if UNITY_EDITOR

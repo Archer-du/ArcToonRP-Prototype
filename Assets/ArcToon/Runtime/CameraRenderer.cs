@@ -28,11 +28,9 @@ namespace ArcToon.Runtime
         internal PostFXConfig PostFXConfig { private set; get; }
         
         internal bool useHDR { private set; get; }
-        internal bool copyDepth { private set; get; }
         internal bool copyColor { private set; get; }
         
-        //TODO:
-        internal TransparencyMode mode;
+        internal TransparencyMode transparencyMode { private set; get; }
         
         // TODO: Singleton
         internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
@@ -82,7 +80,7 @@ namespace ArcToon.Runtime
                 PostFXConfig = CameraAdditiveData.overridePostFXConfig;
             }
 
-            mode = config.transparencyMode;
+            transparencyMode = config.transparencyMode;
 
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
@@ -102,12 +100,10 @@ namespace ArcToon.Runtime
             useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
             if (RenderCamera.cameraType == CameraType.Reflection)
             {
-                copyDepth = BufferSettings.copyDepthReflection;
                 copyColor = BufferSettings.copyColorReflection;
             }
             else
             {
-                copyDepth = BufferSettings.copyDepth && CameraAdditiveData.copyDepth;
                 copyColor = BufferSettings.copyColor && CameraAdditiveData.copyColor;
             }
 
@@ -131,28 +127,34 @@ namespace ArcToon.Runtime
             {
                 RenderGraphResourceHandle resourceHandle = new();
 
+                // setup
                 RecordRenderPass<LightingPass>("Lighting", 
-                    renderGraph, resourceHandle, false);
+                    renderGraph, resourceHandle);
                 RecordRenderPass<SetupPass>("Setup", 
-                    renderGraph, resourceHandle, false);
+                    renderGraph, resourceHandle);
                 RecordRenderPass<DepthStencilPrePass>("Prepass", 
                     renderGraph, resourceHandle);
+                
+                // render scene
                 RecordRenderPass<OpaquePass>("Opaque", 
                     renderGraph, resourceHandle);
                 RecordRenderPass<SkyboxPass>("Skybox", 
-                    renderGraph, resourceHandle, false);
-                // TODO: 
+                    renderGraph, resourceHandle);
+                // TODO: pass culling optimize (Cullable Pass / Fundamental Pass)
                 RecordRenderPass<TransparentPass>("Transparent", 
-                    renderGraph, resourceHandle, false);
+                    renderGraph, resourceHandle);
                 RecordRenderPass<UnsupportedPass>("Unsupported", 
                     renderGraph, resourceHandle);
                 
+                // post process
                 resourceHandle.postFXResult = PostFXPass.Record(this, renderGraph, RenderCamera, resourceHandle.geometryResult, CullingResults, AttachmentSize,
                     CameraAdditiveData, BufferSettings, PostFXConfig, useHDR);
                 
+                // final
                 RecordRenderPass<CopyFinalPass>("Final",
                     renderGraph, resourceHandle);
                 
+                // debug
                 if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
                 {
                     RecordRenderPass<DebugPass>("Debug", 
@@ -172,7 +174,7 @@ namespace ArcToon.Runtime
         }
 
         private void RecordRenderPass<TRenderPass>(string passName,
-            RenderGraph renderGraph, RenderGraphResourceHandle resourceHandle, bool allowPassCulling = true) 
+            RenderGraph renderGraph, RenderGraphResourceHandle resourceHandle) 
             where TRenderPass : RenderGraphPassBase, new()
         {
             using RenderGraphBuilder builder = renderGraph.AddRenderPass(passName, out TRenderPass passData);
@@ -180,7 +182,7 @@ namespace ArcToon.Runtime
             passData.AcquireResource(renderGraph);
             passData.DeclareResourceUsage(builder);
 
-            builder.AllowPassCulling(allowPassCulling);
+            builder.AllowPassCulling(passData.AllowCulling());
             builder.SetRenderFunc<TRenderPass>(static (pass, context) =>
             {
                 pass.Render(context.cmd, context.renderContext);

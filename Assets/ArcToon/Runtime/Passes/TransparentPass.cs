@@ -13,7 +13,7 @@ namespace ArcToon.Runtime.Passes
     {
         public override ProfilingSampler Sampler => new("Transparent");
 
-        TransparencyMode transparencyMode => renderer.mode;
+        TransparencyMode transparencyMode => renderer.transparencyMode;
         
         #region Ordered
         private static ShaderTagId[] backFaceShaderTagIds =
@@ -39,6 +39,8 @@ namespace ArcToon.Runtime.Passes
             new("ToonForwardWeightedAverage"),
         };
         
+        private TextureHandle backgroundColor;
+        
         private TextureHandle accumulateRGBA;
         private TextureHandle accumulateComplexity;
         
@@ -58,6 +60,8 @@ namespace ArcToon.Runtime.Passes
         };
 
         RendererListHandle outlineList;
+
+        public override bool AllowCulling() => false;
 
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
@@ -215,9 +219,9 @@ namespace ArcToon.Runtime.Passes
             {
                 builder.ReadTexture(resourceHandle.colorCopy);
             }
-            if (resourceHandle.depthCopy.IsValid())
+            if (resourceHandle.preDepthStencil.IsValid())
             {
-                builder.ReadTexture(resourceHandle.depthCopy);
+                builder.ReadTexture(resourceHandle.preDepthStencil);
             }
             builder.ReadTexture(resourceHandle.stencilMask);
             

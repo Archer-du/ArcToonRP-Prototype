@@ -8,10 +8,10 @@ namespace ArcToon.Runtime.Data
         public TextureHandle depthAttachment;
         
         public TextureHandle colorCopy;
-        public TextureHandle depthCopy;
-
-        public TextureHandle stencilMask;
         
+        public TextureHandle preDepthStencil;
+        public TextureHandle stencilMask;
+
         public BufferHandle lightDataDirectional;
         public BufferHandle lightDataSpot;
         public BufferHandle lightDataPoint;

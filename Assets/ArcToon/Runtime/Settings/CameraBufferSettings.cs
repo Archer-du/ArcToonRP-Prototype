@@ -9,7 +9,6 @@ namespace ArcToon.Runtime.Settings
     {
         [FormerlySerializedAs("allowHDR")] public bool enableHDR = true;
 
-        public bool copyDepth, copyDepthReflection;
         public bool copyColor, copyColorReflection;
 
         [Range(0.5f, 2f)] public float renderScale = 1f;

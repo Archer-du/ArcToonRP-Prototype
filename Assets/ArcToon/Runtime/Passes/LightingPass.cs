@@ -96,6 +96,8 @@ namespace ArcToon.Runtime.Passes
                 renderer.PerObjectShadowCasterManager);
         }
 
+        public override bool AllowCulling() => false;
+
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.SetGlobalInt(InternalShader.PropertyID.DirectionalLightCount, directionalLightCount);

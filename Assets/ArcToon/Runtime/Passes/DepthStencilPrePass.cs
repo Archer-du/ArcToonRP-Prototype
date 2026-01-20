@@ -28,10 +28,12 @@ namespace ArcToon.Runtime.Passes
         private RendererListHandle transparentDepthPrepassList;
         private RendererListHandle stencilMaskList;
 
+        public override bool AllowCulling() => true;
+
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.SetRenderTarget(
-                resourceHandle.depthCopy,
+                resourceHandle.preDepthStencil,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             
@@ -48,7 +50,7 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.SetRenderTarget(
                 resourceHandle.stencilMask,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                resourceHandle.depthCopy,
+                resourceHandle.preDepthStencil,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
             );
             
@@ -58,7 +60,7 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.DrawRendererList(stencilMaskList);
             commandBuffer.EndSample("Stencil Mask");
 
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.CameraDepthTexture, resourceHandle.depthCopy);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.CameraDepthTexture, resourceHandle.preDepthStencil);
             commandBuffer.SetGlobalTexture(InternalShader.PropertyID.StencilMaskTexture, resourceHandle.stencilMask);
 
             commandBuffer.SetRenderTarget(
@@ -97,7 +99,7 @@ namespace ArcToon.Runtime.Passes
             builder.ReadTexture(resourceHandle.colorAttachment);
             builder.ReadTexture(resourceHandle.depthAttachment);
 
-            builder.ReadWriteTexture(resourceHandle.depthCopy);
+            builder.ReadWriteTexture(resourceHandle.preDepthStencil);
             builder.WriteTexture(resourceHandle.stencilMask);
         }
     }

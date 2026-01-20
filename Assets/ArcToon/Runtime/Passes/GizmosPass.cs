@@ -11,6 +11,8 @@ namespace ArcToon.Runtime.Passes
     {
         public override ProfilingSampler Sampler => new("Gizmos");
         
+        public override bool AllowCulling() => true;
+        
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
 #if UNITY_EDITOR

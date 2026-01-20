@@ -30,6 +30,8 @@ namespace ArcToon.Runtime.Passes
             finalBlendMode = renderer.CameraAdditiveData.finalBlendMode;
         }
 
+        public override bool AllowCulling() => true;
+        
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.SetGlobalFloat(InternalShader.PropertyID.FinalSrcBlend, (float)finalBlendMode.source);
