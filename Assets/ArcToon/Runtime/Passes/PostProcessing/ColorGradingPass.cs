@@ -1,14 +1,13 @@
-﻿using ArcToon.Runtime.Overrides;
-using ArcToon.Runtime.Passes.PostProcess;
+﻿using ArcToon.Runtime.Behavior;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
-using static ArcToon.Runtime.Settings.PostFXSettings;
-using static ArcToon.Runtime.Passes.PostProcess.PostFXStack;
+using static ArcToon.Runtime.Settings.PostFXConfig;
+using static ArcToon.Runtime.PostFXStack;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Runtime.Passes.PostProcessing
 {
     public class ColorGradingPass
     {
@@ -21,7 +20,7 @@ namespace ArcToon.Runtime.Passes
         
         static readonly GraphicsFormat colorFormat = SystemInfo.GetGraphicsFormat(DefaultFormat.HDR);
 
-        private PostFXSettings settings;
+        private PostFXConfig config;
         private bool useHDR;
         private TextureHandle colorLUT;
         
@@ -52,11 +51,11 @@ namespace ArcToon.Runtime.Passes
         {
             CommandBuffer commandBuffer = context.cmd;
 
-            ConfigureColorAdjustments(commandBuffer, settings);
-            ConfigureWhiteBalance(commandBuffer, settings);
-            ConfigureSplitToning(commandBuffer, settings);
-            ConfigureChannelMixer(commandBuffer, settings);
-            ConfigureShadowsMidtonesHighlights(commandBuffer, settings);
+            ConfigureColorAdjustments(commandBuffer, config);
+            ConfigureWhiteBalance(commandBuffer, config);
+            ConfigureSplitToning(commandBuffer, config);
+            ConfigureChannelMixer(commandBuffer, config);
+            ConfigureShadowsMidtonesHighlights(commandBuffer, config);
             
             // render LUT
             int lutHeight = colorLUTResolution;
@@ -64,7 +63,7 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.SetGlobalVector(colorGradingLUTParametersID,
                 new Vector4(lutHeight, 0.5f / lutWidth, 0.5f / lutHeight, lutHeight / (lutHeight - 1f))
             );
-            var mode = settings.ToneMapping.mode;
+            var mode = config.ToneMapping.mode;
             Pass pass = Pass.ColorGradingOnly + (int)mode;
             commandBuffer.SetGlobalFloat(
                 colorGradingLUTInLogCID, useHDR && pass != Pass.ColorGradingOnly ? 1f : 0f
@@ -84,9 +83,9 @@ namespace ArcToon.Runtime.Passes
 
         public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
             CullingResults cullingResults, Vector2Int bufferSize,
-            CameraSettings cameraSettings,
+            CameraAdditiveData cameraAdditiveData,
             CameraBufferSettings bufferSettings,
-            PostFXSettings postFXSettings,
+            PostFXConfig postFXConfig,
             bool useHDR,
             in TextureHandle srcHandle,
             PostFXStack stack)
@@ -96,9 +95,9 @@ namespace ArcToon.Runtime.Passes
 
             pass.stack = stack;
             pass.useHDR = useHDR;
-            pass.colorLUTResolution = postFXSettings ? (int)postFXSettings.ToneMapping.colorLUTResolution : 0;
+            pass.colorLUTResolution = postFXConfig ? (int)postFXConfig.ToneMapping.colorLUTResolution : 0;
             pass.source = builder.ReadTexture(srcHandle);
-            pass.settings = postFXSettings;
+            pass.config = postFXConfig;
             
             int lutHeight = pass.colorLUTResolution;
             int lutWidth = lutHeight * lutHeight;
@@ -120,9 +119,9 @@ namespace ArcToon.Runtime.Passes
             return pass.colorGradingResult;
         }
 
-        void ConfigureColorAdjustments(CommandBuffer commandBuffer, PostFXSettings settings)
+        void ConfigureColorAdjustments(CommandBuffer commandBuffer, PostFXConfig config)
         {
-            ColorAdjustmentsSettings colorAdjustments = settings.ColorAdjustments;
+            ColorAdjustmentsSettings colorAdjustments = config.ColorAdjustments;
             commandBuffer.SetGlobalVector(colorAdjustmentDataID, new Vector4(
                 Mathf.Pow(2f, colorAdjustments.postExposure),
                 colorAdjustments.contrast * 0.01f + 1f,
@@ -132,34 +131,34 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.SetGlobalColor(colorFilterID, colorAdjustments.colorFilter.linear);
         }
 
-        void ConfigureWhiteBalance(CommandBuffer commandBuffer, PostFXSettings settings)
+        void ConfigureWhiteBalance(CommandBuffer commandBuffer, PostFXConfig config)
         {
-            WhiteBalanceSettings whiteBalance = settings.WhiteBalance;
+            WhiteBalanceSettings whiteBalance = config.WhiteBalance;
             commandBuffer.SetGlobalVector(whiteBalanceID, ColorUtils.ColorBalanceToLMSCoeffs(
                 whiteBalance.temperature, whiteBalance.tint
             ));
         }
 
-        void ConfigureSplitToning(CommandBuffer commandBuffer, PostFXSettings settings)
+        void ConfigureSplitToning(CommandBuffer commandBuffer, PostFXConfig config)
         {
-            SplitToningSettings splitToning = settings.SplitToning;
+            SplitToningSettings splitToning = config.SplitToning;
             Color splitColor = splitToning.shadows;
             splitColor.a = splitToning.balance * 0.01f;
             commandBuffer.SetGlobalColor(splitToningShadowsID, splitColor);
             commandBuffer.SetGlobalColor(splitToningHighlightsID, splitToning.highlights);
         }
 
-        void ConfigureChannelMixer(CommandBuffer commandBuffer, PostFXSettings settings)
+        void ConfigureChannelMixer(CommandBuffer commandBuffer, PostFXConfig config)
         {
-            ChannelMixerSettings channelMixer = settings.ChannelMixer;
+            ChannelMixerSettings channelMixer = config.ChannelMixer;
             commandBuffer.SetGlobalVector(channelMixerRedID, channelMixer.red);
             commandBuffer.SetGlobalVector(channelMixerGreenID, channelMixer.green);
             commandBuffer.SetGlobalVector(channelMixerBlueID, channelMixer.blue);
         }
 
-        void ConfigureShadowsMidtonesHighlights(CommandBuffer commandBuffer, PostFXSettings settings)
+        void ConfigureShadowsMidtonesHighlights(CommandBuffer commandBuffer, PostFXConfig config)
         {
-            ShadowsMidtonesHighlightsSettings smh = settings.ShadowsMidtonesHighlights;
+            ShadowsMidtonesHighlightsSettings smh = config.ShadowsMidtonesHighlights;
             commandBuffer.SetGlobalColor(smhShadowsID, smh.shadows.linear);
             commandBuffer.SetGlobalColor(smhMidtonesID, smh.midtones.linear);
             commandBuffer.SetGlobalColor(smhHighlightsID, smh.highlights.linear);

@@ -2,7 +2,7 @@
 
 namespace ArcToon.Runtime.Data
 {
-    public readonly struct CameraAttachmentHandles
+    public readonly ref struct CameraAttachmentHandles
     {
         public readonly TextureHandle
             colorAttachment,

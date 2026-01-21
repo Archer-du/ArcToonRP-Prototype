@@ -5,31 +5,30 @@ using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class SkyboxPass
+    public class SkyboxPass : RenderGraphPassBase
     {
-        static readonly ProfilingSampler sampler = new("Skybox");
+        public override ProfilingSampler Sampler => new("Skybox");
 
         RendererListHandle list;
 
-        void Render(RenderGraphContext context)
+        public override bool AllowCulling() => false;
+
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
-            context.cmd.DrawRendererList(list);
-            context.renderContext.ExecuteCommandBuffer(context.cmd);
-            context.cmd.Clear();
+            commandBuffer.DrawRendererList(list);
         }
 
-        public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults, 
-            in CameraAttachmentHandles handles)
+        public override void AcquireResource(RenderGraph renderGraph)
         {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out SkyboxPass pass, sampler);
+            list = renderGraph.CreateSkyboxRendererList(Camera);
+        }
 
-            pass.list = builder.UseRendererList(renderGraph.CreateSkyboxRendererList(camera));
-            builder.ReadWriteTexture(handles.colorAttachment);
-            builder.ReadTexture(handles.depthAttachment);
-
-            builder.AllowPassCulling(false);
-            builder.SetRenderFunc<SkyboxPass>(static (pass, context) => pass.Render(context));
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        {
+            builder.UseRendererList(list);
+            
+            builder.ReadWriteTexture(resourceHandle.colorAttachment);
+            builder.ReadTexture(resourceHandle.depthAttachment);
         }
     }
 }

@@ -1,142 +1,199 @@
-﻿using ArcToon.Runtime.Overrides;
+﻿using ArcToon.Runtime.Behavior;
+using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Passes;
 using ArcToon.Runtime.Passes.Lighting;
-using ArcToon.Runtime.Passes.PostProcess;
 using ArcToon.Runtime.Settings;
-using ArcToon.Runtime.Utils;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime
 {
-    public partial class CameraRenderer
+    public class CameraRenderer
     {
-        private Camera camera;
-        private PerObjectShadowCasterManager perObjectShadowCasterManager = new();
+        internal ScriptableRenderContext Context { private set; get; }
+        internal Camera RenderCamera { private set; get; }
+        internal CameraAdditiveData CameraAdditiveData { private set; get; }
+        internal float RenderScale { private set; get; }
+        
+        internal Vector2Int AttachmentSize { private set; get; }
+        internal CullingResults CullingResults { private set; get; }
 
-        static CameraSettings defaultCameraSettings = new();
+        internal CameraBufferSettings BufferSettings { private set; get; }
+        internal ShadowSettings ShadowSettings { private set; get; }
+        internal ForwardPlusSettings ForwardPlusSettings { private set; get; }
+        
+        
+        internal PostFXConfig PostFXConfig { private set; get; }
+        
+        internal bool useHDR { private set; get; }
+        internal bool copyColor { private set; get; }
+        
+        internal TransparencyMode transparencyMode { private set; get; }
+        
+        // TODO: Singleton
+        internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
 
-        public const float renderScaleMin = 0.1f, renderScaleMax = 2f;
-
-        private Material cameraCopyMaterial;
-
-        public CameraRenderer(Shader cameraCopyShader, Shader cameraDebuggerShader)
+        public CameraRenderer()
         {
-            cameraCopyMaterial = CoreUtils.CreateEngineMaterial(cameraCopyShader);
-            CameraDebugger.Initialize(cameraDebuggerShader);
+            CameraDebugger.Initialize();
         }
 
         public void Dispose()
         {
-            CoreUtils.Destroy(cameraCopyMaterial);
             CameraDebugger.Cleanup();
         }
 
-
         public void Render(RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
-            RenderPipelineSettings settings)
+            RenderPipelineConfig config)
         {
-            this.camera = camera;
-            CameraBufferSettings bufferSettings = settings.cameraBufferSettings;
-            PostFXSettings postFXSettings = settings.enablePostProcessing ? settings.globalPostFXSettings : null;
-            ShadowSettings shadowSettings = settings.globalShadowSettings;
-            ForwardPlusSettings forwardPlusSettings = settings.forwardPlusSettings;
-            var additiveCameraData = camera.GetComponent<ArcToonAdditiveCameraData>();
-            CameraSettings cameraSettings = additiveCameraData ? additiveCameraData.Settings : defaultCameraSettings;
-            postFXSettings = cameraSettings.overridePostFX ? cameraSettings.postFXSettings : postFXSettings;
-            var cameraSampler =
-                additiveCameraData ? additiveCameraData.Sampler : ProfilingSampler.Get(camera.cameraType);
-            bool useHDR = bufferSettings.allowHDR && camera.allowHDR;
+            if (SetupRenderData(context, camera, config))
+            {
+                ExecuteRenderPass(renderGraph);
+            }
+        }
 
-            // render scale
-            var bufferSize = GetCameraBufferSize(cameraSettings, bufferSettings);
+        private bool SetupRenderData(ScriptableRenderContext context, Camera camera,
+            RenderPipelineConfig config)
+        {
+            RenderCamera = camera;
+            Context = context;
 
-            // prepare scene data
+            var cameraRenderController = camera.GetComponent<CameraRenderController>();
+            if (!cameraRenderController)
+            {
+                CameraAdditiveData = CameraAdditiveData.DefaultAdditiveData;
+            }
+            else
+            {
+                CameraAdditiveData = cameraRenderController.AdditiveData;
+            }
+            
+            BufferSettings = config.cameraBufferSettings;
+            ShadowSettings = config.globalShadowSettings;
+            ForwardPlusSettings = config.forwardPlusSettings;
+            
+            PostFXConfig = config.globalPostFXConfig;
+            if (CameraAdditiveData.overridePostFXConfig != null)
+            {
+                PostFXConfig = CameraAdditiveData.overridePostFXConfig;
+            }
+
+            transparencyMode = config.transparencyMode;
+
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
             {
                 ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
             }
 #endif
-            // camera texture
-            bool copyColorTexture, copyDepthTexture;
-            if (camera.cameraType == CameraType.Reflection)
+
+            if (!GetCullingResults(context, ShadowSettings.maxDistance))
             {
-                copyDepthTexture = bufferSettings.copyDepthReflection;
-                copyColorTexture = bufferSettings.copyColorReflection;
+                return false;
+            }
+            
+            RenderScale = CameraAdditiveData.GetRenderScale(BufferSettings.renderScale);
+            AttachmentSize = GetCameraBufferSize(RenderCamera, RenderScale);
+                        
+            useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
+            if (RenderCamera.cameraType == CameraType.Reflection)
+            {
+                copyColor = BufferSettings.copyColorReflection;
             }
             else
             {
-                copyDepthTexture = bufferSettings.copyDepth && cameraSettings.copyDepth;
-                copyColorTexture = bufferSettings.copyColor && cameraSettings.copyColor;
+                copyColor = BufferSettings.copyColor && CameraAdditiveData.copyColor;
             }
 
-            // cull
-            if (!GetCullingResults(context, out var cullingResults, shadowSettings.maxDistance))
-            {
-                return;
-            }
+            return true;
+        }
 
+        private void ExecuteRenderPass(RenderGraph renderGraph)
+        {
+            var cameraSampler = new ProfilingSampler(RenderCamera.name);
             var renderGraphParameters = new RenderGraphParameters
             {
                 commandBuffer = CommandBufferPool.Get(),
                 currentFrameIndex = Time.frameCount,
                 executionName = cameraSampler.name,
-                scriptableRenderContext = context,
+                scriptableRenderContext = Context,
                 rendererListCulling = true,
             };
-            CameraAttachmentCopier copier = new(cameraCopyMaterial, camera);
 
             renderGraph.BeginRecording(renderGraphParameters);
             using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
             {
-                var lightingHandles = LightingPass.Record(renderGraph, camera, cullingResults, bufferSize,
-                    shadowSettings,
-                    forwardPlusSettings,
-                    context, perObjectShadowCasterManager);
+                RenderGraphResourceHandle resourceHandle = new();
 
-                var attachmentHandles = SetupPass.Record(renderGraph, camera, bufferSize,
-                    copyColorTexture, copyDepthTexture, useHDR);
-
-                DepthStencilPrePass.Record(renderGraph, camera, cullingResults, copyDepthTexture, attachmentHandles);
-
-                OpaquePass.Record(renderGraph, camera, cullingResults, attachmentHandles, lightingHandles);
-
-                SkyboxPass.Record(renderGraph, camera, cullingResults, attachmentHandles);
-
-                TransparentPass.Record(renderGraph, camera, cullingResults, attachmentHandles, lightingHandles);
-
-                UnsupportedPass.Record(renderGraph, camera, cullingResults);
-
-                // post fx
-                var texture = PostFXPass.Record(renderGraph, camera, cullingResults, bufferSize,
-                    cameraSettings, bufferSettings, postFXSettings, useHDR,
-                    attachmentHandles.colorAttachment);
-
-                var bicubicRescalingMode = bufferSettings.bicubicRescalingMode;
-                bool bicubicSampling =
-                    bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||
-                    bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpOnly &&
-                    bufferSize.x < camera.pixelWidth;
-                CopyFinalPass.Record(renderGraph, cameraSettings.finalBlendMode, bicubicSampling, texture, copier);
-
-                DebugPass.Record(renderGraph, camera, lightingHandles);
-
-                GizmosPass.Record(renderGraph, attachmentHandles, copier);
+                // setup
+                RecordRenderPass<LightingPass>("Lighting", 
+                    renderGraph, resourceHandle);
+                RecordRenderPass<SetupPass>("Setup", 
+                    renderGraph, resourceHandle);
+                RecordRenderPass<DepthStencilPrePass>("Prepass", 
+                    renderGraph, resourceHandle);
+                
+                // render scene
+                RecordRenderPass<OpaquePass>("Opaque", 
+                    renderGraph, resourceHandle);
+                RecordRenderPass<SkyboxPass>("Skybox", 
+                    renderGraph, resourceHandle);
+                // TODO: pass culling optimize (Cullable Pass / Fundamental Pass)
+                RecordRenderPass<TransparentPass>("Transparent", 
+                    renderGraph, resourceHandle);
+                RecordRenderPass<UnsupportedPass>("Unsupported", 
+                    renderGraph, resourceHandle);
+                
+                // post process
+                resourceHandle.postFXResult = PostFXPass.Record(this, renderGraph, RenderCamera, resourceHandle.colorAttachment, CullingResults, AttachmentSize,
+                    CameraAdditiveData, BufferSettings, PostFXConfig, useHDR);
+                
+                // final
+                RecordRenderPass<CopyFinalPass>("Final",
+                    renderGraph, resourceHandle);
+                
+                // debug
+                if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
+                {
+                    RecordRenderPass<DebugPass>("Debug", 
+                        renderGraph, resourceHandle);
+                }
+                if (Handles.ShouldRenderGizmos())
+                {
+                    RecordRenderPass<GizmosPass>("Gizmos", 
+                        renderGraph, resourceHandle);
+                }
             }
 
             renderGraph.EndRecordingAndExecute();
-            // submit
-            context.ExecuteCommandBuffer(renderGraphParameters.commandBuffer);
-            context.Submit();
+            Context.ExecuteCommandBuffer(renderGraphParameters.commandBuffer);
+            Context.Submit();
             CommandBufferPool.Release(renderGraphParameters.commandBuffer);
         }
 
-        private Vector2Int GetCameraBufferSize(CameraSettings cameraSettings, CameraBufferSettings bufferSettings)
+        private void RecordRenderPass<TRenderPass>(string passName,
+            RenderGraph renderGraph, RenderGraphResourceHandle resourceHandle) 
+            where TRenderPass : RenderGraphPassBase, new()
         {
-            float renderScale = cameraSettings.GetRenderScale(bufferSettings.renderScale);
-            renderScale = Mathf.Clamp(renderScale, renderScaleMin, renderScaleMax);
+            using RenderGraphBuilder builder = renderGraph.AddRenderPass(passName, out TRenderPass passData);
+            passData.Initialize(resourceHandle, this);
+            passData.AcquireResource(renderGraph);
+            passData.DeclareResourceUsage(builder);
+
+            builder.AllowPassCulling(passData.AllowCulling());
+            builder.SetRenderFunc<TRenderPass>(static (pass, context) =>
+            {
+                pass.Render(context.cmd, context.renderContext);
+                context.renderContext.ExecuteCommandBuffer(context.cmd);
+                context.cmd.Clear();
+            });
+        }
+
+        private Vector2Int GetCameraBufferSize(Camera camera, float renderScale)
+        {
+            renderScale = Mathf.Clamp(renderScale, CameraAdditiveData.renderScaleMin, CameraAdditiveData.renderScaleMax);
             bool useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
@@ -159,18 +216,16 @@ namespace ArcToon.Runtime
             return bufferSize;
         }
 
-        private bool GetCullingResults(ScriptableRenderContext context, out CullingResults cullingResults,
-            float maxShadowDistance)
+        private bool GetCullingResults(ScriptableRenderContext context, float maxShadowDistance)
         {
-            if (!camera.TryGetCullingParameters(out ScriptableCullingParameters scriptableCullingParameters))
+            if (!RenderCamera.TryGetCullingParameters(out ScriptableCullingParameters scriptableCullingParameters))
             {
-                cullingResults = default;
                 return false;
             }
 
-            scriptableCullingParameters.shadowDistance = Mathf.Min(maxShadowDistance, camera.farClipPlane);
-            cullingResults = context.Cull(ref scriptableCullingParameters);
-            perObjectShadowCasterManager.Cull(camera);
+            scriptableCullingParameters.shadowDistance = Mathf.Min(maxShadowDistance, RenderCamera.farClipPlane);
+            CullingResults = context.Cull(ref scriptableCullingParameters);
+            PerObjectShadowCasterManager.Cull(RenderCamera);
             
             return true;
         }

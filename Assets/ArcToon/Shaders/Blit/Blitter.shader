@@ -1,4 +1,4 @@
-﻿Shader "Hidden/ArcToon/Camera Copy"
+﻿Shader "Hidden/ArcToon/Blitter"
 {
 
     SubShader
@@ -22,7 +22,7 @@
             #pragma target 3.5
 
             #pragma vertex DefaultPassVertex
-            #pragma fragment CopyPassFragment
+            #pragma fragment CopyFinalPassFragment
             ENDHLSL
         }
 
@@ -45,14 +45,25 @@
         {
             Name "Copy Color"
 
-            ColorMask 0
-            ZWrite On
-
             HLSLPROGRAM
             #pragma target 3.5
 
             #pragma vertex DefaultPassVertex
-            #pragma fragment CopyDepthPassFragment
+            #pragma fragment CopyColorPassFragment
+            ENDHLSL
+        }
+        
+        Pass
+        {
+            Name "Composite Weighted Average"
+            
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #include "WeightedAverageCompositePass.hlsl"
+            
+            #pragma vertex DefaultPassVertex
+            #pragma fragment WeightedAverageCompositePassFragment
             ENDHLSL
         }
     }

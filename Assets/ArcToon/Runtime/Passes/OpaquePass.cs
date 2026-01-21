@@ -6,12 +6,9 @@ using UnityEngine.Rendering.RendererUtils;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class OpaquePass
+    public class OpaquePass : RenderGraphPassBase
     {
-        static readonly ProfilingSampler sampler = new("Opaque");
-
-        RendererListHandle baseList;
-        RendererListHandle outlineList;
+        public override ProfilingSampler Sampler => new("Opaque");
 
         private static ShaderTagId[] baseShaderTagIds =
         {
@@ -24,63 +21,75 @@ namespace ArcToon.Runtime.Passes
             new("GeometryOutline"),
         };
 
-        void Render(RenderGraphContext context)
+        RendererListHandle baseList;
+        RendererListHandle outlineList;
+
+        public override bool AllowCulling() => true;
+
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
-            context.cmd.BeginSample("Toon Base");
-            context.cmd.DrawRendererList(baseList);
-            context.cmd.EndSample("Toon Base");
-            context.cmd.BeginSample("Toon Outline");
-            context.cmd.DrawRendererList(outlineList);
-            context.cmd.EndSample("Toon Outline");
-            context.renderContext.ExecuteCommandBuffer(context.cmd);
-            context.cmd.Clear();
+            commandBuffer.BeginSample("Toon Base");
+            commandBuffer.DrawRendererList(baseList);
+            commandBuffer.EndSample("Toon Base");
+            
+            commandBuffer.BeginSample("Toon Outline");
+            commandBuffer.DrawRendererList(outlineList);
+            commandBuffer.EndSample("Toon Outline");
         }
 
-        public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults,
-            in CameraAttachmentHandles handles, in LightingDataHandles lightingData)
+        public override void AcquireResource(RenderGraph renderGraph)
         {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out OpaquePass pass, sampler);
+            outlineList = renderGraph.CreateRendererList(new RendererListDesc(outlineShaderTagIds, renderer.CullingResults, Camera)
+            {
+                sortingCriteria = SortingCriteria.CommonOpaque,
+                renderQueueRange = RenderQueueRange.opaque,
+            });
+            baseList = renderGraph.CreateRendererList(new RendererListDesc(baseShaderTagIds, renderer.CullingResults, Camera)
+            {
+                sortingCriteria = SortingCriteria.CommonOpaque,
+                renderQueueRange = RenderQueueRange.opaque,
+                rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+                                        PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
+                                        PerObjectData.LightProbeProxyVolume |
+                                        PerObjectData.OcclusionProbeProxyVolume |
+                                        PerObjectData.ReflectionProbes,
+            });
+        }
 
-            pass.outlineList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(outlineShaderTagIds, cullingResults, camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonOpaque,
-                    renderQueueRange = RenderQueueRange.opaque,
-                })
-            );
-            pass.baseList = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(baseShaderTagIds, cullingResults, camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonOpaque,
-                    renderQueueRange = RenderQueueRange.opaque,
-                    rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
-                                            PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-                                            PerObjectData.LightProbeProxyVolume |
-                                            PerObjectData.OcclusionProbeProxyVolume |
-                                            PerObjectData.ReflectionProbes,
-                })
-            );
-            builder.ReadWriteTexture(handles.colorAttachment);
-            builder.ReadWriteTexture(handles.depthAttachment);
-            builder.ReadTexture(handles.stencilMask);
-            builder.ReadTexture(lightingData.shadowMapHandles.directionalAtlas);
-            builder.ReadTexture(lightingData.shadowMapHandles.spotAtlas);
-            builder.ReadTexture(lightingData.shadowMapHandles.pointAtlas);
-            builder.ReadTexture(lightingData.shadowMapHandles.perObjectAtlas);
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        {
+            builder.UseRendererList(outlineList);
+            builder.UseRendererList(baseList);
             
-            builder.ReadBuffer(lightingData.directionalLightDataHandle);
-            builder.ReadBuffer(lightingData.spotLightDataHandle);
-            builder.ReadBuffer(lightingData.pointLightDataHandle);
-            builder.ReadBuffer(lightingData.perObjectShadowCasterDataHandle);
-            builder.ReadBuffer(lightingData.forwardPlusTileBufferHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.cascadeShadowDataHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.directionalShadowMatricesHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.spotShadowDataHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.pointShadowDataHandle);
-            builder.ReadBuffer(lightingData.shadowMapHandles.perObjectShadowDataHandle);
-
-            builder.SetRenderFunc<OpaquePass>(static (pass, context) => pass.Render(context));
+            builder.ReadWriteTexture(resourceHandle.colorAttachment);
+            builder.ReadWriteTexture(resourceHandle.depthAttachment);
+            
+            if (resourceHandle.colorCopy.IsValid())
+            {
+                builder.ReadTexture(resourceHandle.colorCopy);
+            }
+            if (resourceHandle.preDepthStencil.IsValid())
+            {
+                builder.ReadTexture(resourceHandle.preDepthStencil);
+            }
+            builder.ReadTexture(resourceHandle.stencilMask);
+            
+            builder.ReadTexture(resourceHandle.shadowMapHandle.directionalAtlas);
+            builder.ReadTexture(resourceHandle.shadowMapHandle.spotAtlas);
+            builder.ReadTexture(resourceHandle.shadowMapHandle.pointAtlas);
+            builder.ReadTexture(resourceHandle.shadowMapHandle.perObjectAtlas);
+            
+            builder.ReadBuffer(resourceHandle.lightDataDirectional);
+            builder.ReadBuffer(resourceHandle.lightDataSpot);
+            builder.ReadBuffer(resourceHandle.lightDataPoint);
+            builder.ReadBuffer(resourceHandle.perObjectShadowCasterData);
+            builder.ReadBuffer(resourceHandle.forwardPlusTileBuffer);
+            
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.cascadeShadowData);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.directionalShadowMatrices);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.spotShadowData);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.pointShadowData);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.perObjectShadowData);
         }
     }
 }

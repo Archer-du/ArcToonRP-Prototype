@@ -6,7 +6,7 @@ using UnityEngine.Serialization;
 namespace ArcToon.Runtime.Settings
 {
     [CreateAssetMenu(menuName = "Rendering/ArcToon Post FX Settings")]
-    public class PostFXSettings : ScriptableObject
+    public class PostFXConfig : ScriptableObject
     {
         [Serializable]
         public struct BloomSettings

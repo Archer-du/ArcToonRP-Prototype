@@ -18,6 +18,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             if (perObjectCasters.Add(caster))
             {
                 caster.perObjectShadowCasterID = perObjectShadowCasterGUID;
+                Debug.Log("[ArcToonRP] Registered PerObjectShadowCaster: " + caster.perObjectShadowCasterID);
                 perObjectShadowCasterGUID++;
             }
         }

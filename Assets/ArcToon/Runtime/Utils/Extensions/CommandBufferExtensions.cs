@@ -3,7 +3,7 @@ using ArcToon.Runtime.Passes.Lighting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Utils
+namespace ArcToon.Runtime.Utils.Extensions
 {
     public static class CommandBufferExtensions
     {

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -7,20 +8,17 @@ public static class CameraDebugger
 {
     const string panelName = "Tiled Forward+";
     
-    static readonly int opacityID = Shader.PropertyToID("_DebugOpacity");
+    static bool showDebugTile;
+    
+    static readonly int debugTileOpacityID = Shader.PropertyToID("_DebugOpacity");
 
-    static Material material;
+    static float debugTileOpacity = 0.5f;
 
-    static bool showTiles;
-
-    static float opacity = 0.5f;
-
-    public static bool IsActive => showTiles && opacity > 0f;
+    public static bool IsActive => showDebugTile && debugTileOpacity > 0f;
 
     [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
-    public static void Initialize(Shader cameraDebugShader)
+    public static void Initialize()
     {
-        material = CoreUtils.CreateEngineMaterial(cameraDebugShader);
         DebugManager.instance.GetPanel(panelName, true).children.Add(
             new DebugUI.FloatField
             {
@@ -28,15 +26,15 @@ public static class CameraDebugger
                 tooltip = "Opacity of the debug overlay.",
                 min = static () => 0f,
                 max = static () => 1f,
-                getter = static () => opacity,
-                setter = static value => opacity = value
+                getter = static () => debugTileOpacity,
+                setter = static value => debugTileOpacity = value
             },
             new DebugUI.BoolField
             {
                 displayName = "Show Tiles",
                 tooltip = "Whether the debug overlay is shown.",
-                getter = static () => showTiles,
-                setter = static value => showTiles = value
+                getter = static () => showDebugTile,
+                setter = static value => showDebugTile = value
             }
         );
     }
@@ -44,18 +42,16 @@ public static class CameraDebugger
     [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
     public static void Cleanup()
     {
-        CoreUtils.Destroy(material);
         DebugManager.instance.RemovePanel(panelName);
     }
 
     [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
-    public static void Render(RenderGraphContext context)
+    public static void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
     {
-        CommandBuffer commandBuffer = context.cmd;
-        commandBuffer.SetGlobalFloat(opacityID, opacity);
+        commandBuffer.SetGlobalFloat(debugTileOpacityID, debugTileOpacity);
         commandBuffer.DrawProcedural(
-            Matrix4x4.identity, material, 0, MeshTopology.Triangles, 3);
-        context.renderContext.ExecuteCommandBuffer(commandBuffer);
-        commandBuffer.Clear();
+            Matrix4x4.identity, 
+            ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraDebug), 
+            0, MeshTopology.Triangles, 3);
     }
 }

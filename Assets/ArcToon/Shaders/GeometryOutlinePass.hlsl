@@ -75,7 +75,7 @@ float4 GeometryOutlinePassFragment(VaryingsGO input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     Fragment fragment = GetFragment(input.positionCS_SS);
-    clip(fragment.depth - fragment.bufferDepth);
+    ClipFragmentDepthTest(fragment.depth, fragment.bufferDepth);
     return float4(GetOutlineColor(), 1.0);
 }
 

@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -6,98 +7,84 @@ using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class SetupPass
+    public class SetupPass : RenderGraphPassBase
     {
-        static readonly ProfilingSampler sampler = new("Setup");
-
-        TextureHandle colorAttachment, depthAttachment;
-
-        Vector2Int attachmentSize;
-
-        Camera camera;
-
+        public override ProfilingSampler Sampler => new("Setup");
+        
         CameraClearFlags clearFlags;
 
-        static readonly int attachmentSizeID = Shader.PropertyToID("_CameraBufferSize");
-
-        void Render(RenderGraphContext context)
+        public override void Initialize(RenderGraphResourceHandle resourceHandle, CameraRenderer renderer)
         {
-            // set up render target
-            context.renderContext.SetupCameraProperties(camera);
-            CommandBuffer commandBuffer = context.cmd;
+            base.Initialize(resourceHandle, renderer);
+            clearFlags = renderer.RenderCamera.clearFlags;
+            if (clearFlags > CameraClearFlags.Color)
+            {
+                clearFlags = CameraClearFlags.Color;
+            }
+        }
+
+        public override bool AllowCulling() => false;
+
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
+        {
+            context.SetupCameraProperties(Camera);
+            
             commandBuffer.SetRenderTarget(
-                colorAttachment,
+                resourceHandle.colorAttachment,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                depthAttachment,
+                resourceHandle.depthAttachment,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
 
             commandBuffer.ClearRenderTarget(
                 clearFlags <= CameraClearFlags.Depth,
                 clearFlags <= CameraClearFlags.Color,
-                clearFlags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
+                clearFlags == CameraClearFlags.Color ? Camera.backgroundColor.linear : Color.clear);
 
-            commandBuffer.SetGlobalVector(attachmentSizeID, new Vector4(
-                1f / attachmentSize.x, 1f / attachmentSize.y,
-                attachmentSize.x, attachmentSize.y
+            commandBuffer.SetGlobalVector(InternalShader.PropertyID.CameraBufferSize, new Vector4(
+                1f / renderer.AttachmentSize.x, 1f / renderer.AttachmentSize.y,
+                renderer.AttachmentSize.x, renderer.AttachmentSize.y
             ));
-            
-            context.renderContext.ExecuteCommandBuffer(context.cmd);
-            context.cmd.Clear();
         }
 
-        public static CameraAttachmentHandles Record(RenderGraph renderGraph, Camera camera,
-            Vector2Int attachmentSize,
-            bool copyColor,
-            bool copyDepth,
-            bool useHDR)
+        public override void AcquireResource(RenderGraph renderGraph)
         {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out SetupPass pass, sampler);
-
-            pass.attachmentSize = attachmentSize;
-            pass.camera = camera;
-            pass.clearFlags = camera.clearFlags;
-            TextureHandle colorCopy = default, depthStencilCopy = default;
-            if (pass.clearFlags > CameraClearFlags.Color)
+            resourceHandle.colorAttachment = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
             {
-                pass.clearFlags = CameraClearFlags.Color;
-            }
-
-            var desc = new TextureDesc(attachmentSize.x, attachmentSize.y)
-            {
-                colorFormat = SystemInfo.GetGraphicsFormat(useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
                 name = "Color Attachment Buffer",
-            };
-            var colorAttachment = pass.colorAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
-            if (copyColor)
+                colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
+            });
+            resourceHandle.depthAttachment = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
             {
-                desc.name = "Color Copy";
-                colorCopy = renderGraph.CreateTexture(desc);
-            }
-            desc.depthBufferBits = DepthBits.Depth32;
-            desc.name = "Depth Attachment Buffer";
-            var depthAttachment = pass.depthAttachment = builder.WriteTexture(renderGraph.CreateTexture(desc));
-            if (copyDepth)
+                name = "Depth Attachment Buffer",
+                depthBufferBits = DepthBits.Depth32,
+            });
+            
+            if (renderer.copyColor)
             {
-                desc.name = "Depth Stencil Buffer";
-                depthStencilCopy = renderGraph.CreateTexture(desc);
-            }
-
-            var stencilMask = renderGraph.CreateTexture(
-                new TextureDesc(attachmentSize.x, attachmentSize.y)
+                resourceHandle.colorCopy = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
                 {
-                    colorFormat = SystemInfo.GetGraphicsFormat(DefaultFormat.LDR),
-                    name = "Stencil Mask Buffer",
-                }
-            );
+                    name = "Color Copy",
+                    colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
+                });
+            }
             
-            // disable pass culling
-            builder.AllowPassCulling(false);
-            builder.SetRenderFunc<SetupPass>(static (pass, context) => pass.Render(context));
-            
-            return new CameraAttachmentHandles(
-                colorAttachment, depthAttachment, colorCopy, depthStencilCopy, stencilMask);
+            resourceHandle.preDepthStencil = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
+            {
+                name = "Depth Copy",
+                depthBufferBits = DepthBits.Depth32,
+            });
+            resourceHandle.stencilMask = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
+            {
+                name = "Stencil Mask",
+                colorFormat = SystemInfo.GetGraphicsFormat(DefaultFormat.LDR),
+            });
+        }
+
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        {
+            builder.WriteTexture(resourceHandle.colorAttachment);
+            builder.WriteTexture(resourceHandle.depthAttachment);
         }
     }
 }

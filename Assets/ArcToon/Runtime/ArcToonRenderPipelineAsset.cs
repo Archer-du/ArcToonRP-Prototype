@@ -8,12 +8,12 @@ namespace ArcToon.Runtime
     [CreateAssetMenu(menuName = "Rendering/ArcToon Render Pipeline")]
     public class ArcToonRenderPipelineAsset : RenderPipelineAsset<ArcToonRenderPipelineInstance>
     {
-        [SerializeField]
-        RenderPipelineSettings settings;
+        [FormerlySerializedAs("globalConfig")] [FormerlySerializedAs("settings")] [SerializeField]
+        private RenderPipelineConfig config;
         
         protected override RenderPipeline CreatePipeline()
         {
-            return new ArcToonRenderPipelineInstance(settings);
+            return new ArcToonRenderPipelineInstance(config);
         }
     }
 }

@@ -410,7 +410,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8476172200833544089, guid: db58560042fc9ea488d9be1e5770b5ca, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8188334324256763491, guid: db58560042fc9ea488d9be1e5770b5ca, type: 3}
       propertyPath: m_IsActive
@@ -538,7 +538,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -2064900136886621916, guid: db58560042fc9ea488d9be1e5770b5ca, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -1735558279794798249, guid: db58560042fc9ea488d9be1e5770b5ca, type: 3}
       propertyPath: m_IsActive
@@ -658,11 +658,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5802853222076319949, guid: db58560042fc9ea488d9be1e5770b5ca, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6501785716270181133, guid: db58560042fc9ea488d9be1e5770b5ca, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6592172983505486988, guid: db58560042fc9ea488d9be1e5770b5ca, type: 3}
       propertyPath: m_IsActive
@@ -1159,7 +1159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69e24a8e22d0401aa31d837361362760, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  settings:
+  additiveData:
     maskLights: 0
     renderingLayerMask:
       serializedVersion: 0
@@ -1168,8 +1168,7 @@ MonoBehaviour:
     renderScale: 1
     copyDepth: 1
     copyColor: 1
-    overridePostFX: 0
-    postFXSettings: {fileID: 0}
+    overridePostFXConfig: {fileID: 0}
     finalBlendMode:
       source: 1
       destination: 0

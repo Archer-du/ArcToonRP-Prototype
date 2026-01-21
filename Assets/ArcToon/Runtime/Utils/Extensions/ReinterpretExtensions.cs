@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-namespace ArcToon.Runtime.Utils
+
+namespace ArcToon.Runtime.Utils.Extensions
 {
     public static class ReinterpretExtensions
     {

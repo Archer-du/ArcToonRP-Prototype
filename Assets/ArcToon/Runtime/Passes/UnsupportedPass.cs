@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -6,10 +7,9 @@ using UnityEngine.Rendering.RendererUtils;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class UnsupportedPass
+    public class UnsupportedPass : RenderGraphPassBase
     {
-#if UNITY_EDITOR
-        static readonly ProfilingSampler sampler = new("Unsupported");
+        public override ProfilingSampler Sampler => new("Unsupported");
         
         RendererListHandle list;
 
@@ -23,37 +23,30 @@ namespace ArcToon.Runtime.Passes
             new("VertexLM")
         };
 
-        static Material errorMaterial;
+        public override bool AllowCulling() => true;
 
-        void Render(RenderGraphContext context)
-        {
-            context.cmd.DrawRendererList(list);
-            context.renderContext.ExecuteCommandBuffer(context.cmd);
-            context.cmd.Clear();
-        }
-#endif
-
-        [Conditional("UNITY_EDITOR")]
-        public static void Record(RenderGraph renderGraph, Camera camera, CullingResults cullingResults)
+        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
 #if UNITY_EDITOR
-            if (errorMaterial == null)
+            commandBuffer.DrawRendererList(list);
+#endif
+        }
+
+        public override void AcquireResource(RenderGraph renderGraph)
+        {
+#if UNITY_EDITOR
+            list = renderGraph.CreateRendererList(new RendererListDesc(invalidShaderTagIds, renderer.CullingResults, Camera)
             {
-                errorMaterial = new(Shader.Find("Hidden/InternalErrorShader"));
-            }
-            
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out UnsupportedPass pass, sampler);
+                overrideMaterial = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.InternalError),
+                renderQueueRange = RenderQueueRange.all
+            });
+#endif
+        }
 
-            pass.list = builder.UseRendererList(renderGraph.CreateRendererList(
-                new RendererListDesc(invalidShaderTagIds, cullingResults, camera)
-                {
-                    overrideMaterial = errorMaterial,
-                    renderQueueRange = RenderQueueRange.all
-                }
-            ));
-
-            builder.SetRenderFunc<UnsupportedPass>(static (pass, context) => pass.Render(context));
+        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        {
+#if UNITY_EDITOR
+            builder.UseRendererList(list);
 #endif
         }
     }

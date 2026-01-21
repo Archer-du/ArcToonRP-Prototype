@@ -1,15 +1,13 @@
-﻿using ArcToon.Runtime.Data;
-using ArcToon.Runtime.Overrides;
-using ArcToon.Runtime.Passes.PostProcess;
+﻿using ArcToon.Runtime.Behavior;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
-using static ArcToon.Runtime.Settings.PostFXSettings;
-using static ArcToon.Runtime.Passes.PostProcess.PostFXStack;
+using static ArcToon.Runtime.Settings.PostFXConfig;
+using static ArcToon.Runtime.PostFXStack;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Runtime.Passes.PostProcessing
 {
     public class BloomPass
     {
@@ -103,14 +101,14 @@ namespace ArcToon.Runtime.Passes
 
         public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
             CullingResults cullingResults, Vector2Int bufferSize,
-            CameraSettings cameraSettings,
+            CameraAdditiveData cameraAdditiveData,
             CameraBufferSettings bufferSettings,
-            PostFXSettings postFXSettings,
+            PostFXConfig postFXConfig,
             bool useHDR,
             in TextureHandle srcHandle, 
             PostFXStack stack)
         {
-            BloomSettings bloom = postFXSettings.Bloom;
+            BloomSettings bloom = postFXConfig.Bloom;
             Vector2Int originalBufferSize = bufferSize;
             bufferSize = bloom.ignoreRenderScale
                 ? new Vector2Int(camera.pixelWidth, camera.pixelHeight)

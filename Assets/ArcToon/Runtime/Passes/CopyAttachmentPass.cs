@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -16,7 +17,7 @@ namespace ArcToon.Runtime.Passes
 
         bool copyColor, copyDepth;
 
-        CameraAttachmentCopier copier;
+        RenderTextureHelpers copier;
 
         TextureHandle colorAttachment, depthAttachment, colorCopy, depthCopy;
 
@@ -25,19 +26,19 @@ namespace ArcToon.Runtime.Passes
             CommandBuffer commandBuffer = context.cmd;
             if (copyColor)
             {
-                copier.Copy(commandBuffer, colorAttachment, colorCopy,
-                    CameraAttachmentCopier.CopyChannel.ColorAttachment);
+                RenderTextureHelpers.CopyTexture(commandBuffer, colorAttachment, colorCopy,
+                    RenderTextureHelpers.CopyMode.ColorAttachment);
                 commandBuffer.SetGlobalTexture(colorCopyID, colorCopy);
             }
 
             if (copyDepth)
             {
-                copier.Copy(commandBuffer, depthAttachment, depthCopy,
-                    CameraAttachmentCopier.CopyChannel.DepthAttachment);
+                RenderTextureHelpers.CopyTexture(commandBuffer, depthAttachment, depthCopy,
+                    RenderTextureHelpers.CopyMode.DepthAttachment);
                 commandBuffer.SetGlobalTexture(depthCopyID, depthCopy);
             }
 
-            if (CameraAttachmentCopier.RequiresRenderTargetResetAfterCopy)
+            if (!RenderPipelineInfo.CopyTextureSupported)
             {
                 commandBuffer.SetRenderTarget(
                     colorAttachment,
@@ -55,7 +56,7 @@ namespace ArcToon.Runtime.Passes
             bool copyColor,
             bool copyDepth,
             in CameraAttachmentHandles handles,
-            CameraAttachmentCopier copier)
+            RenderTextureHelpers copier)
         {
             if (!copyColor && !copyDepth) return;
 

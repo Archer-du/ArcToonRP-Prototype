@@ -1,15 +1,12 @@
-﻿using ArcToon.Runtime.Data;
-using ArcToon.Runtime.Overrides;
-using ArcToon.Runtime.Passes.PostProcess;
+﻿using ArcToon.Runtime.Behavior;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
-using static ArcToon.Runtime.Settings.PostFXSettings;
-using static ArcToon.Runtime.Passes.PostProcess.PostFXStack;
+using static ArcToon.Runtime.PostFXStack;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Runtime.Passes.PostProcessing
 {
     public class AntiAliasingPass
     {
@@ -52,9 +49,9 @@ namespace ArcToon.Runtime.Passes
 
         public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
             CullingResults cullingResults, Vector2Int bufferSize,
-            CameraSettings cameraSettings,
+            CameraAdditiveData cameraAdditiveData,
             CameraBufferSettings bufferSettings,
-            PostFXSettings postFXSettings,
+            PostFXConfig postFXConfig,
             bool useHDR,
             in TextureHandle srcHandle,
             PostFXStack stack)
@@ -62,8 +59,8 @@ namespace ArcToon.Runtime.Passes
             // TODO: buffer settings translate
             FXAARuntimeConfig fxaaConfig = new FXAARuntimeConfig
             {
-                enabled = bufferSettings.fxaaSettings.enabled && cameraSettings.allowFXAA,
-                keepAlpha = cameraSettings.keepAlpha,
+                enabled = bufferSettings.fxaaSettings.enabled && cameraAdditiveData.allowFXAA,
+                keepAlpha = cameraAdditiveData.keepAlpha,
                 fixedThreshold = bufferSettings.fxaaSettings.fixedThreshold,
                 relativeThreshold = bufferSettings.fxaaSettings.relativeThreshold,
                 subpixelBlending = bufferSettings.fxaaSettings.subpixelBlending,

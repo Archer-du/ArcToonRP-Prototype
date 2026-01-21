@@ -1,11 +1,7 @@
-﻿using ArcToon.Runtime.Overrides;
-using ArcToon.Runtime.Settings;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.RenderGraphModule;
-using static ArcToon.Runtime.Settings.PostFXSettings;
 
-namespace ArcToon.Runtime.Passes.PostProcess
+namespace ArcToon.Runtime
 {
     public class PostFXStack
     {

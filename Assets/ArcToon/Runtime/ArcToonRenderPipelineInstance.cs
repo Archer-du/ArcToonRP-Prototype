@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using ArcToon.Runtime.Passes.Lighting;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -9,35 +8,36 @@ namespace ArcToon.Runtime
 {
     public partial class ArcToonRenderPipelineInstance : RenderPipeline
     {
-        readonly RenderGraph renderGraph = new("Arc Toon Render Graph");
+        private readonly RenderPipelineConfig config;
         
-        readonly RenderPipelineSettings settings;
+        private readonly RenderGraph renderGraph;
         
         private CameraRenderer cameraRenderer;
 
-        public ArcToonRenderPipelineInstance(RenderPipelineSettings settings)
+        public ArcToonRenderPipelineInstance(RenderPipelineConfig config)
         {
-            this.settings = settings;
-            cameraRenderer = new CameraRenderer(settings.cameraCopyShader, settings.cameraDebugShader);
+            this.config = config;
+            renderGraph = new RenderGraph("Arc Toon Render Graph");
+            cameraRenderer = new CameraRenderer();
             
-            GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatcher;
+            GraphicsSettings.useScriptableRenderPipelineBatching = config.useSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
 
             InitializeForEditor();
-        }
-
-        protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
-        {
-            Render(renderContext, new List<Camera>(cameras));
         }
 
         protected override void Render(ScriptableRenderContext renderContext, List<Camera> cameras)
         {
             for (int i = 0; i < cameras.Count; i++)
             {
-                cameraRenderer.Render(renderGraph, renderContext, cameras[i], settings);
+                cameraRenderer.Render(renderGraph, renderContext, cameras[i], config);
             }
             renderGraph.EndFrame();
+        }
+
+        protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
+        {
+            Render(renderContext, new List<Camera>(cameras));
         }
 
         protected override void Dispose(bool disposing)
