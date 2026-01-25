@@ -29,7 +29,6 @@ Material:
   m_CustomRenderQueue: 2050
   stringTagMap: {}
   disabledShaderPasses:
-  - SHADOWCASTER
   - GeometryOutline
   m_LockedProperties: 
   m_SavedProperties:
@@ -144,7 +143,7 @@ Material:
     - _RimScale: 0.5
     - _RimWidth: 0.5
     - _ShadowOffsetSDF: 0
-    - _Shadows: 3
+    - _Shadows: 0
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecGloss: 0.2
