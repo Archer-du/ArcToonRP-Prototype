@@ -33,5 +33,14 @@ namespace ArcToon.Runtime.Utils.Extensions
                 }
             }
         }
+
+        public static void DrawScreenFilledTriangle(this CommandBuffer commandBuffer, Material material, int shaderPass)
+        {
+            commandBuffer.DrawProcedural(
+                Matrix4x4.identity, 
+                material, shaderPass,
+                MeshTopology.Triangles, 3
+            );
+        }
     }
 }

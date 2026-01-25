@@ -60,10 +60,24 @@
             HLSLPROGRAM
             #pragma target 3.5
 
-            #include "WeightedAverageCompositePass.hlsl"
+            #include "CompositePass.hlsl"
             
             #pragma vertex DefaultPassVertex
             #pragma fragment WeightedAverageCompositePassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "Composite Depth Peeling"
+            
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #include "CompositePass.hlsl"
+            
+            #pragma vertex DefaultPassVertex
+            #pragma fragment DepthPeelingCompositePassFragment
             ENDHLSL
         }
     }

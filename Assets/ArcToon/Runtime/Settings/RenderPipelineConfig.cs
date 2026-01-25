@@ -10,7 +10,6 @@ namespace ArcToon.Runtime.Settings
         Ordered,
         WeightedAverage,
         DepthPeeling,
-        DualDepthPeeling,
     }
     
     [System.Serializable]
@@ -18,6 +17,7 @@ namespace ArcToon.Runtime.Settings
     {
         public bool useSRPBatcher = true;
         
+        // TODO: determined by material
         public TransparencyMode transparencyMode = TransparencyMode.WeightedAverage;
 
         public CameraBufferSettings cameraBufferSettings;
@@ -26,6 +26,6 @@ namespace ArcToon.Runtime.Settings
 
         public ForwardPlusSettings forwardPlusSettings;
 
-        [FormerlySerializedAs("globalPostFXSettings")] public PostFXConfig globalPostFXConfig;
+        public PostFXConfig globalPostFXConfig;
     }
 }

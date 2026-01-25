@@ -135,6 +135,7 @@
             }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite [_ZWrite]
+            ZTest LEqual
             Cull [_Cull]
 
             HLSLPROGRAM

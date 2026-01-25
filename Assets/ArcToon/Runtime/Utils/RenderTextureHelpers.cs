@@ -7,14 +7,14 @@ namespace ArcToon.Runtime.Utils
 {
     public readonly struct RenderTextureHelpers
     {
-        public enum CopyMode
+        public enum BlitMode
         {
-            DepthAttachment = 1,
-            ColorAttachment = 2,
+            Depth = 1,
+            Color = 2,
         }
 
         public static void CopyTexture(CommandBuffer commandBuffer,
-            RenderTargetIdentifier srcHandle, RenderTargetIdentifier dstHandle, CopyMode mode)
+            RenderTargetIdentifier srcHandle, RenderTargetIdentifier dstHandle, BlitMode mode)
         {
             if (RenderPipelineInfo.CopyTextureSupported)
             {

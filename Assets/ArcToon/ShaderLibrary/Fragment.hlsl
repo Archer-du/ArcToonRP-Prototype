@@ -32,13 +32,23 @@ float OrthographicDepthBufferToLinear(float rawDepth)
     return (_ProjectionParams.z - _ProjectionParams.y) * rawDepth + _ProjectionParams.y;
 }
 
+float2 GetScreenUV(float4 positionSS)
+{
+    return positionSS.xy * _CameraBufferSize.xy;
+}
+
+float GetLinearDepth(float4 positionSS)
+{
+    return IsOrthographicCamera() ? OrthographicDepthBufferToLinear(positionSS.z) : positionSS.w;
+}
+
 Fragment GetFragment(float4 positionSS)
 {
     Fragment fragment;
     fragment.positionSS = positionSS.xy;
-    fragment.screenUV = fragment.positionSS * _CameraBufferSize.xy;
+    fragment.screenUV = GetScreenUV(positionSS);
     fragment.depth = positionSS.z;
-    fragment.linearDepth = IsOrthographicCamera() ? OrthographicDepthBufferToLinear(positionSS.z) : positionSS.w;
+    fragment.linearDepth = GetLinearDepth(positionSS);
     fragment.bufferDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_point_clamp, fragment.screenUV);
     fragment.bufferLinearDepth = IsOrthographicCamera()
                                      ? OrthographicDepthBufferToLinear(fragment.bufferDepth)

@@ -78,6 +78,9 @@ crashlytics-build.properties
 /[Aa]ssets/Models/Character.meta
 /[Aa]ssets/Models/Temp.meta
 
+/[Aa]ssets/Reference
+/[Aa]ssets/Reference.meta
+
 # CodeBuddy Code guidance file
 CODEBUDDY.md
 nul

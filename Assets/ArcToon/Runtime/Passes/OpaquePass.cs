@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -15,10 +16,6 @@ namespace ArcToon.Runtime.Passes
             new("ToonForward"),
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
-        };
-        private static ShaderTagId[] outlineShaderTagIds =
-        {
-            new("GeometryOutline"),
         };
 
         RendererListHandle baseList;
@@ -39,7 +36,7 @@ namespace ArcToon.Runtime.Passes
 
         public override void AcquireResource(RenderGraph renderGraph)
         {
-            outlineList = renderGraph.CreateRendererList(new RendererListDesc(outlineShaderTagIds, renderer.CullingResults, Camera)
+            outlineList = renderGraph.CreateRendererList(new RendererListDesc(InternalShader.TagId.GeometryOutline, renderer.CullingResults, Camera)
             {
                 sortingCriteria = SortingCriteria.CommonOpaque,
                 renderQueueRange = RenderQueueRange.opaque,

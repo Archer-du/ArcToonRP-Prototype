@@ -102,6 +102,57 @@
 
         Pass
         {
+            Name "Toon Depth Peeling"
+            Tags
+            {
+                "LightMode" = "ToonForwardDepthPeeling"
+            }
+            Blend One Zero, One Zero
+            ZWrite On
+            ZTest LEqual
+            Cull Off
+
+            HLSLPROGRAM
+            #pragma target 4.5
+
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT
+            #pragma multi_compile _ LIGHTMAP_ON
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
+            
+            #pragma shader_feature _NORMAL_MAP
+            
+            #pragma shader_feature_local _SPEC_MASK
+            #pragma shader_feature_local _ _SPEC_MASK_UV0 _SPEC_MASK_UV1
+            #pragma shader_feature_local _SPEC_PARALLAX
+            
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _RECEIVE_FRINGE_SHADOWS
+            
+            #pragma shader_feature _RMO_MASK_MAP
+            
+            #pragma shader_feature _RAMP_SET
+            
+            #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
+            #pragma shader_feature_local _TANGENT_SHIFT_MAP
+            #pragma shader_feature_local _ _TANGENT_SHIFT_MAP_UV0 _TANGENT_SHIFT_MAP_UV1
+            
+            #pragma shader_feature _DEBUG_INCOMING_LIGHT
+            #pragma shader_feature _DEBUG_DIRECT_BRDF
+            #pragma shader_feature _DEBUG_SPECULAR
+            #pragma shader_feature _DEBUG_DIFFUSE
+
+            #include "ToonTransparentPass.hlsl"
+
+            #pragma vertex ToonDepthPeelingPassVertex
+            #pragma fragment ToonDepthPeelingPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
             Name "Toon Transparent Back Face"
             Tags
             {

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using ArcToon.Runtime.Utils;
+using ArcToon.Runtime.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -49,9 +50,6 @@ public static class CameraDebugger
     public static void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
     {
         commandBuffer.SetGlobalFloat(debugTileOpacityID, debugTileOpacity);
-        commandBuffer.DrawProcedural(
-            Matrix4x4.identity, 
-            ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraDebug), 
-            0, MeshTopology.Triangles, 3);
+        commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.CameraDebug), 0);
     }
 }
