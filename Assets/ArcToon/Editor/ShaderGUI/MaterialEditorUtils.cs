@@ -66,6 +66,13 @@ namespace ArcToon.Editor.ShaderEditor
         Origin,
         SphericalUV,
     }
+
+    public enum TransparencyMode
+    {
+        OrderedDualFace,
+        WeightedAverage,
+        DepthPeeling,
+    }
     
     public static class ShaderPropertyID
     {
@@ -87,6 +94,9 @@ namespace ArcToon.Editor.ShaderEditor
         
         public static readonly string Clipping = "_Clipping";
         public static readonly string Cutoff = "_Cutoff";
+
+        public static readonly string TransparencyMode = Auto();
+        public static readonly string PremulAlpha = Auto();
         
         public static readonly string ReceiveShadows = Auto();
         public static readonly string ReceiveFringeShadows = Auto();

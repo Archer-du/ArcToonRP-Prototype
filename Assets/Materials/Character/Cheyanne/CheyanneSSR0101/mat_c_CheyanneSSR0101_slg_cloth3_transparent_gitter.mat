@@ -34,7 +34,10 @@ Material:
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
-  disabledShaderPasses: []
+  disabledShaderPasses:
+  - ToonForwardTransparentFrontFace
+  - ToonForwardTransparentBackFace
+  - ToonForwardWeightedAverage
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -114,6 +117,7 @@ Material:
     - _SmoothNormalSource: 1
     - _SpecularMaskUV: 0
     - _TangentShiftMapUV: 1
+    - _TransparencyMode: 2
     - _WidthControlMode: 1
     - _WidthControlSource: 1
     m_Floats:
@@ -165,7 +169,7 @@ Material:
     - _SpecMapToggle: 0
     - _SpecScale: 1
     - _SpecularHighlights: 1
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _Stencil: 1
     - _StencilReadMask: 3
     - _StencilWriteMask: 3

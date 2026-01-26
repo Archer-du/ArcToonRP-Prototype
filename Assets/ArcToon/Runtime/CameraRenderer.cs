@@ -30,8 +30,6 @@ namespace ArcToon.Runtime
         internal bool useHDR { private set; get; }
         internal bool copyColor { private set; get; }
         
-        internal TransparencyMode transparencyMode { private set; get; }
-        
         // TODO: Singleton
         internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
 
@@ -79,8 +77,6 @@ namespace ArcToon.Runtime
             {
                 PostFXConfig = CameraAdditiveData.overridePostFXConfig;
             }
-
-            transparencyMode = config.transparencyMode;
 
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)

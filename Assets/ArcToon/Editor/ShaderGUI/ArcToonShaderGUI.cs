@@ -71,6 +71,7 @@ namespace ArcToon.Editor.ShaderEditor
                 new NormalMapComponent("Normal Map", ShaderPropertyID.NormalMap, ShaderPropertyID.NormalScale, ShaderKeywords.NORMAL_MAP),
                 new SpecularMaskComponent(),
                 new AlphaClippingComponent(),
+                new TransparencyComponent()
             });
             
             shadowFoldoutPanel ??= new BaseFoldoutShaderPanel("Shadow", new List<ShaderGUIComponentBase>()
@@ -128,68 +129,5 @@ namespace ArcToon.Editor.ShaderEditor
                 color.colorValue = baseColor.colorValue;
             }
         }
-        
-        // void SetKeyword(string keyword, bool enabled)
-        // {
-        //     if (enabled)
-        //     {
-        //         foreach (var obj in materials)
-        //         {
-        //             var material = (Material)obj;
-        //             material.EnableKeyword(keyword);
-        //         }
-        //     }
-        //     else
-        //     {
-        //         foreach (var obj in materials)
-        //         {
-        //             var material = (Material)obj;
-        //             material.DisableKeyword(keyword);
-        //         }
-        //     }
-        // }
-        //
-        // void UpdateLightingDebugKeywords()
-        // {
-        //     MaterialProperty property = FindProperty(ShaderPropertyID.LightingDebugMode, properties, false);
-        //     if (property == null || property.hasMixedValue)
-        //         return;
-        //
-        //     switch ((LightingDebugMode)property.floatValue)
-        //     {
-        //         case LightingDebugMode.IncomingLight:
-        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, true);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
-        //
-        //             break;
-        //         case LightingDebugMode.DirectBRDF:
-        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, true);
-        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
-        //
-        //             break;
-        //         case LightingDebugMode.Specular:
-        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, true);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
-        //             break;
-        //         case LightingDebugMode.Diffuse:
-        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, true);
-        //             break;
-        //         default:
-        //             SetKeyword(ShaderKeywords.DEBUG_INCOMING_LIGHT, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIRECT_BRDF, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_SPECULAR, false);
-        //             SetKeyword(ShaderKeywords.DEBUG_DIFFUSE, false);
-        //             break;
-        //     }
-        // }
     }
 }

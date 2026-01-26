@@ -103,6 +103,7 @@ namespace ArcToon.Runtime.Utils
 
             public static readonly ShaderTagId ShadowCaster = ShaderTagId();
             public static readonly ShaderTagId GeometryOutline = ShaderTagId();
+            
             public static readonly ShaderTagId ToonForward = ShaderTagId();
             public static readonly ShaderTagId ToonForwardDepthPeeling = ShaderTagId();
             public static readonly ShaderTagId ToonForwardWeightedAverage = ShaderTagId();
