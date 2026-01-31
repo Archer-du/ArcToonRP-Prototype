@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -44,7 +45,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             if (currentMode == TransparencyMode.OrderedDualFace)
             {
                 materialEditor.BuiltinShaderPropertyDrawer(premulAlphaProperty);
-                srcBlendProperty.floatValue = premulAlphaProperty.intValue == 1 ? (float)BlendMode.One : (float)BlendMode.SrcAlpha;
+                srcBlendProperty.floatValue = Math.Abs(premulAlphaProperty.floatValue - 1.0) < 0.001 ? (float)BlendMode.One : (float)BlendMode.SrcAlpha;
                 dstBlendProperty.floatValue = (float)BlendMode.OneMinusSrcAlpha;
             }
             else
