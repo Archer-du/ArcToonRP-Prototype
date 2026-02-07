@@ -112,13 +112,14 @@ Material:
     - _SmoothNormalSource: 1
     - _SpecularMaskUV: 1
     - _TangentShiftMapUV: 1
+    - _TransparencyMode: 2
     - _WidthControlMode: 1
     - _WidthControlSource: 1
     m_Floats:
     - _AlphaControlOutlineWidth: 1
     - _BumpScale: 1
     - _Clipping: 0
-    - _Cull: 2
+    - _Cull: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DirectLightAttenOffset: 0.5
@@ -163,7 +164,7 @@ Material:
     - _SpecMapToggle: 0
     - _SpecScale: 1
     - _SpecularHighlights: 1
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _Stencil: 1
     - _StencilReadMask: 3
     - _StencilWriteMask: 3

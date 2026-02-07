@@ -330,30 +330,7 @@
             ENDHLSL
         }
 
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "ShadowCaster"
-            }
-            ColorMask 0
-            // TODO: set cull through c#
-            Cull Off
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #pragma shader_feature _CLIPPING
-            #pragma shader_feature _SHADOWS_DITHER
-
-            #include "ShadowCasterPass.hlsl"
-
-            #pragma vertex ShadowCasterPassVertex
-            #pragma fragment ShadowCasterPassFragment
-            ENDHLSL
-        }
+        UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
 
         UsePass "ArcToon/ToonBase/TOON META"
     }

@@ -12,6 +12,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
         
         private MaterialProperty srcBlendProperty;
         private MaterialProperty dstBlendProperty;
+        private MaterialProperty cullProperty;
         
         public override void FindProperties(MaterialProperty[] props)
         {
@@ -19,6 +20,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             premulAlphaProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.PremulAlpha, props, false);
             srcBlendProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SrcBlend, props, false);
             dstBlendProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.DstBlend, props, false);
+            cullProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Cull, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
@@ -45,14 +47,14 @@ namespace ArcToon.Editor.ShaderEditor.Components
             if (currentMode == TransparencyMode.OrderedDualFace)
             {
                 materialEditor.BuiltinShaderPropertyDrawer(premulAlphaProperty);
-                srcBlendProperty.floatValue = Math.Abs(premulAlphaProperty.floatValue - 1.0) < 0.001 ? (float)BlendMode.One : (float)BlendMode.SrcAlpha;
-                dstBlendProperty.floatValue = (float)BlendMode.OneMinusSrcAlpha;
+                srcBlendProperty.floatValue = (int)premulAlphaProperty.floatValue == 1 ? (float)BlendMode.One : (float)BlendMode.SrcAlpha;
             }
             else
             {
                 srcBlendProperty.floatValue = (float)BlendMode.SrcAlpha;
-                dstBlendProperty.floatValue = (float)BlendMode.OneMinusSrcAlpha;
             }
+            dstBlendProperty.floatValue = (float)BlendMode.OneMinusSrcAlpha;
+            cullProperty.floatValue = 0;
         }
 
         public override bool IsValid()

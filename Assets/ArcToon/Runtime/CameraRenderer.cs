@@ -136,6 +136,7 @@ namespace ArcToon.Runtime
 
                 RenderPhase = RenderPhase.Lighting;
                 RecordRenderPass<LightingPass>("Lighting", renderGraph, resourceHandle);
+                
                 RenderPhase = RenderPhase.Setup;
                 RecordRenderPass<SetupPass>("Setup", renderGraph, resourceHandle);
                 RecordRenderPass<DepthStencilPrePass>("Prepass", renderGraph, resourceHandle);
@@ -165,13 +166,11 @@ namespace ArcToon.Runtime
                 
                 if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
                 {
-                    RecordRenderPass<DebugPass>("Debug", 
-                        renderGraph, resourceHandle);
+                    RecordRenderPass<DebugPass>("Debug", renderGraph, resourceHandle);
                 }
                 if (Handles.ShouldRenderGizmos())
                 {
-                    RecordRenderPass<GizmosPass>("Gizmos", 
-                        renderGraph, resourceHandle);
+                    RecordRenderPass<GizmosPass>("Gizmos", renderGraph, resourceHandle);
                 }
             }
 
