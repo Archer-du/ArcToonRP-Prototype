@@ -1,0 +1,23 @@
+{
+  "name": "com.arctoon.render-pipeline",
+  "displayName": "ArcToon Render Pipeline",
+  "version": "0.1.0",
+  "unity": "6000.0",
+  "description": "A custom toon render pipeline for Unity, featuring advanced toon shading, per-object shadow, stencil-based face rendering, and post-processing effects.",
+  "dependencies": {
+    "com.unity.burst": "1.8.18",
+    "com.unity.mathematics": "1.3.2",
+    "com.unity.render-pipelines.core": "17.0.3"
+  },
+  "keywords": [
+    "rendering",
+    "toon",
+    "cel-shading",
+    "render-pipeline",
+    "srp"
+  ],
+  "author": {
+    "name": "Archer_du",
+    "url": "https://github.com/Archer-du"
+  }
+}

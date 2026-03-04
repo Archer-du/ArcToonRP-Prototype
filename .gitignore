@@ -1,0 +1,40 @@
+# IDE
+.vs/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+_ReSharper.Caches/
+
+# Unity project local (not part of package)
+Library/
+Logs/
+Temp/
+obj/
+UserSettings/
+Assets/
+
+# Build
+[Bb]uild/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.bak
+*.swp
+~$*
+
+# Plan files
+.codebuddy/
