@@ -2,6 +2,7 @@
 using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
+using ArcToon.Runtime.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -48,11 +49,7 @@ namespace ArcToon.Runtime.Passes
                 RenderBufferStoreAction.Store
             );
             commandBuffer.SetViewport(Camera.pixelRect);
-            commandBuffer.DrawProcedural(
-                Matrix4x4.identity, 
-                ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 0,
-                MeshTopology.Triangles, 3
-            );
+            commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 0);
         }
 
         public override void AcquireResource(RenderGraph renderGraph)

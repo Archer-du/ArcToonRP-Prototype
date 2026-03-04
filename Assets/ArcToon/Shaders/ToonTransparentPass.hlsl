@@ -3,6 +3,11 @@
 
 #include "ToonBasePass.hlsl"
 
+TEXTURE2D(_OpaqueDepthBuffer);
+TEXTURE2D(_DualDepthBufferRef);
+
+int _PeelingLayerIndex;
+
 struct FragmentOutput
 {
     float4 accumulateColor : SV_TARGET0;
@@ -32,6 +37,37 @@ FragmentOutput ToonTransparentPassFragment(Varyings input, bool isFrontFace : SV
         WeightedBlendedAlphaDepthWeight(calculateColor.a, input.positionCS_SS.z);
     output.revealage = calculateColor.a;
     return output;
+}
+
+Varyings ToonDepthPeelingPassVertex(Attributes input)
+{
+    return ToonBasePassVertex(input);
+}
+
+float4 ToonDepthPeelingPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
+{
+    float2 screenUV = GetScreenUV(input.positionCS_SS);
+    float depth = input.positionCS_SS.z;
+    float opaqueLayerDepth = SAMPLE_DEPTH_TEXTURE(_OpaqueDepthBuffer, sampler_point_clamp, screenUV);
+    // depth test lequal
+    ClipFragmentDepthTest(depth, opaqueLayerDepth);
+    float refBufferDepth = SAMPLE_DEPTH_TEXTURE(_DualDepthBufferRef, sampler_point_clamp, screenUV);
+    // depth test greater
+    if (_PeelingLayerIndex != 0)
+    {
+        #if UNITY_REVERSED_Z
+        if (depth >= refBufferDepth)
+        {
+            discard;
+        }
+        #else
+        if (depth <= refBufferDepth)
+        {
+            discard;
+        }
+        #endif
+    }
+    return ToonBasePassFragment(input, isFrontFace);
 }
 
 #endif

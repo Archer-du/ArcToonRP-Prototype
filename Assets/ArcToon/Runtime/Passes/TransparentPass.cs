@@ -1,6 +1,8 @@
-﻿using ArcToon.Runtime.Data;
+﻿using System.Linq;
+using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
+using ArcToon.Runtime.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -13,32 +15,12 @@ namespace ArcToon.Runtime.Passes
     {
         public override ProfilingSampler Sampler => new("Transparent");
 
-        TransparencyMode transparencyMode => renderer.transparencyMode;
-        
         #region Ordered
-        private static ShaderTagId[] backFaceShaderTagIds =
-        {
-            new("ToonForwardTransparentBackFace"),
-        };
-        private static ShaderTagId[] frontFaceShaderTagIds =
-        {
-            new("ToonForwardTransparentFrontFace"),
-            new("ToonForward"),
-            new("SRPDefaultUnlit"),
-            new("SimpleLit"),
-        };
-
         RendererListHandle frontFaceList;
         RendererListHandle backFaceList;
         #endregion
 
         #region Weighted Average
-
-        private static ShaderTagId[] GeometryShaderTagIds =
-        {
-            new("ToonForwardWeightedAverage"),
-        };
-        
         private TextureHandle backgroundColor;
         
         private TextureHandle accumulateRGBA;
@@ -48,30 +30,29 @@ namespace ArcToon.Runtime.Passes
         #endregion
 
         #region Depth Peeling
+        // TODO: config
         public const int depthLayer = 4;
 
+        private TextureHandle opaqueColorBuffer;
         private TextureHandle compositeArray;
-        private RendererListHandle transparencyList;
+        private TextureHandle[] dualDepthBuffer = new TextureHandle[2];
+        
+        private RendererListHandle[] transparencyLists = new RendererListHandle[depthLayer];
         #endregion
         
-        private static ShaderTagId[] OutlineShaderTagIds =
-        {
-            new("GeometryOutline"),
-        };
-
         RendererListHandle outlineList;
 
         public override bool AllowCulling() => false;
 
         public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
-            commandBuffer.BeginSample($"Toon Transparent ({transparencyMode})");
-            if (transparencyMode == TransparencyMode.Ordered)
+            commandBuffer.BeginSample($"Toon Transparent");
+            if (backFaceList.IsValid() && frontFaceList.IsValid())
             {
                 commandBuffer.DrawRendererList(backFaceList);
                 commandBuffer.DrawRendererList(frontFaceList);
             }
-            else if (transparencyMode == TransparencyMode.WeightedAverage)
+            if (geometryList.IsValid())
             {
                 commandBuffer.SetRenderTarget(
                     new RenderTargetIdentifier[]{ accumulateRGBA, revealage, }, 
@@ -83,8 +64,7 @@ namespace ArcToon.Runtime.Passes
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateRGBA, accumulateRGBA);
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, revealage);
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, backgroundColor);
-                
-                RenderTextureHelpers.CopyTexture(commandBuffer, resourceHandle.colorAttachment, backgroundColor, RenderTextureHelpers.CopyMode.ColorAttachment);
+                RenderTextureHelpers.CopyTexture(commandBuffer, resourceHandle.colorAttachment, backgroundColor, RenderTextureHelpers.BlitMode.Color);
                 
                 commandBuffer.SetRenderTarget(
                     resourceHandle.colorAttachment,
@@ -93,21 +73,33 @@ namespace ArcToon.Runtime.Passes
                     RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
                 );
                 commandBuffer.ClearRenderTarget(false, true, Color.clear);
-                commandBuffer.DrawProcedural(
-                    Matrix4x4.identity, 
-                    ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 3,
-                    MeshTopology.Triangles, 3
-                );
+                // TODO: config
+                commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 3);
             }
-            // else if (transparencyMode == TransparencyMode.DepthPeeling)
-            // {
-            //     // for (int i = 0; i < depthLayer; i++)
-            //     // {
-            //     //     commandBuffer.SetRenderTarget(compositeArray, resourceHandle.depthAttachment, 0, CubemapFace.Unknown, i);
-            //     //     commandBuffer.ClearRenderTarget(false, true, Color.clear);
-            //     // }
-            // }
-            commandBuffer.EndSample($"Toon Transparent ({transparencyMode})");
+            if(transparencyLists.First().IsValid())
+            {
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueDepthBuffer, resourceHandle.depthAttachment);
+                for (int i = 0; i < depthLayer; i++)
+                {
+                    commandBuffer.SetRenderTarget(compositeArray, dualDepthBuffer[i % 2], 0, CubemapFace.Unknown, i);
+                    commandBuffer.ClearRenderTarget(true, true, Color.clear);
+                    commandBuffer.SetGlobalInteger(InternalShader.PropertyID.PeelingLayerIndex, i);
+                    commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DualDepthBufferRef, dualDepthBuffer[(i + 1) % 2]);
+                    commandBuffer.DrawRendererList(transparencyLists[i]);
+                }
+                RenderTextureHelpers.CopyTexture(commandBuffer, resourceHandle.colorAttachment, opaqueColorBuffer, RenderTextureHelpers.BlitMode.Color);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueColorBuffer, opaqueColorBuffer);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DepthPeelingClips, compositeArray);
+                commandBuffer.SetRenderTarget(
+                    resourceHandle.colorAttachment,
+                    RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                    resourceHandle.depthAttachment,
+                    RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
+                );
+                // TODO: config
+                commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 4);
+            }
+            commandBuffer.EndSample($"Toon Transparent");
             
             commandBuffer.BeginSample("Toon Outline");
             commandBuffer.DrawRendererList(outlineList);
@@ -116,47 +108,44 @@ namespace ArcToon.Runtime.Passes
 
         public override void AcquireResource(RenderGraph renderGraph)
         {
-            outlineList = renderGraph.CreateRendererList(new RendererListDesc(OutlineShaderTagIds, renderer.CullingResults, Camera)
+            outlineList = renderGraph.CreateRendererList(new RendererListDesc(InternalShader.TagId.GeometryOutline, renderer.CullingResults, Camera)
             {
                 sortingCriteria = SortingCriteria.CommonOpaque,
                 renderQueueRange = RenderQueueRange.transparent,
             });
-                        
-            if (transparencyMode == TransparencyMode.Ordered)
+            
+            backFaceList = renderGraph.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardTransparentBackFace, renderer.CullingResults, Camera)
             {
-                backFaceList = renderGraph.CreateRendererList(new RendererListDesc(backFaceShaderTagIds, renderer.CullingResults, Camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonTransparent,
-                    renderQueueRange = RenderQueueRange.transparent,
-                    rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
-                                            PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-                                            PerObjectData.LightProbeProxyVolume |
-                                            PerObjectData.OcclusionProbeProxyVolume |
-                                            PerObjectData.ReflectionProbes,
-                });
-                frontFaceList = renderGraph.CreateRendererList(new RendererListDesc(frontFaceShaderTagIds, renderer.CullingResults, Camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonTransparent,
-                    renderQueueRange = RenderQueueRange.transparent,
-                    rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
-                                            PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-                                            PerObjectData.LightProbeProxyVolume |
-                                            PerObjectData.OcclusionProbeProxyVolume |
-                                            PerObjectData.ReflectionProbes,
-                });
-            }
-            else if (transparencyMode == TransparencyMode.WeightedAverage)
+                sortingCriteria = SortingCriteria.CommonTransparent,
+                renderQueueRange = RenderQueueRange.transparent,
+                rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+                                        PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
+                                        PerObjectData.LightProbeProxyVolume |
+                                        PerObjectData.OcclusionProbeProxyVolume |
+                                        PerObjectData.ReflectionProbes,
+            });
+            frontFaceList = renderGraph.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardTransparentFrontFace, renderer.CullingResults, Camera)
             {
-                geometryList = renderGraph.CreateRendererList(new RendererListDesc(GeometryShaderTagIds, renderer.CullingResults, Camera)
-                {
-                    sortingCriteria = SortingCriteria.CommonOpaque,
-                    renderQueueRange = RenderQueueRange.transparent,
-                    rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
-                                            PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-                                            PerObjectData.LightProbeProxyVolume |
-                                            PerObjectData.OcclusionProbeProxyVolume |
-                                            PerObjectData.ReflectionProbes,
-                });
+                sortingCriteria = SortingCriteria.CommonTransparent,
+                renderQueueRange = RenderQueueRange.transparent,
+                rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+                                        PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
+                                        PerObjectData.LightProbeProxyVolume |
+                                        PerObjectData.OcclusionProbeProxyVolume |
+                                        PerObjectData.ReflectionProbes,
+            });
+            geometryList = renderGraph.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardWeightedAverage, renderer.CullingResults, Camera)
+            {
+                sortingCriteria = SortingCriteria.CommonOpaque,
+                renderQueueRange = RenderQueueRange.transparent,
+                rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+                                        PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
+                                        PerObjectData.LightProbeProxyVolume |
+                                        PerObjectData.OcclusionProbeProxyVolume |
+                                        PerObjectData.ReflectionProbes,
+            });
+            if (geometryList.IsValid())
+            {
                 accumulateRGBA = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
                 {
                     name = "Weighted Average Accumulate RGBA",
@@ -173,47 +162,76 @@ namespace ArcToon.Runtime.Passes
                     colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
                 });
             }
-            // else if (transparencyMode == TransparencyMode.DepthPeeling)
-            // {
-            //     // compositeArray = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
-            //     // {
-            //     //     name = "Depth Peeling Composite Array",
-            //     //     colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
-            //     //     dimension = TextureDimension.Tex2DArray,
-            //     //     slices = 6,
-            //     // });
-            //     
-            //     // transparencyList = renderGraph.CreateRendererList(new RendererListDesc(, renderer.CullingResults, Camera)
-            //     // {
-            //     //     sortingCriteria = SortingCriteria.CommonOpaque,
-            //     //     renderQueueRange = RenderQueueRange.transparent,
-            //     //     rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
-            //     //                             PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
-            //     //                             PerObjectData.LightProbeProxyVolume |
-            //     //                             PerObjectData.OcclusionProbeProxyVolume |
-            //     //                             PerObjectData.ReflectionProbes,
-            //     // });
-            // }
+            
+            for (int i = 0; i < depthLayer; i++)
+            {
+                transparencyLists[i] = renderGraph.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardDepthPeeling, renderer.CullingResults, Camera)
+                {
+                    sortingCriteria = SortingCriteria.CommonOpaque,
+                    renderQueueRange = RenderQueueRange.transparent,
+                    rendererConfiguration = PerObjectData.Lightmaps | PerObjectData.ShadowMask |
+                                            PerObjectData.LightProbe | PerObjectData.OcclusionProbe |
+                                            PerObjectData.LightProbeProxyVolume |
+                                            PerObjectData.OcclusionProbeProxyVolume |
+                                            PerObjectData.ReflectionProbes,
+                });
+            }
+            if (transparencyLists.First().IsValid())
+            {
+                compositeArray = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
+                {
+                    name = "Depth Peeling Composite Array",
+                    colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
+                    dimension = TextureDimension.Tex2DArray,
+                    slices = 6,
+                });
+                dualDepthBuffer[0] = renderGraph.CreateTexture(new TextureDesc(resourceHandle.depthAttachment.GetDescriptor(renderGraph))
+                {
+                    name = "Depth Peeling Dual Depth Buffer 0",
+                });
+                dualDepthBuffer[1] = renderGraph.CreateTexture(new TextureDesc(resourceHandle.depthAttachment.GetDescriptor(renderGraph))
+                {
+                    name = "Depth Peeling Dual Depth Buffer 1",
+                });
+                opaqueColorBuffer = renderGraph.CreateTexture(new TextureDesc(resourceHandle.colorAttachment.GetDescriptor(renderGraph))
+                {
+                    name = "Depth Peeling Opaque Color Buffer",
+                });
+            }
         }
 
         public override void DeclareResourceUsage(RenderGraphBuilder builder)
         {
             builder.UseRendererList(outlineList);
             
-            if (transparencyMode == TransparencyMode.Ordered)
+            // ordered dual face
+            builder.UseRendererList(backFaceList);
+            builder.UseRendererList(frontFaceList);
+            
+            // weighted average
+            builder.UseRendererList(geometryList);
+            if (geometryList.IsValid())
             {
-                builder.UseRendererList(backFaceList);
-                builder.UseRendererList(frontFaceList);
-            }
-            else if (transparencyMode == TransparencyMode.WeightedAverage)
-            {
-                builder.UseRendererList(geometryList);
-                
                 builder.ReadWriteTexture(revealage);
                 builder.ReadWriteTexture(accumulateRGBA);
                 builder.ReadWriteTexture(backgroundColor);
             }
             
+            // depth peeling
+            for (int i = 0; i < depthLayer; i++)
+            {
+                builder.UseRendererList(transparencyLists[i]);
+            }
+
+            if (transparencyLists.First().IsValid())
+            {
+                builder.ReadWriteTexture(compositeArray);
+                builder.ReadWriteTexture(dualDepthBuffer[0]);
+                builder.ReadWriteTexture(dualDepthBuffer[1]);
+                builder.ReadWriteTexture(opaqueColorBuffer);
+            }
+            
+            // general
             builder.ReadWriteTexture(resourceHandle.colorAttachment);
             builder.ReadWriteTexture(resourceHandle.depthAttachment);
             

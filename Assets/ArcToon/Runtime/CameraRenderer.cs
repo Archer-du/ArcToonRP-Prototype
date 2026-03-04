@@ -2,35 +2,44 @@
 using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Passes;
 using ArcToon.Runtime.Passes.Lighting;
+using ArcToon.Runtime.Passes.Transparency;
 using ArcToon.Runtime.Settings;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.LookDev;
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime
 {
+    public enum RenderPhase
+    {
+        Lighting,
+        Setup,
+        Opaque,
+        Skybox,
+        Transparent,
+        Unsupported,
+        PostProcessing,
+        BackBuffer,
+    }
+    
     public class CameraRenderer
     {
         internal ScriptableRenderContext Context { private set; get; }
         internal Camera RenderCamera { private set; get; }
         internal CameraAdditiveData CameraAdditiveData { private set; get; }
         internal float RenderScale { private set; get; }
-        
         internal Vector2Int AttachmentSize { private set; get; }
         internal CullingResults CullingResults { private set; get; }
-
+        internal bool useHDR { private set; get; }
+        internal RenderPhase RenderPhase { private set; get; }
+        internal bool copyColor { private set; get; }
+        
         internal CameraBufferSettings BufferSettings { private set; get; }
         internal ShadowSettings ShadowSettings { private set; get; }
         internal ForwardPlusSettings ForwardPlusSettings { private set; get; }
-        
-        
         internal PostFXConfig PostFXConfig { private set; get; }
-        
-        internal bool useHDR { private set; get; }
-        internal bool copyColor { private set; get; }
-        
-        internal TransparencyMode transparencyMode { private set; get; }
         
         // TODO: Singleton
         internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
@@ -80,8 +89,6 @@ namespace ArcToon.Runtime
                 PostFXConfig = CameraAdditiveData.overridePostFXConfig;
             }
 
-            transparencyMode = config.transparencyMode;
-
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
             {
@@ -127,43 +134,43 @@ namespace ArcToon.Runtime
             {
                 RenderGraphResourceHandle resourceHandle = new();
 
-                // setup
-                RecordRenderPass<LightingPass>("Lighting", 
-                    renderGraph, resourceHandle);
-                RecordRenderPass<SetupPass>("Setup", 
-                    renderGraph, resourceHandle);
-                RecordRenderPass<DepthStencilPrePass>("Prepass", 
-                    renderGraph, resourceHandle);
+                RenderPhase = RenderPhase.Lighting;
+                RecordRenderPass<LightingPass>("Lighting", renderGraph, resourceHandle);
                 
-                // render scene
-                RecordRenderPass<OpaquePass>("Opaque", 
-                    renderGraph, resourceHandle);
-                RecordRenderPass<SkyboxPass>("Skybox", 
-                    renderGraph, resourceHandle);
-                // TODO: pass culling optimize (Cullable Pass / Fundamental Pass)
-                RecordRenderPass<TransparentPass>("Transparent", 
-                    renderGraph, resourceHandle);
-                RecordRenderPass<UnsupportedPass>("Unsupported", 
-                    renderGraph, resourceHandle);
+                RenderPhase = RenderPhase.Setup;
+                RecordRenderPass<SetupPass>("Setup", renderGraph, resourceHandle);
+                RecordRenderPass<DepthStencilPrePass>("Prepass", renderGraph, resourceHandle);
+
+                RenderPhase = RenderPhase.Opaque;
+                RecordRenderPass<OpaquePass>("Opaque", renderGraph, resourceHandle);
+                RecordRenderPass<GeometryOutlinePass>("Geometry Outline", renderGraph, resourceHandle);
                 
-                // post process
+                RenderPhase = RenderPhase.Skybox;
+                RecordRenderPass<SkyboxPass>("Skybox", renderGraph, resourceHandle);
+                
+                RenderPhase = RenderPhase.Transparent;
+                RecordRenderPass<OrderedDualFacePass>("Transparent Dual Face", renderGraph, resourceHandle);
+                RecordRenderPass<WeightedAveragePass>("Transparent Weighted Average", renderGraph, resourceHandle);
+                RecordRenderPass<DepthPeelingPass>("Transparent Depth Peeling", renderGraph, resourceHandle);
+                RecordRenderPass<GeometryOutlinePass>("Geometry Outline", renderGraph, resourceHandle);
+                
+                RenderPhase = RenderPhase.Unsupported;
+                RecordRenderPass<UnsupportedPass>("Unsupported", renderGraph, resourceHandle);
+                
+                RenderPhase = RenderPhase.PostProcessing;
                 resourceHandle.postFXResult = PostFXPass.Record(this, renderGraph, RenderCamera, resourceHandle.colorAttachment, CullingResults, AttachmentSize,
                     CameraAdditiveData, BufferSettings, PostFXConfig, useHDR);
                 
-                // final
-                RecordRenderPass<CopyFinalPass>("Final",
-                    renderGraph, resourceHandle);
+                RenderPhase = RenderPhase.BackBuffer;
+                RecordRenderPass<CopyFinalPass>("Final", renderGraph, resourceHandle);
                 
-                // debug
                 if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
                 {
-                    RecordRenderPass<DebugPass>("Debug", 
-                        renderGraph, resourceHandle);
+                    RecordRenderPass<DebugPass>("Debug", renderGraph, resourceHandle);
                 }
                 if (Handles.ShouldRenderGizmos())
                 {
-                    RecordRenderPass<GizmosPass>("Gizmos", 
-                        renderGraph, resourceHandle);
+                    RecordRenderPass<GizmosPass>("Gizmos", renderGraph, resourceHandle);
                 }
             }
 

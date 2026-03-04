@@ -78,6 +78,12 @@ namespace ArcToon.Runtime.Utils
             public static readonly int AccumulateRGBA = ShaderPropertyID();
             public static readonly int AccumulateComplexity = ShaderPropertyID();
             public static readonly int BackGroundColor = ShaderPropertyID();
+            
+            public static readonly int OpaqueColorBuffer = ShaderPropertyID();
+            public static readonly int OpaqueDepthBuffer = ShaderPropertyID();
+            public static readonly int DualDepthBufferRef = ShaderPropertyID();
+            public static readonly int DepthPeelingClips = ShaderPropertyID();
+            public static readonly int PeelingLayerIndex = ShaderPropertyID();
             #endregion
             
             #region Blit
@@ -96,6 +102,13 @@ namespace ArcToon.Runtime.Utils
             public static readonly ShaderTagId LightMode = ShaderTagId();
 
             public static readonly ShaderTagId ShadowCaster = ShaderTagId();
+            public static readonly ShaderTagId GeometryOutline = ShaderTagId();
+            
+            public static readonly ShaderTagId ToonForward = ShaderTagId();
+            public static readonly ShaderTagId ToonForwardDepthPeeling = ShaderTagId();
+            public static readonly ShaderTagId ToonForwardWeightedAverage = ShaderTagId();
+            public static readonly ShaderTagId ToonForwardTransparentBackFace = ShaderTagId();
+            public static readonly ShaderTagId ToonForwardTransparentFrontFace = ShaderTagId();
             
             public static readonly ShaderTagId DepthOnly = ShaderTagId();
             public static readonly ShaderTagId StencilOnly = ShaderTagId();

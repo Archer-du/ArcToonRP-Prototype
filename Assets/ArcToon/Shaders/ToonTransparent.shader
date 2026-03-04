@@ -21,16 +21,18 @@
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
         [Toggle(_RECEIVE_FRINGE_SHADOWS)] _ReceiveFringeShadows ("Receive Fringe Shadows", Float) = 0
-        [Enum(On, 0, Dither, 1, Off, 2)] _Shadows ("Shadow Caster Option", Float) = 0
+        [Enum(ArcToon.Editor.ShaderEditor.ShadowCasterOption)] _Shadows ("Shadow Caster Option", Float) = 0
         
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 0
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Destination Blend Factor", Float) = 0
-        [Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
                 
         _Stencil("Stencil Ref ID", Float) = 1
         _StencilWriteMask("Stencil Write Mask", Float) = 3
         _StencilReadMask("Stencil Read Mask", Float) = 3
+        
+        [Enum(ArcToon.Editor.ShaderEditor.TransparencyMode)] _TransparencyMode ("Transparency Mode", Integer) = 2
+        [Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
         
         // ------------------------ PBR
         [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
@@ -55,11 +57,11 @@
 
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
-        [Enum(UV1, 0, VertexColor, 1)]
+        [Enum(ArcToon.Editor.ShaderEditor.SmoothNormalSource)]
         _SmoothNormalSource ("Smooth Normal Source", Integer) = 1
-        [Enum(RGAG, 0, OCT, 1)]
+        [Enum(ArcToon.Editor.ShaderEditor.SmoothNormalDecoder)]
         _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
-        [Enum(None, 0, VertexColorAlpha, 1)]
+        [Enum(ArcToon.Editor.ShaderEditor.WidthControlMode)]
         _WidthControlMode ("Width Control Mode", Integer) = 1
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
@@ -99,6 +101,57 @@
         ENDHLSL
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"
+
+        Pass
+        {
+            Name "Toon Depth Peeling"
+            Tags
+            {
+                "LightMode" = "ToonForwardDepthPeeling"
+            }
+            Blend One Zero, One Zero
+            ZWrite On
+            ZTest LEqual
+            Cull Off
+
+            HLSLPROGRAM
+            #pragma target 4.5
+
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT
+            #pragma multi_compile _ LIGHTMAP_ON
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
+            
+            #pragma shader_feature _NORMAL_MAP
+            
+            #pragma shader_feature_local _SPEC_MASK
+            #pragma shader_feature_local _ _SPEC_MASK_UV0 _SPEC_MASK_UV1
+            #pragma shader_feature_local _SPEC_PARALLAX
+            
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma shader_feature _RECEIVE_FRINGE_SHADOWS
+            
+            #pragma shader_feature _RMO_MASK_MAP
+            
+            #pragma shader_feature _RAMP_SET
+            
+            #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
+            #pragma shader_feature_local _TANGENT_SHIFT_MAP
+            #pragma shader_feature_local _ _TANGENT_SHIFT_MAP_UV0 _TANGENT_SHIFT_MAP_UV1
+            
+            #pragma shader_feature _DEBUG_INCOMING_LIGHT
+            #pragma shader_feature _DEBUG_DIRECT_BRDF
+            #pragma shader_feature _DEBUG_SPECULAR
+            #pragma shader_feature _DEBUG_DIFFUSE
+
+            #include "ToonTransparentPass.hlsl"
+
+            #pragma vertex ToonDepthPeelingPassVertex
+            #pragma fragment ToonDepthPeelingPassFragment
+            ENDHLSL
+        }
 
         Pass
         {
@@ -277,30 +330,7 @@
             ENDHLSL
         }
 
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "ShadowCaster"
-            }
-            ColorMask 0
-            // TODO: set cull through c#
-            Cull Off
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #pragma shader_feature _CLIPPING
-            #pragma shader_feature _SHADOWS_DITHER
-
-            #include "ShadowCasterPass.hlsl"
-
-            #pragma vertex ShadowCasterPassVertex
-            #pragma fragment ShadowCasterPassFragment
-            ENDHLSL
-        }
+        UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
 
         UsePass "ArcToon/ToonBase/TOON META"
     }

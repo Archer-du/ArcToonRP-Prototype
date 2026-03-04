@@ -20,7 +20,7 @@ namespace ArcToon.Runtime.Passes
                 resourceHandle.depthAttachment, 
                 BuiltinRenderTextureType.CameraTarget,
                 ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 
-                (int)RenderTextureHelpers.CopyMode.DepthAttachment);
+                (int)RenderTextureHelpers.BlitMode.Depth);
 
             context.ExecuteCommandBuffer(commandBuffer);
             commandBuffer.Clear();

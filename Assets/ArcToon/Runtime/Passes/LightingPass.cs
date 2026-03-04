@@ -177,6 +177,7 @@ namespace ArcToon.Runtime.Passes
             builder.WriteBuffer(resourceHandle.perObjectShadowCasterData);
             builder.WriteBuffer(resourceHandle.forwardPlusTileBuffer);
 
+            // TODO: reorganize
             resourceHandle.shadowMapHandle = shadowMapRenderer.Record(renderGraph, builder, renderer.Context);
         }
 

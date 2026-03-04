@@ -27,14 +27,14 @@ namespace ArcToon.Runtime.Passes
             if (copyColor)
             {
                 RenderTextureHelpers.CopyTexture(commandBuffer, colorAttachment, colorCopy,
-                    RenderTextureHelpers.CopyMode.ColorAttachment);
+                    RenderTextureHelpers.BlitMode.Color);
                 commandBuffer.SetGlobalTexture(colorCopyID, colorCopy);
             }
 
             if (copyDepth)
             {
                 RenderTextureHelpers.CopyTexture(commandBuffer, depthAttachment, depthCopy,
-                    RenderTextureHelpers.CopyMode.DepthAttachment);
+                    RenderTextureHelpers.BlitMode.Depth);
                 commandBuffer.SetGlobalTexture(depthCopyID, depthCopy);
             }
 

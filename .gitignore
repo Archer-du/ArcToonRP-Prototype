@@ -73,10 +73,8 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
-/[Aa]ssets/Models/Character/*
-/[Aa]ssets/Models/Temp/*
-/[Aa]ssets/Models/Character.meta
-/[Aa]ssets/Models/Temp.meta
+**/Animations/*
+**/Animations.meta
 
 # CodeBuddy Code guidance file
 CODEBUDDY.md

@@ -21,7 +21,7 @@
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
         [Toggle(_RECEIVE_FRINGE_SHADOWS)] _ReceiveFringeShadows ("Receive Fringe Shadows", Float) = 0
-        [Enum(On, 0, Dither, 1, Off, 2)] _Shadows ("Shadow Caster Option", Float) = 0
+        [Enum(ArcToon.Editor.ShaderEditor.ShadowCasterOption)] _Shadows ("Shadow Caster Option", Float) = 0
 
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
@@ -55,11 +55,11 @@
         
         _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
-        [Enum(UV1, 0, VertexColor, 1)]
+        [Enum(ArcToon.Editor.ShaderEditor.SmoothNormalSource)]
         _SmoothNormalSource ("Smooth Normal Source", Integer) = 1
-        [Enum(RGAG, 0, OCT, 1)]
+        [Enum(ArcToon.Editor.ShaderEditor.SmoothNormalDecoder)]
         _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
-        [Enum(None, 0, VertexColorAlpha, 1)]
+        [Enum(ArcToon.Editor.ShaderEditor.WidthControlMode)]
         _WidthControlMode ("Width Control Mode", Integer) = 1
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5

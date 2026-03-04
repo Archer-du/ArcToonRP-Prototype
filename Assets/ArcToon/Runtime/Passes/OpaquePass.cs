@@ -1,4 +1,5 @@
 ﻿using ArcToon.Runtime.Data;
+using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
@@ -16,13 +17,8 @@ namespace ArcToon.Runtime.Passes
             new("SRPDefaultUnlit"),
             new("SimpleLit"),
         };
-        private static ShaderTagId[] outlineShaderTagIds =
-        {
-            new("GeometryOutline"),
-        };
 
         RendererListHandle baseList;
-        RendererListHandle outlineList;
 
         public override bool AllowCulling() => true;
 
@@ -31,19 +27,10 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.BeginSample("Toon Base");
             commandBuffer.DrawRendererList(baseList);
             commandBuffer.EndSample("Toon Base");
-            
-            commandBuffer.BeginSample("Toon Outline");
-            commandBuffer.DrawRendererList(outlineList);
-            commandBuffer.EndSample("Toon Outline");
         }
 
         public override void AcquireResource(RenderGraph renderGraph)
         {
-            outlineList = renderGraph.CreateRendererList(new RendererListDesc(outlineShaderTagIds, renderer.CullingResults, Camera)
-            {
-                sortingCriteria = SortingCriteria.CommonOpaque,
-                renderQueueRange = RenderQueueRange.opaque,
-            });
             baseList = renderGraph.CreateRendererList(new RendererListDesc(baseShaderTagIds, renderer.CullingResults, Camera)
             {
                 sortingCriteria = SortingCriteria.CommonOpaque,
@@ -58,7 +45,6 @@ namespace ArcToon.Runtime.Passes
 
         public override void DeclareResourceUsage(RenderGraphBuilder builder)
         {
-            builder.UseRendererList(outlineList);
             builder.UseRendererList(baseList);
             
             builder.ReadWriteTexture(resourceHandle.colorAttachment);
