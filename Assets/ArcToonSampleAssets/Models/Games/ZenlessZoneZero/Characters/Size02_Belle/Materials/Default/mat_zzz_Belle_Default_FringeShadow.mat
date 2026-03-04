@@ -7,14 +7,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: mat_zzz_Belle_Default_eyes
-  m_Shader: {fileID: 4800000, guid: 536478ae4e41697409141ae6e43a9c86, type: 3}
+  m_Name: mat_zzz_Belle_Default_FringeShadow
+  m_Shader: {fileID: 4800000, guid: 1211abf3b8944dcd967e8d60773bdb55, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _CLIPPING
+  - _NORMAL_MAP
   - _RMO_MASK_MAP
-  - _SDF_UV0
   - _SN_DECODE_OCT
   - _SN_SRC_UV1
   - _SPEC_MASK_UV1
@@ -23,6 +22,7 @@ Material:
   m_InvalidKeywords:
   - _ALPHA_CONTROL_WIDTH
   - _LIGHTINGDEBUGMODE_NONE
+  - _SDF_LIGHT_MAP
   - _SHADOWS_ON
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 1
@@ -35,7 +35,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: a8919ad9d0223234a871cedfb4ef1296, type: 3}
+        m_Texture: {fileID: 2800000, guid: c9c95338fcaf65c45a7f8cae8719a723, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -59,7 +59,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LightMapSDF:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: fb2967661af4b9a40be84550bcff324f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MODSMaskMap:
@@ -67,7 +67,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: a8919ad9d0223234a871cedfb4ef1296, type: 3}
+        m_Texture: {fileID: 2800000, guid: c9c95338fcaf65c45a7f8cae8719a723, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -75,7 +75,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 22b97a67269ea1a4685a839185881ad3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -91,7 +91,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RampSet:
-        m_Texture: {fileID: 2800000, guid: 2a31729ecaf3d4948af4ae8d13348171, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecularMask:
@@ -104,7 +104,6 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints:
     - _HighlightType: 0
-    - _LightMapSDFSourceUV: 0
     - _SmoothNormalDecoder: 1
     - _SmoothNormalSource: 0
     - _SpecularMaskUV: 1
@@ -113,7 +112,7 @@ Material:
     m_Floats:
     - _AlphaControlOutlineWidth: 1
     - _BumpScale: 1
-    - _Clipping: 1
+    - _Clipping: 0
     - _Cull: 2
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -131,10 +130,11 @@ Material:
     - _FringeShadowBiasScale: 0.5
     - _FringeShadowBiasScaleX: 0.5
     - _FringeShadowBiasScaleY: 0.5
+    - _FringeTransparentScale: 0.5
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LightMapSDFToggle: 0
+    - _LightMapSDFToggle: 1
     - _LightMapSpecularSDFToggle: 0
     - _LightingDebugMode: 0
     - _MaskMapToggle: 1
@@ -181,8 +181,6 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FaceVec: {r: 0, g: 0, b: 1, a: 1}
-    - _FaceVector: {r: 0, g: 0, b: 1, a: 0}
     - _OutlineColor: {r: 0.2264151, g: 0.021198373, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
