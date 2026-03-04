@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.arctoon.render-pipeline": "file:com.arctoon.render-pipeline",
     "com.danbaidong.smoothnormal": "https://github.com/danbaidong1111/SmoothNormal.git",
     "com.jasonma.lwgui": "https://github.com/JasonMa0012/LWGUI.git",
     "com.unity.ai.navigation": "2.0.5",

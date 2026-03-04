@@ -1,5 +1,15 @@
 {
   "dependencies": {
+    "com.arctoon.render-pipeline": {
+      "version": "file:com.arctoon.render-pipeline",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.burst": "1.8.18",
+        "com.unity.mathematics": "1.3.2",
+        "com.unity.render-pipelines.core": "17.0.3"
+      }
+    },
     "com.danbaidong.smoothnormal": {
       "version": "https://github.com/danbaidong1111/SmoothNormal.git",
       "depth": 0,

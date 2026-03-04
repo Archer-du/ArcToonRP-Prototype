@@ -2392,21 +2392,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3120355254450399785, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: HorizontalAxis.Center
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5165502310405497967, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: m_Name
       value: CameraController
-      objectReference: {fileID: 0}
-    - target: {fileID: 6174373427549981288, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: HorizontalAxis.Center
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7624310740099951257, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
-      propertyPath: HorizontalAxis.Center
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9064227431101291512, guid: 3a8a9961df34c814ab5785793d89789c, type: 3}
       propertyPath: m_LocalPosition.x

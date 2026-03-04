@@ -980,17 +980,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69e24a8e22d0401aa31d837361362760, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  settings:
+  additiveData:
     maskLights: 0
     renderingLayerMask:
       serializedVersion: 0
       m_Bits: 4294967295
     renderScaleMode: 0
     renderScale: 1
-    copyDepth: 1
     copyColor: 1
-    overridePostFX: 0
-    postFXSettings: {fileID: 0}
+    overridePostFXConfig: {fileID: 11400000, guid: c11cd6f2791f04b428fa2e0d92a8490a, type: 2}
     finalBlendMode:
       source: 1
       destination: 0
