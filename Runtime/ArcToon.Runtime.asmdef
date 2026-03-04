@@ -1,20 +1,20 @@
 {
-  "name": "ArcToon.Runtime",
-  "rootNamespace": "ArcToon",
-  "references": [
-    "Unity.Burst",
-    "Unity.Mathematics",
-    "Unity.Collections",
-    "Unity.Jobs",
-    "Unity.RenderPipelines.Core.Runtime"
-  ],
-  "includePlatforms": [],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "overrideReferences": false,
-  "precompiledReferences": [],
-  "autoReferenced": true,
-  "defineConstraints": [],
-  "versionDefines": [],
-  "noEngineReferences": false
+    "name": "ArcToon.Runtime",
+    "rootNamespace": "ArcToon",
+    "references": [
+        "Unity.Burst",
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "Unity.Jobs",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
