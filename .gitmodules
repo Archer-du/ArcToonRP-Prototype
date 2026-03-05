@@ -1,4 +1,4 @@
 [submodule "Packages/com.arctoon.render-pipeline"]
 	path = Packages/com.arctoon.render-pipeline
 	url = https://github.com/Archer-du/ArcToonRP-Prototype.git
-	branch = package
+	branch = arctoon/0.1.0
