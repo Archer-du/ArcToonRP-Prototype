@@ -4,6 +4,11 @@
     <option name="conversations">
       <list>
         <Conversation>
+          <option name="createTime" value="1772687749472" />
+          <option name="id" value="019cbc6c716078e890ce5eed511df1fb" />
+          <option name="updateTime" value="1772687749472" />
+        </Conversation>
+        <Conversation>
           <option name="createTime" value="1772681204264" />
           <option name="id" value="019cbc08922876b08a997fc97e4ace79" />
           <option name="title" value="Resharper缓存与Gitignore" />
@@ -431,9 +436,126 @@
                   <list />
                 </option>
               </Turn>
+              <Turn>
+                <option name="agent" value="" />
+                <option name="aguiRpcList">
+                  <list>
+                    <option value="{&quot;type&quot;:&quot;RUN_STARTED&quot;,&quot;timestamp&quot;:1772684214,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;threadId&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;runId&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_START&quot;,&quot;timestamp&quot;:1772684214,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;d96a79d5-8f85-4a2f-9300-cafe8678318a&quot;,&quot;name&quot;:&quot;task_planning&quot;,&quot;ch_name&quot;:&quot;任务规划完成&quot;,&quot;display_name&quot;:&quot;任务规划中&quot;,&quot;render_type&quot;:&quot;None&quot;,&quot;default_show&quot;:false,&quot;need_result&quot;:false,&quot;loading_display_type&quot;:&quot;point&quot;},&quot;toolCallId&quot;:&quot;d96a79d5-8f85-4a2f-9300-cafe8678318a&quot;,&quot;toolCallName&quot;:&quot;task_planning&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_END&quot;,&quot;timestamp&quot;:1772684216,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;d96a79d5-8f85-4a2f-9300-cafe8678318a&quot;},&quot;toolCallId&quot;:&quot;d96a79d5-8f85-4a2f-9300-cafe8678318a&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_RESULT&quot;,&quot;timestamp&quot;:1772684216,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;d96a79d5-8f85-4a2f-9300-cafe8678318a&quot;,&quot;display_name&quot;:&quot;任务规划完成&quot;},&quot;messageId&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;toolCallId&quot;:&quot;d96a79d5-8f85-4a2f-9300-cafe8678318a&quot;,&quot;content&quot;:&quot;&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;CUSTOM&quot;,&quot;timestamp&quot;:1772684216,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;type&quot;:&quot;remove-tool&quot;,&quot;tool_call_id&quot;:&quot;d96a79d5-8f85-4a2f-9300-cafe8678318a&quot;},&quot;name&quot;:&quot;remove-tool&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;STEP_STARTED&quot;,&quot;timestamp&quot;:1772684216,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;step_name&quot;:&quot;call_llm&quot;},&quot;stepName&quot;:&quot;call_llm&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TEXT_MESSAGE_START&quot;,&quot;timestamp&quot;:1772684219,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;messageId&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;role&quot;:&quot;assistant&quot;}" />
+                    <option value="{&quot;messageId&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;content&quot;:&quot;## Rider 对 Git Submodule 的支持\n\n是的，JetBrains Rider **支持 Git Submodule**，但支持程度有限，属于\&quot;半自动\&quot;级别。以下是具体情况：\n\n### ✅ Rider 能做的\n\n1. **识别 Submodule**：Rider 能自动检测项目中的 `.gitmodules` 文件，并在 **Git 工具窗口** 中显示 submodule 仓库。\n2. **多仓库管理**：在 `Settings → Version Control → Directory Mappings` 中，submodule 会作为独立的 Git Root 被列出，你可以分别查看每个 submodule 的 log、diff、分支等。\n3. **Commit 与 Push**：可以在 Rider 的 Commit 面板中看到 submodule 的变更（显示为 submodule 指针变化），并进行提交。\n4. **分支切换**：可以在 Git 面板的分支下拉中，为 submodule 单独切换分支。\n5. **Pull/Update**：Rider 的 `VCS → Git → Pull` 可以拉取主仓库的更新。\n\n### ⚠️ Rider 做得不够好的地方\n\n1. **没有专门的 Submodule 管理 UI**：不像 `git submodule add/init/update` 等命令有对应的 GUI 操作，这些仍需在终端中手动执行。\n2. **不会自动 init/update submodule**：当你在 Rider 中 clone 或 pull 一个包含 submodule 的项目时，**不会自动初始化和更新 submodule**，你仍然需要手动运行：\n   ```bash\n   git submodule update --init --recursive\n   ```\n3. **Submodule 状态提示不明显**：如果 submodule 未初始化（目录为空），Rider 不会给出醒目的提示。\n4. **批量操作有限**：无法一键对所有 submodule 执行同步操作（如全部切换到某个分支）。\n\n###  推荐的工作方式\n\n对于你的项目（ArcToonRP-Prototype + submodule package），建议采用**混合方式**：\n\n| 操作 | 建议工具 |\n|------|----------|\n| 查看 log / diff / blame | Rider GUI |\n| 日常 commit &amp; push | Rider GUI |\n| 切换 submodule 分支 | Rider GUI 或终端 |\n| `submodule init / update` | **终端**（Rider 内置终端即可） |\n| 添加 / 删除 submodule | **终端** |\n| 全局配置 `submodule.recurse` | **终端**（一次性设置） |\n\n###  一劳永逸的建议\n\n如果你之前已经按文档设置了全局配置：\n\n```bash\ngit config --global submodule.recurse true\n```\n\n那么在 Rider 中执行 `pull`、`checkout` 等操作时，Git 底层也会自动递归处理 submodule，弥补了 Rider GUI 的不足。\n\n**总结**：Rider 对 submodule 的支持是**可用但不完善**的，核心的代码浏览和提交功能没问题，但 submodule 的生命周期管理（init/update/add/remove）还是需要依赖终端命令。&quot;},&quot;timestamp&quot;:1772684219,&quot;type&quot;:&quot;TEXT_MESSAGE_CONTENT&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TEXT_MESSAGE_END&quot;,&quot;timestamp&quot;:1772684237,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;messageId&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;STEP_FINISHED&quot;,&quot;timestamp&quot;:1772684238,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;step_name&quot;:&quot;call_llm&quot;,&quot;token_usage&quot;:{&quot;completion_tokens&quot;:989,&quot;prompt_tokens&quot;:18576,&quot;total_tokens&quot;:19565,&quot;completion_tokens_details&quot;:{&quot;accepted_prediction_tokens&quot;:null,&quot;audio_tokens&quot;:null,&quot;reasoning_tokens&quot;:0,&quot;rejected_prediction_tokens&quot;:null},&quot;prompt_tokens_details&quot;:{&quot;audio_tokens&quot;:null,&quot;cached_tokens&quot;:12221,&quot;cache_write_tokens&quot;:6353},&quot;cache_creation_input_tokens&quot;:0,&quot;cache_read_input_tokens&quot;:0}},&quot;stepName&quot;:&quot;call_llm&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;RUN_FINISHED&quot;,&quot;timestamp&quot;:1772684238,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;threadId&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;runId&quot;:&quot;019cbc36817e7c32961135ad205bf941&quot;}" />
+                  </list>
+                </option>
+                <option name="answer" value="" />
+                <option name="chatMode" value="AGENT" />
+                <option name="chatResource" value="user" />
+                <option name="codeReferences">
+                  <list />
+                </option>
+                <option name="command" value="normal" />
+                <option name="conversationId" value="019cbc01af6c724b91ce990e963140f2" />
+                <option name="historyDocumentMap">
+                  <map>
+                    <entry key="file:///D:/UnityProject/ArcToonRP-Prototype/Assets/Scripts/Test/MaterialPropertyEditor.cs" value="using UnityEngine;&#10;&#10;[DisallowMultipleComponent]&#10;public class MaterialPropertyEditor : MonoBehaviour&#10;{&#10;    private static int baseColorId = Shader.PropertyToID(&quot;_BaseColor&quot;);&#10;    private static int cutoffId = Shader.PropertyToID(&quot;_Cutoff&quot;);&#10;    private static int metallicId = Shader.PropertyToID(&quot;_Metallic&quot;);&#10;    private static int smoothnessId = Shader.PropertyToID(&quot;_Smoothness&quot;);&#10;    &#10;    [SerializeField]&#10;    private Color baseColor = Color.white;&#10;&#10;    [SerializeField, Range(0f, 1f)] &#10;    private float alphaCutoff = 0.5f;&#10;    [SerializeField, Range(0f, 1f)] &#10;    private float metallic = 0f;&#10;    [SerializeField, Range(0f, 1f)] &#10;    private float smoothness = 0.5f;&#10;        &#10;    static MaterialPropertyBlock block;&#10;        &#10;    void Awake () {&#10;        OnValidate();&#10;    }&#10;    void OnValidate () {&#10;        if (block == null) {&#10;            block = new MaterialPropertyBlock();&#10;        }&#10;        block.SetColor(baseColorId, baseColor);&#10;        block.SetFloat(cutoffId, alphaCutoff);&#10;        block.SetFloat(metallicId, metallic);&#10;        block.SetFloat(smoothnessId, smoothness);&#10;        GetComponent&lt;Renderer&gt;().SetPropertyBlock(block);&#10;    }&#10;}" />
+                  </map>
+                </option>
+                <option name="inputToken" value="18576" />
+                <option name="messageId" value="019cbc36817e7c32961135ad205bf941" />
+                <option name="model" value="claude-4.6-opus" />
+                <option name="outputToken" value="989" />
+                <option name="protocol" value="ag-ui" />
+                <option name="question" value="Irwvi是否有对trg hfynlwfov的支持？" />
+                <option name="rating" value="UNRATED" />
+                <option name="referenceBeans">
+                  <list />
+                </option>
+                <option name="status" value="SUCCESS" />
+                <option name="totalToken" value="19565" />
+                <option name="variables">
+                  <list />
+                </option>
+              </Turn>
+              <Turn>
+                <option name="agent" value="" />
+                <option name="aguiRpcList">
+                  <list>
+                    <option value="{&quot;type&quot;:&quot;RUN_STARTED&quot;,&quot;timestamp&quot;:1772684750,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;threadId&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;runId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_START&quot;,&quot;timestamp&quot;:1772684750,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;982048c8-b60d-4226-93ea-734b0c203151&quot;,&quot;name&quot;:&quot;task_planning&quot;,&quot;ch_name&quot;:&quot;任务规划完成&quot;,&quot;display_name&quot;:&quot;任务规划中&quot;,&quot;render_type&quot;:&quot;None&quot;,&quot;default_show&quot;:false,&quot;need_result&quot;:false,&quot;loading_display_type&quot;:&quot;point&quot;},&quot;toolCallId&quot;:&quot;982048c8-b60d-4226-93ea-734b0c203151&quot;,&quot;toolCallName&quot;:&quot;task_planning&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_END&quot;,&quot;timestamp&quot;:1772684751,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;982048c8-b60d-4226-93ea-734b0c203151&quot;},&quot;toolCallId&quot;:&quot;982048c8-b60d-4226-93ea-734b0c203151&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_RESULT&quot;,&quot;timestamp&quot;:1772684751,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;982048c8-b60d-4226-93ea-734b0c203151&quot;,&quot;display_name&quot;:&quot;任务规划完成&quot;},&quot;messageId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;toolCallId&quot;:&quot;982048c8-b60d-4226-93ea-734b0c203151&quot;,&quot;content&quot;:&quot;&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;CUSTOM&quot;,&quot;timestamp&quot;:1772684751,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;type&quot;:&quot;remove-tool&quot;,&quot;tool_call_id&quot;:&quot;982048c8-b60d-4226-93ea-734b0c203151&quot;},&quot;name&quot;:&quot;remove-tool&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;STEP_STARTED&quot;,&quot;timestamp&quot;:1772684751,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;step_name&quot;:&quot;call_llm&quot;},&quot;stepName&quot;:&quot;call_llm&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TEXT_MESSAGE_START&quot;,&quot;timestamp&quot;:1772684754,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;messageId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;role&quot;:&quot;assistant&quot;}" />
+                    <option value="{&quot;messageId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;content&quot;:&quot;\n\n# Rider 中 Directory Mappings 不显示 Submodule 的解决方法\n\n这是 Rider 的一个常见问题。Rider 不会自动将 submodule 注册为 Git Root。你需要**手动添加**。\n\n## 方法一：通过 Rider 设置手动添加（推荐）\n\n1. 打开 **Settings / Preferences**（`Ctrl + Alt + S`）\n2. 导航到 **Version Control → Directory Mappings**\n3. 点击左下角的 **`+`** 按钮\n4. 在弹出的对话框中，选择你的 submodule 所在的目录路径\n5. VCS 类型选择 **Git**\n6. 点击 **OK** → **Apply**\n\n让我先确认一下你的 submodule 路径：&quot;},&quot;timestamp&quot;:1772684754,&quot;type&quot;:&quot;TEXT_MESSAGE_CONTENT&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TEXT_MESSAGE_END&quot;,&quot;timestamp&quot;:1772684758,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;messageId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_START&quot;,&quot;timestamp&quot;:1772684758,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;tooluse_cSSDWY5N62eHKpmb8ngZwb&quot;,&quot;name&quot;:&quot;read_file&quot;,&quot;ch_name&quot;:&quot;读取文件&quot;,&quot;display_name&quot;:&quot;读取文件中&quot;,&quot;render_type&quot;:&quot;None&quot;,&quot;default_show&quot;:false,&quot;need_result&quot;:true},&quot;toolCallId&quot;:&quot;tooluse_cSSDWY5N62eHKpmb8ngZwb&quot;,&quot;toolCallName&quot;:&quot;read_file&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_ARGS&quot;,&quot;timestamp&quot;:1772684759,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;tooluse_cSSDWY5N62eHKpmb8ngZwb&quot;,&quot;document&quot;:{&quot;sub_content&quot;:&quot;.gitmodules&quot;,&quot;sub_content_event&quot;:&quot;open_editor&quot;,&quot;sub_content_event_value&quot;:&quot;D:/UnityProject/ArcToonRP-Prototype/.gitmodules&quot;,&quot;sub_content_tip&quot;:&quot;D:/UnityProject/ArcToonRP-Prototype/.gitmodules&quot;}},&quot;toolCallId&quot;:&quot;tooluse_cSSDWY5N62eHKpmb8ngZwb&quot;,&quot;delta&quot;:&quot;{\&quot;explanation\&quot;: \&quot;确认 submodule 的路径，以便告知用户具体要添加哪个目录。\&quot;, \&quot;path\&quot;: \&quot;D:/UnityProject/ArcToonRP-Prototype/.gitmodules\&quot;}&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_END&quot;,&quot;timestamp&quot;:1772684759,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;tooluse_cSSDWY5N62eHKpmb8ngZwb&quot;},&quot;toolCallId&quot;:&quot;tooluse_cSSDWY5N62eHKpmb8ngZwb&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TOOL_CALL_RESULT&quot;,&quot;timestamp&quot;:1772684759,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;tool_call_id&quot;:&quot;tooluse_cSSDWY5N62eHKpmb8ngZwb&quot;,&quot;result&quot;:{},&quot;display_name&quot;:&quot;读取文件&quot;},&quot;messageId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;toolCallId&quot;:&quot;tooluse_cSSDWY5N62eHKpmb8ngZwb&quot;,&quot;content&quot;:&quot;{\&quot;content\&quot;: \&quot;[submodule \\\&quot;Packages/com.arctoon.render-pipeline\\\&quot;]\\n\\tpath = Packages/com.arctoon.render-pipeline\\n\\turl = https://github.com/Archer-du/ArcToonRP-Prototype.git\\n\\tbranch = package\\n\\n... EOF no more lines ...\\n\&quot;, \&quot;fileSize\&quot;: \&quot;174 Byte\&quot;, \&quot;isBigFile\&quot;: false, \&quot;totalLines\&quot;: 5}&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;STEP_FINISHED&quot;,&quot;timestamp&quot;:1772684759,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;step_name&quot;:&quot;call_llm&quot;,&quot;token_usage&quot;:{&quot;completion_tokens&quot;:346,&quot;prompt_tokens&quot;:17991,&quot;total_tokens&quot;:18337,&quot;completion_tokens_details&quot;:{&quot;accepted_prediction_tokens&quot;:null,&quot;audio_tokens&quot;:null,&quot;reasoning_tokens&quot;:0,&quot;rejected_prediction_tokens&quot;:null},&quot;prompt_tokens_details&quot;:{&quot;audio_tokens&quot;:null,&quot;cached_tokens&quot;:12221,&quot;cache_write_tokens&quot;:5768},&quot;cache_creation_input_tokens&quot;:0,&quot;cache_read_input_tokens&quot;:0}},&quot;stepName&quot;:&quot;call_llm&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;STEP_STARTED&quot;,&quot;timestamp&quot;:1772684759,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;step_name&quot;:&quot;call_llm&quot;},&quot;stepName&quot;:&quot;call_llm&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TEXT_MESSAGE_START&quot;,&quot;timestamp&quot;:1772684762,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;messageId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;role&quot;:&quot;assistant&quot;}" />
+                    <option value="{&quot;messageId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;content&quot;:&quot;好的，你的 submodule 路径是 `Packages/com.arctoon.render-pipeline`。\n\n## 具体操作步骤\n\n### 方法一：通过设置界面手动添加\n\n1. **Settings**（`Ctrl + Alt + S`）→ **Version Control** → **Directory Mappings**\n2. 点击 **`+`** 按钮\n3. **Directory** 选择：`D:\\UnityProject\\ArcToonRP-Prototype\\Packages\\com.arctoon.render-pipeline`\n4. **VCS** 选择：**Git**\n5. 点击 **OK** → **Apply**\n\n### 方法二：让 Rider 自动检测\n\n有时候 Rider 会在打开项目时弹出提示 **\&quot;Unregistered VCS root detected\&quot;**，如果你之前忽略了这个提示，可以这样找回：\n\n1. 查看 Rider 右下角的 **通知气泡**（Event Log）\n2. 如果有 \&quot;Unregistered VCS root\&quot; 的通知，点击 **Add root** 即可\n\n### 方法三：通过 idea 配置文件直接修改\n\n如果 UI 操作不生效，你也可以直接编辑项目的 VCS 配置文件 `.idea/vcs.xml`，确保其中包含 submodule 的映射：\n\n```xml\n&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;\n&lt;project version=\&quot;4\&quot;&gt;\n  &lt;component name=\&quot;VcsDirectoryMappings\&quot;&gt;\n    &lt;mapping directory=\&quot;$PROJECT_DIR$\&quot; vcs=\&quot;Git\&quot; /&gt;\n    &lt;mapping directory=\&quot;$PROJECT_DIR$/Packages/com.arctoon.render-pipeline\&quot; vcs=\&quot;Git\&quot; /&gt;\n  &lt;/component&gt;\n&lt;/project&gt;\n```\n\n添加完成后**重启 Rider**，就能在 Git 面板中看到 submodule 的独立 Git Root 了。\n\n## ⚠️ 前提条件\n\n确保 submodule 已经被正确初始化（目录不为空），否则 Rider 无法识别它为一个 Git 仓库。你可以在终端中确认：\n\n```bash\ngit submodule status\n```\n\n如果前面带有 `-` 号，说明还未初始化，需要先执行：\n\n```bash\ngit submodule update --init\n```\n\n初始化完成后，再按上面的步骤添加到 Directory Mappings 中即可。&quot;},&quot;timestamp&quot;:1772684762,&quot;type&quot;:&quot;TEXT_MESSAGE_CONTENT&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;TEXT_MESSAGE_END&quot;,&quot;timestamp&quot;:1772684771,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;messageId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;STEP_FINISHED&quot;,&quot;timestamp&quot;:1772684771,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;step_name&quot;:&quot;call_llm&quot;,&quot;token_usage&quot;:{&quot;completion_tokens&quot;:659,&quot;prompt_tokens&quot;:18608,&quot;total_tokens&quot;:19267,&quot;completion_tokens_details&quot;:{&quot;accepted_prediction_tokens&quot;:null,&quot;audio_tokens&quot;:null,&quot;reasoning_tokens&quot;:0,&quot;rejected_prediction_tokens&quot;:null},&quot;prompt_tokens_details&quot;:{&quot;audio_tokens&quot;:null,&quot;cached_tokens&quot;:17989,&quot;cache_write_tokens&quot;:618},&quot;cache_creation_input_tokens&quot;:0,&quot;cache_read_input_tokens&quot;:0}},&quot;stepName&quot;:&quot;call_llm&quot;}" />
+                    <option value="{&quot;type&quot;:&quot;RUN_FINISHED&quot;,&quot;timestamp&quot;:1772684771,&quot;rawEvent&quot;:{&quot;message_id&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;,&quot;conversation_id&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;},&quot;threadId&quot;:&quot;019cbc01af6c724b91ce990e963140f2&quot;,&quot;runId&quot;:&quot;019cbc3eacf579c2b227c0b3ea869c3a&quot;}" />
+                  </list>
+                </option>
+                <option name="answer" value="" />
+                <option name="chatMode" value="AGENT" />
+                <option name="chatResource" value="user" />
+                <option name="codeReferences">
+                  <list />
+                </option>
+                <option name="command" value="normal" />
+                <option name="conversationId" value="019cbc01af6c724b91ce990e963140f2" />
+                <option name="historyDocumentMap">
+                  <map>
+                    <entry key="file:///D:/UnityProject/ArcToonRP-Prototype/README.md" value="the prototype of ArcToon render pipeline, only for learning and testing.&#10;" />
+                  </map>
+                </option>
+                <option name="inputToken" value="36599" />
+                <option name="messageId" value="019cbc3eacf579c2b227c0b3ea869c3a" />
+                <option name="model" value="claude-4.6-opus" />
+                <option name="outputToken" value="1005" />
+                <option name="protocol" value="ag-ui" />
+                <option name="question" value="Wrivxglib Nzkkrmth 并没有显示我的hfynlwfov，怎么办？" />
+                <option name="rating" value="UNRATED" />
+                <option name="referenceBeans">
+                  <list />
+                </option>
+                <option name="status" value="SUCCESS" />
+                <option name="totalToken" value="37604" />
+                <option name="variables">
+                  <list />
+                </option>
+              </Turn>
             </list>
           </option>
-          <option name="updateTime" value="1772681164455" />
+          <option name="updateTime" value="1772684771808" />
         </Conversation>
       </list>
     </option>
