@@ -38,7 +38,19 @@ namespace ArcToon.Runtime.Settings
             public bool bicubicUpsampling;
         }
 
-        [SerializeField] BloomSettings bloom;
+        [SerializeField] BloomSettings bloom = new()
+        {
+            mode = BloomSettings.Mode.Scattering,
+            ignoreRenderScale = true,
+            scatter = 0.5f,
+            maxIterations = 2,
+            downscaleLimit = 10,
+            threshold = 1f,
+            thresholdKnee = 1f,
+            intensity = 1f,
+            fadeFireflies = true,
+            bicubicUpsampling = true
+        };
         public BloomSettings Bloom => bloom;
 
 
@@ -58,7 +70,9 @@ namespace ArcToon.Runtime.Settings
 
         [SerializeField] ColorAdjustmentsSettings colorAdjustments = new()
         {
-            colorFilter = Color.white
+            contrast = 5f,
+            colorFilter = Color.white,
+            saturation = 20f
         };
 
         public ColorAdjustmentsSettings ColorAdjustments => colorAdjustments;
@@ -70,7 +84,10 @@ namespace ArcToon.Runtime.Settings
             [Range(-100f, 100f)] public float temperature, tint;
         }
 
-        [SerializeField] WhiteBalanceSettings whiteBalance;
+        [SerializeField] WhiteBalanceSettings whiteBalance = new()
+        {
+            temperature = -5f
+        };
 
         public WhiteBalanceSettings WhiteBalance => whiteBalance;
 
@@ -154,6 +171,7 @@ namespace ArcToon.Runtime.Settings
 
         [SerializeField] ToneMappingSettings toneMapping = new()
         {
+            mode = ToneMappingSettings.Mode.Neutral,
             colorLUTResolution = ToneMappingSettings.ColorLUTResolution._64
         };
 
