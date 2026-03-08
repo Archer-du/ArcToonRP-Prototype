@@ -49,11 +49,11 @@ namespace ArcToon.Runtime.Settings
 
         [FormerlySerializedAs("directionalCascade")] public DirectionalCascadeShadow directionalCascadeShadow = new()
         {
-            atlasSize = MapSize._1024,
+            atlasSize = MapSize._4096,
             cascadeCount = 4,
-            cascadeRatio1 = 0.1f,
-            cascadeRatio2 = 0.25f,
-            cascadeRatio3 = 0.5f,
+            cascadeRatio1 = 0.4f,
+            cascadeRatio2 = 0.55f,
+            cascadeRatio3 = 0.8f,
             edgeFade = 0.1f,
             blendMode = CascadeBlendMode.Dither
         };
@@ -65,7 +65,7 @@ namespace ArcToon.Runtime.Settings
         }
         public PerObjectShadow perObjectShadow = new()
         {
-            atlasSize = MapSize._1024
+            atlasSize = MapSize._4096
         };
 
         [System.Serializable]
@@ -76,7 +76,7 @@ namespace ArcToon.Runtime.Settings
 
         public SpotShadow spotShadow = new()
         {
-            atlasSize = MapSize._1024,
+            atlasSize = MapSize._4096,
         };
 
         [System.Serializable]
@@ -87,7 +87,7 @@ namespace ArcToon.Runtime.Settings
 
         public PointShadow pointShadow = new()
         {
-            atlasSize = MapSize._1024,
+            atlasSize = MapSize._4096,
         };
 
         public enum FilterQuality
@@ -98,7 +98,7 @@ namespace ArcToon.Runtime.Settings
             PCF7x7
         }
 
-        public FilterQuality filterQuality = FilterQuality.PCF5x5;
+        public FilterQuality filterQuality = FilterQuality.PCF7x7;
 
         [Min(0.001f)] public float maxDistance = 100f;
 

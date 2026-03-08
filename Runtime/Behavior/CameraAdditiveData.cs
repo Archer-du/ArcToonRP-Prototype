@@ -27,8 +27,6 @@ namespace ArcToon.Runtime.Behavior
         
         [Range(0.1f, 2f)] public float renderScale = 1f;
 
-        public bool copyColor = true;
-
         public PostFXConfig overridePostFXConfig;
 
         [Serializable]

@@ -34,7 +34,6 @@ namespace ArcToon.Runtime
         internal CullingResults CullingResults { private set; get; }
         internal bool useHDR { private set; get; }
         internal RenderPhase RenderPhase { private set; get; }
-        internal bool copyColor { private set; get; }
         
         internal CameraBufferSettings BufferSettings { private set; get; }
         internal ShadowSettings ShadowSettings { private set; get; }
@@ -105,14 +104,6 @@ namespace ArcToon.Runtime
             AttachmentSize = GetCameraBufferSize(RenderCamera, RenderScale);
                         
             useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
-            if (RenderCamera.cameraType == CameraType.Reflection)
-            {
-                copyColor = BufferSettings.copyColorReflection;
-            }
-            else
-            {
-                copyColor = BufferSettings.copyColor && CameraAdditiveData.copyColor;
-            }
 
             return true;
         }

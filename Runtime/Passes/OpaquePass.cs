@@ -50,10 +50,6 @@ namespace ArcToon.Runtime.Passes
             builder.ReadWriteTexture(resourceHandle.colorAttachment);
             builder.ReadWriteTexture(resourceHandle.depthAttachment);
             
-            if (resourceHandle.colorCopy.IsValid())
-            {
-                builder.ReadTexture(resourceHandle.colorCopy);
-            }
             if (resourceHandle.preDepthStencil.IsValid())
             {
                 builder.ReadTexture(resourceHandle.preDepthStencil);

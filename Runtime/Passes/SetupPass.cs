@@ -60,15 +60,6 @@ namespace ArcToon.Runtime.Passes
                 depthBufferBits = DepthBits.Depth32,
             });
             
-            if (renderer.copyColor)
-            {
-                resourceHandle.colorCopy = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
-                {
-                    name = "Color Copy",
-                    colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
-                });
-            }
-            
             resourceHandle.preDepthStencil = renderGraph.CreateTexture(new TextureDesc(AttachmentSize.x, AttachmentSize.y)
             {
                 name = "Depth Copy",

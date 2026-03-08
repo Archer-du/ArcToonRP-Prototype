@@ -9,13 +9,11 @@ namespace ArcToon.Runtime.Settings
     {
         [FormerlySerializedAs("allowHDR")] public bool enableHDR = true;
 
-        public bool copyColor, copyColorReflection;
-
-        [Range(0.5f, 2f)] public float renderScale = 1f;
+        [Range(0.5f, 2f)] public float renderScale = 2f;
         
         public enum BicubicRescalingMode { Off, UpOnly, UpAndDown }
         
-        public BicubicRescalingMode bicubicRescalingMode;
+        public BicubicRescalingMode bicubicRescalingMode = BicubicRescalingMode.UpOnly;
 
         [Serializable]
         public struct FXAASettings
@@ -38,9 +36,11 @@ namespace ArcToon.Runtime.Settings
 
         public FXAASettings fxaaSettings = new()
         {
-            fixedThreshold = 0.0833f,
-            relativeThreshold = 0.166f,
-            subpixelBlending = 0.75f,
+            enabled = true,
+            fixedThreshold = 0.0338f,
+            relativeThreshold = 0.084f,
+            subpixelBlending = 1f,
+            quality = FXAASettings.Quality.High,
         };
     }
 }
