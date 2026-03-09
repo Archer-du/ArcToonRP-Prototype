@@ -86,7 +86,7 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
     // cascade shadow blend
     normalBias = surface.normalWS * _ShadowCascadeData[cascade.offset].data.y * directional.normalBiasScale;
     positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1],
-                      float4(surface.position + normalBias, 1.0)).xyz;
+                      float4(surface.positionWS + normalBias, 1.0)).xyz;
     shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, cascade.softBlend);
     #endif
     shadow = lerp(1.0, shadow, directional.shadowStrength);

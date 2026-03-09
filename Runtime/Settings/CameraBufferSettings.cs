@@ -7,9 +7,9 @@ namespace ArcToon.Runtime.Settings
     [Serializable]
     public class CameraBufferSettings
     {
-        [FormerlySerializedAs("allowHDR")] public bool enableHDR = true;
+        public bool enableHDR = true;
 
-        [Range(0.5f, 2f)] public float renderScale = 2f;
+        [Range(0.5f, 2f)] public float renderScale = 1.5f;
         
         public enum BicubicRescalingMode { Off, UpOnly, UpAndDown }
         
