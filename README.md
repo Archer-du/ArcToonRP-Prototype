@@ -14,7 +14,7 @@ A custom toon render pipeline built on Unity's Scriptable Render Pipeline (SRP),
 
 ## Requirements
 
-- Unity 6000.0 (Unity 6) or later
+- Unity 6000.0.30f1
 - Burst package
 - Mathematics package
 - Render Pipelines Core package
@@ -24,7 +24,7 @@ A custom toon render pipeline built on Unity's Scriptable Render Pipeline (SRP),
 Add this package via Unity Package Manager using the Git URL:
 
 ```
-https://github.com/Archer-du/ArcToonRP-Prototype.git#arctoon/0.1.0
+https://github.com/Archer-du/ArcToonRP-Prototype.git#arctoon/develop
 ```
 
 1. Open Unity and go to **Window > Package Manager**
