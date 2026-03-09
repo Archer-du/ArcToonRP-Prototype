@@ -14,7 +14,7 @@ A custom toon render pipeline built on Unity's Scriptable Render Pipeline (SRP),
 
 ## Requirements
 
-- Unity 6000.0 (Unity 6) or later
+- Unity 6000.0.30f1
 - Burst package
 - Mathematics package
 - Render Pipelines Core package
