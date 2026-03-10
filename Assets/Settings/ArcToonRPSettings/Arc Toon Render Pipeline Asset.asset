@@ -16,9 +16,7 @@ MonoBehaviour:
     useSRPBatcher: 1
     cameraBufferSettings:
       enableHDR: 1
-      copyColor: 1
-      copyColorReflection: 0
-      renderScale: 2
+      renderScale: 1.5
       bicubicRescalingMode: 1
       fxaaSettings:
         enabled: 1
