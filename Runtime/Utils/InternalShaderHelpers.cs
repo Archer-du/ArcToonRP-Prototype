@@ -67,6 +67,9 @@ namespace ArcToon.Runtime.Utils
             public static readonly int PointShadowData = ShaderPropertyID();
             public static readonly int PointShadowAtlasSize = ShaderPropertyID();
             public static readonly int PointShadowAtlas = ShaderPropertyID();
+
+            public static readonly int PoissonFilterRadius = ShaderPropertyID();
+            public static readonly int PcssLightSize = ShaderPropertyID();
             #endregion
 
             #region Prepass

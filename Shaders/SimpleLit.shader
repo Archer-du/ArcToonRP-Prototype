@@ -65,7 +65,7 @@
             #pragma target 4.5
 
             #pragma multi_compile_instancing
-            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
             #pragma multi_compile _ _CASCADE_BLEND_SOFT
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE

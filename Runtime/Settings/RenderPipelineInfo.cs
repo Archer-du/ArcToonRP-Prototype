@@ -13,6 +13,7 @@ namespace ArcToon.Runtime.Settings
         public const int MaxSpotLightCount = 64;
         public const int MaxPointLightCount = 16;
         public const int MaxPerObjectCasterCount = 16;
+        // TODO: should never be modified
         public const int MaxTilesPerLight = 6;
         
         public const int MaxCascades = 4;

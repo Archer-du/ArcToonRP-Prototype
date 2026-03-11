@@ -38,3 +38,7 @@ Thumbs.db
 
 # Plan files
 .codebuddy/
+
+# Documentation (auto-generated)
+Docs/
+Docs.meta

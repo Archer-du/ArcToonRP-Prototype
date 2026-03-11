@@ -62,6 +62,8 @@ namespace ArcToon.Runtime.Passes.Lighting
             GlobalKeyword.Create("_PCF3X3"),
             GlobalKeyword.Create("_PCF5X5"),
             GlobalKeyword.Create("_PCF7X7"),
+            GlobalKeyword.Create("_POISSON_DISK"),
+            GlobalKeyword.Create("_PCSS"),
         };
 
         NativeArray<LightShadowCasterCullingInfo> cullingInfoPerLight;
@@ -206,6 +208,15 @@ namespace ArcToon.Runtime.Passes.Lighting
             commandBuffer.SetGlobalTexture(InternalShader.PropertyID.PerObjectShadowAtlas, perObjectAtlas);
 
             commandBuffer.SetKeywords(filterKeywords, (int)settings.filterQuality - 1);
+
+            if (settings.filterQuality is ShadowSettings.FilterQuality.PoissonDisk or ShadowSettings.FilterQuality.PCSS)
+            {
+                commandBuffer.SetGlobalFloat(InternalShader.PropertyID.PoissonFilterRadius, settings.poissonFilterRadius);
+            }
+            if (settings.filterQuality == ShadowSettings.FilterQuality.PCSS)
+            {
+                commandBuffer.SetGlobalFloat(InternalShader.PropertyID.PcssLightSize, settings.pcssLightSize);
+            }
 
             commandBuffer.SetKeywords(shadowMaskKeywords,
                 collector.useShadowMask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
@@ -408,7 +419,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                     // for performance: compare the square distance from the sphere's center with a surface fragment square radius
                     cascadeShadowData[i] = new ShadowCascadeBufferData(
                         splitData.cullingSphere,
-                        directionalTileData.tileSize, settings.filterSize);
+                        directionalTileData.tileSize, settings.FilterSize);
                 }
 
                 info.handle = builder.UseRendererList(renderGraph.CreateShadowRendererList(ref shadowSettings));
@@ -484,7 +495,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                 useRenderingLayerMaskTest = true
             };
             float texelSize = 2f / pointTileData.tileSize;
-            float filterSize = texelSize * settings.filterSize;
+            float filterSize = texelSize * settings.FilterSize;
             float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
             float fovBias = Mathf.Atan(1f + normalBiasScale + filterSize) * Mathf.Rad2Deg * 2f - 90f;
 
@@ -661,7 +672,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                 float normalBias = Mathf.Max(info.width / perObjectTileData.tileSize,
                     info.height / perObjectTileData.tileSize);
                 perObjectShadowData[tileIndex] = new PerObjectShadowBufferData(
-                    normalBias, settings.filterSize,
+                    normalBias, settings.FilterSize,
                     ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
 
                 commandBuffer.SetViewProjectionMatrices(info.view, info.projection);
@@ -679,7 +690,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             RenderInfo info = spotRenderInfo[shadowedSpotLightIndex];
             // m00 = \frac{cot\frac{FOV}{2}}{Aspect} (Aspect = 1 in case of shadow map)
             float texelSize = 2f / (spotTileData.tileSize * info.projection.m00);
-            float filterSize = texelSize * settings.filterSize;
+            float filterSize = texelSize * settings.FilterSize;
             float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
             Vector2 offset = commandBuffer.SetTileViewport(tileIndex, spotTileData.splitCount, spotTileData.tileSize);
             float tileScale = 1f / spotTileData.splitCount;
@@ -699,7 +710,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             int tileOffset = shadowedPointLightIndex * 6;
             // m00 = \frac{cot\frac{FOV}{2}}{Aspect} (Aspect = 1, cot\frac{FOV}{2} = 1 in case of point shadow map)
             float texelSize = 2f / pointTileData.tileSize;
-            float filterSize = texelSize * settings.filterSize;
+            float filterSize = texelSize * settings.FilterSize;
             float normalBiasScale = lightShadowData.normalBias * filterSize * 1.4142136f;
             float tileScale = 1.0f / pointTileData.splitCount;
             commandBuffer.SetGlobalDepthBias(0f, lightShadowData.slopeScaleBias);
