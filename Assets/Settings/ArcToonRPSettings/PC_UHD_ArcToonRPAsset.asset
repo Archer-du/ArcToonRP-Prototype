@@ -39,9 +39,9 @@ MonoBehaviour:
         atlasSize: 4096
       pointShadow:
         atlasSize: 4096
-      filterQuality: 3
-      poissonFilterRadius: 5
-      pcssLightSize: 1
+      filterQuality: 7
+      poissonFilterRadius: 3
+      pcssLightSize: 0.001
       maxDistance: 100
       distanceFade: 0.1
     forwardPlusSettings:

@@ -224,17 +224,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69e24a8e22d0401aa31d837361362760, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  settings:
+  additiveData:
     maskLights: 0
     renderingLayerMask:
       serializedVersion: 0
       m_Bits: 4294967295
     renderScaleMode: 0
     renderScale: 1
-    copyDepth: 1
-    copyColor: 1
-    overridePostFX: 0
-    postFXSettings: {fileID: 0}
+    overridePostFXConfig: {fileID: 0}
     finalBlendMode:
       source: 1
       destination: 0
@@ -833,7 +830,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &990358221
 Transform:
   m_ObjectHideFlags: 0
@@ -1183,7 +1180,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1103746333
 Transform:
   m_ObjectHideFlags: 0
@@ -1496,7 +1493,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &1667184510
 Light:
   m_ObjectHideFlags: 0
@@ -1704,7 +1701,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1788434952
 Transform:
   m_ObjectHideFlags: 0
@@ -1802,7 +1799,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &1840850698
 Light:
   m_ObjectHideFlags: 0
