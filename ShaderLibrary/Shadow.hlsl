@@ -176,7 +176,7 @@ float MixBakedAndRealtimeShadow(float bakedShadow, float realtimeShadow, float f
 }
 
 // =============================================
-// Basic sampler
+// Basic Sampler
 // =============================================
 
 float SampleDirectionalShadowAtlas(float3 positionSTS)

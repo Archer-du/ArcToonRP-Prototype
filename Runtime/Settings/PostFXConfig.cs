@@ -1,4 +1,5 @@
 ﻿using System;
+using ArcToon.Runtime.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -177,23 +178,17 @@ namespace ArcToon.Runtime.Settings
 
         public ToneMappingSettings ToneMapping => toneMapping;
 
-
-        [SerializeField] Shader postProcessStackShader;
-
         [NonSerialized] Material postProcessStackMaterial;
 
         public Material PostProcessStackMaterial
         {
             get
             {
-                if (postProcessStackMaterial == null && postProcessStackShader != null)
+                if (postProcessStackMaterial == null)
                 {
-                    postProcessStackMaterial = new Material(postProcessStackShader)
-                    {
-                        hideFlags = HideFlags.HideAndDontSave
-                    };
+                    postProcessStackMaterial = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
+                    postProcessStackMaterial.hideFlags = HideFlags.HideAndDontSave;
                 }
-
                 return postProcessStackMaterial;
             }
         }

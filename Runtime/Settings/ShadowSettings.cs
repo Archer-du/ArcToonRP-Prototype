@@ -92,17 +92,17 @@ namespace ArcToon.Runtime.Settings
 
         public enum FilterQuality
         {
-            PCF2x2,
-            PCF3x3,
-            PCF5x5,
-            PCF7x7,
+            PCF2x2 = 2,
+            PCF3x3 = 3,
+            PCF5x5 = 5,
+            PCF7x7 = 7,
             PoissonDisk,
             PCSS
         }
 
         public FilterQuality filterQuality = FilterQuality.PCF7x7;
 
-        [Range(1f, 10f)] public float poissonFilterRadius = 5f;
+        [Range(0.01f, 10f)] public float poissonFilterRadius = 4f;
 
         [Min(0.001f)] public float pcssLightSize = 1f;
 
@@ -110,7 +110,7 @@ namespace ArcToon.Runtime.Settings
 
         [Range(0.001f, 1f)] public float distanceFade = 0.1f;
         
-        public int FilterSize
+        public float FilterSize
         {
             get
             {
@@ -118,9 +118,9 @@ namespace ArcToon.Runtime.Settings
                 {
                     case FilterQuality.PoissonDisk:
                     case FilterQuality.PCSS:
-                        return 4; // 等效 PCF7x7，保证 normalBias 计算正确
+                        return 2 * poissonFilterRadius + 1;
                     default:
-                        return (int)filterQuality + 1;
+                        return (float)filterQuality;
                 }
             }
         }
