@@ -3,6 +3,35 @@
 
 #define POISSON_SAMPLE_COUNT 16
 
+// Uncomment to enable runtime Vogel Disk sampling with per-pixel random rotation.
+// This eliminates regular banding artifacts at the cost of slight noise.
+// Comment out to fall back to precomputed Poisson Disk array.
+#define POISSON_DISK_RUNTIME
+
+#if defined(POISSON_DISK_RUNTIME)
+
+// Golden Angle in radians (~2.3999632)
+#define GOLDEN_ANGLE 2.3999632297286533
+
+// Non-const array, will be filled at runtime by InitPoissonDisk
+static float2 poissonDisk[POISSON_SAMPLE_COUNT];
+
+// Call this before accessing poissonDisk[].
+// screenPos: pixel screen-space coordinate (e.g. positionSTS.xy * atlasSize)
+// Uses Unity's InterleavedGradientNoise from Random.hlsl for per-pixel randomization.
+void InitPoissonDisk(float2 screenPos)
+{
+    float rotation = InterleavedGradientNoise(screenPos, 0) * 6.28318530718; // TWO_PI
+    for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
+    {
+        float r = sqrt((float)i + 0.5) / sqrt((float)POISSON_SAMPLE_COUNT);
+        float theta = (float)i * GOLDEN_ANGLE + rotation;
+        poissonDisk[i] = float2(r * cos(theta), r * sin(theta));
+    }
+}
+
+#else // Precomputed mode
+
 static const float2 poissonDisk[POISSON_SAMPLE_COUNT] =
 {
     float2(-0.94201624, -0.39906216),
@@ -23,4 +52,8 @@ static const float2 poissonDisk[POISSON_SAMPLE_COUNT] =
     float2( 0.14383161, -0.14100790)
 };
 
-#endif
+void InitPoissonDisk(float2 screenPos) {}
+
+#endif // POISSON_DISK_RUNTIME
+
+#endif // ARCTOON_POISSON_DISK_INCLUDED

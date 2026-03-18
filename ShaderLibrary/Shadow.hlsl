@@ -39,9 +39,11 @@ TEXTURE2D_SHADOW(_SpotShadowAtlas);
 TEXTURE2D_SHADOW(_PointShadowAtlas);
 TEXTURE2D_SHADOW(_PerObjectShadowAtlas);
 
-// TODO: define PCSS sampler
+#if defined (_PCSS)
+#define SHADOW_SAMPLER sampler_linear_clamp
+#else
 #define SHADOW_SAMPLER sampler_linear_clamp_compare
-SAMPLER_CMP(SHADOW_SAMPLER);
+#endif
 
 CBUFFER_START(_CustomShadows)
     float4 _DirectionalShadowAtlasSize;
@@ -218,6 +220,7 @@ float FilterDirectionalShadowPoisson(float3 positionSTS, float filterRadius)
 {
     float texelSize = _DirectionalShadowAtlasSize.y;
     float shadow = 0;
+    InitPoissonDisk(positionSTS.xy * _DirectionalShadowAtlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * filterRadius * texelSize;
@@ -230,6 +233,7 @@ float FilterPerObjectShadowPoisson(float3 positionSTS, float filterRadius)
 {
     float texelSize = _PerObjectAtlasSize.y;
     float shadow = 0;
+    InitPoissonDisk(positionSTS.xy * _PerObjectAtlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * filterRadius * texelSize;
@@ -242,6 +246,7 @@ float FilterSpotShadowPoisson(float3 positionSTS, float3 bounds, float filterRad
 {
     float texelSize = _SpotShadowAtlasSize.y;
     float shadow = 0;
+    InitPoissonDisk(positionSTS.xy * _SpotShadowAtlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * filterRadius * texelSize;
@@ -255,6 +260,7 @@ float FilterPointShadowPoisson(float3 positionSTS, float3 bounds, float filterRa
 {
     float texelSize = _PointShadowAtlasSize.y;
     float shadow = 0;
+    InitPoissonDisk(positionSTS.xy * _PointShadowAtlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * filterRadius * texelSize;
@@ -271,17 +277,18 @@ float FilterPointShadowPoisson(float3 positionSTS, float3 bounds, float filterRa
 // =============================================
 #if defined(_PCSS)
 
-// 返回 float2(avgBlockerDepth, blockerCount)
+// return float2(avgBlockerDepth, blockerCount)
 float2 BlockerSearch_Directional(float3 positionSTS, float searchRadius)
 {
     float texelSize = _DirectionalShadowAtlasSize.y;
     float blockerDepthSum = 0;
     float blockerCount = 0;
+    InitPoissonDisk(positionSTS.xy * _DirectionalShadowAtlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * searchRadius * texelSize;
         float shadowMapDepth = SAMPLE_TEXTURE2D_LOD(
-            _DirectionalShadowAtlas, sampler_linear_clamp,
+            _DirectionalShadowAtlas, SHADOW_SAMPLER,
             positionSTS.xy + offset, 0
         ).r;
         #if defined(UNITY_REVERSED_Z)
@@ -302,11 +309,12 @@ float2 BlockerSearch_PerObject(float3 positionSTS, float searchRadius)
     float texelSize = _PerObjectAtlasSize.y;
     float blockerDepthSum = 0;
     float blockerCount = 0;
+    InitPoissonDisk(positionSTS.xy * _PerObjectAtlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * searchRadius * texelSize;
         float shadowMapDepth = SAMPLE_TEXTURE2D_LOD(
-            _PerObjectShadowAtlas, sampler_linear_clamp,
+            _PerObjectShadowAtlas, SHADOW_SAMPLER,
             positionSTS.xy + offset, 0
         ).r;
         #if defined(UNITY_REVERSED_Z)
@@ -327,12 +335,13 @@ float2 BlockerSearch_Spot(float3 positionSTS, float3 bounds, float searchRadius)
     float texelSize = _SpotShadowAtlasSize.y;
     float blockerDepthSum = 0;
     float blockerCount = 0;
+    InitPoissonDisk(positionSTS.xy * _SpotShadowAtlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * searchRadius * texelSize;
         float2 samplePos = clamp(positionSTS.xy + offset, bounds.xy, bounds.xy + bounds.z);
         float shadowMapDepth = SAMPLE_TEXTURE2D_LOD(
-            _SpotShadowAtlas, sampler_linear_clamp,
+            _SpotShadowAtlas, SHADOW_SAMPLER,
             samplePos, 0
         ).r;
         #if defined(UNITY_REVERSED_Z)
@@ -353,12 +362,13 @@ float2 BlockerSearch_Point(float3 positionSTS, float3 bounds, float searchRadius
     float texelSize = _PointShadowAtlasSize.y;
     float blockerDepthSum = 0;
     float blockerCount = 0;
+    InitPoissonDisk(positionSTS.xy * _PointShadowAtlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * searchRadius * texelSize;
         float2 samplePos = clamp(positionSTS.xy + offset, bounds.xy, bounds.xy + bounds.z);
         float shadowMapDepth = SAMPLE_TEXTURE2D_LOD(
-            _PointShadowAtlas, sampler_linear_clamp,
+            _PointShadowAtlas, SHADOW_SAMPLER,
             samplePos, 0
         ).r;
         #if defined(UNITY_REVERSED_Z)
@@ -387,13 +397,10 @@ float FilterDirectionalShadowPCSS(float3 positionSTS)
     float avgBlockerDepth = blockerInfo.x;
     float numBlockers = blockerInfo.y;
 
-    // 无遮挡物，完全照亮
     if (numBlockers < 0.5) return 1.0;
-    // 全部遮挡
     if (numBlockers >= POISSON_SAMPLE_COUNT - 0.5) return 0.0;
 
     // Step 2: Penumbra Estimation
-    // 方向光使用正交投影，半影宽度公式简化为线性关系
     float zReceiver = positionSTS.z;
     #if defined(UNITY_REVERSED_Z)
     float penumbraWidth = _PcssLightSize * (avgBlockerDepth - zReceiver) / max(avgBlockerDepth, 0.001);
