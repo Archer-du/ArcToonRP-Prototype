@@ -4,29 +4,14 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Shadow/ShadowSamplingTent.hlsl"
 
 #if defined(_PCF3X3)
-    #define DIRECTIONAL_FILTER_SAMPLES 4
-    #define SPOT_FILTER_SAMPLES 4
-    #define POINT_FILTER_SAMPLES 4
-
-    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
-    #define SPOT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
-    #define POINT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
+    #define SHADOW_FILTER_SAMPLES 4
+    #define SHADOW_FILTER_SETUP SampleShadow_ComputeSamples_Tent_3x3
 #elif defined(_PCF5X5)
-    #define DIRECTIONAL_FILTER_SAMPLES 9
-    #define SPOT_FILTER_SAMPLES 9
-    #define POINT_FILTER_SAMPLES 9
-
-    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
-    #define SPOT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
-    #define POINT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
+    #define SHADOW_FILTER_SAMPLES 9
+    #define SHADOW_FILTER_SETUP SampleShadow_ComputeSamples_Tent_5x5
 #elif defined(_PCF7X7)
-    #define DIRECTIONAL_FILTER_SAMPLES 16
-    #define SPOT_FILTER_SAMPLES 16
-    #define POINT_FILTER_SAMPLES 16
-
-    #define DIRECTIONAL_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
-    #define SPOT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
-    #define POINT_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
+    #define SHADOW_FILTER_SAMPLES 16
+    #define SHADOW_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
 #elif defined(_POISSON_DISK) || defined(_PCSS)
     #include "PoissonDisk.hlsl"
 #endif
@@ -38,12 +23,6 @@ TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 TEXTURE2D_SHADOW(_SpotShadowAtlas);
 TEXTURE2D_SHADOW(_PointShadowAtlas);
 TEXTURE2D_SHADOW(_PerObjectShadowAtlas);
-
-#if defined (_PCSS)
-#define SHADOW_SAMPLER sampler_linear_clamp
-#else
-#define SHADOW_SAMPLER sampler_linear_clamp_compare
-#endif
 
 CBUFFER_START(_CustomShadows)
     float4 _DirectionalShadowAtlasSize;
@@ -178,94 +157,55 @@ float MixBakedAndRealtimeShadow(float bakedShadow, float realtimeShadow, float f
 }
 
 // =============================================
-// Basic Sampler
+// Basic Sampler (unified core functions)
 // =============================================
 
-float SampleDirectionalShadowAtlas(float3 positionSTS)
+float SampleShadowAtlas(TEXTURE2D_SHADOW_PARAM(shadowAtlas, shadowSampler), float3 positionSTS)
 {
-    return SAMPLE_TEXTURE2D_SHADOW(
-        _DirectionalShadowAtlas, SHADOW_SAMPLER, positionSTS
-    );
+    return SAMPLE_TEXTURE2D_SHADOW(shadowAtlas, shadowSampler, positionSTS);
 }
 
-float SamplePerObjectShadowAtlas(float3 positionSTS)
-{
-    return SAMPLE_TEXTURE2D_SHADOW(
-        _PerObjectShadowAtlas, SHADOW_SAMPLER, positionSTS
-    );
-}
-
-float SampleSpotShadowAtlas(float3 positionSTS, float3 bounds)
+float SampleShadowAtlasClamped(TEXTURE2D_SHADOW_PARAM(shadowAtlas, shadowSampler), float3 positionSTS, float3 bounds)
 {
     positionSTS.xy = clamp(positionSTS.xy, bounds.xy, bounds.xy + bounds.z);
-    return SAMPLE_TEXTURE2D_SHADOW(
-        _SpotShadowAtlas, SHADOW_SAMPLER, positionSTS
-    );
-}
-
-float SamplePointShadowAtlas(float3 positionSTS, float3 bounds)
-{
-    positionSTS.xy = clamp(positionSTS.xy, bounds.xy, bounds.xy + bounds.z);
-    return SAMPLE_TEXTURE2D_SHADOW(
-        _PointShadowAtlas, SHADOW_SAMPLER, positionSTS
-    );
+    return SAMPLE_TEXTURE2D_SHADOW(shadowAtlas, shadowSampler, positionSTS);
 }
 
 // =============================================
-// Poisson Disk Filter
+// Poisson Disk Filter (unified core functions)
 // =============================================
 #if defined(_POISSON_DISK) || defined(_PCSS)
 
-float FilterDirectionalShadowPoisson(float3 positionSTS, float filterRadius)
+float FilterShadowPoisson(TEXTURE2D_SHADOW_PARAM(shadowAtlas, shadowSampler), float3 positionSTS,
+    float4 atlasSize, float filterRadius)
 {
-    float texelSize = _DirectionalShadowAtlasSize.y;
+    float texelSize = atlasSize.y;
     float shadow = 0;
-    InitPoissonDisk(positionSTS.xy * _DirectionalShadowAtlasSize.x);
+    InitPoissonDisk(positionSTS.xy * atlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * filterRadius * texelSize;
-        shadow += SampleDirectionalShadowAtlas(float3(positionSTS.xy + offset, positionSTS.z));
+        shadow += SampleShadowAtlas(
+            TEXTURE2D_SHADOW_ARGS(shadowAtlas, shadowSampler),
+            float3(positionSTS.xy + offset, positionSTS.z)
+        );
     }
     return shadow / POISSON_SAMPLE_COUNT;
 }
 
-float FilterPerObjectShadowPoisson(float3 positionSTS, float filterRadius)
+float FilterShadowPoissonClamped(TEXTURE2D_SHADOW_PARAM(shadowAtlas, shadowSampler), float3 positionSTS,
+    float3 bounds, float4 atlasSize, float filterRadius)
 {
-    float texelSize = _PerObjectAtlasSize.y;
+    float texelSize = atlasSize.y;
     float shadow = 0;
-    InitPoissonDisk(positionSTS.xy * _PerObjectAtlasSize.x);
+    InitPoissonDisk(positionSTS.xy * atlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * filterRadius * texelSize;
-        shadow += SamplePerObjectShadowAtlas(float3(positionSTS.xy + offset, positionSTS.z));
-    }
-    return shadow / POISSON_SAMPLE_COUNT;
-}
-
-float FilterSpotShadowPoisson(float3 positionSTS, float3 bounds, float filterRadius)
-{
-    float texelSize = _SpotShadowAtlasSize.y;
-    float shadow = 0;
-    InitPoissonDisk(positionSTS.xy * _SpotShadowAtlasSize.x);
-    for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
-    {
-        float2 offset = poissonDisk[i] * filterRadius * texelSize;
-        float2 samplePos = clamp(positionSTS.xy + offset, bounds.xy, bounds.xy + bounds.z);
-        shadow += SAMPLE_TEXTURE2D_SHADOW(_SpotShadowAtlas, SHADOW_SAMPLER, float3(samplePos, positionSTS.z));
-    }
-    return shadow / POISSON_SAMPLE_COUNT;
-}
-
-float FilterPointShadowPoisson(float3 positionSTS, float3 bounds, float filterRadius)
-{
-    float texelSize = _PointShadowAtlasSize.y;
-    float shadow = 0;
-    InitPoissonDisk(positionSTS.xy * _PointShadowAtlasSize.x);
-    for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
-    {
-        float2 offset = poissonDisk[i] * filterRadius * texelSize;
-        float2 samplePos = clamp(positionSTS.xy + offset, bounds.xy, bounds.xy + bounds.z);
-        shadow += SAMPLE_TEXTURE2D_SHADOW(_PointShadowAtlas, SHADOW_SAMPLER, float3(samplePos, positionSTS.z));
+        shadow += SampleShadowAtlasClamped(
+            TEXTURE2D_SHADOW_ARGS(shadowAtlas, shadowSampler),
+            float3(positionSTS.xy + offset, positionSTS.z), bounds
+        );
     }
     return shadow / POISSON_SAMPLE_COUNT;
 }
@@ -273,22 +213,23 @@ float FilterPointShadowPoisson(float3 positionSTS, float3 bounds, float filterRa
 #endif
 
 // =============================================
-// PCSS Blocker Search
+// PCSS Blocker Search (unified core functions)
 // =============================================
 #if defined(_PCSS)
 
-// return float2(avgBlockerDepth, blockerCount)
-float2 BlockerSearch_Directional(float3 positionSTS, float searchRadius)
+// Returns float2(avgBlockerDepth, blockerCount)
+float2 BlockerSearch(TEXTURE2D_PARAM(shadowAtlas, depthSampler), float3 positionSTS,
+    float4 atlasSize, float searchRadius)
 {
-    float texelSize = _DirectionalShadowAtlasSize.y;
+    float texelSize = atlasSize.y;
     float blockerDepthSum = 0;
     float blockerCount = 0;
-    InitPoissonDisk(positionSTS.xy * _DirectionalShadowAtlasSize.x);
+    InitPoissonDisk(positionSTS.xy * atlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * searchRadius * texelSize;
         float shadowMapDepth = SAMPLE_TEXTURE2D_LOD(
-            _DirectionalShadowAtlas, SHADOW_SAMPLER,
+            shadowAtlas, depthSampler,
             positionSTS.xy + offset, 0
         ).r;
         #if defined(UNITY_REVERSED_Z)
@@ -304,71 +245,20 @@ float2 BlockerSearch_Directional(float3 positionSTS, float searchRadius)
     return float2(blockerDepthSum / max(blockerCount, 0.001), blockerCount);
 }
 
-float2 BlockerSearch_PerObject(float3 positionSTS, float searchRadius)
+// Returns float2(avgBlockerDepth, blockerCount)
+float2 BlockerSearchClamped(TEXTURE2D_PARAM(shadowAtlas, depthSampler), float3 positionSTS,
+    float3 bounds, float4 atlasSize, float searchRadius)
 {
-    float texelSize = _PerObjectAtlasSize.y;
+    float texelSize = atlasSize.y;
     float blockerDepthSum = 0;
     float blockerCount = 0;
-    InitPoissonDisk(positionSTS.xy * _PerObjectAtlasSize.x);
-    for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
-    {
-        float2 offset = poissonDisk[i] * searchRadius * texelSize;
-        float shadowMapDepth = SAMPLE_TEXTURE2D_LOD(
-            _PerObjectShadowAtlas, SHADOW_SAMPLER,
-            positionSTS.xy + offset, 0
-        ).r;
-        #if defined(UNITY_REVERSED_Z)
-        if (shadowMapDepth > positionSTS.z)
-        #else
-        if (shadowMapDepth < positionSTS.z)
-        #endif
-        {
-            blockerDepthSum += shadowMapDepth;
-            blockerCount += 1.0;
-        }
-    }
-    return float2(blockerDepthSum / max(blockerCount, 0.001), blockerCount);
-}
-
-float2 BlockerSearch_Spot(float3 positionSTS, float3 bounds, float searchRadius)
-{
-    float texelSize = _SpotShadowAtlasSize.y;
-    float blockerDepthSum = 0;
-    float blockerCount = 0;
-    InitPoissonDisk(positionSTS.xy * _SpotShadowAtlasSize.x);
+    InitPoissonDisk(positionSTS.xy * atlasSize.x);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * searchRadius * texelSize;
         float2 samplePos = clamp(positionSTS.xy + offset, bounds.xy, bounds.xy + bounds.z);
         float shadowMapDepth = SAMPLE_TEXTURE2D_LOD(
-            _SpotShadowAtlas, SHADOW_SAMPLER,
-            samplePos, 0
-        ).r;
-        #if defined(UNITY_REVERSED_Z)
-        if (shadowMapDepth > positionSTS.z)
-        #else
-        if (shadowMapDepth < positionSTS.z)
-        #endif
-        {
-            blockerDepthSum += shadowMapDepth;
-            blockerCount += 1.0;
-        }
-    }
-    return float2(blockerDepthSum / max(blockerCount, 0.001), blockerCount);
-}
-
-float2 BlockerSearch_Point(float3 positionSTS, float3 bounds, float searchRadius)
-{
-    float texelSize = _PointShadowAtlasSize.y;
-    float blockerDepthSum = 0;
-    float blockerCount = 0;
-    InitPoissonDisk(positionSTS.xy * _PointShadowAtlasSize.x);
-    for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
-    {
-        float2 offset = poissonDisk[i] * searchRadius * texelSize;
-        float2 samplePos = clamp(positionSTS.xy + offset, bounds.xy, bounds.xy + bounds.z);
-        float shadowMapDepth = SAMPLE_TEXTURE2D_LOD(
-            _PointShadowAtlas, SHADOW_SAMPLER,
+            shadowAtlas, depthSampler,
             samplePos, 0
         ).r;
         #if defined(UNITY_REVERSED_Z)
@@ -385,15 +275,21 @@ float2 BlockerSearch_Point(float3 positionSTS, float3 bounds, float searchRadius
 }
 
 // =============================================
-// PCSS Main
+// PCSS Main (unified core functions)
 // =============================================
 
-float FilterDirectionalShadowPCSS(float3 positionSTS)
+float FilterShadowPCSS(
+    TEXTURE2D_SHADOW_PARAM(shadowAtlas, cmpSampler),
+    TEXTURE2D_PARAM(shadowAtlasLod, depthSampler),
+    float3 positionSTS, float4 atlasSize)
 {
     float searchRadius = _PcssLightSize * _PoissonFilterRadius;
 
     // Step 1: Blocker Search
-    float2 blockerInfo = BlockerSearch_Directional(positionSTS, searchRadius);
+    float2 blockerInfo = BlockerSearch(
+        TEXTURE2D_ARGS(shadowAtlasLod, depthSampler),
+        positionSTS, atlasSize, searchRadius
+    );
     float avgBlockerDepth = blockerInfo.x;
     float numBlockers = blockerInfo.y;
 
@@ -411,20 +307,31 @@ float FilterDirectionalShadowPCSS(float3 positionSTS)
 
     // Step 3: PCF Filtering
     float dynamicRadius = penumbraWidth * _PoissonFilterRadius;
-    return FilterDirectionalShadowPoisson(positionSTS, dynamicRadius);
+    return FilterShadowPoisson(
+        TEXTURE2D_SHADOW_ARGS(shadowAtlas, cmpSampler),
+        positionSTS, atlasSize, dynamicRadius
+    );
 }
 
-float FilterPerObjectShadowPCSS(float3 positionSTS)
+float FilterShadowPCSSClamped(
+    TEXTURE2D_SHADOW_PARAM(shadowAtlas, cmpSampler),
+    TEXTURE2D_PARAM(shadowAtlasLod, depthSampler),
+    float3 positionSTS, float3 bounds, float4 atlasSize)
 {
     float searchRadius = _PcssLightSize * _PoissonFilterRadius;
 
-    float2 blockerInfo = BlockerSearch_PerObject(positionSTS, searchRadius);
+    // Step 1: Blocker Search
+    float2 blockerInfo = BlockerSearchClamped(
+        TEXTURE2D_ARGS(shadowAtlasLod, depthSampler),
+        positionSTS, bounds, atlasSize, searchRadius
+    );
     float avgBlockerDepth = blockerInfo.x;
     float numBlockers = blockerInfo.y;
 
     if (numBlockers < 0.5) return 1.0;
     if (numBlockers >= POISSON_SAMPLE_COUNT - 0.5) return 0.0;
 
+    // Step 2: Penumbra Estimation
     float zReceiver = positionSTS.z;
     #if defined(UNITY_REVERSED_Z)
     float penumbraWidth = _PcssLightSize * (avgBlockerDepth - zReceiver) / max(avgBlockerDepth, 0.001);
@@ -433,54 +340,12 @@ float FilterPerObjectShadowPCSS(float3 positionSTS)
     #endif
     penumbraWidth = max(penumbraWidth, 0.0);
 
+    // Step 3: PCF Filtering
     float dynamicRadius = penumbraWidth * _PoissonFilterRadius;
-    return FilterPerObjectShadowPoisson(positionSTS, dynamicRadius);
-}
-
-float FilterSpotShadowPCSS(float3 positionSTS, float3 bounds)
-{
-    float searchRadius = _PcssLightSize * _PoissonFilterRadius;
-
-    float2 blockerInfo = BlockerSearch_Spot(positionSTS, bounds, searchRadius);
-    float avgBlockerDepth = blockerInfo.x;
-    float numBlockers = blockerInfo.y;
-
-    if (numBlockers < 0.5) return 1.0;
-    if (numBlockers >= POISSON_SAMPLE_COUNT - 0.5) return 0.0;
-
-    float zReceiver = positionSTS.z;
-    #if defined(UNITY_REVERSED_Z)
-    float penumbraWidth = _PcssLightSize * (avgBlockerDepth - zReceiver) / max(avgBlockerDepth, 0.001);
-    #else
-    float penumbraWidth = _PcssLightSize * (zReceiver - avgBlockerDepth) / max(avgBlockerDepth, 0.001);
-    #endif
-    penumbraWidth = max(penumbraWidth, 0.0);
-
-    float dynamicRadius = penumbraWidth * _PoissonFilterRadius;
-    return FilterSpotShadowPoisson(positionSTS, bounds, dynamicRadius);
-}
-
-float FilterPointShadowPCSS(float3 positionSTS, float3 bounds)
-{
-    float searchRadius = _PcssLightSize * _PoissonFilterRadius;
-
-    float2 blockerInfo = BlockerSearch_Point(positionSTS, bounds, searchRadius);
-    float avgBlockerDepth = blockerInfo.x;
-    float numBlockers = blockerInfo.y;
-
-    if (numBlockers < 0.5) return 1.0;
-    if (numBlockers >= POISSON_SAMPLE_COUNT - 0.5) return 0.0;
-
-    float zReceiver = positionSTS.z;
-    #if defined(UNITY_REVERSED_Z)
-    float penumbraWidth = _PcssLightSize * (avgBlockerDepth - zReceiver) / max(avgBlockerDepth, 0.001);
-    #else
-    float penumbraWidth = _PcssLightSize * (zReceiver - avgBlockerDepth) / max(avgBlockerDepth, 0.001);
-    #endif
-    penumbraWidth = max(penumbraWidth, 0.0);
-
-    float dynamicRadius = penumbraWidth * _PoissonFilterRadius;
-    return FilterPointShadowPoisson(positionSTS, bounds, dynamicRadius);
+    return FilterShadowPoissonClamped(
+        TEXTURE2D_SHADOW_ARGS(shadowAtlas, cmpSampler),
+        positionSTS, bounds, atlasSize, dynamicRadius
+    );
 }
 
 #endif // _PCSS
@@ -492,96 +357,140 @@ float FilterPointShadowPCSS(float3 positionSTS, float3 bounds)
 float FilterDirectionalShadow(float3 positionSTS)
 {
     #if defined(_PCSS)
-    return FilterDirectionalShadowPCSS(positionSTS);
+    return FilterShadowPCSS(
+        TEXTURE2D_SHADOW_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp_compare),
+        TEXTURE2D_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp),
+        positionSTS, _DirectionalShadowAtlasSize
+    );
     #elif defined(_POISSON_DISK)
-    return FilterDirectionalShadowPoisson(positionSTS, _PoissonFilterRadius);
-    #elif defined(DIRECTIONAL_FILTER_SETUP)
-    float weights[DIRECTIONAL_FILTER_SAMPLES];
-    float2 positions[DIRECTIONAL_FILTER_SAMPLES];
+    return FilterShadowPoisson(
+        TEXTURE2D_SHADOW_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp_compare),
+        positionSTS, _DirectionalShadowAtlasSize, _PoissonFilterRadius
+    );
+    #elif defined(SHADOW_FILTER_SETUP)
+    float weights[SHADOW_FILTER_SAMPLES];
+    float2 positions[SHADOW_FILTER_SAMPLES];
     float4 size = _DirectionalShadowAtlasSize;
-    DIRECTIONAL_FILTER_SETUP(size, positionSTS.xy, weights, positions);
+    SHADOW_FILTER_SETUP(size, positionSTS.xy, weights, positions);
     float shadow = 0;
-    for (int i = 0; i < DIRECTIONAL_FILTER_SAMPLES; i++)
+    for (int i = 0; i < SHADOW_FILTER_SAMPLES; i++)
     {
-        shadow += weights[i] * SampleDirectionalShadowAtlas(
+        shadow += weights[i] * SampleShadowAtlas(
+            TEXTURE2D_SHADOW_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp_compare),
             float3(positions[i].xy, positionSTS.z)
         );
     }
     return shadow;
     #else
-    return SampleDirectionalShadowAtlas(positionSTS);
+    return SampleShadowAtlas(
+        TEXTURE2D_SHADOW_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp_compare),
+        positionSTS
+    );
     #endif
 }
 
 float FilterPerObjectShadow(float3 positionSTS)
 {
     #if defined(_PCSS)
-    return FilterPerObjectShadowPCSS(positionSTS);
+    return FilterShadowPCSS(
+        TEXTURE2D_SHADOW_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp_compare),
+        TEXTURE2D_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp),
+        positionSTS, _PerObjectAtlasSize
+    );
     #elif defined(_POISSON_DISK)
-    return FilterPerObjectShadowPoisson(positionSTS, _PoissonFilterRadius);
-    #elif defined(DIRECTIONAL_FILTER_SETUP)
-    float weights[DIRECTIONAL_FILTER_SAMPLES];
-    float2 positions[DIRECTIONAL_FILTER_SAMPLES];
+    return FilterShadowPoisson(
+        TEXTURE2D_SHADOW_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp_compare),
+        positionSTS, _PerObjectAtlasSize, _PoissonFilterRadius
+    );
+    #elif defined(SHADOW_FILTER_SETUP)
+    float weights[SHADOW_FILTER_SAMPLES];
+    float2 positions[SHADOW_FILTER_SAMPLES];
     float4 size = _PerObjectAtlasSize;
-    DIRECTIONAL_FILTER_SETUP(size, positionSTS.xy, weights, positions);
+    SHADOW_FILTER_SETUP(size, positionSTS.xy, weights, positions);
     float shadow = 0;
-    for (int i = 0; i < DIRECTIONAL_FILTER_SAMPLES; i++)
+    for (int i = 0; i < SHADOW_FILTER_SAMPLES; i++)
     {
-        shadow += weights[i] * SamplePerObjectShadowAtlas(
+        shadow += weights[i] * SampleShadowAtlas(
+            TEXTURE2D_SHADOW_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp_compare),
             float3(positions[i].xy, positionSTS.z)
         );
     }
     return shadow;
     #else
-    return SamplePerObjectShadowAtlas(positionSTS);
+    return SampleShadowAtlas(
+        TEXTURE2D_SHADOW_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp_compare),
+        positionSTS
+    );
     #endif
 }
 
 float FilterSpotShadow(float3 positionSTS, float3 bounds)
 {
     #if defined(_PCSS)
-    return FilterSpotShadowPCSS(positionSTS, bounds);
+    return FilterShadowPCSSClamped(
+        TEXTURE2D_SHADOW_ARGS(_SpotShadowAtlas, sampler_linear_clamp_compare),
+        TEXTURE2D_ARGS(_SpotShadowAtlas, sampler_linear_clamp),
+        positionSTS, bounds, _SpotShadowAtlasSize
+    );
     #elif defined(_POISSON_DISK)
-    return FilterSpotShadowPoisson(positionSTS, bounds, _PoissonFilterRadius);
-    #elif defined(SPOT_FILTER_SETUP)
-    real weights[SPOT_FILTER_SAMPLES];
-    real2 positions[SPOT_FILTER_SAMPLES];
+    return FilterShadowPoissonClamped(
+        TEXTURE2D_SHADOW_ARGS(_SpotShadowAtlas, sampler_linear_clamp_compare),
+        positionSTS, bounds, _SpotShadowAtlasSize, _PoissonFilterRadius
+    );
+    #elif defined(SHADOW_FILTER_SETUP)
+    real weights[SHADOW_FILTER_SAMPLES];
+    real2 positions[SHADOW_FILTER_SAMPLES];
     float4 size = _SpotShadowAtlasSize;
-    SPOT_FILTER_SETUP(size, positionSTS.xy, weights, positions);
+    SHADOW_FILTER_SETUP(size, positionSTS.xy, weights, positions);
     float shadow = 0;
-    for (int i = 0; i < SPOT_FILTER_SAMPLES; i++)
+    for (int i = 0; i < SHADOW_FILTER_SAMPLES; i++)
     {
-        shadow += weights[i] * SampleSpotShadowAtlas(
+        shadow += weights[i] * SampleShadowAtlasClamped(
+            TEXTURE2D_SHADOW_ARGS(_SpotShadowAtlas, sampler_linear_clamp_compare),
             float3(positions[i].xy, positionSTS.z), bounds
         );
     }
     return shadow;
     #else
-    return SampleSpotShadowAtlas(positionSTS, bounds);
+    return SampleShadowAtlasClamped(
+        TEXTURE2D_SHADOW_ARGS(_SpotShadowAtlas, sampler_linear_clamp_compare),
+        positionSTS, bounds
+    );
     #endif
 }
 
 float FilterPointShadow(float3 positionSTS, float3 bounds)
 {
     #if defined(_PCSS)
-    return FilterPointShadowPCSS(positionSTS, bounds);
+    return FilterShadowPCSSClamped(
+        TEXTURE2D_SHADOW_ARGS(_PointShadowAtlas, sampler_linear_clamp_compare),
+        TEXTURE2D_ARGS(_PointShadowAtlas, sampler_linear_clamp),
+        positionSTS, bounds, _PointShadowAtlasSize
+    );
     #elif defined(_POISSON_DISK)
-    return FilterPointShadowPoisson(positionSTS, bounds, _PoissonFilterRadius);
-    #elif defined(POINT_FILTER_SETUP)
-    real weights[POINT_FILTER_SAMPLES];
-    real2 positions[POINT_FILTER_SAMPLES];
+    return FilterShadowPoissonClamped(
+        TEXTURE2D_SHADOW_ARGS(_PointShadowAtlas, sampler_linear_clamp_compare),
+        positionSTS, bounds, _PointShadowAtlasSize, _PoissonFilterRadius
+    );
+    #elif defined(SHADOW_FILTER_SETUP)
+    real weights[SHADOW_FILTER_SAMPLES];
+    real2 positions[SHADOW_FILTER_SAMPLES];
     float4 size = _PointShadowAtlasSize;
-    POINT_FILTER_SETUP(size, positionSTS.xy, weights, positions);
+    SHADOW_FILTER_SETUP(size, positionSTS.xy, weights, positions);
     float shadow = 0;
-    for (int i = 0; i < POINT_FILTER_SAMPLES; i++)
+    for (int i = 0; i < SHADOW_FILTER_SAMPLES; i++)
     {
-        shadow += weights[i] * SamplePointShadowAtlas(
+        shadow += weights[i] * SampleShadowAtlasClamped(
+            TEXTURE2D_SHADOW_ARGS(_PointShadowAtlas, sampler_linear_clamp_compare),
             float3(positions[i].xy, positionSTS.z), bounds
         );
     }
     return shadow;
     #else
-    return SamplePointShadowAtlas(positionSTS, bounds);
+    return SampleShadowAtlasClamped(
+        TEXTURE2D_SHADOW_ARGS(_PointShadowAtlas, sampler_linear_clamp_compare),
+        positionSTS, bounds
+    );
     #endif
 }
 
