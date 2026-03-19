@@ -1,9 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class MatCapComponent : ShaderGUIComponentBase
+    public class MatCapSection : ShaderGUISectionBase
     {
         private MaterialProperty matCapProperty;
         private MaterialProperty matCapStrengthProperty;
@@ -22,7 +22,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             {
                 materialEditor.TexturePropertySingleLine(new GUIContent("MatCap"), matCapProperty, matCapStrengthProperty);
                 
-                ShaderGUILayout.BeginGUIComponentIndent();
+                EditorGUILayoutUtils.BeginGUIComponentIndent();
                 {
                     materialEditor.TextureScaleOffsetProperty(matCapProperty);
                     
@@ -35,7 +35,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     }
                     EditorGUI.showMixedValue = false;
                 }
-                ShaderGUILayout.EndGUIComponentIndent();
+                EditorGUILayoutUtils.EndGUIComponentIndent();
             }
             else
             {

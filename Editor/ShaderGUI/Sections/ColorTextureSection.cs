@@ -1,9 +1,9 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class ColorTextureComponent : ShaderGUIComponentBase
+    public class ColorTextureSection : ShaderGUISectionBase
     {
         private readonly GUIContent label;
         
@@ -15,7 +15,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
         private MaterialProperty mapProperty;
         private MaterialProperty colorProperty;
         
-        public ColorTextureComponent(string labelName, string mapID, string colorID, bool isHDRColor)
+        public ColorTextureSection(string labelName, string mapID, string colorID, bool isHDRColor)
         {
             this.mapID = mapID;
             this.colorID = colorID;
@@ -34,9 +34,9 @@ namespace ArcToon.Editor.ShaderEditor.Components
             materialEditor.TexturePropertyWithColorProperty(label, mapProperty, colorProperty, isHDRColor);
             if (mapProperty.textureValue != null)
             {
-                ShaderGUILayout.BeginGUIComponentIndent();
+                EditorGUILayoutUtils.BeginGUIComponentIndent();
                 materialEditor.TextureScaleOffsetProperty(mapProperty);
-                ShaderGUILayout.EndGUIComponentIndent();
+                EditorGUILayoutUtils.EndGUIComponentIndent();
             }
         }
 

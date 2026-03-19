@@ -1,9 +1,9 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class GeometryOutlineComponent : ShaderGUIComponentBase
+    public class GeometryOutlineSection : ShaderGUISectionBase
     {
         private static readonly GUIContent label = new("Geometry Outline");
         
@@ -31,7 +31,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             
             EditorGUI.showMixedValue = hasMixedValue;
             EditorGUI.BeginChangeCheck();
-            bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(label, shouldToggleGroup, EditorStyles.label);
+            bool newValue = EditorGUILayoutUtils.BeginTogglePropertyGroup(label, shouldToggleGroup, EditorStyles.label);
             EditorGUI.showMixedValue = false;
             
             if (EditorGUI.EndChangeCheck())
@@ -47,7 +47,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 }
             }
             
-            ShaderGUILayout.BeginGUIComponentIndent();
+            EditorGUILayoutUtils.BeginGUIComponentIndent();
             
             materialEditor.BuiltinShaderPropertyDrawer(outlineColorProperty, true, "Color");
             materialEditor.BuiltinShaderPropertyDrawer(outlineScaleProperty, true, "Scale");
@@ -104,9 +104,9 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 }
             }
             
-            ShaderGUILayout.EndGUIComponentIndent();
+            EditorGUILayoutUtils.EndGUIComponentIndent();
             
-            ShaderGUILayout.EndTogglePropertyGroup();
+            EditorGUILayoutUtils.EndTogglePropertyGroup();
         }
 
         public override bool IsValid()

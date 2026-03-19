@@ -1,14 +1,14 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class ShadowCasterComponent : ShaderGUIComponentBase
+    public class ShadowCasterSection : ShaderGUISectionBase
     {
         private readonly string casterOptionPropertyID;
         private MaterialProperty casterOptionProperty = null;
 
-        public ShadowCasterComponent(string casterOptionPropertyID)
+        public ShadowCasterSection(string casterOptionPropertyID)
         {
             this.casterOptionPropertyID = casterOptionPropertyID;
         }

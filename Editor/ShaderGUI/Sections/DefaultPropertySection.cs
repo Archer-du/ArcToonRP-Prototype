@@ -1,14 +1,14 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class DefaultPropertyComponent : ShaderGUIComponentBase
+    public class DefaultPropertySection : ShaderGUISectionBase
     {
         private readonly string propertyID;
         private MaterialProperty property = null;
 
-        public DefaultPropertyComponent(string propertyID)
+        public DefaultPropertySection(string propertyID)
         {
             this.propertyID = propertyID;
         }

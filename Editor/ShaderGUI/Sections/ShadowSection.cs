@@ -1,9 +1,9 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class ShadowComponent : ShaderGUIComponentBase
+    public class ShadowSection : ShaderGUISectionBase
     {
         private static readonly GUIContent label = new("Shadows");
         

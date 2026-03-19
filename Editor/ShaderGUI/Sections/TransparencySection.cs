@@ -3,9 +3,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class TransparencyComponent : ShaderGUIComponentBase
+    public class TransparencySection : ShaderGUISectionBase
     {
         private MaterialProperty transparencyModeProperty;
         private MaterialProperty premulAlphaProperty;

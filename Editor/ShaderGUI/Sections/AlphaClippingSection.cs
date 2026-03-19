@@ -1,9 +1,9 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class AlphaClippingComponent : ShaderGUIComponentBase
+    public class AlphaClippingSection : ShaderGUISectionBase
     {
         private static readonly GUIContent label = new("Alpha Clipping");
         
@@ -22,7 +22,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             EditorGUI.showMixedValue = useAlphaClipProperty.hasMixedValue;
             
             EditorGUI.BeginChangeCheck();
-            bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(label, shouldToggleGroup, EditorStyles.label);
+            bool newValue = EditorGUILayoutUtils.BeginTogglePropertyGroup(label, shouldToggleGroup, EditorStyles.label);
             EditorGUI.showMixedValue = false;
             
             if (EditorGUI.EndChangeCheck())
@@ -38,11 +38,11 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     EditorUtility.SetDirty(material);
                 }
             }
-            ShaderGUILayout.BeginGUIComponentIndent();
+            EditorGUILayoutUtils.BeginGUIComponentIndent();
             materialEditor.BuiltinShaderPropertyDrawer(cutOffProperty, true, "Cutoff");
-            ShaderGUILayout.EndGUIComponentIndent();
+            EditorGUILayoutUtils.EndGUIComponentIndent();
             
-            ShaderGUILayout.EndTogglePropertyGroup();
+            EditorGUILayoutUtils.EndTogglePropertyGroup();
         }
 
         public override bool IsValid()

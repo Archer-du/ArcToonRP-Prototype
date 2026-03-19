@@ -1,9 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class LightMapSDFComponent : ShaderGUIComponentBase
+    public class LightMapSDFSection : ShaderGUISectionBase
     {
         private static readonly GUIContent label = new("SDF Light Map");
         
@@ -43,7 +43,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 }
             }
 
-            ShaderGUILayout.BeginGUIComponentIndent();
+            EditorGUILayoutUtils.BeginGUIComponentIndent();
             
             bool disabledAdvanced = lightMapSDFProperty.textureValue == null;
             EditorGUI.BeginDisabledGroup(disabledAdvanced);
@@ -57,7 +57,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             }
             EditorGUI.EndDisabledGroup();
             
-            ShaderGUILayout.EndGUIComponentIndent();
+            EditorGUILayoutUtils.EndGUIComponentIndent();
         }
 
         public override bool IsValid()

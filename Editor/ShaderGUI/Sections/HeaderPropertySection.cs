@@ -4,9 +4,9 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class HeaderPropertyComponent : ShaderGUIComponentBase
+    public class HeaderPropertySection : ShaderGUISectionBase
     {
         private readonly string headerLabel;
         
@@ -14,14 +14,14 @@ namespace ArcToon.Editor.ShaderEditor.Components
         private readonly string[] propertyLabels;
         private readonly List<MaterialProperty> properties = new();
 
-        public HeaderPropertyComponent(string headerLabel, string[] propertyLabels, string[] propertyIDs)
+        public HeaderPropertySection(string headerLabel, string[] propertyLabels, string[] propertyIDs)
         {
             this.propertyIDs = propertyIDs;
             this.propertyLabels = propertyLabels;
             this.headerLabel = headerLabel;
         }
         
-        public HeaderPropertyComponent(string headerLabel, string[] propertyIDs)
+        public HeaderPropertySection(string headerLabel, string[] propertyIDs)
         {
             this.propertyIDs = propertyIDs;
             this.propertyLabels = Array.Empty<string>();
@@ -44,7 +44,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             
             EditorGUILayout.LabelField(headerLabel, EditorStyles.label);
             EditorGUILayout.BeginVertical();
-            ShaderGUILayout.BeginGUIComponentIndent();
+            EditorGUILayoutUtils.BeginGUIComponentIndent();
             
             for (int i = 0; i < properties.Count; i++)
             {
@@ -52,7 +52,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 materialEditor.BuiltinShaderPropertyDrawer(properties[i], false, label);
             }
             
-            ShaderGUILayout.EndGUIComponentIndent();
+            EditorGUILayoutUtils.EndGUIComponentIndent();
             EditorGUILayout.EndVertical();
         }
 

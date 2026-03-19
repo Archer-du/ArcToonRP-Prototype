@@ -1,9 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class RefractionComponent : ShaderGUIComponentBase
+    public class RefractionSection : ShaderGUISectionBase
     {
         private MaterialProperty refractionTypeProperty;
         private MaterialProperty anteriorChamberHeightProperty;
@@ -31,7 +31,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
             
             EditorGUI.showMixedValue = hasMixedValue;
             EditorGUI.BeginChangeCheck();
-            bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(new GUIContent("Eye Refraction"), shouldToggleGroup, EditorStyles.label);
+            bool newValue = EditorGUILayoutUtils.BeginTogglePropertyGroup(new GUIContent("Eye Refraction"), shouldToggleGroup, EditorStyles.label);
             {
                 EditorGUI.showMixedValue = false;
                 if (EditorGUI.EndChangeCheck())
@@ -47,7 +47,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     }
                 }
                 
-                ShaderGUILayout.BeginGUIComponentIndent();
+                EditorGUILayoutUtils.BeginGUIComponentIndent();
                 {
                     materialEditor.BuiltinShaderPropertyDrawer(anteriorChamberHeightProperty, true, "Anterior Chamber Height");
                     
@@ -86,9 +86,9 @@ namespace ArcToon.Editor.ShaderEditor.Components
                         parallaxFlipSignYProperty.intValue = newFlipSignValue.y;
                     }
                 }
-                ShaderGUILayout.EndGUIComponentIndent();
+                EditorGUILayoutUtils.EndGUIComponentIndent();
             }
-            ShaderGUILayout.EndTogglePropertyGroup();
+            EditorGUILayoutUtils.EndTogglePropertyGroup();
         }
 
         public override bool IsValid()

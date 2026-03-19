@@ -1,9 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class FringeComponent : ShaderGUIComponentBase
+    public class FringeSection : ShaderGUISectionBase
     {
         private MaterialProperty fringeTransparentScaleProperty;
         private MaterialProperty fringeShadowBiasScaleXProperty;
@@ -27,7 +27,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 
                 EditorGUI.showMixedValue = hasMixedValue;
                 EditorGUI.BeginChangeCheck();
-                bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(new GUIContent("Transparent Fringe"), shouldToggleGroup, EditorStyles.label);
+                bool newValue = EditorGUILayoutUtils.BeginTogglePropertyGroup(new GUIContent("Transparent Fringe"), shouldToggleGroup, EditorStyles.label);
                 EditorGUI.showMixedValue = false;
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -41,12 +41,12 @@ namespace ArcToon.Editor.ShaderEditor.Components
                         EditorUtility.SetDirty(material);
                     }
                 }
-                ShaderGUILayout.BeginGUIComponentIndent();
+                EditorGUILayoutUtils.BeginGUIComponentIndent();
                 
                 materialEditor.BuiltinShaderPropertyDrawer(fringeTransparentScaleProperty, true, "Alpha");
                 
-                ShaderGUILayout.EndGUIComponentIndent();
-                ShaderGUILayout.EndTogglePropertyGroup();
+                EditorGUILayoutUtils.EndGUIComponentIndent();
+                EditorGUILayoutUtils.EndTogglePropertyGroup();
             }
             
             {
@@ -55,7 +55,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 
                 EditorGUI.showMixedValue = hasMixedValue;
                 EditorGUI.BeginChangeCheck();
-                bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(new GUIContent("Fringe Shadow"), shouldToggleGroup, EditorStyles.label);
+                bool newValue = EditorGUILayoutUtils.BeginTogglePropertyGroup(new GUIContent("Fringe Shadow"), shouldToggleGroup, EditorStyles.label);
                 EditorGUI.showMixedValue = false;
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -69,7 +69,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                         EditorUtility.SetDirty(material);
                     }
                 }
-                ShaderGUILayout.BeginGUIComponentIndent();
+                EditorGUILayoutUtils.BeginGUIComponentIndent();
 
                 var displayShadowOffsetValue = new Vector2(fringeShadowBiasScaleXProperty.floatValue, fringeShadowBiasScaleYProperty.floatValue);
                 EditorGUI.BeginChangeCheck();
@@ -80,8 +80,8 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     fringeShadowBiasScaleYProperty.floatValue = newShadowOffsetValue.y;
                 }
                 
-                ShaderGUILayout.EndGUIComponentIndent();
-                ShaderGUILayout.EndTogglePropertyGroup();
+                EditorGUILayoutUtils.EndGUIComponentIndent();
+                EditorGUILayoutUtils.EndTogglePropertyGroup();
             }
         }
 

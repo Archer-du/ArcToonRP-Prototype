@@ -1,9 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class HighLightComponent : ShaderGUIComponentBase
+    public class HighLightSection : ShaderGUISectionBase
     {
         private MaterialProperty highlightTypeProperty;
         private MaterialProperty specGlossProperty;
@@ -30,10 +30,10 @@ namespace ArcToon.Editor.ShaderEditor.Components
             
             ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.IsKeywordEnabled(ShaderKeywords.OVERRIDE_HIGHLIGHT), 
                 out bool hasMixedValue, out bool shouldToggleGroup);
-            
+        
             EditorGUI.showMixedValue = hasMixedValue;
             EditorGUI.BeginChangeCheck();
-            bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(new GUIContent("Override Highlights"), shouldToggleGroup, EditorStyles.label);
+            bool newValue = EditorGUILayoutUtils.BeginTogglePropertyGroup(new GUIContent("Override Highlights"), shouldToggleGroup, EditorStyles.label);
             EditorGUI.showMixedValue = false;
             if (EditorGUI.EndChangeCheck())
             {
@@ -48,7 +48,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 }
             }
             
-            ShaderGUILayout.BeginGUIComponentIndent();
+            EditorGUILayoutUtils.BeginGUIComponentIndent();
             EditorGUI.showMixedValue = highlightTypeProperty.hasMixedValue;
             EditorGUI.BeginChangeCheck();
             var newHighlightTypeValue = (OverrideHighlightType)EditorGUILayout.EnumPopup("Type", (OverrideHighlightType)highlightTypeProperty.intValue);
@@ -95,8 +95,8 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     materialEditor.BuiltinShaderPropertyDrawer(tangentShiftOffsetProperty, true, "Shift Offset");
                     break;
             }
-            ShaderGUILayout.EndGUIComponentIndent();
-            ShaderGUILayout.EndTogglePropertyGroup();
+            EditorGUILayoutUtils.EndGUIComponentIndent();
+            EditorGUILayoutUtils.EndTogglePropertyGroup();
         }
 
         public override bool IsValid()

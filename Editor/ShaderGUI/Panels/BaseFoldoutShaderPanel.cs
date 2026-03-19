@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ArcToon.Editor.ShaderEditor.Components;
+using ArcToon.Editor.ShaderEditor.Sections;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,11 +8,11 @@ namespace ArcToon.Editor.ShaderEditor.Panels
     public class BaseFoldoutShaderPanel
     {
         private readonly string groupName;
-        private readonly List<ShaderGUIComponentBase> components = null;
+        private readonly List<ShaderGUISectionBase> components = null;
 
         private bool foldoutDisplay = true;
         
-        public BaseFoldoutShaderPanel(string groupName, List<ShaderGUIComponentBase> components)
+        public BaseFoldoutShaderPanel(string groupName, List<ShaderGUISectionBase> components)
         {
             this.groupName = groupName;
             this.components = components;
@@ -27,7 +27,7 @@ namespace ArcToon.Editor.ShaderEditor.Panels
                 component.FindProperties(props);
             }
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            foldoutDisplay = ShaderGUILayout.DrawGUIComponentFoldoutGroup(foldoutDisplay, groupName);
+            foldoutDisplay = EditorGUILayoutUtils.DrawGUIComponentFoldoutGroup(foldoutDisplay, groupName);
             if (foldoutDisplay)
             {
                 foreach (var component in components)

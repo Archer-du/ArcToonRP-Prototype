@@ -1,9 +1,9 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public abstract class ShaderGUIComponentBase
+    public abstract class ShaderGUISectionBase
     {
         public abstract void FindProperties(MaterialProperty[] props);
         
@@ -13,7 +13,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
         
         public void OnGUI(MaterialEditor materialEditor, Material[] materials)
         {
-            EditorGUILayout.BeginVertical(ShaderGUILayout.GUIComponentBoxStyle);
+            EditorGUILayout.BeginVertical(EditorGUILayoutUtils.GUIComponentBoxStyle);
             DrawProperties(materialEditor, materials);
             EditorGUILayout.EndVertical();
         }

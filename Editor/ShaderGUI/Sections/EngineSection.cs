@@ -2,9 +2,9 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class EngineComponent : ShaderGUIComponentBase
+    public class EngineSection : ShaderGUISectionBase
     {
         public override void FindProperties(MaterialProperty[] props) { }
 

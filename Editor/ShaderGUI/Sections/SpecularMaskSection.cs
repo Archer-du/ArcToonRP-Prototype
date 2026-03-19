@@ -1,9 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class SpecularMaskComponent : ShaderGUIComponentBase
+    public class SpecularMaskSection : ShaderGUISectionBase
     {
         private MaterialProperty SpecularMaskProperty;
         private MaterialProperty specularMaskUVProperty;
@@ -46,7 +46,7 @@ namespace ArcToon.Editor.ShaderEditor.Components
                 
                 EditorGUI.showMixedValue = hasMixedValue;
                 EditorGUI.BeginChangeCheck();
-                bool newValue = ShaderGUILayout.BeginTogglePropertyGroup(new GUIContent("Parallax"), keywordEnabled, EditorStyles.label);
+                bool newValue = EditorGUILayoutUtils.BeginTogglePropertyGroup(new GUIContent("Parallax"), keywordEnabled, EditorStyles.label);
                 EditorGUI.showMixedValue = false;
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -61,12 +61,12 @@ namespace ArcToon.Editor.ShaderEditor.Components
                     }
                 }
                 
-                ShaderGUILayout.BeginGUIComponentIndent();
+                EditorGUILayoutUtils.BeginGUIComponentIndent();
                 materialEditor.BuiltinShaderPropertyDrawer(parallaxSensitivityProperty, true, "Sensitivity");
                 materialEditor.BuiltinShaderPropertyDrawer(parallaxOffsetProperty, true, "Offset");
                 
-                ShaderGUILayout.EndGUIComponentIndent();
-                ShaderGUILayout.EndTogglePropertyGroup();
+                EditorGUILayoutUtils.EndGUIComponentIndent();
+                EditorGUILayoutUtils.EndTogglePropertyGroup();
             }
             else
             {

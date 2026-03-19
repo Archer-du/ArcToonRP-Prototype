@@ -1,15 +1,15 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.ShaderEditor.Components
+namespace ArcToon.Editor.ShaderEditor.Sections
 {
-    public class RampTextureComponent : ShaderGUIComponentBase
+    public class RampTextureSection : ShaderGUISectionBase
     {
         private MaterialProperty rampTextureProperty;
         
         private readonly GUIContent label;
 
-        public RampTextureComponent(string labelName)
+        public RampTextureSection(string labelName)
         {
             label = new GUIContent(labelName);
         }
