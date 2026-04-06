@@ -181,7 +181,7 @@ float FilterShadowPoisson(TEXTURE2D_SHADOW_PARAM(shadowAtlas, shadowSampler), fl
 {
     float texelSize = atlasSize.y;
     float shadow = 0;
-    InitPoissonDisk(positionSTS.xy * atlasSize.x);
+    InitPoissonDisk(positionSTS.xy * atlasSize.z);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * filterRadius * texelSize;
@@ -198,7 +198,7 @@ float FilterShadowPoissonClamped(TEXTURE2D_SHADOW_PARAM(shadowAtlas, shadowSampl
 {
     float texelSize = atlasSize.y;
     float shadow = 0;
-    InitPoissonDisk(positionSTS.xy * atlasSize.x);
+    InitPoissonDisk(positionSTS.xy * atlasSize.z);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * filterRadius * texelSize;
@@ -224,7 +224,7 @@ float2 BlockerSearch(TEXTURE2D_PARAM(shadowAtlas, depthSampler), float3 position
     float texelSize = atlasSize.y;
     float blockerDepthSum = 0;
     float blockerCount = 0;
-    InitPoissonDisk(positionSTS.xy * atlasSize.x);
+    InitPoissonDisk(positionSTS.xy * atlasSize.z);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * searchRadius * texelSize;
@@ -252,7 +252,7 @@ float2 BlockerSearchClamped(TEXTURE2D_PARAM(shadowAtlas, depthSampler), float3 p
     float texelSize = atlasSize.y;
     float blockerDepthSum = 0;
     float blockerCount = 0;
-    InitPoissonDisk(positionSTS.xy * atlasSize.x);
+    InitPoissonDisk(positionSTS.xy * atlasSize.z);
     for (int i = 0; i < POISSON_SAMPLE_COUNT; i++)
     {
         float2 offset = poissonDisk[i] * searchRadius * texelSize;

@@ -718,7 +718,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                 Vector2 offset = commandBuffer.SetTileViewport(tileIndex, pointTileData.splitCount, pointTileData.tileSize);
 
                 pointShadowData[tileIndex] = new PointShadowBufferData(
-                    offset, tileScale, normalBiasScale, spotAtlasSizes.x,
+                    offset, tileScale, normalBiasScale, pointAtlasSizes.x,
                     ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
 
                 commandBuffer.SetViewProjectionMatrices(info.view, info.projection);

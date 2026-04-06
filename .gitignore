@@ -40,5 +40,5 @@ Thumbs.db
 .codebuddy/
 
 # Documentation (auto-generated)
-Docs/
-Docs.meta
+ChatLogs/
+ChatLogs.meta

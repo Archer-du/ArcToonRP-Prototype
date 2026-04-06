@@ -1,7 +1,7 @@
 #ifndef ARCTOON_POISSON_DISK_INCLUDED
 #define ARCTOON_POISSON_DISK_INCLUDED
 
-#define POISSON_SAMPLE_COUNT 16
+#define POISSON_SAMPLE_COUNT 32
 
 // Uncomment to enable runtime Vogel Disk sampling with per-pixel random rotation.
 // This eliminates regular banding artifacts at the cost of slight noise.
@@ -49,7 +49,23 @@ static const float2 poissonDisk[POISSON_SAMPLE_COUNT] =
     float2(-0.24188840,  0.99706507),
     float2(-0.81409955,  0.91437590),
     float2( 0.19984126,  0.78641367),
-    float2( 0.14383161, -0.14100790)
+    float2( 0.14383161, -0.14100790),
+    float2(-0.50000000,  0.71934025),
+    float2( 0.63942957,  0.57974182),
+    float2(-0.67819881, -0.18047985),
+    float2( 0.18301927, -0.69769883),
+    float2( 0.37623652,  0.86347118),
+    float2(-0.44275653, -0.70125830),
+    float2( 0.81863004,  0.43468746),
+    float2(-0.73284435,  0.66833752),
+    float2( 0.07231909, -0.42786568),
+    float2( 0.56201714,  0.09843390),
+    float2(-0.15584070,  0.47843215),
+    float2(-0.98757905,  0.13329709),
+    float2( 0.31604116, -0.24610095),
+    float2(-0.36972982,  0.95514798),
+    float2( 0.86424630, -0.30479616),
+    float2(-0.58070576, -0.48246527)
 };
 
 void InitPoissonDisk(float2 screenPos) {}
