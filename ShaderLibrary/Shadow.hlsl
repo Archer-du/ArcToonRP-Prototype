@@ -41,45 +41,21 @@ CBUFFER_START(_CustomShadows)
     #endif
 CBUFFER_END
 
-struct ShadowCascadeBufferData
-{
-    float4 cullingSphere;
-    float4 data;
-};
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/ShadowCascadeBufferData.cs.hlsl"
 
 StructuredBuffer<ShadowCascadeBufferData> _ShadowCascadeData;
 
 StructuredBuffer<float4x4> _DirectionalShadowMatrices;
 
-struct SpotShadowBufferData
-{
-    // x: tile border start x
-    // y: tile border start y
-    // z: tile border length
-    // w: shadow normal bias scale
-    float4 tileData;
-    float4x4 shadowMatrix;
-};
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/SpotShadowBufferData.cs.hlsl"
 
 StructuredBuffer<SpotShadowBufferData> _SpotShadowData;
 
-struct PointShadowBufferData
-{
-    // x: tile border start x
-    // y: tile border start y
-    // z: tile border length
-    // w: shadow normal bias scale
-    float4 tileData;
-    float4x4 shadowMatrix;
-};
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/PointShadowBufferData.cs.hlsl"
 
 StructuredBuffer<PointShadowBufferData> _PointShadowData;
 
-struct PerObjectShadowBufferData
-{
-    float4 normalBias;
-    float4x4 shadowMatrix;
-};
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/PerObjectShadowBufferData.cs.hlsl"
 
 StructuredBuffer<PerObjectShadowBufferData> _PerObjectShadowData;
 

@@ -1,13 +1,14 @@
-﻿using System.Runtime.InteropServices;
-using ArcToon.Runtime.Settings;
+﻿using ArcToon.Runtime.Settings;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Buffers
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [GenerateHLSL(PackingRules.Exact, false)]
     struct ShadowCascadeBufferData
     {
-        public const int stride = 4 * 4 * 2;
+        public static readonly int stride = UnsafeUtility.SizeOf<ShadowCascadeBufferData>();
 
         public Vector4 cullingSphere;
         public Vector4 data;

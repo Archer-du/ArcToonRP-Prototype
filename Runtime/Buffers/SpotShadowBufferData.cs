@@ -1,14 +1,19 @@
-﻿using System.Runtime.InteropServices;
+﻿using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Buffers
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [GenerateHLSL(PackingRules.Exact, false)]
     struct SpotShadowBufferData
     {
-        public const int stride = 4 * 4 + 4 * 16;
-
-        public Vector4 tileData;
+        public static readonly int stride = UnsafeUtility.SizeOf<SpotShadowBufferData>();
+        
+        // x: tile border start x
+        // y: tile border start y
+        // z: tile border length
+        // w: shadow normal bias scale
+        public Vector4 atlasData;
 
         public Matrix4x4 shadowMatrix;
 
@@ -16,10 +21,10 @@ namespace ArcToon.Runtime.Buffers
             Matrix4x4 matrix)
         {
             float halfTexelSize = oneDivideAtlasSize * 0.5f;
-            tileData.x = offset.x * scale + halfTexelSize;
-            tileData.y = offset.y * scale + halfTexelSize;
-            tileData.z = scale - halfTexelSize - halfTexelSize;
-            tileData.w = normalBiasScale;
+            atlasData.x = offset.x * scale + halfTexelSize;
+            atlasData.y = offset.y * scale + halfTexelSize;
+            atlasData.z = scale - halfTexelSize - halfTexelSize;
+            atlasData.w = normalBiasScale;
             shadowMatrix = matrix;
         }
     }

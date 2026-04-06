@@ -9,18 +9,7 @@ CBUFFER_START(_CustomSpotLight)
     int _SpotLightCount;
 CBUFFER_END
 
-struct SpotLightBufferData
-{
-    float4 color;
-    float4 position;
-    float4 direction;
-    float4 spotAngle;
-    // x: shadow strength
-    // y: shadow map tile index
-    // z: shadow slope scale bias
-    // w: shadow mask channel
-    float4 shadowData;
-};
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/SpotLightBufferData.cs.hlsl"
 
 struct SpotShadowData
 {
@@ -57,11 +46,11 @@ float GetSpotRealtimeShadow(SpotShadowData spotShadow, CascadeShadowData cascade
     SpotShadowBufferData shadowData = _SpotShadowData[tileIndex];
     float3 surfaceToLight = spotShadow.lightPositionWS - surface.positionWS;
     float distanceToLightPlane = dot(surfaceToLight, spotShadow.spotDirectionWS);
-    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * shadowData.tileData.w);
+    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * shadowData.atlasData.w);
     float4 positionSTS = mul(shadowData.shadowMatrix,
         float4(surface.positionWS + normalBias, 1.0));
     float shadow = FilterSpotShadow(positionSTS.xyz / positionSTS.w,
-        shadowData.tileData.xyz);
+        shadowData.atlasData.xyz);
     shadow = lerp(1.0, shadow, spotShadow.shadowStrength);
     return shadow;
 }

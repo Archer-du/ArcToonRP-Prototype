@@ -1,12 +1,13 @@
-﻿using System.Runtime.InteropServices;
+﻿using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Buffers
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [GenerateHLSL(PackingRules.Exact, false)]
     struct PerObjectShadowBufferData
     {
-        public const int stride = 4 * 4 + 4 * 16;
+        public static readonly int stride = UnsafeUtility.SizeOf<PerObjectShadowBufferData>();
 
         public Vector4 normalBias;
 

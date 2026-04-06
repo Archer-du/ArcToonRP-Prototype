@@ -10,16 +10,7 @@ CBUFFER_START(_CustomDirectionalLight)
     int _PerObjectShadowCasterCount;
 CBUFFER_END
 
-struct DirectionalLightBufferData
-{
-    float4 color;
-    float4 direction;
-    // x: shadow strength
-    // y: shadowed directional light index
-    // z: shadow slope scale bias
-    // w: shadow mask channel
-    float4 shadowData;
-};
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/DirectionalLightBufferData.cs.hlsl"
 
 StructuredBuffer<DirectionalLightBufferData> _DirectionalLightData;
 
@@ -32,15 +23,12 @@ struct DirectionalLightShadowData
     int shadowMaskChannel;
 };
 
-struct PerObjectCasterBufferData
-{
-    float4 perObjectData;
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/PerObjectCasterBufferData.cs.hlsl"
 
-    bool CheckCasterID(float casterID)
-    {
-        return abs(perObjectData.y - casterID) <= 0.01;
-    }
-};
+bool CheckPerObjectCasterID(PerObjectCasterBufferData bufferData, float casterID)
+{
+    return abs(bufferData.perObjectData.y - casterID) <= 0.01;
+}
 
 StructuredBuffer<PerObjectCasterBufferData> _PerObjectShadowCasterData;
 
@@ -65,7 +53,7 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
         for (int i = 0; i < _PerObjectShadowCasterCount; i++)
         {
             PerObjectCasterBufferData bufferData = _PerObjectShadowCasterData[i];
-            if (bufferData.CheckCasterID(surface.perObjectCasterID))
+            if (CheckPerObjectCasterID(bufferData, surface.perObjectCasterID))
             {
                 int tileIndex = bufferData.perObjectData.z + directional.shadowedLightIndex;
                 PerObjectShadowBufferData shadowData = _PerObjectShadowData[tileIndex];

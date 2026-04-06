@@ -1,13 +1,13 @@
-﻿using System.Runtime.InteropServices;
+﻿using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Buffers
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [GenerateHLSL(PackingRules.Exact, false)]
     public struct PerObjectCasterBufferData
     {
-        public const int stride = 4 * 4 * 1;
+        public static readonly int stride = UnsafeUtility.SizeOf<PerObjectCasterBufferData>();
 
         public Vector4 perObjectData;
 

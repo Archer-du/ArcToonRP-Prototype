@@ -1,14 +1,14 @@
-﻿using System.Runtime.InteropServices;
-using ArcToon.Runtime.Utils;
+﻿using ArcToon.Runtime.Utils;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Buffers
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [GenerateHLSL(PackingRules.Exact, false)]
     public struct SpotLightBufferData
     {
-        public const int stride = 4 * 4 * 5;
+        public static readonly int stride = UnsafeUtility.SizeOf<SpotLightBufferData>();
 
         public Vector4 color;
         public Vector4 position;
