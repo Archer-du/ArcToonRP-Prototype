@@ -32,7 +32,6 @@ namespace ArcToon.Editor.Overrides
         private SerializedProperty maxDistanceProp;
         private SerializedProperty distanceFadeProp;
         private SerializedProperty poissonFilterRadiusProp;
-        private SerializedProperty pcssLightSizeProp;
 
         // Directional Cascade Shadow
         private SerializedProperty directionalCascadeShadowProp;
@@ -98,7 +97,6 @@ namespace ArcToon.Editor.Overrides
             maxDistanceProp = shadowSettingsProp.FindPropertyRelative("maxDistance");
             distanceFadeProp = shadowSettingsProp.FindPropertyRelative("distanceFade");
             poissonFilterRadiusProp = shadowSettingsProp.FindPropertyRelative("poissonFilterRadius");
-            pcssLightSizeProp = shadowSettingsProp.FindPropertyRelative("pcssLightSize");
 
             directionalCascadeShadowProp = shadowSettingsProp.FindPropertyRelative("directionalCascadeShadow");
             dirAtlasSizeProp = directionalCascadeShadowProp.FindPropertyRelative("atlasSize");
@@ -259,10 +257,6 @@ namespace ArcToon.Editor.Overrides
                     EditorGUILayout.PropertyField(poissonFilterRadiusProp);
                 }
 
-                if (filterQuality == ShadowSettings.FilterQuality.PCSS)
-                {
-                    EditorGUILayout.PropertyField(pcssLightSizeProp);
-                }
                 EditorGUILayoutUtils.EndGUIComponentIndent();
 
                 // Directional Cascade Shadow sub-section

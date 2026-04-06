@@ -56,7 +56,7 @@ namespace ArcToon.Runtime.Utils
             public static readonly int ShadowDistanceFade = ShaderPropertyID();
             public static readonly int ShadowPancaking = ShaderPropertyID();
 
-            public static readonly int DirectionalShadowMatrices = ShaderPropertyID();
+            public static readonly int DirectionalShadowData = ShaderPropertyID();
             public static readonly int ShadowCascadeData = ShaderPropertyID();
             public static readonly int DirectionalShadowAtlasSize = ShaderPropertyID();
             public static readonly int DirectionalShadowAtlas = ShaderPropertyID();
@@ -75,7 +75,6 @@ namespace ArcToon.Runtime.Utils
             public static readonly int PointShadowAtlas = ShaderPropertyID();
 
             public static readonly int PoissonFilterRadius = ShaderPropertyID();
-            public static readonly int PcssLightSize = ShaderPropertyID();
             #endregion
 
             #region Prepass

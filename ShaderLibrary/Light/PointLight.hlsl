@@ -16,6 +16,8 @@ struct PointShadowData
     float shadowStrength;
     int tileIndex;
     int shadowMaskChannel;
+    float normalBiasScale;
+    float lightSize;
     float3 lightPositionWS;
     float3 spotDirectionWS;
 };
@@ -41,8 +43,9 @@ PointShadowData DecodePointLightShadowData(PointLightBufferData bufferData)
 {
     PointShadowData data;
     data.shadowStrength = bufferData.shadowData.x;
-    data.tileIndex = bufferData.shadowData.y;
-    data.shadowMaskChannel = bufferData.shadowData.w;
+    UnpackTileIndexAndMaskChannel(bufferData.shadowData.y, data.tileIndex, data.shadowMaskChannel);
+    data.normalBiasScale = bufferData.shadowData.z;
+    data.lightSize = bufferData.shadowData.w;
     data.lightPositionWS = bufferData.position.xyz;
     data.spotDirectionWS = bufferData.direction.xyz;
     return data;
@@ -56,15 +59,15 @@ float GetPointRealtimeShadow(PointShadowData pointShadow, CascadeShadowData casc
     float3 surfaceToLight = pointShadow.lightPositionWS - surface.positionWS;
     float faceOffset = CubeMapFaceID(-surfaceToLight);
     tileIndex += faceOffset;
-    PointShadowBufferData shadowData = _PointShadowData[tileIndex];
+    ShadowTileBufferData tileData = _PointShadowData[tileIndex];
     float3 lightPlane = pointShadowPlanes[faceOffset];
     float distanceToLightPlane = dot(surfaceToLight, lightPlane);
 
-    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * shadowData.atlasData.w);
-    float4 positionSTS = mul(shadowData.shadowMatrix,
+    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * pointShadow.normalBiasScale * tileData.atlasData.w);
+    float4 positionSTS = mul(tileData.shadowMatrix,
                              float4(surface.positionWS + normalBias, 1.0));
     float shadow = FilterPointShadow(positionSTS.xyz / positionSTS.w,
-                                    shadowData.atlasData.xyz);
+                                    tileData.atlasData.xyz, pointShadow.lightSize);
     shadow = lerp(1.0, shadow, pointShadow.shadowStrength);
     return shadow;
 }

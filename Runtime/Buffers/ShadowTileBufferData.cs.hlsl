@@ -2,16 +2,16 @@
 // This file was automatically generated. Please don't edit by hand. Execute Editor command [ Edit > Rendering > Generate Shader Includes ] instead
 //
 
-#ifndef POINTSHADOWBUFFERDATA_CS_HLSL
-#define POINTSHADOWBUFFERDATA_CS_HLSL
+#ifndef SHADOWTILEBUFFERDATA_CS_HLSL
+#define SHADOWTILEBUFFERDATA_CS_HLSL
 //
-// ArcToon.Runtime.Buffers.PointShadowBufferData:  static fields
+// ArcToon.Runtime.Buffers.ShadowTileBufferData:  static fields
 //
 #define STRIDE (80)
 
-// Generated from ArcToon.Runtime.Buffers.PointShadowBufferData
+// Generated from ArcToon.Runtime.Buffers.ShadowTileBufferData
 // PackingRules = Exact
-struct PointShadowBufferData
+struct ShadowTileBufferData
 {
     float4 atlasData;
     float4x4 shadowMatrix;

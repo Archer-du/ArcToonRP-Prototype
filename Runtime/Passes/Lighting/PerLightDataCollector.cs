@@ -1,5 +1,6 @@
 ﻿using ArcToon.Runtime.Behavior;
 using ArcToon.Runtime.Settings;
+using ArcToon.Runtime.Utils.Extensions;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -17,6 +18,31 @@ namespace ArcToon.Runtime.Passes.Lighting
         public int shadowedPointLightCount { get; private set; }
 
         public bool useShadowMask { get; private set; }
+
+        /// <summary>
+        /// Packs tileIndex (low 16 bits) and maskChannel (high 16 bits, offset by +1) into a single float
+        /// using bit-level reinterpretation. Unpack in HLSL with asuint().
+        /// </summary>
+        private static float PackTileIndexAndMaskChannel(int tileIndex, int maskChannel)
+        {
+            uint packed = (uint)tileIndex | ((uint)(maskChannel + 1) << 16);
+            return ((int)packed).ReinterpretAsFloat();
+        }
+
+        /// <summary>
+        /// Gets per-light lightSize from ArcToonLightData component, or falls back to global ShadowSettings.lightSize.
+        /// </summary>
+        private float GetLightSize(Light light)
+        {
+            var lightData = light.GetComponent<ArcToonLightData>();
+            return lightData != null ? lightData.lightSize : 1.0f;
+        }
+
+        /// <summary>
+        /// Returns the default shadowData Vector4 for lights with no shadow (strength = 0).
+        /// </summary>
+        private static Vector4 NoShadowData =>
+            new Vector4(0f, PackTileIndexAndMaskChannel(0, -1), 0f, 0f);
 
         public struct ShadowMapDataDirectional
         {
@@ -82,7 +108,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             if (light.shadows != LightShadows.None && light.shadowStrength > 0f)
             {
                 LightBakingOutput lightBaking = light.bakingOutput;
-                float maskChannel = -1;
+                int maskChannel = -1;
                 if (lightBaking is
                     { lightmapBakeType: LightmapBakeType.Mixed, mixedLightingMode: MixedLightingMode.Shadowmask })
                 {
@@ -95,7 +121,11 @@ namespace ArcToon.Runtime.Passes.Lighting
                     !cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
                 {
                     // a trick to only sample baked shadow
-                    return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
+                    return new Vector4(
+                        -light.shadowStrength,
+                        PackTileIndexAndMaskChannel(0, maskChannel),
+                        0f, 0f
+                    );
                 }
 
                 int shadowedDirectionalLightIndex = shadowedDirectionalLightCount++;
@@ -109,12 +139,12 @@ namespace ArcToon.Runtime.Passes.Lighting
                     };
                 return new Vector4(
                     light.shadowStrength,
-                    shadowedDirectionalLightIndex,
-                    light.shadowNormalBias, maskChannel
+                    PackTileIndexAndMaskChannel(shadowedDirectionalLightIndex, maskChannel),
+                    light.shadowNormalBias, GetLightSize(light)
                 );
             }
 
-            return new Vector4(0f, 0f, 0f, -1f);
+            return NoShadowData;
         }
         
         public Vector4 ReservePerObjectShadowCasterData(PerObjectShadowCaster caster, int visibleCasterIndex)
@@ -135,7 +165,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             if (light.shadows != LightShadows.None && light.shadowStrength > 0f)
             {
                 LightBakingOutput lightBaking = light.bakingOutput;
-                float maskChannel = -1;
+                int maskChannel = -1;
                 if (lightBaking is
                     { lightmapBakeType: LightmapBakeType.Mixed, mixedLightingMode: MixedLightingMode.Shadowmask })
                 {
@@ -146,7 +176,11 @@ namespace ArcToon.Runtime.Passes.Lighting
                 if (shadowedSpotLightCount >= RenderPipelineInfo.MaxShadowedSpotLightCount ||
                     !cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
                 {
-                    return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
+                    return new Vector4(
+                        -light.shadowStrength,
+                        PackTileIndexAndMaskChannel(0, maskChannel),
+                        0f, 0f
+                    );
                 }
 
                 int shadowedSpotLightIndex = shadowedSpotLightCount++;
@@ -158,11 +192,13 @@ namespace ArcToon.Runtime.Passes.Lighting
                     normalBias = light.shadowNormalBias,
                 };
                 return new Vector4(
-                    light.shadowStrength, shadowedSpotLightIndex, 0, maskChannel
+                    light.shadowStrength,
+                    PackTileIndexAndMaskChannel(shadowedSpotLightIndex, maskChannel),
+                    light.shadowNormalBias, GetLightSize(light)
                 );
             }
 
-            return new Vector4(0f, 0f, 0f, -1f);
+            return NoShadowData;
         }
 
 
@@ -171,7 +207,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             if (light.shadows != LightShadows.None && light.shadowStrength > 0f)
             {
                 LightBakingOutput lightBaking = light.bakingOutput;
-                float maskChannel = -1;
+                int maskChannel = -1;
                 if (lightBaking is
                     { lightmapBakeType: LightmapBakeType.Mixed, mixedLightingMode: MixedLightingMode.Shadowmask })
                 {
@@ -182,7 +218,11 @@ namespace ArcToon.Runtime.Passes.Lighting
                 if (shadowedPointLightCount >= RenderPipelineInfo.MaxShadowedPointLightCount ||
                     !cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b))
                 {
-                    return new Vector4(-light.shadowStrength, 0f, 0f, maskChannel);
+                    return new Vector4(
+                        -light.shadowStrength,
+                        PackTileIndexAndMaskChannel(0, maskChannel),
+                        0f, 0f
+                    );
                 }
 
                 int shadowedPointLightIndex = shadowedPointLightCount++;
@@ -194,11 +234,13 @@ namespace ArcToon.Runtime.Passes.Lighting
                     normalBias = light.shadowNormalBias,
                 };
                 return new Vector4(
-                    light.shadowStrength, shadowedPointLightIndex * 6, 0, maskChannel
+                    light.shadowStrength,
+                    PackTileIndexAndMaskChannel(shadowedPointLightIndex * 6, maskChannel),
+                    light.shadowNormalBias, GetLightSize(light)
                 );
             }
 
-            return new Vector4(0f, 0f, 0f, -1f);
+            return NoShadowData;
         }
 
     }

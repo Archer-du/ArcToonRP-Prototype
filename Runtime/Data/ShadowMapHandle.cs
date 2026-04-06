@@ -11,7 +11,7 @@ namespace ArcToon.Runtime.Data
 
 
         public readonly BufferHandle cascadeShadowData;
-        public readonly BufferHandle directionalShadowMatrices;
+        public readonly BufferHandle directionalShadowData;
 
         public readonly BufferHandle spotShadowData;
 
@@ -25,7 +25,7 @@ namespace ArcToon.Runtime.Data
             TextureHandle pointAtlas,
             TextureHandle perObjectAtlas,
             BufferHandle cascadeShadowData,
-            BufferHandle directionalShadowMatrices,
+            BufferHandle directionalShadowData,
             BufferHandle spotShadowData,
             BufferHandle pointShadowData,
             BufferHandle perObjectShadowData
@@ -36,7 +36,7 @@ namespace ArcToon.Runtime.Data
             this.pointAtlas = pointAtlas;
             this.perObjectAtlas = perObjectAtlas;
             this.cascadeShadowData = cascadeShadowData;
-            this.directionalShadowMatrices = directionalShadowMatrices;
+            this.directionalShadowData = directionalShadowData;
             this.spotShadowData = spotShadowData;
             this.pointShadowData = pointShadowData;
             this.perObjectShadowData = perObjectShadowData;

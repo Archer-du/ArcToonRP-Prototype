@@ -104,8 +104,6 @@ namespace ArcToon.Runtime.Settings
 
         [Range(0.01f, 10f)] public float poissonFilterRadius = 4f;
 
-        [Min(0.001f)] public float pcssLightSize = 1f;
-
         [Min(0.001f)] public float maxDistance = 100f;
 
         [Range(0.001f, 1f)] public float distanceFade = 0.1f;

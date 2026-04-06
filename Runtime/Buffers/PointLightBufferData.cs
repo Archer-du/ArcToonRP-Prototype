@@ -15,10 +15,12 @@ namespace ArcToon.Runtime.Buffers
 
         public Vector4 direction;
 
-        // x: shadow strength
-        // y: shadow map tile index
-        // z: shadow slope scale bias
-        // w: shadow mask channel
+        /// <summary>
+        /// x: shadow strength (float)
+        /// y: packed(tileIndex | maskChannel) via asuint/asfloat
+        /// z: shadow normal bias scale (light.shadowNormalBias, per-light config)
+        /// w: lightSize (per-light PCSS light size, from ArcToonLightData or ShadowSettings fallback)
+        /// </summary>
         public Vector4 shadowData;
 
         public static PointLightBufferData GenerateStructuredData(in VisibleLight visibleLight, Light light,

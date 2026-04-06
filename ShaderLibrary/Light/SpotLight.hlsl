@@ -16,6 +16,8 @@ struct SpotShadowData
     float shadowStrength;
     int tileIndex;
     int shadowMaskChannel;
+    float normalBiasScale;
+    float lightSize;
     float3 lightPositionWS;
     float3 spotDirectionWS;
 };
@@ -31,8 +33,9 @@ SpotShadowData DecodeSpotLightShadowData(SpotLightBufferData bufferData)
 {
     SpotShadowData data;
     data.shadowStrength = bufferData.shadowData.x;
-    data.tileIndex = bufferData.shadowData.y;
-    data.shadowMaskChannel = bufferData.shadowData.w;
+    UnpackTileIndexAndMaskChannel(bufferData.shadowData.y, data.tileIndex, data.shadowMaskChannel);
+    data.normalBiasScale = bufferData.shadowData.z;
+    data.lightSize = bufferData.shadowData.w;
     data.lightPositionWS = bufferData.position.xyz;
     data.spotDirectionWS = bufferData.direction.xyz;
     return data;
@@ -43,14 +46,14 @@ float GetSpotRealtimeShadow(SpotShadowData spotShadow, CascadeShadowData cascade
 {
     if (spotShadow.shadowStrength <= 0) return 1.0;
     int tileIndex = spotShadow.tileIndex;
-    SpotShadowBufferData shadowData = _SpotShadowData[tileIndex];
+    ShadowTileBufferData tileData = _SpotShadowData[tileIndex];
     float3 surfaceToLight = spotShadow.lightPositionWS - surface.positionWS;
     float distanceToLightPlane = dot(surfaceToLight, spotShadow.spotDirectionWS);
-    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * shadowData.atlasData.w);
-    float4 positionSTS = mul(shadowData.shadowMatrix,
+    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * spotShadow.normalBiasScale * tileData.atlasData.w);
+    float4 positionSTS = mul(tileData.shadowMatrix,
         float4(surface.positionWS + normalBias, 1.0));
     float shadow = FilterSpotShadow(positionSTS.xyz / positionSTS.w,
-        shadowData.atlasData.xyz);
+        tileData.atlasData.xyz, spotShadow.lightSize);
     shadow = lerp(1.0, shadow, spotShadow.shadowStrength);
     return shadow;
 }
