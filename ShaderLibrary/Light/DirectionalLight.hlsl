@@ -38,8 +38,9 @@ DirectionalLightShadowData DecodeDirectionalLightShadowData(float4 shadowData,
 {
     DirectionalLightShadowData data;
     data.shadowStrength = shadowData.x;
-    int shadowedLightIndex;
-    UnpackTileIndexAndMaskChannel(shadowData.y, shadowedLightIndex, data.shadowMaskChannel);
+    int shadowedLightIndex, maskChannelPacked;
+    Unpack2x16(shadowData.y, shadowedLightIndex, maskChannelPacked);
+    data.shadowMaskChannel = maskChannelPacked - 1;
     data.shadowedLightIndex = shadowedLightIndex;
     data.tileIndex = shadowedLightIndex * _CascadeCount + cascadeShadowData.offset;
     data.normalBiasScale = shadowData.z;

@@ -33,7 +33,9 @@ SpotShadowData DecodeSpotLightShadowData(SpotLightBufferData bufferData)
 {
     SpotShadowData data;
     data.shadowStrength = bufferData.shadowData.x;
-    UnpackTileIndexAndMaskChannel(bufferData.shadowData.y, data.tileIndex, data.shadowMaskChannel);
+    int maskChannelPacked;
+    Unpack2x16(bufferData.shadowData.y, data.tileIndex, maskChannelPacked);
+    data.shadowMaskChannel = maskChannelPacked - 1;
     data.normalBiasScale = bufferData.shadowData.z;
     data.lightSize = bufferData.shadowData.w;
     data.lightPositionWS = bufferData.position.xyz;

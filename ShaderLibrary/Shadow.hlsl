@@ -18,6 +18,7 @@
 
 #include "Surface.hlsl"
 #include "Common.hlsl"
+#include "BitPacking.hlsl"
 
 TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 TEXTURE2D_SHADOW(_SpotShadowAtlas);
@@ -51,14 +52,6 @@ StructuredBuffer<ShadowTileBufferData> _PointShadowData;
 #include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/PerObjectShadowBufferData.cs.hlsl"
 
 StructuredBuffer<PerObjectShadowBufferData> _PerObjectShadowData;
-
-// Unpack tileIndex (low 16 bits) and shadowMaskChannel (high 16 bits, offset -1) from a packed float
-void UnpackTileIndexAndMaskChannel(float packedValue, out int tileIndex, out int maskChannel)
-{
-    uint packed = asuint(packedValue);
-    tileIndex = (int)(packed & 0xFFFF);
-    maskChannel = (int)(packed >> 16) - 1;
-}
 
 struct ShadowMask
 {
