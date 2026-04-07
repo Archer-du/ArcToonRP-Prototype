@@ -46,12 +46,10 @@ StructuredBuffer<ShadowCascadeBufferData> _ShadowCascadeData;
 #include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/ShadowTileBufferData.cs.hlsl"
 
 StructuredBuffer<ShadowTileBufferData> _DirectionalShadowData;
+StructuredBuffer<ShadowTileBufferData> _PerObjectShadowData;
 StructuredBuffer<ShadowTileBufferData> _SpotShadowData;
 StructuredBuffer<ShadowTileBufferData> _PointShadowData;
 
-#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/PerObjectShadowBufferData.cs.hlsl"
-
-StructuredBuffer<PerObjectShadowBufferData> _PerObjectShadowData;
 
 struct ShadowMask
 {
@@ -369,18 +367,18 @@ float FilterDirectionalShadow(float3 positionSTS, float lightSize)
     #endif
 }
 
-float FilterPerObjectShadow(float3 positionSTS, float lightSize)
+float FilterPerObjectShadow(float3 positionSTS, float3 bounds, float lightSize)
 {
     #if defined(_PCSS)
-    return FilterShadowPCSS(
+    return FilterShadowPCSSClamped(
         TEXTURE2D_SHADOW_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp_compare),
         TEXTURE2D_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp),
-        positionSTS, _PerObjectAtlasSize, lightSize, true
+        positionSTS, bounds, _PerObjectAtlasSize, lightSize, true
     );
     #elif defined(_POISSON_DISK)
-    return FilterShadowPoisson(
+    return FilterShadowPoissonClamped(
         TEXTURE2D_SHADOW_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp_compare),
-        positionSTS, _PerObjectAtlasSize, _PoissonFilterRadius
+        positionSTS, bounds, _PerObjectAtlasSize, _PoissonFilterRadius
     );
     #elif defined(SHADOW_FILTER_SETUP)
     float weights[SHADOW_FILTER_SAMPLES];
@@ -390,16 +388,16 @@ float FilterPerObjectShadow(float3 positionSTS, float lightSize)
     float shadow = 0;
     for (int i = 0; i < SHADOW_FILTER_SAMPLES; i++)
     {
-        shadow += weights[i] * SampleShadowAtlas(
+        shadow += weights[i] * SampleShadowAtlasClamped(
             TEXTURE2D_SHADOW_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp_compare),
-            float3(positions[i].xy, positionSTS.z)
+            float3(positions[i].xy, positionSTS.z), bounds
         );
     }
     return shadow;
     #else
-    return SampleShadowAtlas(
+    return SampleShadowAtlasClamped(
         TEXTURE2D_SHADOW_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp_compare),
-        positionSTS
+        positionSTS, bounds
     );
     #endif
 }

@@ -60,11 +60,11 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
             if (CheckPerObjectCasterID(bufferData, surface.perObjectCasterID))
             {
                 int tileIndex = bufferData.perObjectData.z + directional.shadowedLightIndex;
-                PerObjectShadowBufferData shadowData = _PerObjectShadowData[tileIndex];
-                float3 normalBias = surface.interpolatedNormalWS * shadowData.normalBias.x * directional.normalBiasScale;
-                float3 positionSTS = mul(shadowData.shadowMatrix,
+                ShadowTileBufferData tileData = _PerObjectShadowData[tileIndex];
+                float3 normalBias = surface.interpolatedNormalWS * tileData.atlasData.w * directional.normalBiasScale;
+                float3 positionSTS = mul(tileData.shadowMatrix,
                                          float4(surface.positionWS + normalBias, 1.0)).xyz;
-                float shadow = FilterPerObjectShadow(positionSTS, directional.lightSize);
+                float shadow = FilterPerObjectShadow(positionSTS, tileData.atlasData.xyz, directional.lightSize);
                 shadow = lerp(1.0, shadow, directional.shadowStrength);
                 return shadow;
             }

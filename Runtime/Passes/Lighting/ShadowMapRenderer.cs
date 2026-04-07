@@ -82,9 +82,9 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         #region Per Object Shadow
 
-        private static readonly PerObjectShadowBufferData[] perObjectShadowData =
-            new PerObjectShadowBufferData[RenderPipelineInfo.MaxPerObjectShadowCasterCount *
-                                          RenderPipelineInfo.MaxShadowedDirectionalLightCount];
+        private static readonly ShadowTileBufferData[] perObjectShadowData =
+            new ShadowTileBufferData[RenderPipelineInfo.MaxPerObjectShadowCasterCount *
+                                     RenderPipelineInfo.MaxShadowedDirectionalLightCount];
 
         private static Vector4 perObjectAtlasSizes;
 
@@ -266,7 +266,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                 renderGraph.CreateBuffer(
                     new BufferDesc(
                         RenderPipelineInfo.MaxPerObjectShadowCasterCount *
-                        RenderPipelineInfo.MaxShadowedDirectionalLightCount, PerObjectShadowBufferData.stride)
+                        RenderPipelineInfo.MaxShadowedDirectionalLightCount, ShadowTileBufferData.stride)
                     {
                         name = "Per Object Shadow Data",
                         target = GraphicsBuffer.Target.Structured
@@ -659,8 +659,9 @@ namespace ArcToon.Runtime.Passes.Lighting
 
                 float normalBias = Mathf.Max(info.width / perObjectTileData.tileSize,
                     info.height / perObjectTileData.tileSize);
-                perObjectShadowData[tileIndex] = new PerObjectShadowBufferData(
-                    normalBias, settings.FilterSize,
+                float normalBiasFactor = normalBias * (settings.FilterSize * 1.4142136f);
+                perObjectShadowData[tileIndex] = new ShadowTileBufferData(
+                    offset, tileScale, perObjectAtlasSizes.x, normalBiasFactor,
                     ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
 
                 commandBuffer.SetViewProjectionMatrices(info.view, info.projection);
