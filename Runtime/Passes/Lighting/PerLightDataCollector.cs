@@ -20,7 +20,7 @@ namespace ArcToon.Runtime.Passes.Lighting
         public bool useShadowMask { get; private set; }
 
         /// <summary>
-        /// Gets per-light lightSize from ArcToonLightData component, or falls back to global ShadowSettings.lightSize.
+        /// Gets per-light lightSize from ArcToonLightData component.
         /// </summary>
         private float GetLightSize(Light light)
         {

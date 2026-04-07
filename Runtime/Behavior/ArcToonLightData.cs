@@ -10,6 +10,6 @@ namespace ArcToon.Runtime.Behavior
         [Header("PCSS")]
         [Min(0.001f)]
         [Tooltip("Per-light PCSS light size. Overrides the global ShadowSettings.lightSize when present.")]
-        public float lightSize = 1f;
+        public float lightSize = 10f;
     }
 }

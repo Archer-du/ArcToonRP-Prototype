@@ -245,13 +245,35 @@ float2 BlockerSearchClamped(TEXTURE2D_PARAM(shadowAtlas, depthSampler), float3 p
 }
 
 // =============================================
+// PCSS Penumbra Estimation (unified helper)
+// =============================================
+
+// Computes penumbra width based on projection type.
+// Orthographic (directional): depth is linear, penumbra = lightSize * depthDiff
+// Perspective (spot/point):   classic PCSS formula = lightSize * depthDiff / blockerDepth
+float EstimatePenumbraWidth(float lightSize, float zReceiver, float avgBlockerDepth, bool isOrthographic)
+{
+    #if defined(UNITY_REVERSED_Z)
+    float depthDiff = avgBlockerDepth - zReceiver;
+    #else
+    float depthDiff = zReceiver - avgBlockerDepth;
+    #endif
+
+    float penumbraWidth = isOrthographic
+        ? lightSize * depthDiff
+        : lightSize * depthDiff / max(avgBlockerDepth, 0.001);
+
+    return max(penumbraWidth, 0.0);
+}
+
+// =============================================
 // PCSS Main (unified core functions)
 // =============================================
 
 float FilterShadowPCSS(
     TEXTURE2D_SHADOW_PARAM(shadowAtlas, cmpSampler),
     TEXTURE2D_PARAM(shadowAtlasLod, depthSampler),
-    float3 positionSTS, float4 atlasSize, float lightSize)
+    float3 positionSTS, float4 atlasSize, float lightSize, bool isOrthographic)
 {
     float searchRadius = lightSize * _PoissonFilterRadius;
 
@@ -267,13 +289,7 @@ float FilterShadowPCSS(
     if (numBlockers >= POISSON_SAMPLE_COUNT - 0.5) return 0.0;
 
     // Step 2: Penumbra Estimation
-    float zReceiver = positionSTS.z;
-    #if defined(UNITY_REVERSED_Z)
-    float penumbraWidth = lightSize * (avgBlockerDepth - zReceiver) / max(avgBlockerDepth, 0.001);
-    #else
-    float penumbraWidth = lightSize * (zReceiver - avgBlockerDepth) / max(avgBlockerDepth, 0.001);
-    #endif
-    penumbraWidth = max(penumbraWidth, 0.0);
+    float penumbraWidth = EstimatePenumbraWidth(lightSize, positionSTS.z, avgBlockerDepth, isOrthographic);
 
     // Step 3: PCF Filtering
     float dynamicRadius = penumbraWidth * _PoissonFilterRadius;
@@ -286,7 +302,7 @@ float FilterShadowPCSS(
 float FilterShadowPCSSClamped(
     TEXTURE2D_SHADOW_PARAM(shadowAtlas, cmpSampler),
     TEXTURE2D_PARAM(shadowAtlasLod, depthSampler),
-    float3 positionSTS, float3 bounds, float4 atlasSize, float lightSize)
+    float3 positionSTS, float3 bounds, float4 atlasSize, float lightSize, bool isOrthographic)
 {
     float searchRadius = lightSize * _PoissonFilterRadius;
 
@@ -302,13 +318,7 @@ float FilterShadowPCSSClamped(
     if (numBlockers >= POISSON_SAMPLE_COUNT - 0.5) return 0.0;
 
     // Step 2: Penumbra Estimation
-    float zReceiver = positionSTS.z;
-    #if defined(UNITY_REVERSED_Z)
-    float penumbraWidth = lightSize * (avgBlockerDepth - zReceiver) / max(avgBlockerDepth, 0.001);
-    #else
-    float penumbraWidth = lightSize * (zReceiver - avgBlockerDepth) / max(avgBlockerDepth, 0.001);
-    #endif
-    penumbraWidth = max(penumbraWidth, 0.0);
+    float penumbraWidth = EstimatePenumbraWidth(lightSize, positionSTS.z, avgBlockerDepth, isOrthographic);
 
     // Step 3: PCF Filtering
     float dynamicRadius = penumbraWidth * _PoissonFilterRadius;
@@ -330,7 +340,7 @@ float FilterDirectionalShadow(float3 positionSTS, float lightSize)
     return FilterShadowPCSS(
         TEXTURE2D_SHADOW_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp_compare),
         TEXTURE2D_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp),
-        positionSTS, _DirectionalShadowAtlasSize, lightSize
+        positionSTS, _DirectionalShadowAtlasSize, lightSize, true
     );
     #elif defined(_POISSON_DISK)
     return FilterShadowPoisson(
@@ -365,7 +375,7 @@ float FilterPerObjectShadow(float3 positionSTS, float lightSize)
     return FilterShadowPCSS(
         TEXTURE2D_SHADOW_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp_compare),
         TEXTURE2D_ARGS(_PerObjectShadowAtlas, sampler_linear_clamp),
-        positionSTS, _PerObjectAtlasSize, lightSize
+        positionSTS, _PerObjectAtlasSize, lightSize, true
     );
     #elif defined(_POISSON_DISK)
     return FilterShadowPoisson(
@@ -400,7 +410,7 @@ float FilterSpotShadow(float3 positionSTS, float3 bounds, float lightSize)
     return FilterShadowPCSSClamped(
         TEXTURE2D_SHADOW_ARGS(_SpotShadowAtlas, sampler_linear_clamp_compare),
         TEXTURE2D_ARGS(_SpotShadowAtlas, sampler_linear_clamp),
-        positionSTS, bounds, _SpotShadowAtlasSize, lightSize
+        positionSTS, bounds, _SpotShadowAtlasSize, lightSize, false
     );
     #elif defined(_POISSON_DISK)
     return FilterShadowPoissonClamped(
@@ -435,7 +445,7 @@ float FilterPointShadow(float3 positionSTS, float3 bounds, float lightSize)
     return FilterShadowPCSSClamped(
         TEXTURE2D_SHADOW_ARGS(_PointShadowAtlas, sampler_linear_clamp_compare),
         TEXTURE2D_ARGS(_PointShadowAtlas, sampler_linear_clamp),
-        positionSTS, bounds, _PointShadowAtlasSize, lightSize
+        positionSTS, bounds, _PointShadowAtlasSize, lightSize, false
     );
     #elif defined(_POISSON_DISK)
     return FilterShadowPoissonClamped(
