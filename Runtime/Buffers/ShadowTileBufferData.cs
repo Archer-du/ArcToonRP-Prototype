@@ -30,13 +30,13 @@ namespace ArcToon.Runtime.Buffers
         /// <summary>
         /// Constructor for punctual light tiles (spot / point, with tile bounds and per-tile normalBias factor).
         /// </summary>
-        public ShadowTileBufferData(Vector2 offset, float scale, float oneDivideAtlasSize,
+        public ShadowTileBufferData(Vector2 tileOffset, float tileScale, float oneDivideAtlasSize,
             float normalBiasFactor, Matrix4x4 matrix)
         {
             float halfTexelSize = oneDivideAtlasSize * 0.5f;
-            atlasData.x = offset.x * scale + halfTexelSize;
-            atlasData.y = offset.y * scale + halfTexelSize;
-            atlasData.z = scale - halfTexelSize - halfTexelSize;
+            atlasData.x = tileOffset.x * tileScale + halfTexelSize;
+            atlasData.y = tileOffset.y * tileScale + halfTexelSize;
+            atlasData.z = tileScale - halfTexelSize - halfTexelSize;
             atlasData.w = normalBiasFactor;
             shadowMatrix = matrix;
         }

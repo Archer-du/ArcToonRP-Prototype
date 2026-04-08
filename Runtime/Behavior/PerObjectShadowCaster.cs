@@ -7,6 +7,7 @@ using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Behavior
 {
+    [AddComponentMenu("ArcToon/Per Object Shadow Caster")]
     public class PerObjectShadowCaster : MonoBehaviour
     {
         [NonSerialized] public int perObjectShadowCasterID = -1;

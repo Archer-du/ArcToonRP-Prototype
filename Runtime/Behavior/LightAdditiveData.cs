@@ -4,11 +4,11 @@ namespace ArcToon.Runtime.Behavior
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Light))]
-    [AddComponentMenu("ArcToon/ArcToon Light Data")]
-    public class ArcToonLightData : MonoBehaviour
+    [AddComponentMenu("ArcToon/Light Additive Data")]
+    public class LightAdditiveData : MonoBehaviour
     {
         [Header("PCSS")]
-        [Min(0.001f)]
+        [Range(0.1f, 100f)]
         [Tooltip("Per-light PCSS light size. Overrides the global ShadowSettings.lightSize when present.")]
         public float lightSize = 10f;
     }

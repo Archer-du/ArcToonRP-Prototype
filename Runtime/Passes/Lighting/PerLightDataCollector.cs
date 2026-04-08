@@ -24,7 +24,7 @@ namespace ArcToon.Runtime.Passes.Lighting
         /// </summary>
         private float GetLightSize(Light light)
         {
-            var lightData = light.GetComponent<ArcToonLightData>();
+            var lightData = light.GetComponent<LightAdditiveData>();
             return lightData != null ? lightData.lightSize : 1.0f;
         }
 
