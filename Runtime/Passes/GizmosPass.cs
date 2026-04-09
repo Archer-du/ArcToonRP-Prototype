@@ -1,23 +1,18 @@
-﻿using System.Diagnostics;
-using ArcToon.Runtime.Data;
-using ArcToon.Runtime.Utils;
+﻿using ArcToon.Runtime.Utils;
 using UnityEditor;
-using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class GizmosPass : RenderGraphPassBase
+    public class GizmosPass : RenderPassBase
     {
-        public override ProfilingSampler Sampler => new("Gizmos");
-        
-        public override bool AllowCulling() => true;
-        
-        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
+        public override string Name => "Gizmos";
+
+        public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
 #if UNITY_EDITOR
             RenderTextureHelpers.BlitTexture(commandBuffer, 
-                resourceHandle.depthAttachment, 
+                resources.depthAttachment, 
                 BuiltinRenderTextureType.CameraTarget,
                 ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 
                 (int)RenderTextureHelpers.BlitMode.Depth);
@@ -27,17 +22,6 @@ namespace ArcToon.Runtime.Passes
 
             context.DrawGizmos(Camera, GizmoSubset.PreImageEffects);
             context.DrawGizmos(Camera, GizmoSubset.PostImageEffects);
-#endif
-        }
-
-        public override void AcquireResource(RenderGraph renderGraph)
-        {
-        }
-
-        public override void DeclareResourceUsage(RenderGraphBuilder builder)
-        { 
-#if UNITY_EDITOR
-            builder.ReadTexture(resourceHandle.depthAttachment);
 #endif
         }
     }

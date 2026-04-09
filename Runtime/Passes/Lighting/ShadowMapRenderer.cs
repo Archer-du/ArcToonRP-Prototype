@@ -8,7 +8,6 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
-using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime.Passes.Lighting
 {
@@ -16,7 +15,7 @@ namespace ArcToon.Runtime.Passes.Lighting
     {
         struct RenderInfo
         {
-            public RendererListHandle handle;
+            public RendererList handle;
 
             public Matrix4x4 view, projection;
             public float width, height;
@@ -56,6 +55,8 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         NativeArray<ShadowSplitData> shadowSplitDataPerLight;
 
+        private RenderResources resources;
+
         #endregion
 
         #region Directional Light
@@ -68,10 +69,10 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         private static Vector4 directionalAtlasSizes;
 
-        private TextureHandle directionalAtlas;
+        private RTHandle directionalAtlas;
 
-        private BufferHandle cascadeShadowDataHandle;
-        private BufferHandle directionalShadowDataHandle;
+        private GraphicsBuffer cascadeShadowDataBuffer;
+        private GraphicsBuffer directionalShadowDataBuffer;
 
         private RenderInfo[] directionalRenderInfo =
             new RenderInfo[RenderPipelineInfo.MaxShadowedDirectionalLightCount * RenderPipelineInfo.MaxCascades];
@@ -88,9 +89,9 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         private static Vector4 perObjectAtlasSizes;
 
-        private TextureHandle perObjectAtlas;
+        private RTHandle perObjectAtlas;
 
-        private BufferHandle perObjectShadowDataHandle;
+        private GraphicsBuffer perObjectShadowDataBuffer;
 
         private RenderInfo[] perObjectRenderInfo =
             new RenderInfo[RenderPipelineInfo.MaxPerObjectShadowCasterCount *
@@ -107,9 +108,9 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         private static Vector4 spotAtlasSizes;
 
-        private TextureHandle spotAtlas;
+        private RTHandle spotAtlas;
 
-        private BufferHandle spotShadowDataHandle;
+        private GraphicsBuffer spotShadowDataBuffer;
 
         private RenderInfo[] spotRenderInfo =
             new RenderInfo[RenderPipelineInfo.MaxShadowedSpotLightCount];
@@ -125,9 +126,9 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         private static Vector4 pointAtlasSizes;
 
-        public TextureHandle pointAtlas;
+        private RTHandle pointAtlas;
 
-        public BufferHandle pointShadowDataHandle;
+        private GraphicsBuffer pointShadowDataBuffer;
 
         private RenderInfo[] pointRenderInfo =
             new RenderInfo[RenderPipelineInfo.MaxShadowedPointLightCount * RenderPipelineInfo.MaxTilesPerLight];
@@ -152,6 +153,109 @@ namespace ArcToon.Runtime.Passes.Lighting
                 Allocator.Temp, NativeArrayOptions.UninitializedMemory);
         }
         
+        /// <summary>
+        /// Bind RTHandle and GraphicsBuffer references from RenderResources.
+        /// Selects default shadow texture when no casters are present.
+        /// Called after Initialize, before BuildRendererLists.
+        /// </summary>
+        public void SetupResources(RenderResources resources)
+        {
+            this.resources = resources;
+
+            // Shadow Atlases: use real atlas or default shadow texture
+            directionalAtlas = collector.shadowedDirectionalLightCount > 0
+                ? resources.directionalShadowAtlas
+                : resources.defaultShadowTexture;
+
+            perObjectAtlas = collector.enabledPerObjectShadowCasterCount > 0
+                ? resources.perObjectShadowAtlas
+                : resources.defaultShadowTexture;
+
+            spotAtlas = collector.shadowedSpotLightCount > 0
+                ? resources.spotShadowAtlas
+                : resources.defaultShadowTexture;
+
+            pointAtlas = collector.shadowedPointLightCount > 0
+                ? resources.pointShadowAtlas
+                : resources.defaultShadowTexture;
+
+            // Shadow Data Buffers
+            cascadeShadowDataBuffer = resources.cascadeShadowData;
+            directionalShadowDataBuffer = resources.directionalShadowData;
+            perObjectShadowDataBuffer = resources.perObjectShadowData;
+            spotShadowDataBuffer = resources.spotShadowData;
+            pointShadowDataBuffer = resources.pointShadowData;
+        }
+
+        /// <summary>
+        /// Create RendererLists for all shadow casters and perform shadow caster culling.
+        /// Called after SetupResources, before RenderShadowMap.
+        /// </summary>
+        public void BuildRendererLists(ScriptableRenderContext context)
+        {
+            if (collector.shadowedDirectionalLightCount > 0)
+            {
+                int atlasSize = (int)settings.directionalCascadeShadow.atlasSize;
+                int tiles =
+                    collector.shadowedDirectionalLightCount * settings.directionalCascadeShadow.cascadeCount;
+                directionalTileData = new ShadowMapTileData(atlasSize, tiles);
+
+                for (int i = 0; i < collector.shadowedDirectionalLightCount; i++)
+                {
+                    BuildDirectionalRendererList(i, context);
+                }
+            }
+
+            if (collector.enabledPerObjectShadowCasterCount > 0)
+            {
+                int atlasSize = (int)settings.perObjectShadow.atlasSize;
+                int tiles =
+                    collector.enabledPerObjectShadowCasterCount * collector.shadowedDirectionalLightCount;
+                perObjectTileData = new ShadowMapTileData(atlasSize, tiles);
+
+                for (int i = 0; i < collector.enabledPerObjectShadowCasterCount; i++)
+                {
+                    BuildPerObjectRendererList(i, context);
+                }
+            }
+
+            if (collector.shadowedSpotLightCount > 0)
+            {
+                int atlasSize = (int)settings.spotShadow.atlasSize;
+                int tiles = collector.shadowedSpotLightCount;
+                spotTileData = new ShadowMapTileData(atlasSize, tiles);
+
+                for (int i = 0; i < collector.shadowedSpotLightCount; i++)
+                {
+                    BuildSpotShadowsRendererList(i, context);
+                }
+            }
+
+            if (collector.shadowedPointLightCount > 0)
+            {
+                int atlasSize = (int)settings.pointShadow.atlasSize;
+                int tiles = collector.shadowedPointLightCount * 6;
+                pointTileData = new ShadowMapTileData(atlasSize, tiles);
+
+                for (int i = 0; i < collector.shadowedPointLightCount; i++)
+                {
+                    BuildPointShadowsRendererList(i, context);
+                }
+            }
+
+            if (collector.shadowedDirectionalLightCount + collector.shadowedSpotLightCount +
+                collector.shadowedPointLightCount > 0)
+            {
+                context.CullShadowCasters(
+                    cullingResults,
+                    new ShadowCastersCullingInfos
+                    {
+                        perLightInfos = cullingInfoPerLight,
+                        splitBuffer = shadowSplitDataPerLight
+                    });
+            }
+        }
+
         public void RenderShadowMap(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             this.commandBuffer = commandBuffer;
@@ -177,11 +281,11 @@ namespace ArcToon.Runtime.Passes.Lighting
             }
 
             commandBuffer.SetGlobalDepthBias(0f, 0f);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.ShadowCascadeData, cascadeShadowDataHandle);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.DirectionalShadowData, directionalShadowDataHandle);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.SpotShadowData, spotShadowDataHandle);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PointShadowData, pointShadowDataHandle);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PerObjectShadowData, perObjectShadowDataHandle);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.ShadowCascadeData, cascadeShadowDataBuffer);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.DirectionalShadowData, directionalShadowDataBuffer);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.SpotShadowData, spotShadowDataBuffer);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PointShadowData, pointShadowDataBuffer);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PerObjectShadowData, perObjectShadowDataBuffer);
 
             commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DirectionalShadowAtlas, directionalAtlas);
             commandBuffer.SetGlobalTexture(InternalShader.PropertyID.SpotShadowAtlas, spotAtlas);
@@ -222,169 +326,9 @@ namespace ArcToon.Runtime.Passes.Lighting
             commandBuffer.Clear();
         }
 
-        public ShadowMapHandle Record(
-            RenderGraph renderGraph,
-            RenderGraphBuilder builder,
-            ScriptableRenderContext context)
-        {
-            int atlasSize = (int)settings.directionalCascadeShadow.atlasSize;
-            var desc = new TextureDesc(atlasSize, atlasSize)
-            {
-                depthBufferBits = DepthBits.Depth32,
-                isShadowMap = true,
-                name = "Directional Shadow Atlas"
-            };
-            directionalAtlas = collector.shadowedDirectionalLightCount > 0
-                ? builder.WriteTexture(renderGraph.CreateTexture(desc))
-                : renderGraph.defaultResources.defaultShadowTexture;
-
-            cascadeShadowDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxCascades, ShadowCascadeBufferData.stride)
-                {
-                    name = "Shadow Cascades",
-                    target = GraphicsBuffer.Target.Structured
-                })
-            );
-
-            directionalShadowDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(
-                    new BufferDesc(RenderPipelineInfo.MaxShadowedDirectionalLightCount * RenderPipelineInfo.MaxCascades, ShadowTileBufferData.stride)
-                    {
-                        name = "Directional Shadow Data",
-                        target = GraphicsBuffer.Target.Structured
-                    })
-            );
-
-            atlasSize = (int)settings.perObjectShadow.atlasSize;
-            desc.width = desc.height = atlasSize;
-            desc.name = "Per Object Shadow Atlas";
-            perObjectAtlas = collector.enabledPerObjectShadowCasterCount > 0
-                ? builder.WriteTexture(renderGraph.CreateTexture(desc))
-                : renderGraph.defaultResources.defaultShadowTexture;
-
-            perObjectShadowDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(
-                    new BufferDesc(
-                        RenderPipelineInfo.MaxPerObjectShadowCasterCount *
-                        RenderPipelineInfo.MaxShadowedDirectionalLightCount, ShadowTileBufferData.stride)
-                    {
-                        name = "Per Object Shadow Data",
-                        target = GraphicsBuffer.Target.Structured
-                    })
-            );
-
-            atlasSize = (int)settings.spotShadow.atlasSize;
-            desc.width = desc.height = atlasSize;
-            desc.name = "Spot Shadow Atlas";
-            spotAtlas = collector.shadowedSpotLightCount > 0
-                ? builder.WriteTexture(renderGraph.CreateTexture(desc))
-                : renderGraph.defaultResources.defaultShadowTexture;
-
-            spotShadowDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(
-                    new BufferDesc(RenderPipelineInfo.MaxShadowedSpotLightCount, ShadowTileBufferData.stride)
-                    {
-                        name = "Spot Shadow Data",
-                        target = GraphicsBuffer.Target.Structured
-                    })
-            );
-
-            atlasSize = (int)settings.pointShadow.atlasSize;
-            desc.width = desc.height = atlasSize;
-            desc.name = "Point Shadow Atlas";
-            pointAtlas = collector.shadowedPointLightCount > 0
-                ? builder.WriteTexture(renderGraph.CreateTexture(desc))
-                : renderGraph.defaultResources.defaultShadowTexture;
-
-            pointShadowDataHandle = builder.WriteBuffer(
-                renderGraph.CreateBuffer(new BufferDesc(RenderPipelineInfo.MaxShadowedPointLightCount * 6,
-                    ShadowTileBufferData.stride)
-                {
-                    name = "Point Shadow Data",
-                    target = GraphicsBuffer.Target.Structured
-                })
-            );
-
-            BuildRendererLists(renderGraph, builder, context);
-
-            return new ShadowMapHandle(directionalAtlas, spotAtlas, pointAtlas, perObjectAtlas,
-                cascadeShadowDataHandle, directionalShadowDataHandle, spotShadowDataHandle, pointShadowDataHandle,
-                perObjectShadowDataHandle);
-        }
-
-
-        private void BuildRendererLists(
-            RenderGraph renderGraph,
-            RenderGraphBuilder builder,
-            ScriptableRenderContext context)
-        {
-            if (collector.shadowedDirectionalLightCount > 0)
-            {
-                int atlasSize = (int)settings.directionalCascadeShadow.atlasSize;
-                int tiles =
-                    collector.shadowedDirectionalLightCount * settings.directionalCascadeShadow.cascadeCount;
-                directionalTileData = new ShadowMapTileData(atlasSize, tiles);
-
-                for (int i = 0; i < collector.shadowedDirectionalLightCount; i++)
-                {
-                    BuildDirectionalRendererList(i, renderGraph, builder);
-                }
-            }
-
-            if (collector.enabledPerObjectShadowCasterCount > 0)
-            {
-                int atlasSize = (int)settings.perObjectShadow.atlasSize;
-                int tiles =
-                    collector.enabledPerObjectShadowCasterCount * collector.shadowedDirectionalLightCount;
-                perObjectTileData = new ShadowMapTileData(atlasSize, tiles);
-
-                for (int i = 0; i < collector.enabledPerObjectShadowCasterCount; i++)
-                {
-                    BuildPerObjectRendererList(i, renderGraph, builder);
-                }
-            }
-
-            if (collector.shadowedSpotLightCount > 0)
-            {
-                int atlasSize = (int)settings.spotShadow.atlasSize;
-                int tiles = collector.shadowedSpotLightCount;
-                spotTileData = new ShadowMapTileData(atlasSize, tiles);
-
-                for (int i = 0; i < collector.shadowedSpotLightCount; i++)
-                {
-                    BuildSpotShadowsRendererList(i, renderGraph, builder);
-                }
-            }
-
-            if (collector.shadowedPointLightCount > 0)
-            {
-                int atlasSize = (int)settings.pointShadow.atlasSize;
-                int tiles = collector.shadowedPointLightCount * 6;
-                pointTileData = new ShadowMapTileData(atlasSize, tiles);
-
-                for (int i = 0; i < collector.shadowedPointLightCount; i++)
-                {
-                    BuildPointShadowsRendererList(i, renderGraph, builder);
-                }
-            }
-
-            if (collector.shadowedDirectionalLightCount + collector.shadowedSpotLightCount +
-                collector.shadowedPointLightCount > 0)
-            {
-                context.CullShadowCasters(
-                    cullingResults,
-                    new ShadowCastersCullingInfos
-                    {
-                        perLightInfos = cullingInfoPerLight,
-                        splitBuffer = shadowSplitDataPerLight
-                    });
-            }
-        }
-
         private void BuildDirectionalRendererList(
             int shadowedDirectionalLightIndex,
-            RenderGraph renderGraph,
-            RenderGraphBuilder builder)
+            ScriptableRenderContext context)
         {
             var lightShadowData = collector.ShadowMapDataDirectionals[shadowedDirectionalLightIndex];
             var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex)
@@ -412,7 +356,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                         directionalTileData.tileSize, settings.FilterSize);
                 }
 
-                info.handle = builder.UseRendererList(renderGraph.CreateShadowRendererList(ref shadowSettings));
+                info.handle = context.CreateShadowRendererList(ref shadowSettings);
             }
 
             cullingInfoPerLight[lightShadowData.visibleLightIndex] =
@@ -425,8 +369,7 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         private void BuildPerObjectRendererList(
             int enabledPerObjectShadowCasterIndex,
-            RenderGraph renderGraph,
-            RenderGraphBuilder builder)
+            ScriptableRenderContext context)
         {
             var casterShadowMapData = collector.ShadowMapDataPerObjectCasters[enabledPerObjectShadowCasterIndex];
             int shadowedDirectionalLightCount = collector.shadowedDirectionalLightCount;
@@ -440,18 +383,18 @@ namespace ArcToon.Runtime.Passes.Lighting
                     camera, perObjectShadowCasterManager,
                     out info.view, out info.projection, out info.width, out info.height);
 
-                info.handle = builder.UseRendererList(renderGraph.CreateRendererList(
+                info.handle = context.CreateRendererList(
                     new RendererListDesc(InternalShader.TagId.ShadowCaster, cullingResults, camera)
                     {
                         sortingCriteria = SortingCriteria.CommonOpaque,
                         renderQueueRange = RenderQueueRange.all,
-                    })
+                    }
                 );
             }
         }
 
         private void BuildSpotShadowsRendererList(
-            int shadowedSpotLightIndex, RenderGraph renderGraph, RenderGraphBuilder builder)
+            int shadowedSpotLightIndex, ScriptableRenderContext context)
         {
             var lightShadowData = collector.ShadowMapDataSpots[shadowedSpotLightIndex];
             var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex)
@@ -466,7 +409,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             int splitOffset = lightShadowData.visibleLightIndex * RenderPipelineInfo.MaxTilesPerLight;
             shadowSplitDataPerLight[splitOffset] = splitData;
 
-            info.handle = builder.UseRendererList(renderGraph.CreateShadowRendererList(ref shadowSettings));
+            info.handle = context.CreateShadowRendererList(ref shadowSettings);
 
             cullingInfoPerLight[lightShadowData.visibleLightIndex] =
                 new LightShadowCasterCullingInfo
@@ -477,7 +420,7 @@ namespace ArcToon.Runtime.Passes.Lighting
         }
 
         private void BuildPointShadowsRendererList(
-            int shadowedPointLightIndex, RenderGraph renderGraph, RenderGraphBuilder builder)
+            int shadowedPointLightIndex, ScriptableRenderContext context)
         {
             var lightShadowData = collector.ShadowMapDataPoints[shadowedPointLightIndex];
             var shadowSettings = new ShadowDrawingSettings(cullingResults, lightShadowData.visibleLightIndex)
@@ -501,7 +444,7 @@ namespace ArcToon.Runtime.Passes.Lighting
                     out ShadowSplitData splitData);
                 shadowSplitDataPerLight[splitOffset + i] = splitData;
 
-                info.handle = builder.UseRendererList(renderGraph.CreateShadowRendererList(ref shadowSettings));
+                info.handle = context.CreateShadowRendererList(ref shadowSettings);
             }
 
             cullingInfoPerLight[lightShadowData.visibleLightIndex] =
@@ -532,11 +475,11 @@ namespace ArcToon.Runtime.Passes.Lighting
 
             commandBuffer.SetGlobalVector(InternalShader.PropertyID.DirectionalShadowAtlasSize, directionalAtlasSizes);
             commandBuffer.SetBufferData(
-                cascadeShadowDataHandle, cascadeShadowData,
+                cascadeShadowDataBuffer, cascadeShadowData,
                 0, 0, settings.directionalCascadeShadow.cascadeCount);
 
             commandBuffer.SetBufferData(
-                directionalShadowDataHandle, directionalShadowData,
+                directionalShadowDataBuffer, directionalShadowData,
                 0, 0, collector.shadowedDirectionalLightCount * settings.directionalCascadeShadow.cascadeCount);
             commandBuffer.SetKeyword(InternalShader.GlobalKeyword.CASCADE_BLEND_SOFT, settings.directionalCascadeShadow.blendMode == ShadowSettings.CascadeBlendMode.Soft);
             commandBuffer.EndSample("Directional Shadows");
@@ -562,7 +505,7 @@ namespace ArcToon.Runtime.Passes.Lighting
 
             commandBuffer.SetGlobalVector(InternalShader.PropertyID.PerObjectAtlasSize, perObjectAtlasSizes);
             commandBuffer.SetBufferData(
-                perObjectShadowDataHandle, perObjectShadowData,
+                perObjectShadowDataBuffer, perObjectShadowData,
                 0, 0, collector.enabledPerObjectShadowCasterCount * collector.shadowedDirectionalLightCount);
             
             commandBuffer.EndSample("Per Object Shadows");
@@ -588,7 +531,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             }
 
             commandBuffer.SetGlobalVector(InternalShader.PropertyID.SpotShadowAtlasSize, spotAtlasSizes);
-            commandBuffer.SetBufferData(spotShadowDataHandle, spotShadowData,
+            commandBuffer.SetBufferData(spotShadowDataBuffer, spotShadowData,
                 0, 0, collector.shadowedSpotLightCount);
 
             commandBuffer.EndSample("Spot Shadows");
@@ -614,7 +557,7 @@ namespace ArcToon.Runtime.Passes.Lighting
             }
 
             commandBuffer.SetGlobalVector(InternalShader.PropertyID.PointShadowAtlasSize, pointAtlasSizes);
-            commandBuffer.SetBufferData(pointShadowDataHandle, pointShadowData,
+            commandBuffer.SetBufferData(pointShadowDataBuffer, pointShadowData,
                 0, 0, collector.shadowedPointLightCount * 6);
 
             commandBuffer.EndSample("Point Shadows");

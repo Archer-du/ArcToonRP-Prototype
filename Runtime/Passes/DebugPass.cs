@@ -1,31 +1,14 @@
-﻿using System.Diagnostics;
-using ArcToon.Runtime.Data;
-using ArcToon.Runtime.Settings;
-using ArcToon.Runtime.Utils;
-using UnityEngine;
-using UnityEngine.Rendering.RenderGraphModule;
-using UnityEngine.Rendering;
+﻿using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class DebugPass : RenderGraphPassBase
+    public class DebugPass : RenderPassBase
     {
-        public override ProfilingSampler Sampler => new("Debug");
+        public override string Name => "Debug";
 
-        public override bool AllowCulling() => true;
-
-        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
+        public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             CameraDebugger.Render(commandBuffer, context);
-        }
-
-        public override void AcquireResource(RenderGraph renderGraph)
-        {
-        }
-
-        public override void DeclareResourceUsage(RenderGraphBuilder builder)
-        {
-            builder.ReadBuffer(resourceHandle.forwardPlusTileBuffer);
         }
     }
 }

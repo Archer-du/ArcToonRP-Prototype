@@ -1,17 +1,12 @@
-﻿using System.Diagnostics;
-using ArcToon.Runtime.Utils;
-using UnityEngine;
-using UnityEngine.Rendering.RenderGraphModule;
+﻿using ArcToon.Runtime.Utils;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
 namespace ArcToon.Runtime.Passes
 {
-    public class UnsupportedPass : RenderGraphPassBase
+    public class UnsupportedPass : RenderPassBase
     {
-        public override ProfilingSampler Sampler => new("Unsupported");
-        
-        RendererListHandle list;
+        public override string Name => "Unsupported";
 
         private static ShaderTagId[] invalidShaderTagIds =
         {
@@ -23,19 +18,12 @@ namespace ArcToon.Runtime.Passes
             new("VertexLM")
         };
 
-        public override bool AllowCulling() => true;
+        RendererList list;
 
-        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
+        public override void PrepareRendererLists(ScriptableRenderContext context)
         {
 #if UNITY_EDITOR
-            commandBuffer.DrawRendererList(list);
-#endif
-        }
-
-        public override void AcquireResource(RenderGraph renderGraph)
-        {
-#if UNITY_EDITOR
-            list = renderGraph.CreateRendererList(new RendererListDesc(invalidShaderTagIds, renderer.CullingResults, Camera)
+            list = context.CreateRendererList(new RendererListDesc(invalidShaderTagIds, renderer.CullingResults, Camera)
             {
                 overrideMaterial = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.InternalError),
                 renderQueueRange = RenderQueueRange.all
@@ -43,10 +31,10 @@ namespace ArcToon.Runtime.Passes
 #endif
         }
 
-        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
 #if UNITY_EDITOR
-            builder.UseRendererList(list);
+            commandBuffer.DrawRendererList(list);
 #endif
         }
     }

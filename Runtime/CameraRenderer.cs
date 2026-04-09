@@ -7,8 +7,6 @@ using ArcToon.Runtime.Settings;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.LookDev;
-using UnityEngine.Rendering.RenderGraphModule;
 
 namespace ArcToon.Runtime
 {
@@ -43,22 +41,44 @@ namespace ArcToon.Runtime
         // TODO: Singleton
         internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
 
+        internal RenderResources Resources { get; private set; }
+
+        #region Pass Instances
+
+        private readonly LightingPass lightingPass = new();
+        private readonly SetupPass setupPass = new();
+        private readonly DepthStencilPrePass depthStencilPrePass = new();
+        private readonly OpaquePass opaquePass = new();
+        private readonly GeometryOutlinePass opaqueOutlinePass = new();
+        private readonly SkyboxPass skyboxPass = new();
+        private readonly TransparentPass transparentPass = new();
+        private readonly GeometryOutlinePass transparentOutlinePass = new();
+        private readonly UnsupportedPass unsupportedPass = new();
+        private readonly PostFXPass postFXPass = new();
+        private readonly DebugPass debugPass = new();
+        private readonly GizmosPass gizmosPass = new();
+        private readonly CopyFinalPass copyFinalPass = new();
+
+        #endregion
+
         public CameraRenderer()
         {
+            Resources = new RenderResources();
             CameraDebugger.Initialize();
         }
 
         public void Dispose()
         {
+            Resources.Dispose();
             CameraDebugger.Cleanup();
         }
 
-        public void Render(RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
+        public void Render(ScriptableRenderContext context, Camera camera,
             RenderPipelineConfig config)
         {
             if (SetupRenderData(context, camera, config))
             {
-                ExecuteRenderPass(renderGraph);
+                ExecuteRenderPass();
             }
         }
 
@@ -105,88 +125,81 @@ namespace ArcToon.Runtime
                         
             useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
 
+            // Allocate / resize persistent resources
+            Resources.AllocateCameraResources(AttachmentSize.x, AttachmentSize.y, useHDR);
+            Resources.AllocateShadowResources(ShadowSettings);
+            Resources.AllocateLightingResources();
+            Resources.AllocateTransparencyResources(AttachmentSize.x, AttachmentSize.y, useHDR);
+            Resources.AllocatePostFXResources(AttachmentSize.x, AttachmentSize.y, useHDR);
+
             return true;
         }
 
-        private void ExecuteRenderPass(RenderGraph renderGraph)
+        private void ExecuteRenderPass()
         {
-            var cameraSampler = new ProfilingSampler(RenderCamera.name);
-            var renderGraphParameters = new RenderGraphParameters
+            var cmd = CommandBufferPool.Get(RenderCamera.name);
+
+            // Phase: Lighting
+            RenderPhase = RenderPhase.Lighting;
+            ExecutePass(lightingPass, cmd);
+
+            // Phase: Setup
+            RenderPhase = RenderPhase.Setup;
+            ExecutePass(setupPass, cmd);
+            ExecutePass(depthStencilPrePass, cmd);
+
+            // Phase: Opaque
+            RenderPhase = RenderPhase.Opaque;
+            ExecutePass(opaquePass, cmd);
+            ExecutePass(opaqueOutlinePass, cmd);
+
+            // Phase: Skybox
+            RenderPhase = RenderPhase.Skybox;
+            ExecutePass(skyboxPass, cmd);
+
+            // Phase: Transparent
+            RenderPhase = RenderPhase.Transparent;
+            ExecutePass(transparentPass, cmd);
+
+            // Phase: Unsupported
+            RenderPhase = RenderPhase.Unsupported;
+            ExecutePass(unsupportedPass, cmd);
+
+            // Phase: PostProcessing
+            RenderPhase = RenderPhase.PostProcessing;
+            ExecutePass(postFXPass, cmd);
+
+            // Phase: BackBuffer
+            RenderPhase = RenderPhase.BackBuffer;
+            ExecutePass(copyFinalPass, cmd);
+
+            if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
             {
-                commandBuffer = CommandBufferPool.Get(),
-                currentFrameIndex = Time.frameCount,
-                executionName = cameraSampler.name,
-                scriptableRenderContext = Context,
-                rendererListCulling = true,
-            };
-
-            renderGraph.BeginRecording(renderGraphParameters);
-            using (new RenderGraphProfilingScope(renderGraph, cameraSampler))
-            {
-                RenderGraphResourceHandle resourceHandle = new();
-
-                RenderPhase = RenderPhase.Lighting;
-                RecordRenderPass<LightingPass>("Lighting", renderGraph, resourceHandle);
-                
-                RenderPhase = RenderPhase.Setup;
-                RecordRenderPass<SetupPass>("Setup", renderGraph, resourceHandle);
-                RecordRenderPass<DepthStencilPrePass>("Prepass", renderGraph, resourceHandle);
-
-                RenderPhase = RenderPhase.Opaque;
-                RecordRenderPass<OpaquePass>("Opaque", renderGraph, resourceHandle);
-                RecordRenderPass<GeometryOutlinePass>("Geometry Outline", renderGraph, resourceHandle);
-                
-                RenderPhase = RenderPhase.Skybox;
-                RecordRenderPass<SkyboxPass>("Skybox", renderGraph, resourceHandle);
-                
-                RenderPhase = RenderPhase.Transparent;
-                RecordRenderPass<OrderedDualFacePass>("Transparent Dual Face", renderGraph, resourceHandle);
-                RecordRenderPass<WeightedAveragePass>("Transparent Weighted Average", renderGraph, resourceHandle);
-                RecordRenderPass<DepthPeelingPass>("Transparent Depth Peeling", renderGraph, resourceHandle);
-                RecordRenderPass<GeometryOutlinePass>("Geometry Outline", renderGraph, resourceHandle);
-                
-                RenderPhase = RenderPhase.Unsupported;
-                RecordRenderPass<UnsupportedPass>("Unsupported", renderGraph, resourceHandle);
-                
-                RenderPhase = RenderPhase.PostProcessing;
-                resourceHandle.postFXResult = PostFXPass.Record(this, renderGraph, RenderCamera, resourceHandle.colorAttachment, CullingResults, AttachmentSize,
-                    CameraAdditiveData, BufferSettings, PostFXConfig, useHDR);
-                
-                RenderPhase = RenderPhase.BackBuffer;
-                RecordRenderPass<CopyFinalPass>("Final", renderGraph, resourceHandle);
-                
-                if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
-                {
-                    RecordRenderPass<DebugPass>("Debug", renderGraph, resourceHandle);
-                }
-                if (Handles.ShouldRenderGizmos())
-                {
-                    RecordRenderPass<GizmosPass>("Gizmos", renderGraph, resourceHandle);
-                }
+                ExecutePass(debugPass, cmd);
             }
+#if UNITY_EDITOR
+            if (Handles.ShouldRenderGizmos())
+            {
+                ExecutePass(gizmosPass, cmd);
+            }
+#endif
 
-            renderGraph.EndRecordingAndExecute();
-            Context.ExecuteCommandBuffer(renderGraphParameters.commandBuffer);
+            Context.ExecuteCommandBuffer(cmd);
             Context.Submit();
-            CommandBufferPool.Release(renderGraphParameters.commandBuffer);
+            CommandBufferPool.Release(cmd);
         }
 
-        private void RecordRenderPass<TRenderPass>(string passName,
-            RenderGraph renderGraph, RenderGraphResourceHandle resourceHandle) 
-            where TRenderPass : RenderGraphPassBase, new()
+        private void ExecutePass(RenderPassBase pass, CommandBuffer cmd)
         {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(passName, out TRenderPass passData);
-            passData.Initialize(resourceHandle, this);
-            passData.AcquireResource(renderGraph);
-            passData.DeclareResourceUsage(builder);
-
-            builder.AllowPassCulling(passData.AllowCulling());
-            builder.SetRenderFunc<TRenderPass>(static (pass, context) =>
-            {
-                pass.Render(context.cmd, context.renderContext);
-                context.renderContext.ExecuteCommandBuffer(context.cmd);
-                context.cmd.Clear();
-            });
+            pass.Setup(Resources, this);
+            pass.PrepareRendererLists(Context);
+            cmd.BeginSample(pass.Name);
+            Context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+            pass.Execute(cmd, Context);
+            cmd.EndSample(pass.Name);
+            Context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
         }
 
         private Vector2Int GetCameraBufferSize(Camera camera, float renderScale)
