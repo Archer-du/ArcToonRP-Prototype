@@ -9,23 +9,15 @@ CBUFFER_START(_CustomPointLight)
     int _PointLightCount;
 CBUFFER_END
 
-struct PointLightBufferData
-{
-    float4 color;
-    float4 position;
-    float4 direction;
-    // x: shadow strength
-    // y: shadow map tile index
-    // z: shadow slope scale bias
-    // w: shadow mask channel
-    float4 shadowData;
-};
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/PointLightBufferData.cs.hlsl"
 
 struct PointShadowData
 {
     float shadowStrength;
     int tileIndex;
     int shadowMaskChannel;
+    float normalBiasScale;
+    float lightSize;
     float3 lightPositionWS;
     float3 spotDirectionWS;
 };
@@ -51,8 +43,11 @@ PointShadowData DecodePointLightShadowData(PointLightBufferData bufferData)
 {
     PointShadowData data;
     data.shadowStrength = bufferData.shadowData.x;
-    data.tileIndex = bufferData.shadowData.y;
-    data.shadowMaskChannel = bufferData.shadowData.w;
+    int maskChannelPacked;
+    Unpack2x16(bufferData.shadowData.y, data.tileIndex, maskChannelPacked);
+    data.shadowMaskChannel = maskChannelPacked - 1;
+    data.normalBiasScale = bufferData.shadowData.z;
+    data.lightSize = bufferData.shadowData.w;
     data.lightPositionWS = bufferData.position.xyz;
     data.spotDirectionWS = bufferData.direction.xyz;
     return data;
@@ -66,15 +61,15 @@ float GetPointRealtimeShadow(PointShadowData pointShadow, CascadeShadowData casc
     float3 surfaceToLight = pointShadow.lightPositionWS - surface.positionWS;
     float faceOffset = CubeMapFaceID(-surfaceToLight);
     tileIndex += faceOffset;
-    PointShadowBufferData shadowData = _PointShadowData[tileIndex];
+    ShadowTileBufferData tileData = _PointShadowData[tileIndex];
     float3 lightPlane = pointShadowPlanes[faceOffset];
     float distanceToLightPlane = dot(surfaceToLight, lightPlane);
 
-    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * shadowData.tileData.w);
-    float4 positionSTS = mul(shadowData.shadowMatrix,
+    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * pointShadow.normalBiasScale * tileData.atlasData.w);
+    float4 positionSTS = mul(tileData.shadowMatrix,
                              float4(surface.positionWS + normalBias, 1.0));
     float shadow = FilterPointShadow(positionSTS.xyz / positionSTS.w,
-                                    shadowData.tileData.xyz);
+                                    tileData.atlasData.xyz, pointShadow.lightSize);
     shadow = lerp(1.0, shadow, pointShadow.shadowStrength);
     return shadow;
 }

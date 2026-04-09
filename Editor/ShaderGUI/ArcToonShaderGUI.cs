@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ArcToon.Editor.ShaderEditor.Components;
+using ArcToon.Editor.ShaderEditor.Sections;
 using ArcToon.Editor.ShaderEditor.Panels;
 using UnityEditor;
 using UnityEngine;
@@ -65,50 +65,50 @@ namespace ArcToon.Editor.ShaderEditor
 
         private void TryInitGUIPanels()
         {
-            generalFoldoutPanel ??= new BaseFoldoutShaderPanel("General", new List<ShaderGUIComponentBase>()
+            generalFoldoutPanel ??= new BaseFoldoutShaderPanel("General", new List<ShaderGUISectionBase>()
             {
-                new ColorTextureComponent("Base Map", ShaderPropertyID.BaseMap, ShaderPropertyID.BaseColor, true),
-                new NormalMapComponent("Normal Map", ShaderPropertyID.NormalMap, ShaderPropertyID.NormalScale, ShaderKeywords.NORMAL_MAP),
-                new SpecularMaskComponent(),
-                new AlphaClippingComponent(),
-                new TransparencyComponent()
+                new ColorTextureSection("Base Map", ShaderPropertyID.BaseMap, ShaderPropertyID.BaseColor, true),
+                new NormalMapSection("Normal Map", ShaderPropertyID.NormalMap, ShaderPropertyID.NormalScale, ShaderKeywords.NORMAL_MAP),
+                new SpecularMaskSection(),
+                new AlphaClippingSection(),
+                new TransparencySection()
             });
             
-            shadowFoldoutPanel ??= new BaseFoldoutShaderPanel("Shadow", new List<ShaderGUIComponentBase>()
+            shadowFoldoutPanel ??= new BaseFoldoutShaderPanel("Shadow", new List<ShaderGUISectionBase>()
             {
-                new ShadowComponent(),
+                new ShadowSection(),
             });
             
-            pbrFoldoutPanel ??= new BaseFoldoutShaderPanel("PBR", new List<ShaderGUIComponentBase>()
+            pbrFoldoutPanel ??= new BaseFoldoutShaderPanel("PBR", new List<ShaderGUISectionBase>()
             {
-                new ColorTextureComponent("Emission Map", ShaderPropertyID.EmissionMap, ShaderPropertyID.EmissionColor, true),
+                new ColorTextureSection("Emission Map", ShaderPropertyID.EmissionMap, ShaderPropertyID.EmissionColor, true),
             });
 
-            toonFoldoutPanel ??= new BaseFoldoutShaderPanel("Toon", new List<ShaderGUIComponentBase>()
+            toonFoldoutPanel ??= new BaseFoldoutShaderPanel("Toon", new List<ShaderGUISectionBase>()
             {
-                new RampTextureComponent("Ramp Set"),
-                new GeometryOutlineComponent(),
-                new HighLightComponent(),
-                new LightMapSDFComponent(),
-                new FringeComponent(),
-                new RefractionComponent(),
-                new MatCapComponent(),
-                new HeaderPropertyComponent("Sigmoid Attenuation", 
+                new RampTextureSection("Ramp Set"),
+                new GeometryOutlineSection(),
+                new HighLightSection(),
+                new LightMapSDFSection(),
+                new FringeSection(),
+                new RefractionSection(),
+                new MatCapSection(),
+                new HeaderPropertySection("Sigmoid Attenuation", 
                     new[] { "Offset", "Smooth" }, 
                     new[] { ShaderPropertyID.DirectLightAttenOffset, ShaderPropertyID.DirectLightAttenSmoothNew }),
-                new HeaderPropertyComponent("Sigmoid Specular", 
+                new HeaderPropertySection("Sigmoid Specular", 
                     new[] { "Offset", "Smooth" }, 
                     new[] { ShaderPropertyID.DirectLightSpecOffset, ShaderPropertyID.DirectLightSpecSmooth }),
             });
             
-            engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUIComponentBase>()
+            engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUISectionBase>()
             {
-                new DefaultPropertyComponent(ShaderPropertyID.Cull),
-                new HeaderPropertyComponent("Blend Factor",  
+                new DefaultPropertySection(ShaderPropertyID.Cull),
+                new HeaderPropertySection("Blend Factor",  
                     new[] { "Source", "Destination" }, 
                     new [] { ShaderPropertyID.SrcBlend, ShaderPropertyID.DstBlend }),
-                new DefaultPropertyComponent(ShaderPropertyID.ZWrite),
-                new EngineComponent(),
+                new DefaultPropertySection(ShaderPropertyID.ZWrite),
+                new EngineSection(),
             });
         }
         

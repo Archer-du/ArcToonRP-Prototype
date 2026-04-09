@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Rendering;
+using BuiltinGlobalKeyword = UnityEngine.Rendering.GlobalKeyword;
 
 namespace ArcToon.Runtime.Utils
 {
@@ -14,6 +15,11 @@ namespace ArcToon.Runtime.Utils
         private static int ShaderPropertyID([CallerMemberName] string name = null)
         {
             return Shader.PropertyToID("_" + name);
+        }
+
+        private static BuiltinGlobalKeyword ShaderGlobalKeyword([CallerMemberName] string name = null)
+        {
+            return BuiltinGlobalKeyword.Create("_" + name);
         }
         
         public static class Path
@@ -50,7 +56,7 @@ namespace ArcToon.Runtime.Utils
             public static readonly int ShadowDistanceFade = ShaderPropertyID();
             public static readonly int ShadowPancaking = ShaderPropertyID();
 
-            public static readonly int DirectionalShadowMatrices = ShaderPropertyID();
+            public static readonly int DirectionalShadowData = ShaderPropertyID();
             public static readonly int ShadowCascadeData = ShaderPropertyID();
             public static readonly int DirectionalShadowAtlasSize = ShaderPropertyID();
             public static readonly int DirectionalShadowAtlas = ShaderPropertyID();
@@ -67,6 +73,8 @@ namespace ArcToon.Runtime.Utils
             public static readonly int PointShadowData = ShaderPropertyID();
             public static readonly int PointShadowAtlasSize = ShaderPropertyID();
             public static readonly int PointShadowAtlas = ShaderPropertyID();
+
+            public static readonly int PoissonFilterRadius = ShaderPropertyID();
             #endregion
 
             #region Prepass
@@ -116,6 +124,19 @@ namespace ArcToon.Runtime.Utils
             
             public static readonly ShaderTagId FringeShadowReceiver = ShaderTagId();
             public static readonly ShaderTagId EyeLashesReceiver = ShaderTagId();
+        }
+
+        public static class GlobalKeyword
+        {
+            public static readonly BuiltinGlobalKeyword SHADOW_MASK_ALWAYS = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword SHADOW_MASK_DISTANCE = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword CASCADE_BLEND_SOFT = ShaderGlobalKeyword();
+            
+            public static readonly BuiltinGlobalKeyword PCF3X3 = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword PCF5X5 = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword PCF7X7 = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword POISSON_DISK = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword PCSS = ShaderGlobalKeyword();
         }
     }
 }

@@ -116,7 +116,7 @@ namespace ArcToon.Runtime.Passes.Transparency
             builder.ReadBuffer(resourceHandle.forwardPlusTileBuffer);
             
             builder.ReadBuffer(resourceHandle.shadowMapHandle.cascadeShadowData);
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.directionalShadowMatrices);
+            builder.ReadBuffer(resourceHandle.shadowMapHandle.directionalShadowData);
             builder.ReadBuffer(resourceHandle.shadowMapHandle.spotShadowData);
             builder.ReadBuffer(resourceHandle.shadowMapHandle.pointShadowData);
             builder.ReadBuffer(resourceHandle.shadowMapHandle.perObjectShadowData);

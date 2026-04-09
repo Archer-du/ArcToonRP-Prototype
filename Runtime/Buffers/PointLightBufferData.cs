@@ -1,24 +1,26 @@
-﻿using System.Runtime.InteropServices;
-using ArcToon.Runtime.Utils;
+﻿using ArcToon.Runtime.Utils;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Buffers
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [GenerateHLSL(PackingRules.Exact, false)]
     public struct PointLightBufferData
     {
-        public const int stride = 4 * 4 * 4;
+        public static readonly int stride = UnsafeUtility.SizeOf<PointLightBufferData>();
 
         public Vector4 color;
         public Vector4 position;
 
         public Vector4 direction;
 
-        // x: shadow strength
-        // y: shadow map tile index
-        // z: shadow slope scale bias
-        // w: shadow mask channel
+        /// <summary>
+        /// x: shadow strength (float)
+        /// y: packed(tileIndex | maskChannel) via asuint/asfloat
+        /// z: shadow normal bias scale (light.shadowNormalBias, per-light config)
+        /// w: lightSize (per-light PCSS light size, from ArcToonLightData or ShadowSettings fallback)
+        /// </summary>
         public Vector4 shadowData;
 
         public static PointLightBufferData GenerateStructuredData(in VisibleLight visibleLight, Light light,

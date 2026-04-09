@@ -9,24 +9,15 @@ CBUFFER_START(_CustomSpotLight)
     int _SpotLightCount;
 CBUFFER_END
 
-struct SpotLightBufferData
-{
-    float4 color;
-    float4 position;
-    float4 direction;
-    float4 spotAngle;
-    // x: shadow strength
-    // y: shadow map tile index
-    // z: shadow slope scale bias
-    // w: shadow mask channel
-    float4 shadowData;
-};
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/SpotLightBufferData.cs.hlsl"
 
 struct SpotShadowData
 {
     float shadowStrength;
     int tileIndex;
     int shadowMaskChannel;
+    float normalBiasScale;
+    float lightSize;
     float3 lightPositionWS;
     float3 spotDirectionWS;
 };
@@ -42,8 +33,11 @@ SpotShadowData DecodeSpotLightShadowData(SpotLightBufferData bufferData)
 {
     SpotShadowData data;
     data.shadowStrength = bufferData.shadowData.x;
-    data.tileIndex = bufferData.shadowData.y;
-    data.shadowMaskChannel = bufferData.shadowData.w;
+    int maskChannelPacked;
+    Unpack2x16(bufferData.shadowData.y, data.tileIndex, maskChannelPacked);
+    data.shadowMaskChannel = maskChannelPacked - 1;
+    data.normalBiasScale = bufferData.shadowData.z;
+    data.lightSize = bufferData.shadowData.w;
     data.lightPositionWS = bufferData.position.xyz;
     data.spotDirectionWS = bufferData.direction.xyz;
     return data;
@@ -54,14 +48,14 @@ float GetSpotRealtimeShadow(SpotShadowData spotShadow, CascadeShadowData cascade
 {
     if (spotShadow.shadowStrength <= 0) return 1.0;
     int tileIndex = spotShadow.tileIndex;
-    SpotShadowBufferData shadowData = _SpotShadowData[tileIndex];
+    ShadowTileBufferData tileData = _SpotShadowData[tileIndex];
     float3 surfaceToLight = spotShadow.lightPositionWS - surface.positionWS;
     float distanceToLightPlane = dot(surfaceToLight, spotShadow.spotDirectionWS);
-    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * shadowData.tileData.w);
-    float4 positionSTS = mul(shadowData.shadowMatrix,
+    float3 normalBias = surface.interpolatedNormalWS * (distanceToLightPlane * spotShadow.normalBiasScale * tileData.atlasData.w);
+    float4 positionSTS = mul(tileData.shadowMatrix,
         float4(surface.positionWS + normalBias, 1.0));
     float shadow = FilterSpotShadow(positionSTS.xyz / positionSTS.w,
-        shadowData.tileData.xyz);
+        tileData.atlasData.xyz, spotShadow.lightSize);
     shadow = lerp(1.0, shadow, spotShadow.shadowStrength);
     return shadow;
 }

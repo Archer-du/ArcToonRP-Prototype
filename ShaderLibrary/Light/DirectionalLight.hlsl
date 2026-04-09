@@ -10,16 +10,7 @@ CBUFFER_START(_CustomDirectionalLight)
     int _PerObjectShadowCasterCount;
 CBUFFER_END
 
-struct DirectionalLightBufferData
-{
-    float4 color;
-    float4 direction;
-    // x: shadow strength
-    // y: shadowed directional light index
-    // z: shadow slope scale bias
-    // w: shadow mask channel
-    float4 shadowData;
-};
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/DirectionalLightBufferData.cs.hlsl"
 
 StructuredBuffer<DirectionalLightBufferData> _DirectionalLightData;
 
@@ -30,29 +21,30 @@ struct DirectionalLightShadowData
     int shadowedLightIndex;
     float normalBiasScale;
     int shadowMaskChannel;
+    float lightSize;
 };
 
-struct PerObjectCasterBufferData
+#include "Packages/com.arctoon.render-pipeline/Runtime/Buffers/PerObjectCasterBufferData.cs.hlsl"
+
+bool CheckPerObjectCasterID(PerObjectCasterBufferData bufferData, float casterID)
 {
-    float4 perObjectData;
-
-    bool CheckCasterID(float casterID)
-    {
-        return abs(perObjectData.y - casterID) <= 0.01;
-    }
-};
+    return abs(bufferData.perObjectData.y - casterID) <= 0.01;
+}
 
 StructuredBuffer<PerObjectCasterBufferData> _PerObjectShadowCasterData;
 
-DirectionalLightShadowData DecodeDirectionalLightShadowData(DirectionalLightBufferData bufferData,
+DirectionalLightShadowData DecodeDirectionalLightShadowData(float4 shadowData,
                                                             CascadeShadowData cascadeShadowData)
 {
     DirectionalLightShadowData data;
-    data.shadowStrength = bufferData.shadowData.x;
-    data.shadowedLightIndex = bufferData.shadowData.y;
-    data.tileIndex = bufferData.shadowData.y * _CascadeCount + cascadeShadowData.offset;
-    data.normalBiasScale = bufferData.shadowData.z;
-    data.shadowMaskChannel = bufferData.shadowData.w;
+    data.shadowStrength = shadowData.x;
+    int shadowedLightIndex, maskChannelPacked;
+    Unpack2x16(shadowData.y, shadowedLightIndex, maskChannelPacked);
+    data.shadowMaskChannel = maskChannelPacked - 1;
+    data.shadowedLightIndex = shadowedLightIndex;
+    data.tileIndex = shadowedLightIndex * _CascadeCount + cascadeShadowData.offset;
+    data.normalBiasScale = shadowData.z;
+    data.lightSize = shadowData.w;
     return data;
 }
 
@@ -65,29 +57,29 @@ float GetDirectionalRealtimeShadow(DirectionalLightShadowData directional, Casca
         for (int i = 0; i < _PerObjectShadowCasterCount; i++)
         {
             PerObjectCasterBufferData bufferData = _PerObjectShadowCasterData[i];
-            if (bufferData.CheckCasterID(surface.perObjectCasterID))
+            if (CheckPerObjectCasterID(bufferData, surface.perObjectCasterID))
             {
                 int tileIndex = bufferData.perObjectData.z + directional.shadowedLightIndex;
-                PerObjectShadowBufferData shadowData = _PerObjectShadowData[tileIndex];
-                float3 normalBias = surface.interpolatedNormalWS * shadowData.normalBias.x * directional.normalBiasScale;
-                float3 positionSTS = mul(shadowData.shadowMatrix,
+                ShadowTileBufferData tileData = _PerObjectShadowData[tileIndex];
+                float3 normalBias = surface.interpolatedNormalWS * tileData.atlasData.w * directional.normalBiasScale;
+                float3 positionSTS = mul(tileData.shadowMatrix,
                                          float4(surface.positionWS + normalBias, 1.0)).xyz;
-                float shadow = FilterPerObjectShadow(positionSTS);
+                float shadow = FilterPerObjectShadow(positionSTS, tileData.atlasData.xyz, directional.lightSize);
                 shadow = lerp(1.0, shadow, directional.shadowStrength);
                 return shadow;
             }
         }
     }
     float3 normalBias = surface.interpolatedNormalWS * _ShadowCascadeData[cascade.offset].data.y * directional.normalBiasScale;
-    float3 positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex],
+    float3 positionSTS = mul(_DirectionalShadowData[directional.tileIndex].shadowMatrix,
                              float4(surface.positionWS + normalBias, 1.0)).xyz;
-    float shadow = FilterDirectionalShadow(positionSTS);
+    float shadow = FilterDirectionalShadow(positionSTS, directional.lightSize);
     #if defined(_CASCADE_BLEND_SOFT)
     // cascade shadow blend
     normalBias = surface.normalWS * _ShadowCascadeData[cascade.offset].data.y * directional.normalBiasScale;
-    positionSTS = mul(_DirectionalShadowMatrices[directional.tileIndex + 1],
+    positionSTS = mul(_DirectionalShadowData[directional.tileIndex + 1].shadowMatrix,
                       float4(surface.positionWS + normalBias, 1.0)).xyz;
-    shadow = lerp(FilterDirectionalShadow(positionSTS), shadow, cascade.softBlend);
+    shadow = lerp(FilterDirectionalShadow(positionSTS, directional.lightSize), shadow, cascade.softBlend);
     #endif
     shadow = lerp(1.0, shadow, directional.shadowStrength);
     return shadow;
@@ -131,7 +123,7 @@ Light GetDirectionalLight(int lightIndex, Surface surface, CascadeShadowData cas
     light.color = bufferData.color.rgb;
     light.directionWS = bufferData.direction.xyz;
     light.renderingLayerMask = bufferData.direction.w;
-    DirectionalLightShadowData dirShadowData = DecodeDirectionalLightShadowData(bufferData, cascade);
+    DirectionalLightShadowData dirShadowData = DecodeDirectionalLightShadowData(bufferData.shadowData, cascade);
     light.shadowAttenuation = GetDirectionalShadowAttenuation(dirShadowData, cascade, surface, gi);
     light.distanceAttenuation = 1.0;
     return light;

@@ -25,6 +25,7 @@
 
 SAMPLER(sampler_linear_clamp);
 SAMPLER(sampler_point_clamp);
+SAMPLER_CMP(sampler_linear_clamp_compare);
 
 #include "Fragment.hlsl"
 #include "ForwardPlus.hlsl"

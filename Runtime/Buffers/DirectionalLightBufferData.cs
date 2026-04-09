@@ -1,23 +1,25 @@
-﻿using System.Runtime.InteropServices;
-using ArcToon.Runtime.Utils;
+﻿using ArcToon.Runtime.Utils;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Runtime.Buffers
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [GenerateHLSL(PackingRules.Exact, false)]
     public struct DirectionalLightBufferData
     {
-        public const int stride = 4 * 4 * 3;
+        public static readonly int stride = UnsafeUtility.SizeOf<DirectionalLightBufferData>();
 
         public Vector4 color;
 
         public Vector4 direction;
 
-        // x: shadow strength
-        // y: shadowed directional light index
-        // z: shadow slope scale bias
-        // w: shadow mask channel
+        /// <summary>
+        /// x: shadow strength (float)
+        /// y: packed(tileIndex | maskChannel) via asuint/asfloat
+        /// z: shadow normal bias scale (light.shadowNormalBias, per-light config)
+        /// w: lightSize (per-light PCSS light size, from ArcToonLightData or ShadowSettings fallback)
+        /// </summary>
         public Vector4 shadowData;
 
         public static DirectionalLightBufferData GenerateStructuredData(in VisibleLight visibleLight, Light light,
