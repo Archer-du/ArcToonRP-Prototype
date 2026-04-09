@@ -118,12 +118,14 @@ namespace ArcToon.Runtime.Data
             var colorFormat = SystemInfo.GetGraphicsFormat(useHDR ? DefaultFormat.HDR : DefaultFormat.LDR);
 
             RenderTextureDescriptor colorDesc = new(width, height, colorFormat, 0);
-            RenderTextureDescriptor depthDesc = new(width, height, GraphicsFormat.None, GraphicsFormat.D32_SFloat);
+            // Use D32_SFloat_S8_UInt to match RenderGraph's DepthBits.Depth32 behavior.
+            // GraphicsFormatUtility.GetDepthStencilFormat(32) returns D32_SFloat_S8_UInt on most platforms.
+            RenderTextureDescriptor depthStencilDesc = new(width, height, GraphicsFormat.None, GraphicsFormat.D32_SFloat_S8_UInt);
             RenderTextureDescriptor stencilMaskDesc = new(width, height, SystemInfo.GetGraphicsFormat(DefaultFormat.LDR), 0);
 
             ReAllocateHandleIfNeeded(ref colorAttachment, colorDesc, name: "Color Attachment Buffer");
-            ReAllocateHandleIfNeeded(ref depthAttachment, depthDesc, name: "Depth Attachment Buffer");
-            ReAllocateHandleIfNeeded(ref preDepthStencil, depthDesc, name: "Depth Copy");
+            ReAllocateHandleIfNeeded(ref depthAttachment, depthStencilDesc, name: "Depth Attachment Buffer");
+            ReAllocateHandleIfNeeded(ref preDepthStencil, depthStencilDesc, name: "Depth Copy");
             ReAllocateHandleIfNeeded(ref stencilMask, stencilMaskDesc, name: "Stencil Mask");
         }
 
@@ -212,7 +214,9 @@ namespace ArcToon.Runtime.Data
                 dimension = TextureDimension.Tex2DArray,
                 volumeDepth = 6,
             };
-            RenderTextureDescriptor dpDepthDesc = new(width, height, GraphicsFormat.None, GraphicsFormat.D32_SFloat);
+            // Match depthAttachment format (D32_SFloat_S8_UInt) as old RenderGraph code
+            // used depthAttachment.GetDescriptor() to create these buffers.
+            RenderTextureDescriptor dpDepthDesc = new(width, height, GraphicsFormat.None, GraphicsFormat.D32_SFloat_S8_UInt);
             RenderTextureDescriptor dpColorDesc = new(width, height, colorFormat, 0);
 
             ReAllocateHandleIfNeeded(ref dpCompositeArray, dpCompositeDesc, name: "Depth Peeling Composite Array");
