@@ -137,69 +137,68 @@ namespace ArcToon.Runtime
 
         private void ExecuteRenderPass()
         {
-            var cmd = CommandBufferPool.Get(RenderCamera.name);
-
             // Phase: Lighting
             RenderPhase = RenderPhase.Lighting;
-            ExecutePass(lightingPass, cmd);
+            ExecutePass(lightingPass);
 
             // Phase: Setup
             RenderPhase = RenderPhase.Setup;
-            ExecutePass(setupPass, cmd);
-            ExecutePass(depthStencilPrePass, cmd);
+            ExecutePass(setupPass);
+            ExecutePass(depthStencilPrePass);
 
             // Phase: Opaque
             RenderPhase = RenderPhase.Opaque;
-            ExecutePass(opaquePass, cmd);
-            ExecutePass(opaqueOutlinePass, cmd);
+            ExecutePass(opaquePass);
+            ExecutePass(opaqueOutlinePass);
 
             // Phase: Skybox
             RenderPhase = RenderPhase.Skybox;
-            ExecutePass(skyboxPass, cmd);
+            ExecutePass(skyboxPass);
 
             // Phase: Transparent
             RenderPhase = RenderPhase.Transparent;
-            ExecutePass(transparentPass, cmd);
+            ExecutePass(transparentPass);
 
             // Phase: Unsupported
             RenderPhase = RenderPhase.Unsupported;
-            ExecutePass(unsupportedPass, cmd);
+            ExecutePass(unsupportedPass);
 
             // Phase: PostProcessing
             RenderPhase = RenderPhase.PostProcessing;
-            ExecutePass(postFXPass, cmd);
+            ExecutePass(postFXPass);
 
             // Phase: BackBuffer
             RenderPhase = RenderPhase.BackBuffer;
-            ExecutePass(copyFinalPass, cmd);
+            ExecutePass(copyFinalPass);
 
             if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
             {
-                ExecutePass(debugPass, cmd);
+                ExecutePass(debugPass);
             }
 #if UNITY_EDITOR
             if (Handles.ShouldRenderGizmos())
             {
-                ExecutePass(gizmosPass, cmd);
+                ExecutePass(gizmosPass);
             }
 #endif
 
-            Context.ExecuteCommandBuffer(cmd);
             Context.Submit();
-            CommandBufferPool.Release(cmd);
         }
 
-        private void ExecutePass(RenderPassBase pass, CommandBuffer cmd)
+        private void ExecutePass(RenderPassBase pass)
         {
             pass.Setup(Resources, this);
             pass.PrepareRendererLists(Context);
-            cmd.BeginSample(pass.Name);
-            Context.ExecuteCommandBuffer(cmd);
-            cmd.Clear();
+
+            // Each pass gets its own named CommandBuffer from the pool.
+            // The cmd name automatically creates profiling events on
+            // ExecuteCommandBuffer, avoiding BeginSample/EndSample mismatch
+            // when passes flush the buffer internally.
+            var cmd = CommandBufferPool.Get(pass.Name);
             pass.Execute(cmd, Context);
-            cmd.EndSample(pass.Name);
             Context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
+            CommandBufferPool.Release(cmd);
         }
 
         private Vector2Int GetCameraBufferSize(Camera camera, float renderScale)
