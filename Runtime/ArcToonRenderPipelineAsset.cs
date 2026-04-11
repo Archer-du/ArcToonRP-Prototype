@@ -1,4 +1,3 @@
-using ArcToon.Runtime;
 using ArcToon.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
