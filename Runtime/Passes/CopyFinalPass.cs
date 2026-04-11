@@ -1,10 +1,9 @@
-﻿using ArcToon.Data;
+﻿using ArcToon.Behavior;
+using ArcToon.Data;
 using ArcToon.Runtime;
-using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Passes;
-using ArcToon.Runtime.Settings;
-using ArcToon.Runtime.Utils;
-using ArcToon.Runtime.Utils.Extensions;
+using ArcToon.Settings;
+using ArcToon.Utils;
+using ArcToon.Utils.Extensions;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Passes

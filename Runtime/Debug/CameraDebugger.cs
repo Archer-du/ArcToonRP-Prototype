@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
-using ArcToon.Runtime.Utils;
-using ArcToon.Runtime.Utils.Extensions;
+using ArcToon.Utils;
+using ArcToon.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Rendering;
 

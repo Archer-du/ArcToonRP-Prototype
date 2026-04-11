@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using ArcToon.Runtime.Passes.Lighting;
+using ArcToon.Passes.Lighting;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -11,7 +10,7 @@ using float3 = Unity.Mathematics.float3;
 using float4x4 = Unity.Mathematics.float4x4;
 using quaternion = Unity.Mathematics.quaternion;
 
-namespace ArcToon.Runtime.Utils
+namespace ArcToon.Utils
 {
     [BurstCompile]
     public static class CullUtilities

@@ -1,8 +1,7 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace ArcToon.Runtime.Settings
+namespace ArcToon.Settings
 {
     [Serializable]
     public class CameraBufferSettings

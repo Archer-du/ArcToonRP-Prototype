@@ -1,6 +1,6 @@
 ﻿using Unity.Mathematics;
 
-namespace ArcToon.Runtime.Passes.Lighting
+namespace ArcToon.Passes.Lighting
 {
     public unsafe struct PerObjectShadowCullingParams
     {

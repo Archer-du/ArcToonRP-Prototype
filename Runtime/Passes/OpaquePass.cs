@@ -1,8 +1,7 @@
-﻿using ArcToon.Runtime.Utils;
-using UnityEngine.Rendering;
+﻿using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     public class OpaquePass : RenderPassBase
     {

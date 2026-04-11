@@ -1,9 +1,8 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Settings;
+﻿using ArcToon.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Utils
+namespace ArcToon.Utils
 {
     public readonly struct RenderTextureHelpers
     {

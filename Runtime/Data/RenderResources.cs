@@ -1,5 +1,5 @@
 using System;
-using ArcToon.Runtime.Settings;
+using ArcToon.Settings;
 
 namespace ArcToon.Data
 {

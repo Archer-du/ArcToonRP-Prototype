@@ -1,6 +1,6 @@
 ﻿using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     public class SkyboxPass : RenderPassBase
     {

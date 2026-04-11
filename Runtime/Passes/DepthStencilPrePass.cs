@@ -1,9 +1,9 @@
-﻿using ArcToon.Runtime.Utils;
+﻿using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     public class DepthStencilPrePass : RenderPassBase
     {

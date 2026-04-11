@@ -1,8 +1,9 @@
-using ArcToon.Runtime.Utils;
+using ArcToon.Runtime;
+using ArcToon.Utils;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     public class GeometryOutlinePass : RenderPassBase
     {

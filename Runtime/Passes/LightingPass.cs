@@ -1,18 +1,17 @@
-﻿using System.Runtime.InteropServices;
+﻿using ArcToon.Buffers;
 using ArcToon.Data;
+using ArcToon.Jobs;
 using ArcToon.Passes.Lighting;
-using ArcToon.Runtime.Buffers;
-using ArcToon.Runtime.Jobs;
-using ArcToon.Runtime.Settings;
-using ArcToon.Runtime.Utils;
+using ArcToon.Settings;
+using ArcToon.Utils;
 using Unity.Collections;
-using UnityEngine;
-using UnityEngine.Rendering;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEngine;
+using UnityEngine.Rendering;
 using static Unity.Mathematics.math;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     public class LightingPass : RenderPassBase
     {

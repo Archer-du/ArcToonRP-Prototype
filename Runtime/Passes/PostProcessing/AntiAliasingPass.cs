@@ -1,10 +1,11 @@
 ﻿using ArcToon.Data;
-using ArcToon.Runtime.Settings;
+using ArcToon.Runtime;
+using ArcToon.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
-using static ArcToon.Runtime.PostFXStack;
+using static ArcToon.PostFXStack;
 
-namespace ArcToon.Runtime.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing
 {
     public class AntiAliasingPass
     {

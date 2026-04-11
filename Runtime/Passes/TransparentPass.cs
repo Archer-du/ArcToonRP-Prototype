@@ -1,11 +1,11 @@
 ﻿using ArcToon.Data;
-using ArcToon.Runtime.Utils;
-using ArcToon.Runtime.Utils.Extensions;
+using ArcToon.Utils;
+using ArcToon.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     public class TransparentPass : RenderPassBase
     {

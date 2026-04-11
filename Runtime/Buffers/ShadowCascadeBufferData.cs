@@ -1,9 +1,8 @@
-﻿using ArcToon.Runtime.Settings;
-using Unity.Collections.LowLevel.Unsafe;
+﻿using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Buffers
+namespace ArcToon.Buffers
 {
     [GenerateHLSL(PackingRules.Exact, false)]
     struct ShadowCascadeBufferData

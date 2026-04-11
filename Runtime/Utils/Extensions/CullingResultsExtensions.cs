@@ -1,11 +1,11 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Passes.Lighting;
+﻿using ArcToon.Behavior;
+using ArcToon.Passes.Lighting;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Utils.Extensions
+namespace ArcToon.Utils.Extensions
 {
     public static class CullingResultsExtensions
     {

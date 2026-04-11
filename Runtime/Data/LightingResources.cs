@@ -1,6 +1,6 @@
 using System;
-using ArcToon.Runtime.Buffers;
-using ArcToon.Runtime.Settings;
+using ArcToon.Buffers;
+using ArcToon.Settings;
 using UnityEngine;
 
 namespace ArcToon.Data

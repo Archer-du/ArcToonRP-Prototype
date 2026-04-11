@@ -2,10 +2,9 @@
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-
 using static Unity.Mathematics.math;
 
-namespace ArcToon.Runtime.Jobs
+namespace ArcToon.Jobs
 {
     [BurstCompile(FloatPrecision.Standard, FloatMode.Fast)]
     public struct ForwardPlusTileBoundJob : IJobFor

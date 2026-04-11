@@ -1,14 +1,13 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Data;
-using ArcToon.Runtime.Passes;
-using ArcToon.Runtime.Passes.Lighting;
-using ArcToon.Runtime.Passes.Transparency;
-using ArcToon.Runtime.Settings;
+﻿using ArcToon.Behavior;
+using ArcToon.Data;
+using ArcToon.Passes;
+using ArcToon.Passes.Lighting;
+using ArcToon.Settings;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime
+namespace ArcToon
 {
     public enum RenderPhase
     {

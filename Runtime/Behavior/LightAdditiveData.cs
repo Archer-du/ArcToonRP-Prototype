@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ArcToon.Runtime.Behavior
+namespace ArcToon.Behavior
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Light))]

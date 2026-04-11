@@ -1,8 +1,7 @@
-﻿using ArcToon.Runtime.Utils;
-using UnityEditor;
+﻿using ArcToon.Utils;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     public class GizmosPass : RenderPassBase
     {

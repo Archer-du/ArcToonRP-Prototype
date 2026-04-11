@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using ArcToon.Buffers;
 using ArcToon.Data;
-using ArcToon.Runtime.Buffers;
-using ArcToon.Runtime.Settings;
-using ArcToon.Runtime.Utils;
-using ArcToon.Runtime.Utils.Extensions;
+using ArcToon.Settings;
+using ArcToon.Utils;
+using ArcToon.Utils.Extensions;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;

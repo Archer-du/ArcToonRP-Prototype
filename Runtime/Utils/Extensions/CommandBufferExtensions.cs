@@ -1,9 +1,9 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Passes.Lighting;
+﻿using ArcToon.Behavior;
+using ArcToon.Passes.Lighting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Utils.Extensions
+namespace ArcToon.Utils.Extensions
 {
     public static class CommandBufferExtensions
     {

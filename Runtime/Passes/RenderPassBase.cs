@@ -1,8 +1,9 @@
-using ArcToon.Runtime.Data;
+using ArcToon.Data;
+using ArcToon.Runtime;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     /// <summary>
     /// Lightweight pass base for direct CommandBuffer execution mode.

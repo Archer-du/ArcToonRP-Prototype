@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Utils;
-using Unity.Mathematics;
+﻿using System.Collections.Generic;
+using ArcToon.Behavior;
 using UnityEngine;
-using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Passes.Lighting
+namespace ArcToon.Passes.Lighting
 {
     public class PerObjectShadowCasterManager
     {

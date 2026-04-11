@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Serialization;
-
-namespace ArcToon.Runtime.Settings
+﻿namespace ArcToon.Settings
 {
     [System.Serializable]
     public class RenderPipelineConfig

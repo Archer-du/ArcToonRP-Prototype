@@ -1,10 +1,10 @@
-using ArcToon.Runtime.Utils;
-using ArcToon.Runtime.Utils.Extensions;
+using ArcToon.Utils;
+using ArcToon.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
-namespace ArcToon.Runtime.Passes.Transparency
+namespace ArcToon.Passes.Transparency
 {
     public class WeightedAveragePass : RenderPassBase
     {

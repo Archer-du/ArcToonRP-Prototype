@@ -2,7 +2,7 @@
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 
-namespace ArcToon.Runtime.Behavior
+namespace ArcToon.Behavior
 {
     [DisallowMultipleComponent, RequireComponent(typeof(Camera))]
     [AddComponentMenu("ArcToon/Camera Render Controller")]

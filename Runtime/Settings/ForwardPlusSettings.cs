@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace ArcToon.Runtime.Settings
+namespace ArcToon.Settings
 {
     [System.Serializable]
     public class ForwardPlusSettings

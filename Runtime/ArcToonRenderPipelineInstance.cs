@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
-using ArcToon.Runtime.Settings;
+using ArcToon.Runtime;
+using ArcToon.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime
+namespace ArcToon
 {
     public partial class ArcToonRenderPipelineInstance : RenderPipeline
     {

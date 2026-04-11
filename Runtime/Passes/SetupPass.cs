@@ -1,9 +1,10 @@
 ﻿using ArcToon.Data;
-using ArcToon.Runtime.Utils;
+using ArcToon.Runtime;
+using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     public class SetupPass : RenderPassBase
     {
