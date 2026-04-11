@@ -47,7 +47,7 @@ namespace ArcToon.Runtime.Passes
         public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.SetRenderTarget(
-                resources.preDepthStencil,
+                resources.Camera.preDepthStencil,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
             
@@ -62,9 +62,9 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.EndSample("Transparent Depth Stencil");
 
             commandBuffer.SetRenderTarget(
-                resources.stencilMask,
+                resources.Camera.stencilMask,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                resources.preDepthStencil,
+                resources.Camera.preDepthStencil,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
             );
             
@@ -74,13 +74,13 @@ namespace ArcToon.Runtime.Passes
             commandBuffer.DrawRendererList(stencilMaskList);
             commandBuffer.EndSample("Stencil Mask");
 
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.CameraDepthTexture, resources.preDepthStencil);
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.StencilMaskTexture, resources.stencilMask);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.CameraDepthTexture, resources.Camera.preDepthStencil);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.StencilMaskTexture, resources.Camera.stencilMask);
 
             commandBuffer.SetRenderTarget(
-                resources.colorAttachment,
+                resources.Camera.colorAttachment,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store,
-                resources.depthAttachment,
+                resources.Camera.depthAttachment,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
             );
         }

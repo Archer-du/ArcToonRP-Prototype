@@ -1,6 +1,7 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Data;
+﻿using ArcToon.Data;
+using ArcToon.Runtime.Behavior;
 using ArcToon.Runtime.Settings;
+using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
@@ -55,7 +56,7 @@ namespace ArcToon.Runtime.Passes.PostProcessing
             var colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR);
             {
                 var prefilterDesc = new RenderTextureDescriptor(bufferSize.x, bufferSize.y, colorFormat, 0);
-                RenderResources.ReAllocateHandleIfNeeded(ref resources.bloomPrefilter, prefilterDesc, name: "Bloom Prefilter");
+                RenderingUtils.ReAllocateIfNeeded(ref resources.PostFX.bloomPrefilter, prefilterDesc, name: "Bloom Prefilter");
             }
 
             bufferSize /= 2;
@@ -68,8 +69,8 @@ namespace ArcToon.Runtime.Passes.PostProcessing
                     break;
                 }
 
-                resources.AllocateBloomPyramidLevel(pyramidIndex, bufferSize.x, bufferSize.y, renderer.useHDR, "Bloom Pyramid H");
-                resources.AllocateBloomPyramidLevel(pyramidIndex + 1, bufferSize.x, bufferSize.y, renderer.useHDR, "Bloom Pyramid V");
+                resources.PostFX.AllocateBloomPyramidLevel(pyramidIndex, bufferSize.x, bufferSize.y, renderer.useHDR, "Bloom Pyramid H");
+                resources.PostFX.AllocateBloomPyramidLevel(pyramidIndex + 1, bufferSize.x, bufferSize.y, renderer.useHDR, "Bloom Pyramid V");
                 bufferSize /= 2;
             }
 
@@ -78,7 +79,7 @@ namespace ArcToon.Runtime.Passes.PostProcessing
             // Allocate bloom result at original buffer size
             {
                 var resultDesc = new RenderTextureDescriptor(originalBufferSize.x, originalBufferSize.y, colorFormat, 0);
-                RenderResources.ReAllocateHandleIfNeeded(ref resources.bloomResult, resultDesc, name: "Bloom Result");
+                RenderingUtils.ReAllocateIfNeeded(ref resources.PostFX.bloomResult, resultDesc, name: "Bloom Result");
             }
 
             // Render
@@ -91,22 +92,22 @@ namespace ArcToon.Runtime.Passes.PostProcessing
             commandBuffer.SetGlobalVector(bloomThresholdID, GetKneeCurveData(bloomSettings));
 
             // knee curve prefilter
-            stack.Draw(commandBuffer, resources.colorAttachment, resources.bloomPrefilter,
+            stack.Draw(commandBuffer, resources.Camera.colorAttachment, resources.PostFX.bloomPrefilter,
                 bloomSettings.fadeFireflies ? Pass.BloomPrefilterFireflies : Pass.BloomPrefilter);
 
             // down sample
             int dstPyramidIndex = 1;
             int srcPyramidIndex = 1;
-            RTHandle srcHandle = resources.bloomPrefilter;
+            RTHandle srcHandle = resources.PostFX.bloomPrefilter;
             int i;
             for (i = 0; i < stepCount; i++)
             {
-                stack.Draw(commandBuffer, srcHandle, resources.bloomPyramid[dstPyramidIndex - 1],
+                stack.Draw(commandBuffer, srcHandle, resources.PostFX.bloomPyramid[dstPyramidIndex - 1],
                     Pass.BloomHorizontal);
-                stack.Draw(commandBuffer, resources.bloomPyramid[dstPyramidIndex - 1], resources.bloomPyramid[dstPyramidIndex],
+                stack.Draw(commandBuffer, resources.PostFX.bloomPyramid[dstPyramidIndex - 1], resources.PostFX.bloomPyramid[dstPyramidIndex],
                     Pass.BloomVertical);
                 srcPyramidIndex = dstPyramidIndex;
-                srcHandle = resources.bloomPyramid[srcPyramidIndex];
+                srcHandle = resources.PostFX.bloomPyramid[srcPyramidIndex];
                 dstPyramidIndex += 2;
             }
 
@@ -131,15 +132,15 @@ namespace ArcToon.Runtime.Passes.PostProcessing
             dstPyramidIndex -= 5;
             for (i -= 1; i > 0; i--)
             {
-                commandBuffer.SetGlobalTexture(fxSource2Id, resources.bloomPyramid[dstPyramidIndex + 1]);
-                stack.Draw(commandBuffer, resources.bloomPyramid[srcPyramidIndex], resources.bloomPyramid[dstPyramidIndex], combinePass);
+                commandBuffer.SetGlobalTexture(fxSource2Id, resources.PostFX.bloomPyramid[dstPyramidIndex + 1]);
+                stack.Draw(commandBuffer, resources.PostFX.bloomPyramid[srcPyramidIndex], resources.PostFX.bloomPyramid[dstPyramidIndex], combinePass);
                 srcPyramidIndex = dstPyramidIndex;
                 dstPyramidIndex -= 2;
             }
 
-            commandBuffer.SetGlobalTexture(fxSource2Id, resources.colorAttachment);
+            commandBuffer.SetGlobalTexture(fxSource2Id, resources.Camera.colorAttachment);
             commandBuffer.SetGlobalFloat(bloomScaleID, finalScale);
-            stack.Draw(commandBuffer, resources.bloomPyramid[srcPyramidIndex], resources.bloomResult, finalPass);
+            stack.Draw(commandBuffer, resources.PostFX.bloomPyramid[srcPyramidIndex], resources.PostFX.bloomResult, finalPass);
         }
 
         private Vector4 GetKneeCurveData(BloomSettings bloomSettings)

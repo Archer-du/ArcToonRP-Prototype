@@ -1,4 +1,4 @@
-﻿using ArcToon.Runtime.Data;
+﻿using ArcToon.Data;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -31,7 +31,7 @@ namespace ArcToon.Runtime.Passes.PostProcessing
 
         /// <summary>
         /// Execute FXAA pass. Returns true if FXAA was applied.
-        /// Reads from sourceHandle, writes to resources.fxaaResult.
+        /// Reads from sourceHandle, writes to resources.PostFX.fxaaResult.
         /// </summary>
         public bool Execute(CommandBuffer cmd, RenderResources resources, CameraRenderer renderer,
             PostFXStack stack,
@@ -53,7 +53,7 @@ namespace ArcToon.Runtime.Passes.PostProcessing
             this.stack = stack;
 
             ConfigureFXAA(cmd);
-            stack.Draw(cmd, sourceHandle, resources.fxaaResult, Pass.FXAA);
+            stack.Draw(cmd, sourceHandle, resources.PostFX.fxaaResult, Pass.FXAA);
             return true;
         }
 

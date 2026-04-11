@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using ArcToon.Data;
 using ArcToon.Runtime.Buffers;
-using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
 using ArcToon.Runtime.Utils.Extensions;
@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
-namespace ArcToon.Runtime.Passes.Lighting
+namespace ArcToon.Passes.Lighting
 {
     public class ShadowMapRenderer
     {
@@ -55,7 +55,7 @@ namespace ArcToon.Runtime.Passes.Lighting
 
         NativeArray<ShadowSplitData> shadowSplitDataPerLight;
 
-        private RenderResources resources;
+        private ShadowResources resources;
 
         #endregion
 
@@ -154,11 +154,11 @@ namespace ArcToon.Runtime.Passes.Lighting
         }
         
         /// <summary>
-        /// Bind RTHandle and GraphicsBuffer references from RenderResources.
+        /// Bind RTHandle and GraphicsBuffer references from ShadowResources.
         /// Selects default shadow texture when no casters are present.
         /// Called after Initialize, before BuildRendererLists.
         /// </summary>
-        public void SetupResources(RenderResources resources)
+        public void SetupResources(ShadowResources resources)
         {
             this.resources = resources;
 

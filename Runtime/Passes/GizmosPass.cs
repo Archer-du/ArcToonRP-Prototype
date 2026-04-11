@@ -12,7 +12,7 @@ namespace ArcToon.Runtime.Passes
         {
 #if UNITY_EDITOR
             RenderTextureHelpers.BlitTexture(commandBuffer, 
-                resources.depthAttachment, 
+                resources.Camera.depthAttachment, 
                 BuiltinRenderTextureType.CameraTarget,
                 ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 
                 (int)RenderTextureHelpers.BlitMode.Depth);

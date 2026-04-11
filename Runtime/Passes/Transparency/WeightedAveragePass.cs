@@ -29,21 +29,21 @@ namespace ArcToon.Runtime.Passes.Transparency
         public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.SetRenderTarget(
-                new RenderTargetIdentifier[]{ resources.waAccumulateRGBA, resources.waRevealage, }, 
-                resources.depthAttachment);
+                new RenderTargetIdentifier[]{ resources.Transparency.waAccumulateRGBA, resources.Transparency.waRevealage, }, 
+                resources.Camera.depthAttachment);
             commandBuffer.ClearRenderTarget(RTClearFlags.Color, 
                 new[]{ Color.clear, Color.white, });
             commandBuffer.DrawRendererList(geometryList);
                 
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateRGBA, resources.waAccumulateRGBA);
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, resources.waRevealage);
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, resources.waBackgroundColor);
-            RenderTextureHelpers.CopyTexture(commandBuffer, resources.colorAttachment, resources.waBackgroundColor, RenderTextureHelpers.BlitMode.Color);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateRGBA, resources.Transparency.waAccumulateRGBA);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, resources.Transparency.waRevealage);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, resources.Transparency.waBackgroundColor);
+            RenderTextureHelpers.CopyTexture(commandBuffer, resources.Camera.colorAttachment, resources.Transparency.waBackgroundColor, RenderTextureHelpers.BlitMode.Color);
                 
             commandBuffer.SetRenderTarget(
-                resources.colorAttachment,
+                resources.Camera.colorAttachment,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                resources.depthAttachment,
+                resources.Camera.depthAttachment,
                 RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
             );
             commandBuffer.ClearRenderTarget(false, true, Color.clear);

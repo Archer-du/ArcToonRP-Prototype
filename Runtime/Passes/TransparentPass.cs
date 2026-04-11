@@ -1,4 +1,4 @@
-﻿using ArcToon.Runtime.Data;
+﻿using ArcToon.Data;
 using ArcToon.Runtime.Utils;
 using ArcToon.Runtime.Utils.Extensions;
 using UnityEngine;
@@ -21,7 +21,7 @@ namespace ArcToon.Runtime.Passes
         #endregion
 
         #region Depth Peeling
-        private RendererList[] transparencyLists = new RendererList[RenderResources.DepthPeelingLayers];
+        private RendererList[] transparencyLists = new RendererList[TransparencyResources.DepthPeelingLayers];
         #endregion
         
         RendererList outlineList;
@@ -65,7 +65,7 @@ namespace ArcToon.Runtime.Passes
                                         PerObjectData.ReflectionProbes,
             });
             
-            for (int i = 0; i < RenderResources.DepthPeelingLayers; i++)
+            for (int i = 0; i < TransparencyResources.DepthPeelingLayers; i++)
             {
                 transparencyLists[i] = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardDepthPeeling, renderer.CullingResults, Camera)
                 {
@@ -91,21 +91,21 @@ namespace ArcToon.Runtime.Passes
             // Weighted average
             {
                 commandBuffer.SetRenderTarget(
-                    new RenderTargetIdentifier[]{ resources.waAccumulateRGBA, resources.waRevealage, }, 
-                    resources.depthAttachment);
+                    new RenderTargetIdentifier[]{ resources.Transparency.waAccumulateRGBA, resources.Transparency.waRevealage, }, 
+                    resources.Camera.depthAttachment);
                 commandBuffer.ClearRenderTarget(RTClearFlags.Color, 
                     new[]{ Color.clear, Color.white, });
                 commandBuffer.DrawRendererList(geometryList);
                 
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateRGBA, resources.waAccumulateRGBA);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, resources.waRevealage);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, resources.waBackgroundColor);
-                RenderTextureHelpers.CopyTexture(commandBuffer, resources.colorAttachment, resources.waBackgroundColor, RenderTextureHelpers.BlitMode.Color);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateRGBA, resources.Transparency.waAccumulateRGBA);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, resources.Transparency.waRevealage);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, resources.Transparency.waBackgroundColor);
+                RenderTextureHelpers.CopyTexture(commandBuffer, resources.Camera.colorAttachment, resources.Transparency.waBackgroundColor, RenderTextureHelpers.BlitMode.Color);
                 
                 commandBuffer.SetRenderTarget(
-                    resources.colorAttachment,
+                    resources.Camera.colorAttachment,
                     RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                    resources.depthAttachment,
+                    resources.Camera.depthAttachment,
                     RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
                 );
                 commandBuffer.ClearRenderTarget(false, true, Color.clear);
@@ -115,22 +115,22 @@ namespace ArcToon.Runtime.Passes
 
             // Depth peeling
             {
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueDepthBuffer, resources.depthAttachment);
-                for (int i = 0; i < RenderResources.DepthPeelingLayers; i++)
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueDepthBuffer, resources.Camera.depthAttachment);
+                for (int i = 0; i < TransparencyResources.DepthPeelingLayers; i++)
                 {
-                    commandBuffer.SetRenderTarget(resources.dpCompositeArray, resources.dpDualDepthBuffer[i % 2], 0, CubemapFace.Unknown, i);
+                    commandBuffer.SetRenderTarget(resources.Transparency.dpCompositeArray, resources.Transparency.dpDualDepthBuffer[i % 2], 0, CubemapFace.Unknown, i);
                     commandBuffer.ClearRenderTarget(true, true, Color.clear);
                     commandBuffer.SetGlobalInteger(InternalShader.PropertyID.PeelingLayerIndex, i);
-                    commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DualDepthBufferRef, resources.dpDualDepthBuffer[(i + 1) % 2]);
+                    commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DualDepthBufferRef, resources.Transparency.dpDualDepthBuffer[(i + 1) % 2]);
                     commandBuffer.DrawRendererList(transparencyLists[i]);
                 }
-                RenderTextureHelpers.CopyTexture(commandBuffer, resources.colorAttachment, resources.dpOpaqueColorBuffer, RenderTextureHelpers.BlitMode.Color);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueColorBuffer, resources.dpOpaqueColorBuffer);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DepthPeelingClips, resources.dpCompositeArray);
+                RenderTextureHelpers.CopyTexture(commandBuffer, resources.Camera.colorAttachment, resources.Transparency.dpOpaqueColorBuffer, RenderTextureHelpers.BlitMode.Color);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueColorBuffer, resources.Transparency.dpOpaqueColorBuffer);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DepthPeelingClips, resources.Transparency.dpCompositeArray);
                 commandBuffer.SetRenderTarget(
-                    resources.colorAttachment,
+                    resources.Camera.colorAttachment,
                     RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                    resources.depthAttachment,
+                    resources.Camera.depthAttachment,
                     RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
                 );
                 // TODO: config

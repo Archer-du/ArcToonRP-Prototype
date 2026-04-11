@@ -1,4 +1,4 @@
-﻿using ArcToon.Runtime.Data;
+﻿using ArcToon.Data;
 using ArcToon.Runtime.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -26,9 +26,9 @@ namespace ArcToon.Runtime.Passes
             context.SetupCameraProperties(Camera);
 
             commandBuffer.SetRenderTarget(
-                resources.colorAttachment,
+                resources.Camera.colorAttachment,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                resources.depthAttachment,
+                resources.Camera.depthAttachment,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store
             );
 

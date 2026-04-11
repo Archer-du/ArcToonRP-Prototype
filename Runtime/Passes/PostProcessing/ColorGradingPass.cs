@@ -1,4 +1,4 @@
-﻿using ArcToon.Runtime.Data;
+﻿using ArcToon.Data;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -39,7 +39,7 @@ namespace ArcToon.Runtime.Passes.PostProcessing
         private static readonly int smhRangeID = Shader.PropertyToID("_SMHRange");
 
         /// <summary>
-        /// Execute color grading pass. Reads from sourceHandle, writes to resources.colorGradingResult.
+        /// Execute color grading pass. Reads from sourceHandle, writes to resources.PostFX.colorGradingResult.
         /// </summary>
         public void Execute(CommandBuffer cmd, RenderResources resources, CameraRenderer renderer,
             PostFXConfig postFXConfig, PostFXStack stack,
@@ -53,7 +53,7 @@ namespace ArcToon.Runtime.Passes.PostProcessing
             // Allocate LUT
             int lutHeight = colorLUTResolution;
             int lutWidth = lutHeight * lutHeight;
-            resources.AllocateColorLUT(lutWidth, lutHeight);
+            resources.PostFX.AllocateColorLUT(lutWidth, lutHeight);
 
             Render(cmd, resources, sourceHandle);
         }
@@ -78,13 +78,13 @@ namespace ArcToon.Runtime.Passes.PostProcessing
                 colorGradingLUTInLogCID, useHDR && pass != Pass.ColorGradingOnly ? 1f : 0f
             );
 
-            stack.Draw(commandBuffer, source, resources.colorLUT, pass);
+            stack.Draw(commandBuffer, source, resources.PostFX.colorLUT, pass);
 
             commandBuffer.SetGlobalVector(colorGradingLUTParametersID,
                 new Vector4(1f / lutWidth, 1f / lutHeight, lutHeight - 1f)
             );
-            commandBuffer.SetGlobalTexture(colorGradingLUTID, resources.colorLUT);
-            stack.Draw(commandBuffer, source, resources.colorGradingResult, Pass.ColorGradingApply);
+            commandBuffer.SetGlobalTexture(colorGradingLUTID, resources.PostFX.colorLUT);
+            stack.Draw(commandBuffer, source, resources.PostFX.colorGradingResult, Pass.ColorGradingApply);
         }
 
         void ConfigureColorAdjustments(CommandBuffer commandBuffer, PostFXConfig config)

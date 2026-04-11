@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
+using ArcToon.Data;
+using ArcToon.Passes.Lighting;
 using ArcToon.Runtime.Buffers;
-using ArcToon.Runtime.Data;
 using ArcToon.Runtime.Jobs;
-using ArcToon.Runtime.Passes.Lighting;
 using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
 using Unity.Collections;
@@ -87,14 +87,14 @@ namespace ArcToon.Runtime.Passes
             tileCount.y = Mathf.CeilToInt(screenUVToTileCoordinates.y);
 
             // Allocate forward+ tile buffer based on current tile count
-            resources.AllocateForwardPlusTileBuffer(TileCount, tileDataSize);
+            resources.Lighting.AllocateForwardPlusTileBuffer(TileCount, tileDataSize);
 
             perLightDataCollector.Setup(renderer.CullingResults, renderer.ShadowSettings);
             CollectPerLightData();
 
             shadowMapRenderer.Initialize(renderer.CullingResults, Camera, renderer.ShadowSettings, perLightDataCollector,
                 renderer.PerObjectShadowCasterManager);
-            shadowMapRenderer.SetupResources(resources);
+            shadowMapRenderer.SetupResources(resources.Shadows);
         }
 
         public override void PrepareRendererLists(ScriptableRenderContext context)
@@ -105,32 +105,32 @@ namespace ArcToon.Runtime.Passes
         public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.SetGlobalInt(InternalShader.PropertyID.DirectionalLightCount, directionalLightCount);
-            commandBuffer.SetBufferData(resources.directionalLightData, DirectionalLightData,
+            commandBuffer.SetBufferData(resources.Lighting.directionalLightData, DirectionalLightData,
                 0, 0, directionalLightCount);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.DirectionalLightData, resources.directionalLightData);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.DirectionalLightData, resources.Lighting.directionalLightData);
 
             commandBuffer.SetGlobalInt(InternalShader.PropertyID.PerObjectShadowCasterCount, perObjectCasterCount);
-            commandBuffer.SetBufferData(resources.perObjectShadowCasterData, PerObjectCasterData, 
+            commandBuffer.SetBufferData(resources.Lighting.perObjectShadowCasterData, PerObjectCasterData, 
                 0, 0, perObjectCasterCount);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PerObjectShadowCasterData, resources.perObjectShadowCasterData);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PerObjectShadowCasterData, resources.Lighting.perObjectShadowCasterData);
 
             commandBuffer.SetGlobalInt(InternalShader.PropertyID.SpotLightCount, spotLightCount);
-            commandBuffer.SetBufferData(resources.spotLightData, SpotLightData,
+            commandBuffer.SetBufferData(resources.Lighting.spotLightData, SpotLightData,
                 0, 0, spotLightCount);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.SpotLightData, resources.spotLightData);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.SpotLightData, resources.Lighting.spotLightData);
 
             commandBuffer.SetGlobalInt(InternalShader.PropertyID.PointLightCount, pointLightCount);
-            commandBuffer.SetBufferData(resources.pointLightData, PointLightData,
+            commandBuffer.SetBufferData(resources.Lighting.pointLightData, PointLightData,
                 0, 0, pointLightCount);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PointLightData, resources.pointLightData);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.PointLightData, resources.Lighting.pointLightData);
 
             shadowMapRenderer.RenderShadowMap(commandBuffer, context);
 
             // block waiting for job result
             forwardPlusJobHandle.Complete();
-            commandBuffer.SetBufferData(resources.forwardPlusTileBuffer, forwardPlusTileData,
+            commandBuffer.SetBufferData(resources.Lighting.forwardPlusTileBuffer, forwardPlusTileData,
                 0, 0, forwardPlusTileData.Length);
-            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.ForwardPlusTileData, resources.forwardPlusTileBuffer);
+            commandBuffer.SetGlobalBuffer(InternalShader.PropertyID.ForwardPlusTileData, resources.Lighting.forwardPlusTileBuffer);
             commandBuffer.SetGlobalVector(InternalShader.PropertyID.ForwardPlusTileSettings,
                 new Vector4(screenUVToTileCoordinates.x, screenUVToTileCoordinates.y,
                     asfloat(tileCount.x),

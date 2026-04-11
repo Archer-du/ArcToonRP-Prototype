@@ -1,12 +1,13 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Data;
+﻿using ArcToon.Data;
+using ArcToon.Runtime;
+using ArcToon.Runtime.Behavior;
+using ArcToon.Runtime.Passes;
 using ArcToon.Runtime.Settings;
 using ArcToon.Runtime.Utils;
 using ArcToon.Runtime.Utils.Extensions;
-using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
     public class CopyFinalPass : RenderPassBase
     {
@@ -34,7 +35,7 @@ namespace ArcToon.Runtime.Passes
 
             commandBuffer.SetGlobalFloat(InternalShader.PropertyID.CopyBicubic, bicubicSampling ? 1f : 0f);
             
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.SourceTexture, resources.postFXResult);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.SourceTexture, resources.PostFX.postFXResult);
             commandBuffer.SetRenderTarget(
                 BuiltinRenderTextureType.CameraTarget,
                 finalBlendMode.destination == BlendMode.Zero && Camera.rect == RenderPipelineInfo.FullViewRect

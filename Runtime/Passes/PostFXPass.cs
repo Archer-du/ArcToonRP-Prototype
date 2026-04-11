@@ -1,5 +1,4 @@
-﻿using ArcToon.Runtime.Data;
-using ArcToon.Runtime.Passes.PostProcessing;
+﻿using ArcToon.Runtime.Passes.PostProcessing;
 using ArcToon.Runtime.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -21,33 +20,33 @@ namespace ArcToon.Runtime.Passes
             if (!hasActivePostFX)
             {
                 // No PostFX: point postFXResult to colorAttachment so CopyFinalPass can read it
-                resources.postFXResult = resources.colorAttachment;
+                resources.PostFX.postFXResult = resources.Camera.colorAttachment;
                 return;
             }
 
             PostFXStack postFXStack = new PostFXStack(renderer.PostFXConfig.PostProcessStackMaterial);
 
             // Track the current source handle through the chain
-            RTHandle currentSource = resources.colorAttachment;
+            RTHandle currentSource = resources.Camera.colorAttachment;
 
             // Bloom
             if (bloomPass.Execute(cmd, resources, renderer, renderer.PostFXConfig, postFXStack))
             {
-                currentSource = resources.bloomResult;
+                currentSource = resources.PostFX.bloomResult;
             }
 
             // Color Grading (always runs when PostFX is active)
             colorGradingPass.Execute(cmd, resources, renderer, renderer.PostFXConfig, postFXStack, currentSource);
-            currentSource = resources.colorGradingResult;
+            currentSource = resources.PostFX.colorGradingResult;
 
             // Anti-Aliasing (FXAA)
             if (antiAliasingPass.Execute(cmd, resources, renderer, postFXStack, currentSource))
             {
-                currentSource = resources.fxaaResult;
+                currentSource = resources.PostFX.fxaaResult;
             }
 
             // Set the final PostFX result for CopyFinalPass
-            resources.postFXResult = currentSource;
+            resources.PostFX.postFXResult = currentSource;
         }
     }
 }
