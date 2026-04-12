@@ -41,9 +41,6 @@ namespace ArcToon
         // New post-processing config (coexists with old PostFXConfig during migration)
         internal PostProcessConfig PostProcessConfig { private set; get; }
         
-        // TODO: Singleton
-        internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
-
         internal RenderResources Resources { get; private set; }
 
         #region Pass Instances
@@ -249,7 +246,7 @@ namespace ArcToon
 
             scriptableCullingParameters.shadowDistance = Mathf.Min(maxShadowDistance, RenderCamera.farClipPlane);
             CullingResults = context.Cull(ref scriptableCullingParameters);
-            PerObjectShadowCasterManager.Cull(RenderCamera);
+            PerObjectShadowCasterManager.Instance.Cull(RenderCamera);
             
             return true;
         }

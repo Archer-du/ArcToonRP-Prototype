@@ -14,11 +14,11 @@ namespace ArcToon.Utils.Extensions
             int visibleCasterIndex,
             int visibleLightIndex,
             Camera camera,
-            PerObjectShadowCasterManager manager,
             out Matrix4x4 viewMatrix,
             out Matrix4x4 projMatrix,
             out float width, out float height)
         {
+            var manager = PerObjectShadowCasterManager.Instance;
             PerObjectShadowCaster caster = manager.visibleCasters[visibleCasterIndex];
             caster.GetWorldBounds(out Bounds bounds);
             VisibleLight directionalLight = cullingResults.visibleLights[visibleLightIndex];

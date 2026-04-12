@@ -6,6 +6,8 @@ namespace ArcToon.Passes.Lighting
 {
     public class PerObjectShadowCasterManager
     {
+        public static readonly PerObjectShadowCasterManager Instance = new();
+
         private static readonly HashSet<PerObjectShadowCaster> perObjectCasters = new();
         private static int perObjectShadowCasterGUID = 1;
         
@@ -21,12 +23,10 @@ namespace ArcToon.Passes.Lighting
 
         public static void Unregister(PerObjectShadowCaster caster) => perObjectCasters.Remove(caster);
         
-        private readonly List<int> rendererIndexList = new();
         public readonly List<PerObjectShadowCaster> visibleCasters = new();
 
         public void Cull(Camera camera)
         {
-            rendererIndexList.Clear();
             visibleCasters.Clear();
             if (perObjectCasters.Count <= 0)
             {

@@ -91,8 +91,7 @@ namespace ArcToon.Passes
             perLightDataCollector.Setup(renderer.CullingResults, renderer.ShadowSettings);
             CollectPerLightData();
 
-            shadowMapRenderer.Initialize(renderer.CullingResults, Camera, renderer.ShadowSettings, perLightDataCollector,
-                renderer.PerObjectShadowCasterManager);
+            shadowMapRenderer.Initialize(renderer.CullingResults, Camera, renderer.ShadowSettings, perLightDataCollector);
             shadowMapRenderer.SetupResources(resources.Shadows);
         }
 
@@ -174,7 +173,7 @@ namespace ArcToon.Passes
                 }
             }
 
-            var visiblePerObjectShadowCasters = renderer.PerObjectShadowCasterManager.visibleCasters;
+            var visiblePerObjectShadowCasters = PerObjectShadowCasterManager.Instance.visibleCasters;
             perObjectCasterCount = 0;
             for (int i = 0; i < visiblePerObjectShadowCasters.Count; i++)
             {
