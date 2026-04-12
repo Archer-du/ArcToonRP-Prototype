@@ -8,7 +8,7 @@ namespace ArcToon.Passes.PostProcessing
     /// <summary>
     /// Composable post-processing configuration.
     /// Holds a polymorphic list of PostProcessVolumeConfig that can be freely added/removed in Inspector.
-    /// Each PostProcessor retrieves its own volume config via GetSettings&lt;T&gt;().
+    /// Each PostProcessor retrieves its own volume config via GetSettings().
     /// </summary>
     [CreateAssetMenu(menuName = "Rendering/ArcToon Post Process Config")]
     public class PostProcessConfig : ScriptableObject

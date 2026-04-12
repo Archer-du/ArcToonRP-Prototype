@@ -41,9 +41,6 @@ namespace ArcToon
         // New post-processing config (coexists with old PostFXConfig during migration)
         internal PostProcessConfig PostProcessConfig { private set; get; }
         
-        // Switch between old and new post-processing framework
-        internal bool UseNewPostProcessing { private set; get; }
-        
         // TODO: Singleton
         internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
 
@@ -117,7 +114,6 @@ namespace ArcToon
             }
             
             PostProcessConfig = config.globalPostProcessConfig;
-            UseNewPostProcessing = config.useNewPostProcessing;
 
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
@@ -176,7 +172,7 @@ namespace ArcToon
 
             // Phase: PostProcessing
             RenderPhase = RenderPhase.PostProcessing;
-            if (UseNewPostProcessing)
+            if (true)
             {
                 ExecutePass(postProcessPass);
             }

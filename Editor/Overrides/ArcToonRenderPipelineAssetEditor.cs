@@ -61,6 +61,7 @@ namespace ArcToon.Editor.Overrides
 
         // Post Processing
         private SerializedProperty globalPostFXConfigProp;
+        private SerializedProperty globalPostProcessConfigProp;
 
         // Foldout states - persisted via SessionState
         private const string SessionPrefix = "ArcToonRPAssetEditor_";
@@ -122,6 +123,7 @@ namespace ArcToon.Editor.Overrides
 
             // Post Processing
             globalPostFXConfigProp = configProp.FindPropertyRelative("globalPostFXConfig");
+            globalPostProcessConfigProp = configProp.FindPropertyRelative("globalPostProcessConfig");
 
             // Restore foldout states
             generalFoldout = SessionState.GetBool(SessionPrefix + "General", true);
@@ -355,6 +357,14 @@ namespace ArcToon.Editor.Overrides
                 if (globalPostFXConfigProp.objectReferenceValue == null)
                 {
                     EditorGUILayout.HelpBox("No Post FX Config assigned.", MessageType.Warning);
+                }
+
+                EditorGUILayout.Space(4);
+                EditorGUILayout.PropertyField(globalPostProcessConfigProp);
+
+                if (globalPostProcessConfigProp.objectReferenceValue == null)
+                {
+                    EditorGUILayout.HelpBox("No Post Process Config assigned.", MessageType.Warning);
                 }
 
                 EditorGUILayoutUtils.EndGUIComponentIndent();

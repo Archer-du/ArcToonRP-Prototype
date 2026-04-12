@@ -17,8 +17,5 @@ namespace ArcToon.Settings
 
         // New post-processing config (coexists with old PostFXConfig during migration)
         public PostProcessConfig globalPostProcessConfig;
-
-        [UnityEngine.Tooltip("Switch between old (PostFXPass) and new (PostProcessPass) post-processing framework.")]
-        public bool useNewPostProcessing = false;
     }
 }

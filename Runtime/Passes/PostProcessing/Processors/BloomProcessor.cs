@@ -21,7 +21,7 @@ namespace ArcToon.Passes.PostProcessing
         private RTHandle[] pyramid = new RTHandle[2 * MaxPyramidLevels];
 
         // ---- Cached state per frame ----
-    private BloomVolumeConfig settings;
+        private BloomVolumeConfig settings;
         private Material material;
         private int stepCount;
         private bool useHDR;
@@ -36,7 +36,7 @@ namespace ArcToon.Passes.PostProcessing
 
         public override bool IsActive(PostProcessConfig config, CameraRenderer renderer)
         {
-        var s = config.GetSettings<BloomVolumeConfig>();
+            var s = config.GetSettings<BloomVolumeConfig>();
             if (s == null || !s.enabled) return false;
 
             Vector2Int bufferSize = s.ignoreRenderScale
@@ -51,7 +51,7 @@ namespace ArcToon.Passes.PostProcessing
 
         public override void Setup(PostProcessConfig config, CameraRenderer renderer)
         {
-        settings = config.GetSettings<BloomVolumeConfig>();
+            settings = config.GetSettings<BloomVolumeConfig>();
             material ??= ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
             useHDR = renderer.useHDR;
             attachmentSize = renderer.AttachmentSize;
@@ -120,7 +120,7 @@ namespace ArcToon.Passes.PostProcessing
             cmd.SetGlobalFloat(bloomBicubicUpsamplingID, settings.bicubicUpsampling ? 1f : 0f);
             int combinePass, finalPass;
             float finalScale;
-        if (settings.mode == BloomVolumeConfig.Mode.Additive)
+            if (settings.mode == BloomVolumeConfig.Mode.Additive)
             {
                 combinePass = (int)PostFXStack.Pass.BloomAdditive;
                 finalPass = (int)PostFXStack.Pass.BloomAdditiveFinal;
@@ -149,7 +149,7 @@ namespace ArcToon.Passes.PostProcessing
             PostFXUtility.Draw(cmd, pyramid[srcPyramidIndex], destination, material, finalPass);
         }
 
-    private static Vector4 GetKneeCurveData(BloomVolumeConfig bloomSettings)
+        private static Vector4 GetKneeCurveData(BloomVolumeConfig bloomSettings)
         {
             Vector4 thresholdData;
             thresholdData.x = Mathf.GammaToLinearSpace(bloomSettings.threshold);
