@@ -2,6 +2,7 @@
 using ArcToon.Data;
 using ArcToon.Passes;
 using ArcToon.Passes.Lighting;
+using ArcToon.Passes.PostProcessing;
 using ArcToon.Settings;
 using UnityEditor;
 using UnityEngine;
@@ -37,6 +38,12 @@ namespace ArcToon
         internal ForwardPlusSettings ForwardPlusSettings { private set; get; }
         internal PostFXConfig PostFXConfig { private set; get; }
         
+        // New post-processing config (coexists with old PostFXConfig during migration)
+        internal PostProcessConfig PostProcessConfig { private set; get; }
+        
+        // Switch between old and new post-processing framework
+        internal bool UseNewPostProcessing { private set; get; }
+        
         // TODO: Singleton
         internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
 
@@ -54,6 +61,7 @@ namespace ArcToon
         private readonly GeometryOutlinePass transparentOutlinePass = new();
         private readonly UnsupportedPass unsupportedPass = new();
         private readonly PostFXPass postFXPass = new();
+        private readonly PostProcessPass postProcessPass = new();
         private readonly DebugPass debugPass = new();
         private readonly GizmosPass gizmosPass = new();
         private readonly CopyFinalPass copyFinalPass = new();
@@ -69,6 +77,7 @@ namespace ArcToon
         public void Dispose()
         {
             Resources.Dispose();
+            postProcessPass.Dispose();
             CameraDebugger.Cleanup();
         }
 
@@ -106,6 +115,9 @@ namespace ArcToon
             {
                 PostFXConfig = CameraAdditiveData.overridePostFXConfig;
             }
+            
+            PostProcessConfig = config.globalPostProcessConfig;
+            UseNewPostProcessing = config.useNewPostProcessing;
 
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
@@ -164,7 +176,14 @@ namespace ArcToon
 
             // Phase: PostProcessing
             RenderPhase = RenderPhase.PostProcessing;
-            ExecutePass(postFXPass);
+            if (UseNewPostProcessing)
+            {
+                ExecutePass(postProcessPass);
+            }
+            else
+            {
+                ExecutePass(postFXPass);
+            }
 
             // Phase: BackBuffer
             RenderPhase = RenderPhase.BackBuffer;
