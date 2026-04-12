@@ -1,23 +1,19 @@
 ﻿using System.Collections.Generic;
-using ArcToon.Runtime.Settings;
+using ArcToon.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.RenderGraphModule;
 
-namespace ArcToon.Runtime
+namespace ArcToon
 {
     public partial class ArcToonRenderPipelineInstance : RenderPipeline
     {
         private readonly RenderPipelineConfig config;
-        
-        private readonly RenderGraph renderGraph;
         
         private CameraRenderer cameraRenderer;
 
         public ArcToonRenderPipelineInstance(RenderPipelineConfig config)
         {
             this.config = config;
-            renderGraph = new RenderGraph("Arc Toon Render Graph");
             cameraRenderer = new CameraRenderer();
             
             GraphicsSettings.useScriptableRenderPipelineBatching = config.useSRPBatcher;
@@ -30,9 +26,8 @@ namespace ArcToon.Runtime
         {
             for (int i = 0; i < cameras.Count; i++)
             {
-                cameraRenderer.Render(renderGraph, renderContext, cameras[i], config);
+                cameraRenderer.Render(renderContext, cameras[i], config);
             }
-            renderGraph.EndFrame();
         }
 
         protected override void Render(ScriptableRenderContext renderContext, Camera[] cameras)
@@ -45,7 +40,6 @@ namespace ArcToon.Runtime
             base.Dispose(disposing);
             DisposeForEditor();
             cameraRenderer.Dispose();
-            renderGraph.Cleanup();
         }
     }
 }

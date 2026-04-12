@@ -1,34 +1,21 @@
-﻿using ArcToon.Runtime.Data;
-using UnityEngine;
-using UnityEngine.Rendering.RenderGraphModule;
-using UnityEngine.Rendering;
+﻿using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
-    public class SkyboxPass : RenderGraphPassBase
+    public class SkyboxPass : RenderPassBase
     {
-        public override ProfilingSampler Sampler => new("Skybox");
+        public override string Name => "Skybox";
 
-        RendererListHandle list;
+        RendererList list;
 
-        public override bool AllowCulling() => false;
+        public override void PrepareRendererLists(ScriptableRenderContext context)
+        {
+            list = context.CreateSkyboxRendererList(Camera);
+        }
 
-        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
+        public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.DrawRendererList(list);
-        }
-
-        public override void AcquireResource(RenderGraph renderGraph)
-        {
-            list = renderGraph.CreateSkyboxRendererList(Camera);
-        }
-
-        public override void DeclareResourceUsage(RenderGraphBuilder builder)
-        {
-            builder.UseRendererList(list);
-            
-            builder.ReadWriteTexture(resourceHandle.colorAttachment);
-            builder.ReadTexture(resourceHandle.depthAttachment);
         }
     }
 }

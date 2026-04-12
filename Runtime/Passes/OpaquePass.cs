@@ -1,15 +1,11 @@
-﻿using ArcToon.Runtime.Data;
-using ArcToon.Runtime.Utils;
-using UnityEngine;
-using UnityEngine.Rendering.RenderGraphModule;
-using UnityEngine.Rendering;
+﻿using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
-    public class OpaquePass : RenderGraphPassBase
+    public class OpaquePass : RenderPassBase
     {
-        public override ProfilingSampler Sampler => new("Opaque");
+        public override string Name => "Opaque";
 
         private static ShaderTagId[] baseShaderTagIds =
         {
@@ -18,20 +14,11 @@ namespace ArcToon.Runtime.Passes
             new("SimpleLit"),
         };
 
-        RendererListHandle baseList;
+        RendererList baseList;
 
-        public override bool AllowCulling() => true;
-
-        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
+        public override void PrepareRendererLists(ScriptableRenderContext context)
         {
-            commandBuffer.BeginSample("Toon Base");
-            commandBuffer.DrawRendererList(baseList);
-            commandBuffer.EndSample("Toon Base");
-        }
-
-        public override void AcquireResource(RenderGraph renderGraph)
-        {
-            baseList = renderGraph.CreateRendererList(new RendererListDesc(baseShaderTagIds, renderer.CullingResults, Camera)
+            baseList = context.CreateRendererList(new RendererListDesc(baseShaderTagIds, renderer.CullingResults, Camera)
             {
                 sortingCriteria = SortingCriteria.CommonOpaque,
                 renderQueueRange = RenderQueueRange.opaque,
@@ -43,35 +30,11 @@ namespace ArcToon.Runtime.Passes
             });
         }
 
-        public override void DeclareResourceUsage(RenderGraphBuilder builder)
+        public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
-            builder.UseRendererList(baseList);
-            
-            builder.ReadWriteTexture(resourceHandle.colorAttachment);
-            builder.ReadWriteTexture(resourceHandle.depthAttachment);
-            
-            if (resourceHandle.preDepthStencil.IsValid())
-            {
-                builder.ReadTexture(resourceHandle.preDepthStencil);
-            }
-            builder.ReadTexture(resourceHandle.stencilMask);
-            
-            builder.ReadTexture(resourceHandle.shadowMapHandle.directionalAtlas);
-            builder.ReadTexture(resourceHandle.shadowMapHandle.spotAtlas);
-            builder.ReadTexture(resourceHandle.shadowMapHandle.pointAtlas);
-            builder.ReadTexture(resourceHandle.shadowMapHandle.perObjectAtlas);
-            
-            builder.ReadBuffer(resourceHandle.lightDataDirectional);
-            builder.ReadBuffer(resourceHandle.lightDataSpot);
-            builder.ReadBuffer(resourceHandle.lightDataPoint);
-            builder.ReadBuffer(resourceHandle.perObjectShadowCasterData);
-            builder.ReadBuffer(resourceHandle.forwardPlusTileBuffer);
-            
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.cascadeShadowData);
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.directionalShadowData);
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.spotShadowData);
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.pointShadowData);
-            builder.ReadBuffer(resourceHandle.shadowMapHandle.perObjectShadowData);
+            commandBuffer.BeginSample("Toon Base");
+            commandBuffer.DrawRendererList(baseList);
+            commandBuffer.EndSample("Toon Base");
         }
     }
 }

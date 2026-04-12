@@ -1,28 +1,23 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Data;
-using ArcToon.Runtime.Settings;
-using ArcToon.Runtime.Utils;
-using ArcToon.Runtime.Utils.Extensions;
-using UnityEngine;
-using UnityEngine.Rendering.RenderGraphModule;
+﻿using ArcToon.Behavior;
+using ArcToon.Data;
+using ArcToon.Settings;
+using ArcToon.Utils;
+using ArcToon.Utils.Extensions;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Passes
+namespace ArcToon.Passes
 {
-    public class CopyFinalPass : RenderGraphPassBase
+    public class CopyFinalPass : RenderPassBase
     {
-        public override ProfilingSampler Sampler => new("Copy Final");
-
-        TextureHandle source;
-        TextureHandle backBuffer;
+        public override string Name => "Copy Final";
 
         CameraAdditiveData.FinalBlendMode finalBlendMode;
 
         bool bicubicSampling;
 
-        public override void Initialize(RenderGraphResourceHandle resourceHandle, CameraRenderer renderer)
+        public override void Setup(RenderResources resources, CameraRenderer renderer)
         {
-            base.Initialize(resourceHandle, renderer);
+            base.Setup(resources, renderer);
             var bicubicRescalingMode = renderer.BufferSettings.bicubicRescalingMode;
             bicubicSampling =
                 bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||
@@ -31,16 +26,14 @@ namespace ArcToon.Runtime.Passes
             finalBlendMode = renderer.CameraAdditiveData.finalBlendMode;
         }
 
-        public override bool AllowCulling() => true;
-        
-        public override void Render(CommandBuffer commandBuffer, ScriptableRenderContext context)
+        public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
             commandBuffer.SetGlobalFloat(InternalShader.PropertyID.FinalSrcBlend, (float)finalBlendMode.source);
             commandBuffer.SetGlobalFloat(InternalShader.PropertyID.FinalDstBlend, (float)finalBlendMode.destination);
 
             commandBuffer.SetGlobalFloat(InternalShader.PropertyID.CopyBicubic, bicubicSampling ? 1f : 0f);
             
-            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.SourceTexture, resourceHandle.postFXResult);
+            commandBuffer.SetGlobalTexture(InternalShader.PropertyID.SourceTexture, resources.PostFX.postFXResult);
             commandBuffer.SetRenderTarget(
                 BuiltinRenderTextureType.CameraTarget,
                 finalBlendMode.destination == BlendMode.Zero && Camera.rect == RenderPipelineInfo.FullViewRect
@@ -50,17 +43,6 @@ namespace ArcToon.Runtime.Passes
             );
             commandBuffer.SetViewport(Camera.pixelRect);
             commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 0);
-        }
-
-        public override void AcquireResource(RenderGraph renderGraph)
-        {
-            backBuffer = renderGraph.ImportBackbuffer(BuiltinRenderTextureType.CameraTarget);
-        }
-
-        public override void DeclareResourceUsage(RenderGraphBuilder builder)
-        {
-            builder.ReadTexture(resourceHandle.postFXResult);
-            builder.WriteTexture(backBuffer);
         }
     }
 }

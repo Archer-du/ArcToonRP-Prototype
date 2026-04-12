@@ -1,9 +1,9 @@
 ﻿using System;
-using ArcToon.Runtime.Settings;
+using ArcToon.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Behavior
+namespace ArcToon.Behavior
 {
     [Serializable]
     public class CameraAdditiveData

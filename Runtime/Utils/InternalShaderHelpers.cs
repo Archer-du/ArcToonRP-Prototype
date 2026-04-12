@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using BuiltinGlobalKeyword = UnityEngine.Rendering.GlobalKeyword;
 
-namespace ArcToon.Runtime.Utils
+namespace ArcToon.Utils
 {
     public static class InternalShader
     {

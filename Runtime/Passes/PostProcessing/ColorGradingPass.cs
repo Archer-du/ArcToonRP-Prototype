@@ -1,28 +1,18 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Settings;
+﻿using ArcToon.Data;
+using ArcToon.Settings;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.RenderGraphModule;
-using static ArcToon.Runtime.Settings.PostFXConfig;
-using static ArcToon.Runtime.PostFXStack;
+using static ArcToon.Settings.PostFXConfig;
+using static ArcToon.PostFXStack;
 
-namespace ArcToon.Runtime.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing
 {
     public class ColorGradingPass
     {
-        static readonly ProfilingSampler sampler = new("Color Grading");
-
-        private TextureHandle source;
-        private TextureHandle colorGradingResult;
-        
         private PostFXStack stack;
-        
-        static readonly GraphicsFormat colorFormat = SystemInfo.GetGraphicsFormat(DefaultFormat.HDR);
 
         private PostFXConfig config;
         private bool useHDR;
-        private TextureHandle colorLUT;
         
         private int colorLUTResolution;
 
@@ -47,10 +37,28 @@ namespace ArcToon.Runtime.Passes.PostProcessing
         private static readonly int smhHighlightsID = Shader.PropertyToID("_SMHHighlights");
         private static readonly int smhRangeID = Shader.PropertyToID("_SMHRange");
 
-        void Render(RenderGraphContext context)
+        /// <summary>
+        /// Execute color grading pass. Reads from sourceHandle, writes to resources.PostFX.colorGradingResult.
+        /// </summary>
+        public void Execute(CommandBuffer cmd, RenderResources resources, CameraRenderer renderer,
+            PostFXConfig postFXConfig, PostFXStack stack,
+            RTHandle sourceHandle)
         {
-            CommandBuffer commandBuffer = context.cmd;
+            this.stack = stack;
+            this.config = postFXConfig;
+            this.useHDR = renderer.useHDR;
+            this.colorLUTResolution = postFXConfig ? (int)postFXConfig.ToneMapping.colorLUTResolution : 0;
 
+            // Allocate LUT
+            int lutHeight = colorLUTResolution;
+            int lutWidth = lutHeight * lutHeight;
+            resources.PostFX.AllocateColorLUT(lutWidth, lutHeight);
+
+            Render(cmd, resources, sourceHandle);
+        }
+
+        private void Render(CommandBuffer commandBuffer, RenderResources resources, RTHandle source)
+        {
             ConfigureColorAdjustments(commandBuffer, config);
             ConfigureWhiteBalance(commandBuffer, config);
             ConfigureSplitToning(commandBuffer, config);
@@ -69,54 +77,13 @@ namespace ArcToon.Runtime.Passes.PostProcessing
                 colorGradingLUTInLogCID, useHDR && pass != Pass.ColorGradingOnly ? 1f : 0f
             );
 
-            stack.Draw(commandBuffer, source, colorLUT, pass);
+            stack.Draw(commandBuffer, source, resources.PostFX.colorLUT, pass);
 
             commandBuffer.SetGlobalVector(colorGradingLUTParametersID,
                 new Vector4(1f / lutWidth, 1f / lutHeight, lutHeight - 1f)
             );
-            commandBuffer.SetGlobalTexture(colorGradingLUTID, colorLUT);
-            stack.Draw(commandBuffer,source, colorGradingResult, Pass.ColorGradingApply);
-            
-            context.renderContext.ExecuteCommandBuffer(commandBuffer);
-            commandBuffer.Clear();
-        }
-
-        public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
-            CullingResults cullingResults, Vector2Int bufferSize,
-            CameraAdditiveData cameraAdditiveData,
-            CameraBufferSettings bufferSettings,
-            PostFXConfig postFXConfig,
-            bool useHDR,
-            in TextureHandle srcHandle,
-            PostFXStack stack)
-        {
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out ColorGradingPass pass, sampler);
-
-            pass.stack = stack;
-            pass.useHDR = useHDR;
-            pass.colorLUTResolution = postFXConfig ? (int)postFXConfig.ToneMapping.colorLUTResolution : 0;
-            pass.source = builder.ReadTexture(srcHandle);
-            pass.config = postFXConfig;
-            
-            int lutHeight = pass.colorLUTResolution;
-            int lutWidth = lutHeight * lutHeight;
-            var desc = new TextureDesc(lutWidth, lutHeight)
-            {
-                colorFormat = colorFormat,
-                name = "Color LUT"
-            };
-            pass.colorLUT = builder.CreateTransientTexture(desc);
-            desc = new TextureDesc(bufferSize.x, bufferSize.y)
-            {
-                colorFormat = colorFormat,
-                name = "Color Grading"
-            };
-            pass.colorGradingResult = builder.WriteTexture(renderGraph.CreateTexture(desc));
-            
-            builder.SetRenderFunc<ColorGradingPass>(static (pass, context) => pass.Render(context));
-            
-            return pass.colorGradingResult;
+            commandBuffer.SetGlobalTexture(colorGradingLUTID, resources.PostFX.colorLUT);
+            stack.Draw(commandBuffer, source, resources.PostFX.colorGradingResult, Pass.ColorGradingApply);
         }
 
         void ConfigureColorAdjustments(CommandBuffer commandBuffer, PostFXConfig config)

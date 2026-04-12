@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace ArcToon.Runtime.Utils.Extensions
+namespace ArcToon.Utils.Extensions
 {
     /// <summary>
     /// Bit-level packing utilities for storing integers in float channels.

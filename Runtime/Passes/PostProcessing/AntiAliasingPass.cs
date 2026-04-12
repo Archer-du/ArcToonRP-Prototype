@@ -1,20 +1,13 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Settings;
+﻿using ArcToon.Data;
+using ArcToon.Settings;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.RenderGraphModule;
-using static ArcToon.Runtime.PostFXStack;
+using static ArcToon.PostFXStack;
 
-namespace ArcToon.Runtime.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing
 {
     public class AntiAliasingPass
     {
-        static readonly ProfilingSampler sampler = new("FXAA");
-
-        private TextureHandle source;
-        private TextureHandle result;
-
         private PostFXStack stack;
 
         private FXAARuntimeConfig fxaaConfig;
@@ -36,59 +29,32 @@ namespace ArcToon.Runtime.Passes.PostProcessing
             public CameraBufferSettings.FXAASettings.Quality quality;
         }
 
-        void Render(RenderGraphContext context)
-        {
-            CommandBuffer commandBuffer = context.cmd;
-
-            ConfigureFXAA(commandBuffer);
-            stack.Draw(commandBuffer, source, result, Pass.FXAA);
-
-            context.renderContext.ExecuteCommandBuffer(commandBuffer);
-            commandBuffer.Clear();
-        }
-
-        public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
-            CullingResults cullingResults, Vector2Int bufferSize,
-            CameraAdditiveData cameraAdditiveData,
-            CameraBufferSettings bufferSettings,
-            PostFXConfig postFXConfig,
-            bool useHDR,
-            in TextureHandle srcHandle,
-            PostFXStack stack)
+        /// <summary>
+        /// Execute FXAA pass. Returns true if FXAA was applied.
+        /// Reads from sourceHandle, writes to resources.PostFX.fxaaResult.
+        /// </summary>
+        public bool Execute(CommandBuffer cmd, RenderResources resources, CameraRenderer renderer,
+            PostFXStack stack,
+            RTHandle sourceHandle)
         {
             // TODO: buffer settings translate
-            FXAARuntimeConfig fxaaConfig = new FXAARuntimeConfig
+            fxaaConfig = new FXAARuntimeConfig
             {
-                enabled = bufferSettings.fxaaSettings.enabled && cameraAdditiveData.allowFXAA,
-                keepAlpha = cameraAdditiveData.keepAlpha,
-                fixedThreshold = bufferSettings.fxaaSettings.fixedThreshold,
-                relativeThreshold = bufferSettings.fxaaSettings.relativeThreshold,
-                subpixelBlending = bufferSettings.fxaaSettings.subpixelBlending,
-                quality = bufferSettings.fxaaSettings.quality,
+                enabled = renderer.BufferSettings.fxaaSettings.enabled && renderer.CameraAdditiveData.allowFXAA,
+                keepAlpha = renderer.CameraAdditiveData.keepAlpha,
+                fixedThreshold = renderer.BufferSettings.fxaaSettings.fixedThreshold,
+                relativeThreshold = renderer.BufferSettings.fxaaSettings.relativeThreshold,
+                subpixelBlending = renderer.BufferSettings.fxaaSettings.subpixelBlending,
+                quality = renderer.BufferSettings.fxaaSettings.quality,
             };
             
-            if (!fxaaConfig.enabled) return srcHandle;
+            if (!fxaaConfig.enabled) return false;
 
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out AntiAliasingPass pass, sampler);
+            this.stack = stack;
 
-            pass.stack = stack;
-            pass.fxaaConfig = fxaaConfig;
-            pass.source = builder.ReadTexture(srcHandle);
-
-            var desc = new TextureDesc(bufferSize.x, bufferSize.y)
-            {
-                colorFormat = SystemInfo.GetGraphicsFormat(
-                    useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
-                name = "FXAA Result"
-            };
-
-            pass.result = builder.WriteTexture(renderGraph.CreateTexture(desc));
-
-            builder.SetRenderFunc<AntiAliasingPass>(
-                static (pass, context) => pass.Render(context));
-
-            return pass.result;
+            ConfigureFXAA(cmd);
+            stack.Draw(cmd, sourceHandle, resources.PostFX.fxaaResult, Pass.FXAA);
+            return true;
         }
 
         void ConfigureFXAA(CommandBuffer commandBuffer)

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace ArcToon.Runtime.Passes.Lighting
+namespace ArcToon.Passes.Lighting
 {
     public struct DrawCallData
     {

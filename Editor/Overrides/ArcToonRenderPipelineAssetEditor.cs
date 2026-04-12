@@ -1,5 +1,4 @@
-using ArcToon.Runtime;
-using ArcToon.Runtime.Settings;
+using ArcToon.Settings;
 using UnityEditor;
 using UnityEngine;
 

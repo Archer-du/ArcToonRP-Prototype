@@ -2,7 +2,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Buffers
+namespace ArcToon.Buffers
 {
     [GenerateHLSL(PackingRules.Exact, false)]
     struct ShadowTileBufferData

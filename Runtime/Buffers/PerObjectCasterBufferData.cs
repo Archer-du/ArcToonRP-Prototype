@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Buffers
+namespace ArcToon.Buffers
 {
     [GenerateHLSL(PackingRules.Exact, false)]
     public struct PerObjectCasterBufferData

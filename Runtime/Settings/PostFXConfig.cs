@@ -1,10 +1,9 @@
 ﻿using System;
-using ArcToon.Runtime.Utils;
+using ArcToon.Utils;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace ArcToon.Runtime.Settings
+namespace ArcToon.Settings
 {
     [CreateAssetMenu(menuName = "Rendering/ArcToon Post FX Settings")]
     public class PostFXConfig : ScriptableObject

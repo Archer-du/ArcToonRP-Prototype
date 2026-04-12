@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using ArcToon.Runtime.Passes.Lighting;
-using ArcToon.Runtime.Utils;
+using ArcToon.Passes.Lighting;
+using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Behavior
+namespace ArcToon.Behavior
 {
     [AddComponentMenu("ArcToon/Per Object Shadow Caster")]
     public class PerObjectShadowCaster : MonoBehaviour

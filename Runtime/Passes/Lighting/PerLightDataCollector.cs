@@ -1,11 +1,10 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Settings;
-using ArcToon.Runtime.Utils.Extensions;
-using Unity.Collections;
+﻿using ArcToon.Behavior;
+using ArcToon.Settings;
+using ArcToon.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Passes.Lighting
+namespace ArcToon.Passes.Lighting
 {
     public class PerLightDataCollector
     {

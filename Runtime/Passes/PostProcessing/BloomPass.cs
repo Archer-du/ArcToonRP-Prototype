@@ -1,66 +1,112 @@
-﻿using ArcToon.Runtime.Behavior;
-using ArcToon.Runtime.Settings;
+﻿using ArcToon.Data;
+using ArcToon.Settings;
+using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.RenderGraphModule;
-using static ArcToon.Runtime.Settings.PostFXConfig;
-using static ArcToon.Runtime.PostFXStack;
+using static ArcToon.Settings.PostFXConfig;
+using static ArcToon.PostFXStack;
 
-namespace ArcToon.Runtime.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing
 {
     public class BloomPass
     {
-        static readonly ProfilingSampler sampler = new("Bloom");
-
-        private TextureHandle source;
-        private TextureHandle result;
-
         private PostFXStack stack;
         
         private BloomSettings bloomSettings;
-
-        static readonly GraphicsFormat colorFormat = SystemInfo.GetGraphicsFormat(DefaultFormat.HDR);
         
         private static readonly int fxSource2Id = Shader.PropertyToID("_PostFXSource2");
 
-        private TextureHandle bloomPrefilter;
-        private readonly TextureHandle[] pyramid =
-            new TextureHandle[2 * maxBloomPyramidLevels];
-
         private int stepCount;
 
-        const int maxBloomPyramidLevels = 16;
-
-        // private static readonly int bloomPyramidId;
         private static readonly int bloomThresholdID = Shader.PropertyToID("_BloomThreshold");
         private static readonly int bloomBucibicUpsamplingID = Shader.PropertyToID("_BloomBicubicUpsampling");
         private static readonly int bloomScaleID = Shader.PropertyToID("_BloomScale");
         private static readonly int bloomScatterID = Shader.PropertyToID("_BloomScatter");
 
-        void Render(RenderGraphContext context)
+        /// <summary>
+        /// Setup and execute bloom pass. Returns true if bloom was applied.
+        /// If bloom is skipped, postFXResult is not modified.
+        /// </summary>
+        public bool Execute(CommandBuffer cmd, RenderResources resources, CameraRenderer renderer,
+            PostFXConfig postFXConfig, PostFXStack stack)
         {
-            CommandBuffer commandBuffer = context.cmd;
+            this.stack = stack;
+            bloomSettings = postFXConfig.Bloom;
 
+            Vector2Int bufferSize = renderer.AttachmentSize;
+            Vector2Int originalBufferSize = bufferSize;
+            bufferSize = bloomSettings.ignoreRenderScale
+                ? new Vector2Int(renderer.RenderCamera.pixelWidth, renderer.RenderCamera.pixelHeight)
+                : bufferSize;
+
+            if (bloomSettings.maxIterations == 0 ||
+                bloomSettings.intensity <= 0f ||
+                bufferSize.y < bloomSettings.downscaleLimit * 4 ||
+                bufferSize.x < bloomSettings.downscaleLimit * 4)
+            {
+                return false;
+            }
+
+            // Allocate pyramid levels
+            bufferSize /= 2;
+            // bloomPrefilter is already allocated in RenderResources.AllocatePostFXResources
+            // but we need to re-check size for ignoreRenderScale case
+            var colorFormat = SystemInfo.GetGraphicsFormat(renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR);
+            {
+                var prefilterDesc = new RenderTextureDescriptor(bufferSize.x, bufferSize.y, colorFormat, 0);
+                RenderingUtils.ReAllocateIfNeeded(ref resources.PostFX.bloomPrefilter, prefilterDesc, name: "Bloom Prefilter");
+            }
+
+            bufferSize /= 2;
+            int pyramidIndex = 0;
+            int i;
+            for (i = 0; i < bloomSettings.maxIterations; i++, pyramidIndex += 2)
+            {
+                if (bufferSize.y < bloomSettings.downscaleLimit || bufferSize.x < bloomSettings.downscaleLimit)
+                {
+                    break;
+                }
+
+                resources.PostFX.AllocateBloomPyramidLevel(pyramidIndex, bufferSize.x, bufferSize.y, renderer.useHDR, "Bloom Pyramid H");
+                resources.PostFX.AllocateBloomPyramidLevel(pyramidIndex + 1, bufferSize.x, bufferSize.y, renderer.useHDR, "Bloom Pyramid V");
+                bufferSize /= 2;
+            }
+
+            stepCount = i;
+
+            // Allocate bloom result at original buffer size
+            {
+                var resultDesc = new RenderTextureDescriptor(originalBufferSize.x, originalBufferSize.y, colorFormat, 0);
+                RenderingUtils.ReAllocateIfNeeded(ref resources.PostFX.bloomResult, resultDesc, name: "Bloom Result");
+            }
+
+            // Render
+            Render(cmd, resources);
+            return true;
+        }
+
+        private void Render(CommandBuffer commandBuffer, RenderResources resources)
+        {
             commandBuffer.SetGlobalVector(bloomThresholdID, GetKneeCurveData(bloomSettings));
 
             // knee curve prefilter
-            stack.Draw(commandBuffer, source, bloomPrefilter,
+            stack.Draw(commandBuffer, resources.Camera.colorAttachment, resources.PostFX.bloomPrefilter,
                 bloomSettings.fadeFireflies ? Pass.BloomPrefilterFireflies : Pass.BloomPrefilter);
 
             // down sample
             int dstPyramidIndex = 1;
             int srcPyramidIndex = 1;
-            TextureHandle srcHandle = bloomPrefilter;
+            RTHandle srcHandle = resources.PostFX.bloomPrefilter;
             int i;
             for (i = 0; i < stepCount; i++)
             {
-                stack.Draw(commandBuffer, srcHandle, pyramid[dstPyramidIndex - 1],
+                stack.Draw(commandBuffer, srcHandle, resources.PostFX.bloomPyramid[dstPyramidIndex - 1],
                     Pass.BloomHorizontal);
-                stack.Draw(commandBuffer, pyramid[dstPyramidIndex - 1], pyramid[dstPyramidIndex],
+                stack.Draw(commandBuffer, resources.PostFX.bloomPyramid[dstPyramidIndex - 1], resources.PostFX.bloomPyramid[dstPyramidIndex],
                     Pass.BloomVertical);
                 srcPyramidIndex = dstPyramidIndex;
-                srcHandle = pyramid[srcPyramidIndex];
+                srcHandle = resources.PostFX.bloomPyramid[srcPyramidIndex];
                 dstPyramidIndex += 2;
             }
 
@@ -85,90 +131,15 @@ namespace ArcToon.Runtime.Passes.PostProcessing
             dstPyramidIndex -= 5;
             for (i -= 1; i > 0; i--)
             {
-                commandBuffer.SetGlobalTexture(fxSource2Id, pyramid[dstPyramidIndex + 1]);
-                stack.Draw(commandBuffer, pyramid[srcPyramidIndex], pyramid[dstPyramidIndex], combinePass);
+                commandBuffer.SetGlobalTexture(fxSource2Id, resources.PostFX.bloomPyramid[dstPyramidIndex + 1]);
+                stack.Draw(commandBuffer, resources.PostFX.bloomPyramid[srcPyramidIndex], resources.PostFX.bloomPyramid[dstPyramidIndex], combinePass);
                 srcPyramidIndex = dstPyramidIndex;
                 dstPyramidIndex -= 2;
             }
 
-            commandBuffer.SetGlobalTexture(fxSource2Id, source);
+            commandBuffer.SetGlobalTexture(fxSource2Id, resources.Camera.colorAttachment);
             commandBuffer.SetGlobalFloat(bloomScaleID, finalScale);
-            stack.Draw(commandBuffer, pyramid[srcPyramidIndex], result, finalPass);
-            
-            context.renderContext.ExecuteCommandBuffer(commandBuffer);
-            commandBuffer.Clear();
-        }
-
-        public static TextureHandle Record(RenderGraph renderGraph, Camera camera,
-            CullingResults cullingResults, Vector2Int bufferSize,
-            CameraAdditiveData cameraAdditiveData,
-            CameraBufferSettings bufferSettings,
-            PostFXConfig postFXConfig,
-            bool useHDR,
-            in TextureHandle srcHandle, 
-            PostFXStack stack)
-        {
-            BloomSettings bloom = postFXConfig.Bloom;
-            Vector2Int originalBufferSize = bufferSize;
-            bufferSize = bloom.ignoreRenderScale
-                ? new Vector2Int(camera.pixelWidth, camera.pixelHeight)
-                : bufferSize;
-
-            if (bloom.maxIterations == 0 ||
-                bloom.intensity <= 0f ||
-                bufferSize.y < bloom.downscaleLimit * 4 ||
-                bufferSize.x < bloom.downscaleLimit * 4)
-            {
-                return srcHandle;
-            }
-
-            using RenderGraphBuilder builder = renderGraph.AddRenderPass(
-                sampler.name, out BloomPass pass, sampler);
-
-            pass.stack = stack;
-            pass.bloomSettings = bloom;
-            pass.source = builder.ReadTexture(srcHandle);
-
-            bufferSize /= 2;
-            var desc = new TextureDesc(bufferSize.x, bufferSize.y)
-            {
-                colorFormat = SystemInfo.GetGraphicsFormat(
-                    useHDR ? DefaultFormat.HDR : DefaultFormat.LDR),
-                name = "Bloom Prefilter"
-            };
-            pass.bloomPrefilter = builder.CreateTransientTexture(desc);
-            
-            TextureHandle[] pyramid = pass.pyramid;
-            bufferSize /= 2;
-            int pyramidIndex = 0;
-            int i;
-            for (i = 0; i < bloom.maxIterations; i++, pyramidIndex += 2)
-            {
-                if (bufferSize.y < bloom.downscaleLimit || bufferSize.x < bloom.downscaleLimit)
-                {
-                    break;
-                }
-
-                desc.width = bufferSize.x;
-                desc.height = bufferSize.y;
-                desc.name = "Bloom Pyramid H";
-                pyramid[pyramidIndex] = builder.CreateTransientTexture(desc);
-                desc.name = "Bloom Pyramid V";
-                pyramid[pyramidIndex + 1] = builder.CreateTransientTexture(desc);
-                bufferSize /= 2;
-            }
-
-            pass.stepCount = i;
-
-            desc.width = originalBufferSize.x;
-            desc.height = originalBufferSize.y;
-            desc.name = "Bloom Result";
-            pass.result = builder.WriteTexture(renderGraph.CreateTexture(desc));
-            
-            builder.SetRenderFunc<BloomPass>(
-                static (pass, context) => pass.Render(context));
-            
-            return pass.result;
+            stack.Draw(commandBuffer, resources.PostFX.bloomPyramid[srcPyramidIndex], resources.PostFX.bloomResult, finalPass);
         }
 
         private Vector4 GetKneeCurveData(BloomSettings bloomSettings)

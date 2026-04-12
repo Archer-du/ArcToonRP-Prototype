@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Runtime.Utils
+namespace ArcToon.Utils
 {
     public class ShaderResourceManager
     {

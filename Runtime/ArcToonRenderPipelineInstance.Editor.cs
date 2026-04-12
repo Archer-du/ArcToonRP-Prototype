@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
 using LightType = UnityEngine.LightType;
 
-namespace ArcToon.Runtime
+namespace ArcToon
 {
     public partial class ArcToonRenderPipelineInstance
     {

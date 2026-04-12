@@ -1,9 +1,8 @@
-using ArcToon.Runtime.Settings;
+using ArcToon.Settings;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 
-namespace ArcToon.Runtime
+namespace ArcToon
 {
     [CreateAssetMenu(menuName = "Rendering/ArcToon Render Pipeline")]
     public class ArcToonRenderPipelineAsset : RenderPipelineAsset<ArcToonRenderPipelineInstance>
