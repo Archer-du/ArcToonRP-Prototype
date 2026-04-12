@@ -14,6 +14,7 @@ namespace ArcToon.Settings
         
         public BicubicRescalingMode bicubicRescalingMode = BicubicRescalingMode.UpOnly;
 
+        // TODO: deprecated
         [Serializable]
         public struct FXAASettings
         {

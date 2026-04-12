@@ -96,16 +96,16 @@ namespace ArcToon.Behavior
         public bool TryGetWorldBounds(out Bounds worldBounds)
         {
             worldBounds = default;
-            bool firstBounds = true;
+            bool findFirstBounds = false;
 
             for (int i = 0; i < perObjectCasterRenderers.Count; i++)
             {
                 var entry = perObjectCasterRenderers[i];
 
-                if (firstBounds)
+                if (!findFirstBounds)
                 {
                     worldBounds = entry.renderer.bounds;
-                    firstBounds = false;
+                    findFirstBounds = true;
                 }
                 else
                 {
@@ -113,8 +113,8 @@ namespace ArcToon.Behavior
                 }
             }
 
-            this.worldBoundCache = worldBounds;
-            return !firstBounds;
+            worldBoundCache = worldBounds;
+            return findFirstBounds;
         }
         
         public void GetWorldBounds(out Bounds worldBounds)

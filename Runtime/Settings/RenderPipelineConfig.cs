@@ -1,4 +1,5 @@
 ﻿using ArcToon.Passes.PostProcessing;
+using UnityEngine.Serialization;
 
 namespace ArcToon.Settings
 {
@@ -9,13 +10,13 @@ namespace ArcToon.Settings
         
         public CameraBufferSettings cameraBufferSettings;
 
-        public ShadowSettings globalShadowSettings;
+        [FormerlySerializedAs("globalShadowSettings")] 
+        public ShadowSettings shadowSettings;
 
         public ForwardPlusSettings forwardPlusSettings;
 
         public PostFXConfig globalPostFXConfig;
 
-        // New post-processing config (coexists with old PostFXConfig during migration)
         public PostProcessConfig globalPostProcessConfig;
     }
 }

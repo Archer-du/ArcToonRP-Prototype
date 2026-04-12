@@ -36,7 +36,7 @@ namespace ArcToon.Passes.PostProcessing
 
         public override bool IsActive(PostProcessConfig config, CameraRenderer renderer)
         {
-            var s = config.GetSettings<BloomVolumeConfig>();
+            var s = config.GetVolumeConfig<BloomVolumeConfig>();
             if (s == null || !s.enabled) return false;
 
             Vector2Int bufferSize = s.ignoreRenderScale
@@ -51,8 +51,10 @@ namespace ArcToon.Passes.PostProcessing
 
         public override void Setup(PostProcessConfig config, CameraRenderer renderer)
         {
-            settings = config.GetSettings<BloomVolumeConfig>();
-            material ??= ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
+            settings = config.GetVolumeConfig<BloomVolumeConfig>();
+            // Use explicit Unity null check — ??= won't catch destroyed-but-not-null objects
+            if (material == null)
+                material = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
             useHDR = renderer.useHDR;
             attachmentSize = renderer.AttachmentSize;
 

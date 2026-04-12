@@ -48,14 +48,16 @@ namespace ArcToon.Passes.PostProcessing
 
         public override bool IsActive(PostProcessConfig config, CameraRenderer renderer)
         {
-        var s = config.GetSettings<ColorGradingVolumeConfig>();
+        var s = config.GetVolumeConfig<ColorGradingVolumeConfig>();
             return s != null && s.enabled;
         }
 
         public override void Setup(PostProcessConfig config, CameraRenderer renderer)
         {
-        settings = config.GetSettings<ColorGradingVolumeConfig>();
-            material ??= ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
+        settings = config.GetVolumeConfig<ColorGradingVolumeConfig>();
+            // Use explicit Unity null check — ??= won't catch destroyed-but-not-null objects
+            if (material == null)
+                material = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
             useHDR = renderer.useHDR;
             colorLUTResolution = (int)settings.colorLUTResolution;
 

@@ -92,7 +92,7 @@ namespace ArcToon.Editor.Overrides
             fxaaQualityProp = fxaaSettingsProp.FindPropertyRelative("quality");
 
             // Shadows
-            shadowSettingsProp = configProp.FindPropertyRelative("globalShadowSettings");
+            shadowSettingsProp = configProp.FindPropertyRelative("shadowSettings");
             filterQualityProp = shadowSettingsProp.FindPropertyRelative("filterQuality");
             maxDistanceProp = shadowSettingsProp.FindPropertyRelative("maxDistance");
             distanceFadeProp = shadowSettingsProp.FindPropertyRelative("distanceFade");

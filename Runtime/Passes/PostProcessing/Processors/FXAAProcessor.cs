@@ -26,14 +26,16 @@ namespace ArcToon.Passes.PostProcessing
 
         public override bool IsActive(PostProcessConfig config, CameraRenderer renderer)
         {
-        var s = config.GetSettings<FXAAVolumeConfig>();
+        var s = config.GetVolumeConfig<FXAAVolumeConfig>();
             return s != null && s.enabled && renderer.CameraAdditiveData.allowFXAA;
         }
 
         public override void Setup(PostProcessConfig config, CameraRenderer renderer)
         {
-        settings = config.GetSettings<FXAAVolumeConfig>();
-            material ??= ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
+        settings = config.GetVolumeConfig<FXAAVolumeConfig>();
+            // Use explicit Unity null check — ??= won't catch destroyed-but-not-null objects
+            if (material == null)
+                material = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
             keepAlpha = renderer.CameraAdditiveData.keepAlpha;
         }
 

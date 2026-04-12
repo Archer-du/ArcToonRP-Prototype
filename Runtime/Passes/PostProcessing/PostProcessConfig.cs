@@ -19,7 +19,7 @@ namespace ArcToon.Passes.PostProcessing
         /// <summary>
         /// Get settings of a specific type. Returns null if not found.
         /// </summary>
-        public T GetSettings<T>() where T : PostProcessVolumeConfig
+        public T GetVolumeConfig<T>() where T : PostProcessVolumeConfig
         {
             return settings.OfType<T>().FirstOrDefault();
         }
@@ -27,7 +27,7 @@ namespace ArcToon.Passes.PostProcessing
         /// <summary>
         /// Check if this config contains settings of a specific type.
         /// </summary>
-        public bool HasSettings<T>() where T : PostProcessVolumeConfig
+        public bool HasVolumeConfig<T>() where T : PostProcessVolumeConfig
         {
             return settings.OfType<T>().Any();
         }

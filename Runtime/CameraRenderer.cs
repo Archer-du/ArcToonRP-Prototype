@@ -36,12 +36,15 @@ namespace ArcToon
         internal CameraBufferSettings BufferSettings { private set; get; }
         internal ShadowSettings ShadowSettings { private set; get; }
         internal ForwardPlusSettings ForwardPlusSettings { private set; get; }
-        internal PostFXConfig PostFXConfig { private set; get; }
-        
-        // New post-processing config (coexists with old PostFXConfig during migration)
         internal PostProcessConfig PostProcessConfig { private set; get; }
         
         internal RenderResources Resources { get; private set; }
+
+        #region Legacy
+        
+        internal PostFXConfig PostFXConfig { private set; get; }
+        
+        #endregion
 
         #region Pass Instances
 
@@ -101,7 +104,7 @@ namespace ArcToon
             }
             
             BufferSettings = config.cameraBufferSettings;
-            ShadowSettings = config.globalShadowSettings;
+            ShadowSettings = config.shadowSettings;
             ForwardPlusSettings = config.forwardPlusSettings;
             
             PostFXConfig = config.globalPostFXConfig;
@@ -111,6 +114,10 @@ namespace ArcToon
             }
             
             PostProcessConfig = config.globalPostProcessConfig;
+            if (CameraAdditiveData.overridePostProcessConfig != null)
+            {
+                PostProcessConfig = CameraAdditiveData.overridePostProcessConfig;
+            }
 
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
