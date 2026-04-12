@@ -47,3 +47,4 @@ MonoBehaviour:
       tileSize: 64
       maxLightsPerTile: 14
     globalPostFXConfig: {fileID: 11400000, guid: 2be5a1f8460ec174d8075f46c88cd3d4, type: 2}
+    globalPostProcessConfig: {fileID: 11400000, guid: d751fe8ac71714d38b9c6a206862ceb9, type: 2}

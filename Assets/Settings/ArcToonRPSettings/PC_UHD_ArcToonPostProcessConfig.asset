@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93577373e74a94edbbd7d43fc60d0f40, type: 3}
+  m_Name: PC_UHD_ArcToonPostProcessConfig
+  m_EditorClassIdentifier: 
+  settings:
+  - rid: 115054217003270246
+  - rid: 115054217003270247
+  - rid: 115054217003270248
+  references:
+    version: 2
+    RefIds:
+    - rid: 115054217003270246
+      type: {class: BloomVolumeConfig, ns: ArcToon.Passes.PostProcessing, asm: ArcToon.Runtime}
+      data:
+        enabled: 1
+        mode: 1
+        ignoreRenderScale: 1
+        scatter: 0.5
+        maxIterations: 2
+        downscaleLimit: 10
+        threshold: 1
+        thresholdKnee: 1
+        intensity: 1
+        fadeFireflies: 1
+        bicubicUpsampling: 1
+    - rid: 115054217003270247
+      type: {class: ColorGradingVolumeConfig, ns: ArcToon.Passes.PostProcessing, asm: ArcToon.Runtime}
+      data:
+        enabled: 1
+        postExposure: 0
+        contrast: 5
+        colorFilter: {r: 1, g: 1, b: 1, a: 1}
+        hueShift: 0
+        saturation: 20
+        temperature: -5
+        tint: 0
+        splitToningShadows: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        splitToningHighlights: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+        splitToningBalance: 0
+        channelMixerRed: {x: 1, y: 0, z: 0}
+        channelMixerGreen: {x: 0, y: 1, z: 0}
+        channelMixerBlue: {x: 0, y: 0, z: 1}
+        smhShadows: {r: 1, g: 1, b: 1, a: 1}
+        smhMidtones: {r: 1, g: 1, b: 1, a: 1}
+        smhHighlights: {r: 1, g: 1, b: 1, a: 1}
+        smhShadowsStart: 0
+        smhShadowsEnd: 0.3
+        smhHighlightsStart: 0.55
+        smhHighlightsEnd: 1
+        toneMapping: 2
+        colorLUTResolution: 64
+    - rid: 115054217003270248
+      type: {class: FXAAVolumeConfig, ns: ArcToon.Passes.PostProcessing, asm: ArcToon.Runtime}
+      data:
+        enabled: 1
+        fixedThreshold: 0.0338
+        relativeThreshold: 0.084
+        subpixelBlending: 1
+        quality: 2
