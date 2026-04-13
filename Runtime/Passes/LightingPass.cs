@@ -66,9 +66,9 @@ namespace ArcToon.Passes
         int TileCount => tileCount.x * tileCount.y;
         #endregion
 
-        public override void Setup(RenderResources resources, CameraRenderer renderer)
+        public override void Initialize(RenderResources resources, CameraRenderer renderer)
         {
-            base.Setup(resources, renderer);
+            base.Initialize(resources, renderer);
 
             maxLightCountPerTile = renderer.ForwardPlusSettings.maxLightsPerTile;
             tileDataSize = maxLightCountPerTile + 2;
@@ -96,7 +96,7 @@ namespace ArcToon.Passes
             shadowMapRenderer.SetupResources(resources.Shadows);
         }
 
-        public override void PrepareRendererLists(ScriptableRenderContext context)
+        public override void SetupRendererList(ScriptableRenderContext context)
         {
             shadowMapRenderer.BuildRendererLists(context);
         }
@@ -137,6 +137,10 @@ namespace ArcToon.Passes
                 )
             );
 
+        }
+
+        public override void CleanupResource(CommandBuffer cmd)
+        {
             spotLightBounds.Dispose();
             pointLightBounds.Dispose();
             forwardPlusTileData.Dispose();

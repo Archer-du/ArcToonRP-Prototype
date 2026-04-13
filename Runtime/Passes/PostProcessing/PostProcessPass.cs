@@ -133,7 +133,7 @@ namespace ArcToon.Passes.PostProcessing
             };
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             tempRTA?.Release();
             tempRTB?.Release();

@@ -16,9 +16,9 @@ namespace ArcToon.Passes
 
         bool bicubicSampling;
 
-        public override void Setup(RenderResources resources, CameraRenderer renderer)
+        public override void Initialize(RenderResources resources, CameraRenderer renderer)
         {
-            base.Setup(resources, renderer);
+            base.Initialize(resources, renderer);
             var bicubicRescalingMode = renderer.BufferSettings.bicubicRescalingMode;
             bicubicSampling =
                 bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||

@@ -25,7 +25,7 @@ namespace ArcToon.Passes
         private RendererList transparentDepthPrepassList;
         private RendererList stencilMaskList;
 
-        public override void PrepareRendererLists(ScriptableRenderContext context)
+        public override void SetupRendererList(ScriptableRenderContext context)
         {
             opaqueDepthPrepassList = context.CreateRendererList(new RendererListDesc(DepthPrePassShaderTagIds, renderer.CullingResults, Camera)
             {

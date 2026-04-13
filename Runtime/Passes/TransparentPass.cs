@@ -26,7 +26,7 @@ namespace ArcToon.Passes
         
         RendererList outlineList;
 
-        public override void PrepareRendererLists(ScriptableRenderContext context)
+        public override void SetupRendererList(ScriptableRenderContext context)
         {
             outlineList = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.GeometryOutline, renderer.CullingResults, Camera)
             {

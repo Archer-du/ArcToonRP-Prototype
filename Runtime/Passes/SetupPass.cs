@@ -11,9 +11,9 @@ namespace ArcToon.Passes
 
         CameraClearFlags clearFlags;
 
-        public override void Setup(RenderResources resources, CameraRenderer renderer)
+        public override void Initialize(RenderResources resources, CameraRenderer renderer)
         {
-            base.Setup(resources, renderer);
+            base.Initialize(resources, renderer);
             clearFlags = renderer.RenderCamera.clearFlags;
             if (clearFlags > CameraClearFlags.Color)
             {

@@ -1,4 +1,5 @@
-﻿using ArcToon.Behavior;
+﻿using System.Collections.Generic;
+using ArcToon.Behavior;
 using ArcToon.Data;
 using ArcToon.Passes;
 using ArcToon.Passes.Legacy;
@@ -14,18 +15,6 @@ using UnityEngine.Rendering;
 
 namespace ArcToon
 {
-    public enum RenderPhase
-    {
-        Lighting,
-        Setup,
-        Opaque,
-        Skybox,
-        Transparent,
-        Unsupported,
-        PostProcessing,
-        BackBuffer,
-    }
-    
     public class CameraRenderer
     {
         internal ScriptableRenderContext Context { private set; get; }
@@ -35,7 +24,6 @@ namespace ArcToon
         internal Vector2Int AttachmentSize { private set; get; }
         internal CullingResults CullingResults { private set; get; }
         internal bool useHDR { private set; get; }
-        internal RenderPhase RenderPhase { private set; get; }
         
         internal CameraBufferSettings BufferSettings { private set; get; }
         internal ShadowSettings ShadowSettings { private set; get; }
@@ -44,21 +32,32 @@ namespace ArcToon
         
         internal RenderResources Resources { get; private set; }
 
-        #region Pass Instances
+        #region Built-in Pass Instances
 
         private readonly LightingPass lightingPass = new();
         private readonly SetupPass setupPass = new();
         private readonly DepthStencilPrePass depthStencilPrePass = new();
+        
         private readonly OpaquePass opaquePass = new();
-        private readonly GeometryOutlinePass opaqueOutlinePass = new();
         private readonly SkyboxPass skyboxPass = new();
         private readonly TransparentPass transparentPass = new();
-        private readonly GeometryOutlinePass transparentOutlinePass = new();
+        
         private readonly UnsupportedPass unsupportedPass = new();
         private readonly PostProcessPass postProcessPass = new();
         private readonly DebugPass debugPass = new();
         private readonly GizmosPass gizmosPass = new();
         private readonly CopyFinalPass copyFinalPass = new();
+
+        #endregion
+
+        #region Pass Queue
+
+        private readonly List<RenderPassBase> activePassQueue = new();
+
+        private void EnqueuePass(RenderPassBase pass)
+        {
+            activePassQueue.Add(pass);
+        }
 
         #endregion
 
@@ -78,7 +77,21 @@ namespace ArcToon
         public void Dispose()
         {
             Resources.Dispose();
+            
+            // Dispose all pass instances
+            lightingPass.Dispose();
+            setupPass.Dispose();
+            depthStencilPrePass.Dispose();
+            opaquePass.Dispose();
+            skyboxPass.Dispose();
+            transparentPass.Dispose();
+            unsupportedPass.Dispose();
             postProcessPass.Dispose();
+            debugPass.Dispose();
+            gizmosPass.Dispose();
+            copyFinalPass.Dispose();
+            postFXPass.Dispose();
+            
             CameraDebugger.Cleanup();
         }
 
@@ -87,7 +100,8 @@ namespace ArcToon
         {
             if (SetupRenderData(context, camera, config))
             {
-                ExecuteRenderPass();
+                EnqueuePasses();
+                ExecutePassQueue();
             }
         }
 
@@ -151,77 +165,106 @@ namespace ArcToon
             return true;
         }
 
-        private void ExecuteRenderPass()
+        /// <summary>
+        /// Build the active pass queue for this frame.
+        /// Passes are enqueued in execution order.
+        /// </summary>
+        private void EnqueuePasses()
         {
-            // Phase: Lighting
-            RenderPhase = RenderPhase.Lighting;
-            ExecutePass(lightingPass);
+            activePassQueue.Clear();
 
-            // Phase: Setup
-            RenderPhase = RenderPhase.Setup;
-            ExecutePass(setupPass);
-            ExecutePass(depthStencilPrePass);
+            // Lighting & Shadow
+            EnqueuePass(lightingPass);
 
-            // Phase: Opaque
-            RenderPhase = RenderPhase.Opaque;
-            ExecutePass(opaquePass);
-            ExecutePass(opaqueOutlinePass);
+            // Camera Setup & Prepass
+            EnqueuePass(setupPass);
+            EnqueuePass(depthStencilPrePass);
 
-            // Phase: Skybox
-            RenderPhase = RenderPhase.Skybox;
-            ExecutePass(skyboxPass);
+            // Opaque Geometry
+            EnqueuePass(opaquePass);
 
-            // Phase: Transparent
-            RenderPhase = RenderPhase.Transparent;
-            ExecutePass(transparentPass);
+            // Skybox
+            EnqueuePass(skyboxPass);
 
-            // Phase: Unsupported
-            RenderPhase = RenderPhase.Unsupported;
-            ExecutePass(unsupportedPass);
+            // Transparent Geometry
+            EnqueuePass(transparentPass);
 
-            // Phase: PostProcessing
-            RenderPhase = RenderPhase.PostProcessing;
-            if (true)
-            {
-                ExecutePass(postProcessPass);
-            }
-            else
-            {
-                ExecutePass(postFXPass);
-            }
+            // Unsupported Shaders
+            EnqueuePass(unsupportedPass);
 
-            // Phase: BackBuffer
-            RenderPhase = RenderPhase.BackBuffer;
-            ExecutePass(copyFinalPass);
+            // Post Processing
+            EnqueuePass(postProcessPass);
+            // EnqueuePass(postFXPass);
 
+            // Final Blit to Back Buffer
+            EnqueuePass(copyFinalPass);
+
+            // Conditional: Debug overlay
             if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
             {
-                ExecutePass(debugPass);
+                EnqueuePass(debugPass);
             }
+
+            // Conditional: Editor Gizmos
 #if UNITY_EDITOR
             if (Handles.ShouldRenderGizmos())
             {
-                ExecutePass(gizmosPass);
+                EnqueuePass(gizmosPass);
             }
 #endif
-
-            Context.Submit();
         }
 
-        private void ExecutePass(RenderPassBase pass)
+        /// <summary>
+        /// Execute all enqueued passes following URP-aligned lifecycle:
+        /// Configuration Phase: Initialize → SetupResource → SetupRendererList (all passes)
+        /// Execution Phase: Execute (each pass in order)
+        /// Cleanup Phase: CleanupResource (all passes)
+        /// </summary>
+        private void ExecutePassQueue()
         {
-            pass.Setup(Resources, this);
-            pass.PrepareRendererLists(Context);
+            // ─── Configuration Phase ───
+            // All passes complete configuration before any execution begins.
+            // This means SetupResource cannot depend on another pass's Execute result.
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                activePassQueue[i].Initialize(Resources, this);
+            }
 
-            // Each pass gets its own named CommandBuffer from the pool.
-            // The cmd name automatically creates profiling events on
-            // ExecuteCommandBuffer, avoiding BeginSample/EndSample mismatch
-            // when passes flush the buffer internally.
-            var cmd = CommandBufferPool.Get(pass.Name);
-            pass.Execute(cmd, Context);
-            Context.ExecuteCommandBuffer(cmd);
-            cmd.Clear();
-            CommandBufferPool.Release(cmd);
+            var setupCmd = CommandBufferPool.Get("Setup Resources");
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                activePassQueue[i].SetupResource(setupCmd);
+            }
+            Context.ExecuteCommandBuffer(setupCmd);
+            setupCmd.Clear();
+            CommandBufferPool.Release(setupCmd);
+
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                activePassQueue[i].SetupRendererList(Context);
+            }
+
+            // ─── Execution Phase ───
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                var cmd = CommandBufferPool.Get(activePassQueue[i].Name);
+                activePassQueue[i].Execute(cmd, Context);
+                Context.ExecuteCommandBuffer(cmd);
+                cmd.Clear();
+                CommandBufferPool.Release(cmd);
+            }
+
+            // ─── Cleanup Phase ───
+            var cleanupCmd = CommandBufferPool.Get("Cleanup Resources");
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                activePassQueue[i].CleanupResource(cleanupCmd);
+            }
+            Context.ExecuteCommandBuffer(cleanupCmd);
+            cleanupCmd.Clear();
+            CommandBufferPool.Release(cleanupCmd);
+
+            Context.Submit();
         }
 
         private bool GetCullingResults(ScriptableRenderContext context, float maxShadowDistance)

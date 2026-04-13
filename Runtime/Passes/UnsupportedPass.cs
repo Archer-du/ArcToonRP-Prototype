@@ -20,7 +20,7 @@ namespace ArcToon.Passes
 
         RendererList list;
 
-        public override void PrepareRendererLists(ScriptableRenderContext context)
+        public override void SetupRendererList(ScriptableRenderContext context)
         {
 #if UNITY_EDITOR
             list = context.CreateRendererList(new RendererListDesc(invalidShaderTagIds, renderer.CullingResults, Camera)
