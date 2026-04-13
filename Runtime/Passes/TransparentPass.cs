@@ -12,8 +12,8 @@ namespace ArcToon.Passes
         public override string Name => "Transparent";
 
         #region Ordered
-        RendererList frontFaceList;
-        RendererList backFaceList;
+        private RendererList frontFaceList;
+        private RendererList backFaceList;
         #endregion
 
         #region Weighted Average

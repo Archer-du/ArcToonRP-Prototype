@@ -1,3 +1,5 @@
+using System;
+using ArcToon.Passes.Legacy;
 using ArcToon.Settings;
 using UnityEditor;
 using UnityEngine;
@@ -300,7 +302,7 @@ namespace ArcToon.Editor.Overrides
             EditorGUILayout.EndVertical();
         }
 
-        private static void DrawShadowSubSection(string title, System.Action drawContent)
+        private static void DrawShadowSubSection(string title, Action drawContent)
         {
             EditorGUILayout.BeginVertical(EditorGUILayoutUtils.GUIComponentBoxStyle);
             EditorGUILayout.LabelField(title, EditorStyles.boldLabel);

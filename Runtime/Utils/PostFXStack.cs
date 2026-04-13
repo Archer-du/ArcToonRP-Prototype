@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon
+namespace ArcToon.Utils
 {
     public class PostFXStack
     {

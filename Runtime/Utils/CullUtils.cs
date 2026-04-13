@@ -13,7 +13,7 @@ using quaternion = Unity.Mathematics.quaternion;
 namespace ArcToon.Utils
 {
     [BurstCompile]
-    public static class CullUtilities
+    public static class CullUtils
     {
         public const int FrustumCornerCount = 8;
         public const int FrustumTriangleCount = 12;

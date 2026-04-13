@@ -1,4 +1,5 @@
-﻿using UnityEngine.Rendering;
+﻿using ArcToon.Utils;
+using UnityEngine.Rendering;
 
 namespace ArcToon.Passes
 {

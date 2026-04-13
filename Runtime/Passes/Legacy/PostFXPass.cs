@@ -1,8 +1,7 @@
-﻿using ArcToon.Passes.PostProcessing;
-using ArcToon.Settings;
+﻿using ArcToon.Utils;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Passes
+namespace ArcToon.Passes.Legacy
 {
     public class PostFXPass : RenderPassBase
     {

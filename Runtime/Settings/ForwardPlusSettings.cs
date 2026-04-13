@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace ArcToon.Settings
 {
-    [System.Serializable]
+    [Serializable]
     public class ForwardPlusSettings
     {
         public enum TileSize

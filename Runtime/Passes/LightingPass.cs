@@ -3,6 +3,7 @@ using ArcToon.Data;
 using ArcToon.Jobs;
 using ArcToon.Passes.Lighting;
 using ArcToon.Settings;
+using ArcToon.System;
 using ArcToon.Utils;
 using Unity.Collections;
 using Unity.Jobs;

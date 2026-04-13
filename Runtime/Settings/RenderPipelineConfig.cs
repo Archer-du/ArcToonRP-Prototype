@@ -1,9 +1,11 @@
-﻿using ArcToon.Passes.PostProcessing;
+﻿using System;
+using ArcToon.Passes.Legacy;
+using ArcToon.Passes.PostProcessing;
 using UnityEngine.Serialization;
 
 namespace ArcToon.Settings
 {
-    [System.Serializable]
+    [Serializable]
     public class RenderPipelineConfig
     {
         public bool useSRPBatcher = true;

@@ -3,7 +3,7 @@ using ArcToon.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Utils
 {
     /// <summary>
     /// Static utility for full-screen post-processing draw calls.

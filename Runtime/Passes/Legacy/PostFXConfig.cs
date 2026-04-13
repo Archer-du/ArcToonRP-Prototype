@@ -3,7 +3,7 @@ using ArcToon.Utils;
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Settings
+namespace ArcToon.Passes.Legacy
 {
     [CreateAssetMenu(menuName = "Rendering/ArcToon Post FX Settings")]
     public class PostFXConfig : ScriptableObject

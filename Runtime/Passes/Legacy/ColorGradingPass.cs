@@ -1,11 +1,12 @@
 ﻿using ArcToon.Data;
 using ArcToon.Settings;
+using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
-using static ArcToon.Settings.PostFXConfig;
-using static ArcToon.PostFXStack;
+using static ArcToon.Passes.Legacy.PostFXConfig;
+using static ArcToon.Utils.PostFXStack;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Passes.Legacy
 {
     public class ColorGradingPass
     {

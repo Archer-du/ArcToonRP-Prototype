@@ -1,9 +1,13 @@
 ﻿using ArcToon.Behavior;
 using ArcToon.Data;
 using ArcToon.Passes;
+using ArcToon.Passes.Legacy;
 using ArcToon.Passes.Lighting;
 using ArcToon.Passes.PostProcessing;
 using ArcToon.Settings;
+using ArcToon.System;
+using ArcToon.Utils;
+using ArcToon.Utils.Extensions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -40,12 +44,6 @@ namespace ArcToon
         
         internal RenderResources Resources { get; private set; }
 
-        #region Legacy
-        
-        internal PostFXConfig PostFXConfig { private set; get; }
-        
-        #endregion
-
         #region Pass Instances
 
         private readonly LightingPass lightingPass = new();
@@ -57,7 +55,6 @@ namespace ArcToon
         private readonly TransparentPass transparentPass = new();
         private readonly GeometryOutlinePass transparentOutlinePass = new();
         private readonly UnsupportedPass unsupportedPass = new();
-        private readonly PostFXPass postFXPass = new();
         private readonly PostProcessPass postProcessPass = new();
         private readonly DebugPass debugPass = new();
         private readonly GizmosPass gizmosPass = new();
@@ -65,6 +62,13 @@ namespace ArcToon
 
         #endregion
 
+        #region Legacy
+        
+        internal PostFXConfig PostFXConfig { private set; get; }
+        private readonly PostFXPass postFXPass = new();
+        
+        #endregion
+        
         public CameraRenderer()
         {
             Resources = new RenderResources();
@@ -118,6 +122,11 @@ namespace ArcToon
             {
                 PostProcessConfig = CameraAdditiveData.overridePostProcessConfig;
             }
+            
+            RenderScale = CameraAdditiveData.GetRenderScale(BufferSettings.renderScale);
+            AttachmentSize = RenderCamera.GetAttachmentSize(RenderScale);
+                        
+            useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
 
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
@@ -130,12 +139,8 @@ namespace ArcToon
             {
                 return false;
             }
-            
-            RenderScale = CameraAdditiveData.GetRenderScale(BufferSettings.renderScale);
-            AttachmentSize = GetCameraBufferSize(RenderCamera, RenderScale);
-                        
-            useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
 
+            // TODO: refactor
             // Allocate / resize persistent resources
             Resources.AllocateCameraResources(AttachmentSize.x, AttachmentSize.y, useHDR);
             Resources.AllocateShadowResources(ShadowSettings);
@@ -219,31 +224,6 @@ namespace ArcToon
             CommandBufferPool.Release(cmd);
         }
 
-        private Vector2Int GetCameraBufferSize(Camera camera, float renderScale)
-        {
-            renderScale = Mathf.Clamp(renderScale, CameraAdditiveData.renderScaleMin, CameraAdditiveData.renderScaleMax);
-            bool useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
-#if UNITY_EDITOR
-            if (camera.cameraType == CameraType.SceneView)
-            {
-                useScaledRendering = false;
-            }
-#endif
-            Vector2Int bufferSize = default;
-            if (useScaledRendering)
-            {
-                bufferSize.x = (int)(camera.pixelWidth * renderScale);
-                bufferSize.y = (int)(camera.pixelHeight * renderScale);
-            }
-            else
-            {
-                bufferSize.x = camera.pixelWidth;
-                bufferSize.y = camera.pixelHeight;
-            }
-
-            return bufferSize;
-        }
-
         private bool GetCullingResults(ScriptableRenderContext context, float maxShadowDistance)
         {
             if (!RenderCamera.TryGetCullingParameters(out ScriptableCullingParameters scriptableCullingParameters))
@@ -253,6 +233,7 @@ namespace ArcToon
 
             scriptableCullingParameters.shadowDistance = Mathf.Min(maxShadowDistance, RenderCamera.farClipPlane);
             CullingResults = context.Cull(ref scriptableCullingParameters);
+            // TODO: move？
             PerObjectShadowCasterManager.Instance.Cull(RenderCamera);
             
             return true;

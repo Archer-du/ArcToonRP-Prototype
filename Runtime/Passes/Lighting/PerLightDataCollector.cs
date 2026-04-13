@@ -1,5 +1,7 @@
 ﻿using ArcToon.Behavior;
 using ArcToon.Settings;
+using ArcToon.System;
+using ArcToon.Utils;
 using ArcToon.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -31,7 +33,7 @@ namespace ArcToon.Passes.Lighting
         /// Returns the default shadowData Vector4 for lights with no shadow (strength = 0).
         /// </summary>
         private static Vector4 NoShadowData =>
-            new Vector4(0f, BitPackingExtensions.Pack2x16(0, 0), 0f, 0f);
+            new Vector4(0f, BitPackingUtils.Pack2x16(0, 0), 0f, 0f);
 
         public struct ShadowMapDataDirectional
         {
@@ -112,7 +114,7 @@ namespace ArcToon.Passes.Lighting
                     // a trick to only sample baked shadow
                     return new Vector4(
                         -light.shadowStrength,
-                        BitPackingExtensions.Pack2x16(0, maskChannel + 1),
+                        BitPackingUtils.Pack2x16(0, maskChannel + 1),
                         0f, 0f
                     );
                 }
@@ -128,7 +130,7 @@ namespace ArcToon.Passes.Lighting
                     };
                 return new Vector4(
                     light.shadowStrength,
-                    BitPackingExtensions.Pack2x16(shadowedDirectionalLightIndex, maskChannel + 1),
+                    BitPackingUtils.Pack2x16(shadowedDirectionalLightIndex, maskChannel + 1),
                     light.shadowNormalBias, GetLightSize(light)
                 );
             }
@@ -167,7 +169,7 @@ namespace ArcToon.Passes.Lighting
                 {
                     return new Vector4(
                         -light.shadowStrength,
-                        BitPackingExtensions.Pack2x16(0, maskChannel + 1),
+                        BitPackingUtils.Pack2x16(0, maskChannel + 1),
                         0f, 0f
                     );
                 }
@@ -182,7 +184,7 @@ namespace ArcToon.Passes.Lighting
                 };
                 return new Vector4(
                     light.shadowStrength,
-                    BitPackingExtensions.Pack2x16(shadowedSpotLightIndex, maskChannel + 1),
+                    BitPackingUtils.Pack2x16(shadowedSpotLightIndex, maskChannel + 1),
                     light.shadowNormalBias, GetLightSize(light)
                 );
             }
@@ -209,7 +211,7 @@ namespace ArcToon.Passes.Lighting
                 {
                     return new Vector4(
                         -light.shadowStrength,
-                        BitPackingExtensions.Pack2x16(0, maskChannel + 1),
+                        BitPackingUtils.Pack2x16(0, maskChannel + 1),
                         0f, 0f
                     );
                 }
@@ -224,7 +226,7 @@ namespace ArcToon.Passes.Lighting
                 };
                 return new Vector4(
                     light.shadowStrength,
-                    BitPackingExtensions.Pack2x16(shadowedPointLightIndex * 6, maskChannel + 1),
+                    BitPackingUtils.Pack2x16(shadowedPointLightIndex * 6, maskChannel + 1),
                     light.shadowNormalBias, GetLightSize(light)
                 );
             }

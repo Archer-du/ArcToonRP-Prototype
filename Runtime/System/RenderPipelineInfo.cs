@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Settings
+namespace ArcToon.System
 {
     public static class RenderPipelineInfo
     {

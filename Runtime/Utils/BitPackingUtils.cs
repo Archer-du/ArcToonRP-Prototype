@@ -1,13 +1,14 @@
 using System.Runtime.CompilerServices;
+using ArcToon.Utils.Extensions;
 
-namespace ArcToon.Utils.Extensions
+namespace ArcToon.Utils
 {
     /// <summary>
     /// Bit-level packing utilities for storing integers in float channels.
     /// All methods produce values that can be unpacked in HLSL via asuint().
     /// Paired HLSL functions are in ShaderLibrary/BitPacking.hlsl.
     /// </summary>
-    public static class BitPackingExtensions
+    public static class BitPackingUtils
     {
         // ========================================================
         //  Core: write / read arbitrary bit fields within a uint

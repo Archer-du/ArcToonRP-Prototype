@@ -22,8 +22,8 @@ namespace ArcToon.Utils.Extensions
             PerObjectShadowCaster caster = manager.visibleCasters[visibleCasterIndex];
             caster.GetWorldBounds(out Bounds bounds);
             VisibleLight directionalLight = cullingResults.visibleLights[visibleLightIndex];
-            float4* frustumCorners = stackalloc float4[CullUtilities.FrustumCornerCount];
-            CullUtilities.SetFrustumEightCorners(frustumCorners, camera);
+            float4* frustumCorners = stackalloc float4[CullUtils.FrustumCornerCount];
+            CullUtils.SetFrustumEightCorners(frustumCorners, camera);
             PerObjectShadowCullingParams param = new PerObjectShadowCullingParams()
             {
                 frustumCorners = frustumCorners,
@@ -33,7 +33,7 @@ namespace ArcToon.Utils.Extensions
                 AABBMax = bounds.max,
                 CasterUpVector = caster.transform.up,
             };
-            bool result = CullUtilities.ComputePerObjectShadowMatricesAndCullingPrimitives(param,
+            bool result = CullUtils.ComputePerObjectShadowMatricesAndCullingPrimitives(param,
                 out float4x4 lightViewMatrix, out float4x4 projectionMatrix, out width, out height);
             viewMatrix = UnsafeUtility.As<float4x4, Matrix4x4>(ref lightViewMatrix);
             projMatrix = UnsafeUtility.As<float4x4, Matrix4x4>(ref projectionMatrix);
