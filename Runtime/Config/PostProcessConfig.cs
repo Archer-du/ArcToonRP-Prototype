@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using ArcToon.Passes.PostProcessing;
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Config
 {
     /// <summary>
     /// Composable post-processing configuration.

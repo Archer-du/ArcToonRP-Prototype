@@ -1,4 +1,5 @@
 ﻿using System;
+using ArcToon.Config;
 using ArcToon.Passes.Legacy;
 using ArcToon.Passes.PostProcessing;
 using UnityEngine;

@@ -1,3 +1,4 @@
+using ArcToon.Config;
 using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;

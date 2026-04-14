@@ -2,6 +2,7 @@
 using ArcToon.Utils;
 using ArcToon.Utils.Extensions;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
@@ -18,13 +19,67 @@ namespace ArcToon.Passes
 
         #region Weighted Average
         private RendererList geometryList;
+        
+        private RTHandle accumulateRGBA;
+        private RTHandle revealage;
+        private RTHandle backgroundColor;
         #endregion
 
         #region Depth Peeling
-        private RendererList[] transparencyLists = new RendererList[TransparencyResources.DepthPeelingLayers];
+        public const int DepthPeelingLayers = 4;
+        
+        private RendererList[] transparencyLists = new RendererList[DepthPeelingLayers];
+        
+        private RTHandle opaqueColorBuffer;
+        private RTHandle compositeArray;
+        private RTHandle[] dualDepthBuffer = new RTHandle[2];
         #endregion
         
         RendererList outlineList;
+
+        public override void SetupResource(CommandBuffer cmd)
+        {
+            var colorFormat = SystemInfo.GetGraphicsFormat(
+                renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR);
+            int width = AttachmentSize.x;
+            int height = AttachmentSize.y;
+
+            // Weighted Average
+            RenderingUtils.ReAllocateIfNeeded(
+                ref accumulateRGBA, 
+                new RenderTextureDescriptor(width, height, colorFormat, 0), 
+                name: "Weighted Average Accumulate RGBA"
+            );
+            RenderingUtils.ReAllocateIfNeeded(
+                ref revealage, 
+                new RenderTextureDescriptor(width, height, GraphicsFormat.R16_UNorm, 0), 
+                name: "Weighted Average Revealage"
+            );
+            RenderingUtils.ReAllocateIfNeeded(
+                ref backgroundColor, 
+                new RenderTextureDescriptor(width, height, colorFormat, 0), 
+                name: "Weighted Average Background Color"
+            );
+
+            // Depth Peeling
+            RenderingUtils.ReAllocateIfNeeded(
+                ref compositeArray, 
+                new RenderTextureDescriptor(width, height, colorFormat, 0)
+                {
+                    dimension = TextureDimension.Tex2DArray,
+                    volumeDepth = 6,
+                }, 
+                name: "Depth Peeling Composite Array"
+            );
+            var dpDepthDesc = new RenderTextureDescriptor(width, height, GraphicsFormat.None, GraphicsFormat.D32_SFloat_S8_UInt);
+            RenderingUtils.ReAllocateIfNeeded(ref dualDepthBuffer[0], dpDepthDesc, name: "Depth Peeling Dual Depth Buffer 0");
+            RenderingUtils.ReAllocateIfNeeded(ref dualDepthBuffer[1], dpDepthDesc, name: "Depth Peeling Dual Depth Buffer 1");
+            RenderingUtils.ReAllocateIfNeeded(
+                ref opaqueColorBuffer, 
+                new RenderTextureDescriptor(width, height, colorFormat, 0), 
+                name: "Depth Peeling Opaque Color Buffer"
+            );
+        }
 
         public override void SetupRendererList(ScriptableRenderContext context)
         {
@@ -65,7 +120,7 @@ namespace ArcToon.Passes
                                         PerObjectData.ReflectionProbes,
             });
             
-            for (int i = 0; i < TransparencyResources.DepthPeelingLayers; i++)
+            for (int i = 0; i < DepthPeelingLayers; i++)
             {
                 transparencyLists[i] = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardDepthPeeling, renderer.CullingResults, Camera)
                 {
@@ -91,16 +146,16 @@ namespace ArcToon.Passes
             // Weighted average
             {
                 commandBuffer.SetRenderTarget(
-                    new RenderTargetIdentifier[]{ resources.Transparency.waAccumulateRGBA, resources.Transparency.waRevealage, }, 
+                    new RenderTargetIdentifier[]{ accumulateRGBA, revealage, }, 
                     resources.Camera.depthAttachment);
                 commandBuffer.ClearRenderTarget(RTClearFlags.Color, 
                     new[]{ Color.clear, Color.white, });
                 commandBuffer.DrawRendererList(geometryList);
                 
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateRGBA, resources.Transparency.waAccumulateRGBA);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, resources.Transparency.waRevealage);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, resources.Transparency.waBackgroundColor);
-                RenderTextureHelpers.CopyTexture(commandBuffer, resources.Camera.colorAttachment, resources.Transparency.waBackgroundColor, RenderTextureHelpers.BlitMode.Color);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateRGBA, accumulateRGBA);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, revealage);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, backgroundColor);
+                RenderTextureHelpers.CopyTexture(commandBuffer, resources.Camera.colorAttachment, backgroundColor, RenderTextureHelpers.BlitMode.Color);
                 
                 commandBuffer.SetRenderTarget(
                     resources.Camera.colorAttachment,
@@ -116,17 +171,17 @@ namespace ArcToon.Passes
             // Depth peeling
             {
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueDepthBuffer, resources.Camera.depthAttachment);
-                for (int i = 0; i < TransparencyResources.DepthPeelingLayers; i++)
+                for (int i = 0; i < DepthPeelingLayers; i++)
                 {
-                    commandBuffer.SetRenderTarget(resources.Transparency.dpCompositeArray, resources.Transparency.dpDualDepthBuffer[i % 2], 0, CubemapFace.Unknown, i);
+                    commandBuffer.SetRenderTarget(compositeArray, dualDepthBuffer[i % 2], 0, CubemapFace.Unknown, i);
                     commandBuffer.ClearRenderTarget(true, true, Color.clear);
                     commandBuffer.SetGlobalInteger(InternalShader.PropertyID.PeelingLayerIndex, i);
-                    commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DualDepthBufferRef, resources.Transparency.dpDualDepthBuffer[(i + 1) % 2]);
+                    commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DualDepthBufferRef, dualDepthBuffer[(i + 1) % 2]);
                     commandBuffer.DrawRendererList(transparencyLists[i]);
                 }
-                RenderTextureHelpers.CopyTexture(commandBuffer, resources.Camera.colorAttachment, resources.Transparency.dpOpaqueColorBuffer, RenderTextureHelpers.BlitMode.Color);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueColorBuffer, resources.Transparency.dpOpaqueColorBuffer);
-                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DepthPeelingClips, resources.Transparency.dpCompositeArray);
+                RenderTextureHelpers.CopyTexture(commandBuffer, resources.Camera.colorAttachment, opaqueColorBuffer, RenderTextureHelpers.BlitMode.Color);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueColorBuffer, opaqueColorBuffer);
+                commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DepthPeelingClips, compositeArray);
                 commandBuffer.SetRenderTarget(
                     resources.Camera.colorAttachment,
                     RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
@@ -142,6 +197,17 @@ namespace ArcToon.Passes
             commandBuffer.BeginSample("Toon Outline");
             commandBuffer.DrawRendererList(outlineList);
             commandBuffer.EndSample("Toon Outline");
+        }
+
+        public override void Dispose()
+        {
+            accumulateRGBA?.Release();
+            revealage?.Release();
+            backgroundColor?.Release();
+            opaqueColorBuffer?.Release();
+            compositeArray?.Release();
+            dualDepthBuffer[0]?.Release();
+            dualDepthBuffer[1]?.Release();
         }
     }
 }

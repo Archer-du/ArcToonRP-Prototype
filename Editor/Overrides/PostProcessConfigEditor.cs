@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ArcToon.Config;
 using ArcToon.Passes.PostProcessing;
 using UnityEditor;
 using UnityEngine;

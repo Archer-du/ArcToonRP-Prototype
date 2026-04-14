@@ -1,11 +1,12 @@
 using System.Collections.Generic;
-using ArcToon.Data;
+using ArcToon.Config;
+using ArcToon.Passes.PostProcessing;
 using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Passes
 {
     /// <summary>
     /// Post-processing dispatcher with Ping-Pong double buffering.

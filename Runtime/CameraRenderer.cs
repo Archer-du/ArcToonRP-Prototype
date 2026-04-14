@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ArcToon.Behavior;
+using ArcToon.Config;
 using ArcToon.Data;
 using ArcToon.Passes;
 using ArcToon.Passes.Legacy;
@@ -50,16 +51,8 @@ namespace ArcToon
 
         #endregion
 
-        #region Pass Queue
-
         private readonly List<RenderPassBase> activePassQueue = new();
 
-        private void EnqueuePass(RenderPassBase pass)
-        {
-            activePassQueue.Add(pass);
-        }
-
-        #endregion
 
         #region Legacy
         
@@ -93,6 +86,11 @@ namespace ArcToon
             postFXPass.Dispose();
             
             CameraDebugger.Cleanup();
+        }
+
+        private void EnqueuePass(RenderPassBase pass)
+        {
+            activePassQueue.Add(pass);
         }
 
         public void Render(ScriptableRenderContext context, Camera camera,
@@ -159,7 +157,6 @@ namespace ArcToon
             Resources.AllocateCameraResources(AttachmentSize.x, AttachmentSize.y, useHDR);
             Resources.AllocateShadowResources(ShadowSettings);
             Resources.AllocateLightingResources();
-            Resources.AllocateTransparencyResources(AttachmentSize.x, AttachmentSize.y, useHDR);
             Resources.AllocatePostFXResources(AttachmentSize.x, AttachmentSize.y, useHDR);
 
             return true;
@@ -173,39 +170,31 @@ namespace ArcToon
         {
             activePassQueue.Clear();
 
-            // Lighting & Shadow
+            // Lighting
             EnqueuePass(lightingPass);
 
-            // Camera Setup & Prepass
+            // Setup
             EnqueuePass(setupPass);
             EnqueuePass(depthStencilPrePass);
 
-            // Opaque Geometry
+            // Geometry
             EnqueuePass(opaquePass);
-
-            // Skybox
             EnqueuePass(skyboxPass);
-
-            // Transparent Geometry
             EnqueuePass(transparentPass);
-
-            // Unsupported Shaders
             EnqueuePass(unsupportedPass);
 
             // Post Processing
             EnqueuePass(postProcessPass);
             // EnqueuePass(postFXPass);
 
-            // Final Blit to Back Buffer
+            // Back Buffer
             EnqueuePass(copyFinalPass);
 
-            // Conditional: Debug overlay
+            // Editor
             if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
             {
                 EnqueuePass(debugPass);
             }
-
-            // Conditional: Editor Gizmos
 #if UNITY_EDITOR
             if (Handles.ShouldRenderGizmos())
             {
@@ -223,8 +212,6 @@ namespace ArcToon
         private void ExecutePassQueue()
         {
             // ─── Configuration Phase ───
-            // All passes complete configuration before any execution begins.
-            // This means SetupResource cannot depend on another pass's Execute result.
             for (int i = 0; i < activePassQueue.Count; i++)
             {
                 activePassQueue[i].Initialize(Resources, this);
