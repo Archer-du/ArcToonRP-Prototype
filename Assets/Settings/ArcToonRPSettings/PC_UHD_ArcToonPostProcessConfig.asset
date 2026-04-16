@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: PC_UHD_ArcToonPostProcessConfig
   m_EditorClassIdentifier: 
   settings:
-  - rid: 115054217003270246
-  - rid: 115054217003270247
-  - rid: 115054217003270248
+  - rid: 115054305801404566
+  - rid: 115054305801404567
+  - rid: 115054305801404568
   references:
     version: 2
     RefIds:
-    - rid: 115054217003270246
-      type: {class: BloomVolumeConfig, ns: ArcToon.Passes.PostProcessing, asm: ArcToon.Runtime}
+    - rid: 115054305801404566
+      type: {class: BloomVolumeConfig, ns: ArcToon.Passes.PostProcessing.Processors, asm: ArcToon.Runtime}
       data:
         enabled: 1
         mode: 1
@@ -33,8 +33,8 @@ MonoBehaviour:
         intensity: 1
         fadeFireflies: 1
         bicubicUpsampling: 1
-    - rid: 115054217003270247
-      type: {class: ColorGradingVolumeConfig, ns: ArcToon.Passes.PostProcessing, asm: ArcToon.Runtime}
+    - rid: 115054305801404567
+      type: {class: ColorGradingVolumeConfig, ns: ArcToon.Passes.PostProcessing.Processors, asm: ArcToon.Runtime}
       data:
         enabled: 1
         postExposure: 0
@@ -59,8 +59,8 @@ MonoBehaviour:
         smhHighlightsEnd: 1
         toneMapping: 2
         colorLUTResolution: 64
-    - rid: 115054217003270248
-      type: {class: FXAAVolumeConfig, ns: ArcToon.Passes.PostProcessing, asm: ArcToon.Runtime}
+    - rid: 115054305801404568
+      type: {class: FXAAVolumeConfig, ns: ArcToon.Passes.PostProcessing.Processors, asm: ArcToon.Runtime}
       data:
         enabled: 1
         fixedThreshold: 0.0338

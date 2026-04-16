@@ -24,7 +24,7 @@ MonoBehaviour:
         relativeThreshold: 0.084
         subpixelBlending: 1
         quality: 2
-    globalShadowSettings:
+    shadowSettings:
       directionalCascadeShadow:
         atlasSize: 4096
         blendMode: 0
