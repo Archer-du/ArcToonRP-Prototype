@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing.Processors
 {
     /// <summary>
     /// Volume config for the Bloom post-processing effect.
@@ -37,5 +37,7 @@ namespace ArcToon.Passes.PostProcessing
         public bool fadeFireflies = true;
 
         public bool bicubicUpsampling = true;
+
+        protected override PostProcessor CreateProcessor() => new BloomProcessor(this);
     }
 }

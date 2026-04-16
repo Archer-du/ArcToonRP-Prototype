@@ -1,20 +1,18 @@
-using ArcToon.Config;
 using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing.Processors
 {
     /// <summary>
     /// Bloom post-processor.
     /// Ported from the old BloomPass — rendering logic is identical.
     /// All intermediate RTs (prefilter, pyramid) are privately owned.
     /// </summary>
-    public class BloomProcessor : PostProcessor
+    public class BloomProcessor : VolumePostProcessor<BloomVolumeConfig>
     {
-        public override string Name => "Bloom";
-        public override int Order => 100;
+        public BloomProcessor(BloomVolumeConfig config) : base(config) { }
 
         // ---- Internal resources (self-owned) ----
         private const int MaxPyramidLevels = 16;
@@ -22,7 +20,6 @@ namespace ArcToon.Passes.PostProcessing
         private RTHandle[] pyramid = new RTHandle[2 * MaxPyramidLevels];
 
         // ---- Cached state per frame ----
-        private BloomVolumeConfig settings;
         private Material material;
         private int stepCount;
         private bool useHDR;
@@ -35,24 +32,22 @@ namespace ArcToon.Passes.PostProcessing
         private static readonly int bloomScaleID = Shader.PropertyToID("_BloomScale");
         private static readonly int bloomScatterID = Shader.PropertyToID("_BloomScatter");
 
-        public override bool IsActive(PostProcessConfig config, CameraRenderer renderer)
+        public override bool IsActive(CameraRenderer renderer)
         {
-            var s = config.GetVolumeConfig<BloomVolumeConfig>();
-            if (s == null || !s.enabled) return false;
+            if (!volumeConfig.enabled) return false;
 
-            Vector2Int bufferSize = s.ignoreRenderScale
+            Vector2Int bufferSize = volumeConfig.ignoreRenderScale
                 ? new Vector2Int(renderer.RenderCamera.pixelWidth, renderer.RenderCamera.pixelHeight)
                 : renderer.AttachmentSize;
 
-            return s.maxIterations > 0
-                && s.intensity > 0f
-                && bufferSize.y >= s.downscaleLimit * 4
-                && bufferSize.x >= s.downscaleLimit * 4;
+            return volumeConfig.maxIterations > 0
+                && volumeConfig.intensity > 0f
+                && bufferSize.y >= volumeConfig.downscaleLimit * 4
+                && bufferSize.x >= volumeConfig.downscaleLimit * 4;
         }
 
-        public override void Setup(PostProcessConfig config, CameraRenderer renderer)
+        public override void Setup(CameraRenderer renderer)
         {
-            settings = config.GetVolumeConfig<BloomVolumeConfig>();
             // Use explicit Unity null check — ??= won't catch destroyed-but-not-null objects
             if (material == null)
                 material = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
@@ -60,7 +55,7 @@ namespace ArcToon.Passes.PostProcessing
             attachmentSize = renderer.AttachmentSize;
 
             // Compute buffer size (may differ from attachmentSize if ignoreRenderScale)
-            Vector2Int bufferSize = settings.ignoreRenderScale
+            Vector2Int bufferSize = volumeConfig.ignoreRenderScale
                 ? new Vector2Int(renderer.RenderCamera.pixelWidth, renderer.RenderCamera.pixelHeight)
                 : attachmentSize;
 
@@ -77,9 +72,9 @@ namespace ArcToon.Passes.PostProcessing
             bufferSize /= 2;
             int pyramidIndex = 0;
             int i;
-            for (i = 0; i < settings.maxIterations; i++, pyramidIndex += 2)
+            for (i = 0; i < volumeConfig.maxIterations; i++, pyramidIndex += 2)
             {
-                if (bufferSize.y < settings.downscaleLimit || bufferSize.x < settings.downscaleLimit)
+                if (bufferSize.y < volumeConfig.downscaleLimit || bufferSize.x < volumeConfig.downscaleLimit)
                 {
                     break;
                 }
@@ -96,10 +91,10 @@ namespace ArcToon.Passes.PostProcessing
         public override void Render(CommandBuffer cmd, RTHandle source, RTHandle destination)
         {
             // ---- Prefilter ----
-            cmd.SetGlobalVector(bloomThresholdID, GetKneeCurveData(settings));
+            cmd.SetGlobalVector(bloomThresholdID, GetKneeCurveData(volumeConfig));
 
             PostFXUtility.Draw(cmd, source, prefilter, material,
-                settings.fadeFireflies
+                volumeConfig.fadeFireflies
                     ? (int)PostFXStack.Pass.BloomPrefilterFireflies
                     : (int)PostFXStack.Pass.BloomPrefilter);
 
@@ -120,21 +115,21 @@ namespace ArcToon.Passes.PostProcessing
             }
 
             // ---- Upsample ----
-            cmd.SetGlobalFloat(bloomBicubicUpsamplingID, settings.bicubicUpsampling ? 1f : 0f);
+            cmd.SetGlobalFloat(bloomBicubicUpsamplingID, volumeConfig.bicubicUpsampling ? 1f : 0f);
             int combinePass, finalPass;
             float finalScale;
-            if (settings.mode == BloomVolumeConfig.Mode.Additive)
+            if (volumeConfig.mode == BloomVolumeConfig.Mode.Additive)
             {
                 combinePass = (int)PostFXStack.Pass.BloomAdditive;
                 finalPass = (int)PostFXStack.Pass.BloomAdditiveFinal;
-                finalScale = settings.intensity;
+                finalScale = volumeConfig.intensity;
             }
             else
             {
                 combinePass = (int)PostFXStack.Pass.BloomScatter;
                 finalPass = (int)PostFXStack.Pass.BloomScatterFinal;
-                cmd.SetGlobalFloat(bloomScatterID, settings.scatter);
-                finalScale = settings.scatter;
+                cmd.SetGlobalFloat(bloomScatterID, volumeConfig.scatter);
+                finalScale = volumeConfig.scatter;
             }
 
             dstPyramidIndex -= 5;

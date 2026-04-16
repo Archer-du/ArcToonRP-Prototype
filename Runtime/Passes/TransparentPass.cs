@@ -37,7 +37,7 @@ namespace ArcToon.Passes
         
         RendererList outlineList;
 
-        public override void SetupResource(CommandBuffer cmd)
+        public override void SetupFrameData(CommandBuffer cmd)
         {
             var colorFormat = SystemInfo.GetGraphicsFormat(
                 renderer.useHDR ? DefaultFormat.HDR : DefaultFormat.LDR);
@@ -155,7 +155,7 @@ namespace ArcToon.Passes
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateRGBA, accumulateRGBA);
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.AccumulateComplexity, revealage);
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.BackGroundColor, backgroundColor);
-                RenderTextureHelpers.CopyTexture(commandBuffer, resources.Camera.colorAttachment, backgroundColor, RenderTextureHelpers.BlitMode.Color);
+                BlitUtils.CopyTexture(commandBuffer, resources.Camera.colorAttachment, backgroundColor, BlitUtils.BlitMode.Color);
                 
                 commandBuffer.SetRenderTarget(
                     resources.Camera.colorAttachment,
@@ -179,7 +179,7 @@ namespace ArcToon.Passes
                     commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DualDepthBufferRef, dualDepthBuffer[(i + 1) % 2]);
                     commandBuffer.DrawRendererList(transparencyLists[i]);
                 }
-                RenderTextureHelpers.CopyTexture(commandBuffer, resources.Camera.colorAttachment, opaqueColorBuffer, RenderTextureHelpers.BlitMode.Color);
+                BlitUtils.CopyTexture(commandBuffer, resources.Camera.colorAttachment, opaqueColorBuffer, BlitUtils.BlitMode.Color);
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.OpaqueColorBuffer, opaqueColorBuffer);
                 commandBuffer.SetGlobalTexture(InternalShader.PropertyID.DepthPeelingClips, compositeArray);
                 commandBuffer.SetRenderTarget(

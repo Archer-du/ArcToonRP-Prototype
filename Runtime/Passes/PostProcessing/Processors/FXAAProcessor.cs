@@ -1,21 +1,18 @@
-using ArcToon.Config;
 using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing.Processors
 {
     /// <summary>
     /// FXAA anti-aliasing post-processor.
     /// Ported from the old AntiAliasingPass — rendering logic is identical.
     /// </summary>
-    public class FXAAProcessor : PostProcessor
+    public class FXAAProcessor : VolumePostProcessor<FXAAVolumeConfig>
     {
-        public override string Name => "FXAA";
-        public override int Order => 900;
+        public FXAAProcessor(FXAAVolumeConfig config) : base(config) { }
 
         // ---- Cached state per frame ----
-    private FXAAVolumeConfig settings;
         private Material material;
         private bool keepAlpha;
 
@@ -25,15 +22,13 @@ namespace ArcToon.Passes.PostProcessing
         private static readonly GlobalKeyword fxaaQualityLowKeyword = GlobalKeyword.Create("FXAA_QUALITY_LOW");
         private static readonly GlobalKeyword fxaaQualityMediumKeyword = GlobalKeyword.Create("FXAA_QUALITY_MEDIUM");
 
-        public override bool IsActive(PostProcessConfig config, CameraRenderer renderer)
+        public override bool IsActive(CameraRenderer renderer)
         {
-        var s = config.GetVolumeConfig<FXAAVolumeConfig>();
-            return s != null && s.enabled && renderer.CameraAdditiveData.allowFXAA;
+            return volumeConfig.enabled && renderer.CameraAdditiveData.allowFXAA;
         }
 
-        public override void Setup(PostProcessConfig config, CameraRenderer renderer)
+        public override void Setup(CameraRenderer renderer)
         {
-        settings = config.GetVolumeConfig<FXAAVolumeConfig>();
             // Use explicit Unity null check — ??= won't catch destroyed-but-not-null objects
             if (material == null)
                 material = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
@@ -49,12 +44,12 @@ namespace ArcToon.Passes.PostProcessing
         private void ConfigureFXAA(CommandBuffer cmd)
         {
             // Quality keywords
-        if (settings.quality == FXAAVolumeConfig.Quality.Low)
+            if (volumeConfig.quality == FXAAVolumeConfig.Quality.Low)
             {
                 cmd.SetKeyword(fxaaQualityLowKeyword, true);
                 cmd.SetKeyword(fxaaQualityMediumKeyword, false);
             }
-        else if (settings.quality == FXAAVolumeConfig.Quality.Medium)
+            else if (volumeConfig.quality == FXAAVolumeConfig.Quality.Medium)
             {
                 cmd.SetKeyword(fxaaQualityLowKeyword, false);
                 cmd.SetKeyword(fxaaQualityMediumKeyword, true);
@@ -77,9 +72,9 @@ namespace ArcToon.Passes.PostProcessing
 
             // FXAA parameters
             cmd.SetGlobalVector(fxaaParamsID, new Vector4(
-                settings.fixedThreshold,
-                settings.relativeThreshold,
-                settings.subpixelBlending
+                volumeConfig.fixedThreshold,
+                volumeConfig.relativeThreshold,
+                volumeConfig.subpixelBlending
             ));
         }
     }

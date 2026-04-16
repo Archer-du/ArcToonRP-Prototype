@@ -50,7 +50,7 @@ namespace ArcToon.Passes
         /// Called after all passes have been initialized, before any Execute.
         /// Analogous to URP's OnCameraSetup.
         /// </summary>
-        public virtual void SetupResource(CommandBuffer cmd) { }
+        public virtual void SetupFrameData(CommandBuffer cmd) { }
 
         /// <summary>
         /// Create RendererLists and other per-frame resources.
@@ -68,7 +68,7 @@ namespace ArcToon.Passes
         /// Called after all passes have executed.
         /// Analogous to URP's OnCameraCleanup.
         /// </summary>
-        public virtual void CleanupResource(CommandBuffer cmd) { }
+        public virtual void CleanupFrameData(CommandBuffer cmd) { }
 
         /// <summary>
         /// Release persistent resources (RTHandles, Materials, Buffers).

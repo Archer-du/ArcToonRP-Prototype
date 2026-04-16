@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing.Processors
 {
     /// <summary>
     /// Volume config for the Color Grading post-processing effect.
@@ -65,5 +65,7 @@ namespace ArcToon.Passes.PostProcessing
         }
 
         public ColorLUTResolution colorLUTResolution = ColorLUTResolution._64;
+
+        protected override PostProcessor CreateProcessor() => new ColorGradingProcessor(this);
     }
 }

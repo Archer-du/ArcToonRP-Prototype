@@ -10,11 +10,11 @@ namespace ArcToon.Passes
         public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
 #if UNITY_EDITOR
-            RenderTextureHelpers.BlitTexture(commandBuffer, 
+            BlitUtils.BlitTexture(commandBuffer, 
                 resources.Camera.depthAttachment, 
                 BuiltinRenderTextureType.CameraTarget,
                 ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 
-                (int)RenderTextureHelpers.BlitMode.Depth);
+                (int)BlitUtils.BlitMode.Depth);
 
             context.ExecuteCommandBuffer(commandBuffer);
             commandBuffer.Clear();

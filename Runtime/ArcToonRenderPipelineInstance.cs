@@ -7,14 +7,11 @@ namespace ArcToon
 {
     public partial class ArcToonRenderPipelineInstance : RenderPipeline
     {
-        private readonly RenderPipelineConfig config;
-        
         private CameraRenderer cameraRenderer;
 
         public ArcToonRenderPipelineInstance(RenderPipelineConfig config)
         {
-            this.config = config;
-            cameraRenderer = new CameraRenderer();
+            cameraRenderer = new CameraRenderer(config);
             
             GraphicsSettings.useScriptableRenderPipelineBatching = config.useSRPBatcher;
             GraphicsSettings.lightsUseLinearIntensity = true;
@@ -26,7 +23,7 @@ namespace ArcToon
         {
             for (int i = 0; i < cameras.Count; i++)
             {
-                cameraRenderer.Render(renderContext, cameras[i], config);
+                cameraRenderer.Render(renderContext, cameras[i]);
             }
         }
 

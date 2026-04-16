@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing.Processors
 {
     /// <summary>
     /// Volume config for the FXAA anti-aliasing post-processing effect.
@@ -24,5 +24,7 @@ namespace ArcToon.Passes.PostProcessing
         public enum Quality { Low, Medium, High }
 
         public Quality quality = Quality.High;
+
+        protected override PostProcessor CreateProcessor() => new FXAAProcessor(this);
     }
 }

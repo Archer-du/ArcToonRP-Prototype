@@ -139,7 +139,7 @@ namespace ArcToon.Passes
 
         }
 
-        public override void CleanupResource(CommandBuffer cmd)
+        public override void CleanupFrameData(CommandBuffer cmd)
         {
             spotLightBounds.Dispose();
             pointLightBounds.Dispose();

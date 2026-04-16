@@ -1,26 +1,23 @@
-using ArcToon.Config;
 using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
-namespace ArcToon.Passes.PostProcessing
+namespace ArcToon.Passes.PostProcessing.Processors
 {
     /// <summary>
     /// Color Grading post-processor.
     /// Ported from the old ColorGradingPass — rendering logic is identical.
     /// The color LUT is privately owned.
     /// </summary>
-    public class ColorGradingProcessor : PostProcessor
+    public class ColorGradingProcessor : VolumePostProcessor<ColorGradingVolumeConfig>
     {
-        public override string Name => "Color Grading";
-        public override int Order => 200;
+        public ColorGradingProcessor(ColorGradingVolumeConfig config) : base(config) { }
 
         // ---- Internal resources (self-owned) ----
         private RTHandle colorLUT;
 
         // ---- Cached state per frame ----
-    private ColorGradingVolumeConfig settings;
         private Material material;
         private bool useHDR;
         private int colorLUTResolution;
@@ -47,20 +44,18 @@ namespace ArcToon.Passes.PostProcessing
         private static readonly int smhHighlightsID = Shader.PropertyToID("_SMHHighlights");
         private static readonly int smhRangeID = Shader.PropertyToID("_SMHRange");
 
-        public override bool IsActive(PostProcessConfig config, CameraRenderer renderer)
+        public override bool IsActive(CameraRenderer renderer)
         {
-        var s = config.GetVolumeConfig<ColorGradingVolumeConfig>();
-            return s != null && s.enabled;
+            return volumeConfig.enabled;
         }
 
-        public override void Setup(PostProcessConfig config, CameraRenderer renderer)
+        public override void Setup(CameraRenderer renderer)
         {
-        settings = config.GetVolumeConfig<ColorGradingVolumeConfig>();
             // Use explicit Unity null check — ??= won't catch destroyed-but-not-null objects
             if (material == null)
                 material = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
             useHDR = renderer.useHDR;
-            colorLUTResolution = (int)settings.colorLUTResolution;
+            colorLUTResolution = (int)volumeConfig.colorLUTResolution;
 
             // Allocate LUT
             int lutHeight = colorLUTResolution;
@@ -88,7 +83,7 @@ namespace ArcToon.Passes.PostProcessing
 
             // Determine tone mapping pass
             // PostFXStack.Pass enum: ColorGradingOnly=8, Reinhard=9, Neutral=10, ACES=11
-            int toneMappingPass = (int)PostFXStack.Pass.ColorGradingOnly + (int)settings.toneMapping;
+            int toneMappingPass = (int)PostFXStack.Pass.ColorGradingOnly + (int)volumeConfig.toneMapping;
             cmd.SetGlobalFloat(
                 colorGradingLUTInLogCID,
                 useHDR && toneMappingPass != (int)PostFXStack.Pass.ColorGradingOnly ? 1f : 0f
@@ -107,44 +102,44 @@ namespace ArcToon.Passes.PostProcessing
         private void ConfigureColorAdjustments(CommandBuffer cmd)
         {
             cmd.SetGlobalVector(colorAdjustmentDataID, new Vector4(
-                Mathf.Pow(2f, settings.postExposure),
-                settings.contrast * 0.01f + 1f,
-                settings.hueShift * (1f / 360f),
-                settings.saturation * 0.01f + 1f
+                Mathf.Pow(2f, volumeConfig.postExposure),
+                volumeConfig.contrast * 0.01f + 1f,
+                volumeConfig.hueShift * (1f / 360f),
+                volumeConfig.saturation * 0.01f + 1f
             ));
-            cmd.SetGlobalColor(colorFilterID, settings.colorFilter.linear);
+            cmd.SetGlobalColor(colorFilterID, volumeConfig.colorFilter.linear);
         }
 
         private void ConfigureWhiteBalance(CommandBuffer cmd)
         {
             cmd.SetGlobalVector(whiteBalanceID, ColorUtils.ColorBalanceToLMSCoeffs(
-                settings.temperature, settings.tint
+                volumeConfig.temperature, volumeConfig.tint
             ));
         }
 
         private void ConfigureSplitToning(CommandBuffer cmd)
         {
-            Color splitColor = settings.splitToningShadows;
-            splitColor.a = settings.splitToningBalance * 0.01f;
+            Color splitColor = volumeConfig.splitToningShadows;
+            splitColor.a = volumeConfig.splitToningBalance * 0.01f;
             cmd.SetGlobalColor(splitToningShadowsID, splitColor);
-            cmd.SetGlobalColor(splitToningHighlightsID, settings.splitToningHighlights);
+            cmd.SetGlobalColor(splitToningHighlightsID, volumeConfig.splitToningHighlights);
         }
 
         private void ConfigureChannelMixer(CommandBuffer cmd)
         {
-            cmd.SetGlobalVector(channelMixerRedID, settings.channelMixerRed);
-            cmd.SetGlobalVector(channelMixerGreenID, settings.channelMixerGreen);
-            cmd.SetGlobalVector(channelMixerBlueID, settings.channelMixerBlue);
+            cmd.SetGlobalVector(channelMixerRedID, volumeConfig.channelMixerRed);
+            cmd.SetGlobalVector(channelMixerGreenID, volumeConfig.channelMixerGreen);
+            cmd.SetGlobalVector(channelMixerBlueID, volumeConfig.channelMixerBlue);
         }
 
         private void ConfigureShadowsMidtonesHighlights(CommandBuffer cmd)
         {
-            cmd.SetGlobalColor(smhShadowsID, settings.smhShadows.linear);
-            cmd.SetGlobalColor(smhMidtonesID, settings.smhMidtones.linear);
-            cmd.SetGlobalColor(smhHighlightsID, settings.smhHighlights.linear);
+            cmd.SetGlobalColor(smhShadowsID, volumeConfig.smhShadows.linear);
+            cmd.SetGlobalColor(smhMidtonesID, volumeConfig.smhMidtones.linear);
+            cmd.SetGlobalColor(smhHighlightsID, volumeConfig.smhHighlights.linear);
             cmd.SetGlobalVector(smhRangeID, new Vector4(
-                settings.smhShadowsStart, settings.smhShadowsEnd,
-                settings.smhHighlightsStart, settings.smhHighlightsEnd
+                volumeConfig.smhShadowsStart, volumeConfig.smhShadowsEnd,
+                volumeConfig.smhHighlightsStart, volumeConfig.smhHighlightsEnd
             ));
         }
 

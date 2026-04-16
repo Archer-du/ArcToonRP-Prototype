@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ArcToon.Config;
+using ArcToon.Data;
 using ArcToon.Passes.PostProcessing;
 using ArcToon.Utils;
 using UnityEngine;
@@ -12,14 +13,19 @@ namespace ArcToon.Passes
     /// Post-processing dispatcher with Ping-Pong double buffering.
     /// Owns TempRTA/TempRTB and manages the chain execution.
     /// Each processor only sees (source, destination) — the ping-pong is transparent.
+    ///
+    /// Processors are owned by their VolumeConfigs (lazily created).
+    /// This pass acquires active processors each frame for rendering.
+    /// On Dispose, this pass is responsible for releasing all processor resources.
+    /// Execution order follows volumeConfigs order (already sorted by the Editor).
     /// </summary>
     public class PostProcessPass : RenderPassBase
     {
         public override string Name => "Post Process";
 
-        private readonly List<PostProcessor> processors = new();
+        private PostProcessConfig PostProcessConfig => renderer.PostProcessConfig;
+        
         private readonly List<PostProcessor> activeProcessors = new();
-        private readonly List<ProfilingSampler> profilingSamplers = new();
 
         private RTHandle tempRTA;
         private RTHandle tempRTB;
@@ -27,62 +33,23 @@ namespace ArcToon.Passes
         private const string TempRTAName = "_PostProcess_TempA";
         private const string TempRTBName = "_PostProcess_TempB";
 
-        public PostProcessPass()
+        public override void Initialize(RenderResources resources, CameraRenderer renderer)
         {
-            // Register built-in processors
-            RegisterProcessor(new BloomProcessor());
-            RegisterProcessor(new ColorGradingProcessor());
-            RegisterProcessor(new FXAAProcessor());
+            base.Initialize(resources, renderer);
+            CollectActiveProcessors();
         }
 
-        /// <summary>
-        /// Register a processor into the chain. Maintains sorted order by Order.
-        /// </summary>
-        public void RegisterProcessor(PostProcessor processor)
+        public override void SetupFrameData(CommandBuffer cmd)
         {
-            processors.Add(processor);
-            profilingSamplers.Add(new ProfilingSampler(processor.Name));
-            // Keep sorted by Order
-            SortProcessors();
-        }
-
-        private void SortProcessors()
-        {
-            // Sort both lists together by processor Order
-            for (int i = 0; i < processors.Count - 1; i++)
+            base.SetupFrameData(cmd);
+            foreach (var activeProcessor in activeProcessors)
             {
-                for (int j = i + 1; j < processors.Count; j++)
-                {
-                    if (processors[j].Order < processors[i].Order)
-                    {
-                        (processors[i], processors[j]) = (processors[j], processors[i]);
-                        (profilingSamplers[i], profilingSamplers[j]) = (profilingSamplers[j], profilingSamplers[i]);
-                    }
-                }
+                activeProcessor.Setup(renderer);
             }
         }
 
         public override void Execute(CommandBuffer cmd, ScriptableRenderContext context)
         {
-            var config = renderer.PostProcessConfig;
-            if (config == null || !PostProcessConfig.AreApplicableTo(Camera))
-            {
-                // No PostFX: point postFXResult to colorAttachment so CopyFinalPass can read it
-                resources.PostFX.postFXResult = resources.Camera.colorAttachment;
-                return;
-            }
-
-            // Collect active processors for this frame
-            activeProcessors.Clear();
-            for (int i = 0; i < processors.Count; i++)
-            {
-                if (processors[i].IsActive(config, renderer))
-                {
-                    processors[i].Setup(config, renderer);
-                    activeProcessors.Add(processors[i]);
-                }
-            }
-
             if (activeProcessors.Count == 0)
             {
                 resources.PostFX.postFXResult = resources.Camera.colorAttachment;
@@ -95,23 +62,21 @@ namespace ArcToon.Passes
 
             if (activeProcessors.Count == 1)
             {
-                // Single effect optimization: source → TempA directly, no extra blit
-                int procIndex = processors.IndexOf(activeProcessors[0]);
-                using (new ProfilingScope(cmd, profilingSamplers[procIndex]))
+                // Single effect optimization: source → TempRTA directly, no extra blit
+                using (new ProfilingScope(cmd, activeProcessors[0].Sampler))
                 {
                     activeProcessors[0].Render(cmd, resources.Camera.colorAttachment, tempRTA);
                 }
             }
             else
             {
-                // Multiple effects: blit source → TempA, then ping-pong through chain
+                // Multiple effects: blit source → TempRTA, then ping-pong through chain
                 RenderingUtils.ReAllocateIfNeeded(ref tempRTB, desc, name: TempRTBName);
-                PostFXUtility.Blit(cmd, resources.Camera.colorAttachment, tempRTA);
+                BlitUtils.CopyTexture(cmd, resources.Camera.colorAttachment, tempRTA, BlitUtils.BlitMode.Color);
 
                 foreach (var processor in activeProcessors)
                 {
-                    int procIndex = processors.IndexOf(processor);
-                    using (new ProfilingScope(cmd, profilingSamplers[procIndex]))
+                    using (new ProfilingScope(cmd, processor.Sampler))
                     {
                         processor.Render(cmd, tempRTA, tempRTB);
                     }
@@ -119,10 +84,45 @@ namespace ArcToon.Passes
                 }
             }
 
-            // After the loop (or single effect), TempA holds the final result
+            // TempRTA always hold the final result after the loop (or single effect)
             resources.PostFX.postFXResult = tempRTA;
         }
 
+        public override void Dispose()
+        {
+            tempRTA?.Release();
+            tempRTB?.Release();
+
+            // Release resources owned by processors (RTHandles like bloom pyramid, color LUT, etc.)
+            if (PostProcessConfig != null)
+            {
+                foreach (var volumeConfig in PostProcessConfig.volumeConfigs)
+                {
+                    volumeConfig?.Processor.Dispose();
+                }
+            }
+        }
+
+        private void CollectActiveProcessors()
+        {
+            activeProcessors.Clear();
+
+            if (PostProcessConfig == null || !PostProcessConfig.AreApplicableTo(Camera))
+            {
+                return;
+            }
+
+            foreach (var volumeConfig in PostProcessConfig.volumeConfigs)
+            {
+                if (volumeConfig == null) continue;
+                var processor = volumeConfig.Processor;
+                if (processor.IsActive(renderer))
+                {
+                    activeProcessors.Add(processor);
+                }
+            }
+        }
+        
         private RenderTextureDescriptor GetPostFXDescriptor()
         {
             var colorFormat = SystemInfo.GetGraphicsFormat(
@@ -132,16 +132,6 @@ namespace ArcToon.Passes
             {
                 msaaSamples = 1
             };
-        }
-
-        public override void Dispose()
-        {
-            tempRTA?.Release();
-            tempRTB?.Release();
-            foreach (var p in processors)
-            {
-                p.Dispose();
-            }
         }
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 
 namespace ArcToon.Utils
 {
-    public readonly struct RenderTextureHelpers
+    public readonly struct BlitUtils
     {
         public enum BlitMode
         {

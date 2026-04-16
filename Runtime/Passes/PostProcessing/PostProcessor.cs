@@ -1,5 +1,4 @@
 using System;
-using ArcToon.Config;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -12,27 +11,18 @@ namespace ArcToon.Passes.PostProcessing
     /// </summary>
     public abstract class PostProcessor : IDisposable
     {
-        /// <summary>
-        /// Display name for profiling.
-        /// </summary>
-        public abstract string Name { get; }
-
-        /// <summary>
-        /// Execution order within the post-processing chain.
-        /// Lower values execute first. Should match the corresponding VolumeConfig.Order.
-        /// </summary>
-        public abstract int Order { get; }
-
+        public abstract ProfilingSampler Sampler { get; }
+        
         /// <summary>
         /// Check if this processor should run this frame.
         /// </summary>
-        public abstract bool IsActive(PostProcessConfig config, CameraRenderer renderer);
+        public abstract bool IsActive(CameraRenderer renderer);
 
         /// <summary>
         /// Per-frame setup: cache settings, allocate/resize internal RTs, etc.
         /// Called before Render only when IsActive returns true.
         /// </summary>
-        public virtual void Setup(PostProcessConfig config, CameraRenderer renderer) { }
+        public virtual void Setup(CameraRenderer renderer) { }
 
         /// <summary>
         /// Core render: read from source, write to destination.

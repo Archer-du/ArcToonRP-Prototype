@@ -26,17 +26,5 @@ namespace ArcToon.Utils
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
             cmd.DrawScreenFilledTriangle(material, pass);
         }
-
-        /// <summary>
-        /// Simple blit (copy) from source to destination using the built-in blitter shader.
-        /// </summary>
-        public static void Blit(CommandBuffer cmd,
-            RenderTargetIdentifier src, RenderTargetIdentifier dst)
-        {
-            var blitMaterial = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
-            // Pass.Copy = 25 in the old PostFXStack enum
-            // We use the Copy pass from the existing Post FX Stack shader
-            Draw(cmd, src, dst, blitMaterial, (int)PostFXStack.Pass.Copy);
-        }
     }
 }

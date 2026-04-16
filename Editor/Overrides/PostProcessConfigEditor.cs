@@ -57,7 +57,7 @@ namespace ArcToon.Editor.Overrides
             serializedObject.Update();
 
             var config = (PostProcessConfig)target;
-            var settingsList = config.settings;
+            var settingsList = config.volumeConfigs;
 
             // Draw each existing VolumeConfig entry
             for (int i = 0; i < settingsList.Count; i++)

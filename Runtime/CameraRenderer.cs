@@ -18,52 +18,69 @@ namespace ArcToon
 {
     public class CameraRenderer
     {
+        internal RenderPipelineConfig PipelineConfig { private set; get; }
+        internal RenderResources Resources { get; private set; }
+        
         internal ScriptableRenderContext Context { private set; get; }
         internal Camera RenderCamera { private set; get; }
-        internal CameraAdditiveData CameraAdditiveData { private set; get; }
         internal float RenderScale { private set; get; }
         internal Vector2Int AttachmentSize { private set; get; }
         internal CullingResults CullingResults { private set; get; }
         internal bool useHDR { private set; get; }
         
-        internal CameraBufferSettings BufferSettings { private set; get; }
-        internal ShadowSettings ShadowSettings { private set; get; }
-        internal ForwardPlusSettings ForwardPlusSettings { private set; get; }
+        internal CameraAdditiveData CameraAdditiveData { private set; get; }
+        
         internal PostProcessConfig PostProcessConfig { private set; get; }
         
-        internal RenderResources Resources { get; private set; }
-
         #region Built-in Pass Instances
 
-        private readonly LightingPass lightingPass = new();
-        private readonly SetupPass setupPass = new();
-        private readonly DepthStencilPrePass depthStencilPrePass = new();
+        private readonly LightingPass lightingPass;
+        private readonly SetupPass setupPass;
+        private readonly DepthStencilPrePass depthStencilPrePass;
         
-        private readonly OpaquePass opaquePass = new();
-        private readonly SkyboxPass skyboxPass = new();
-        private readonly TransparentPass transparentPass = new();
+        private readonly OpaquePass opaquePass;
+        private readonly SkyboxPass skyboxPass;
+        private readonly TransparentPass transparentPass;
         
-        private readonly UnsupportedPass unsupportedPass = new();
-        private readonly PostProcessPass postProcessPass = new();
-        private readonly DebugPass debugPass = new();
-        private readonly GizmosPass gizmosPass = new();
-        private readonly CopyFinalPass copyFinalPass = new();
+        private readonly UnsupportedPass unsupportedPass;
+        private readonly PostProcessPass postProcessPass;
+        private readonly DebugPass debugPass;
+        private readonly GizmosPass gizmosPass;
+        private readonly CopyFinalPass copyFinalPass;
 
         #endregion
 
         private readonly List<RenderPassBase> activePassQueue = new();
 
-
+        internal CameraBufferSettings BufferSettings => PipelineConfig.cameraBufferSettings;
+        internal ShadowSettings ShadowSettings => PipelineConfig.shadowSettings;
+        internal ForwardPlusSettings ForwardPlusSettings => PipelineConfig.forwardPlusSettings;
+        
         #region Legacy
         
         internal PostFXConfig PostFXConfig { private set; get; }
-        private readonly PostFXPass postFXPass = new();
+        private readonly PostFXPass postFXPass;
         
         #endregion
         
-        public CameraRenderer()
+        public CameraRenderer(RenderPipelineConfig config)
         {
+            PipelineConfig = config;
             Resources = new RenderResources();
+            
+            lightingPass = new LightingPass();
+            setupPass = new SetupPass();
+            depthStencilPrePass = new DepthStencilPrePass();
+            opaquePass = new OpaquePass();
+            skyboxPass = new SkyboxPass();
+            transparentPass = new TransparentPass();
+            unsupportedPass = new UnsupportedPass();
+            postProcessPass = new PostProcessPass();
+            debugPass = new DebugPass();
+            gizmosPass = new GizmosPass();
+            copyFinalPass = new CopyFinalPass();
+            postFXPass = new PostFXPass();
+            
             CameraDebugger.Initialize();
         }
 
@@ -93,43 +110,30 @@ namespace ArcToon
             activePassQueue.Add(pass);
         }
 
-        public void Render(ScriptableRenderContext context, Camera camera,
-            RenderPipelineConfig config)
+        public void Render(ScriptableRenderContext context, Camera camera)
         {
-            if (SetupRenderData(context, camera, config))
+            if (SetupRenderData(context, camera))
             {
                 EnqueuePasses();
                 ExecutePassQueue();
             }
         }
 
-        private bool SetupRenderData(ScriptableRenderContext context, Camera camera,
-            RenderPipelineConfig config)
+        private bool SetupRenderData(ScriptableRenderContext context, Camera camera)
         {
             RenderCamera = camera;
             Context = context;
 
             var cameraRenderController = camera.GetComponent<CameraRenderController>();
-            if (!cameraRenderController)
-            {
-                CameraAdditiveData = CameraAdditiveData.DefaultAdditiveData;
-            }
-            else
-            {
-                CameraAdditiveData = cameraRenderController.AdditiveData;
-            }
+            CameraAdditiveData = !cameraRenderController ? CameraAdditiveData.DefaultAdditiveData : cameraRenderController.AdditiveData;
             
-            BufferSettings = config.cameraBufferSettings;
-            ShadowSettings = config.shadowSettings;
-            ForwardPlusSettings = config.forwardPlusSettings;
-            
-            PostFXConfig = config.globalPostFXConfig;
+            PostFXConfig = PipelineConfig.globalPostFXConfig;
             if (CameraAdditiveData.overridePostFXConfig != null)
             {
                 PostFXConfig = CameraAdditiveData.overridePostFXConfig;
             }
             
-            PostProcessConfig = config.globalPostProcessConfig;
+            PostProcessConfig = PipelineConfig.globalPostProcessConfig;
             if (CameraAdditiveData.overridePostProcessConfig != null)
             {
                 PostProcessConfig = CameraAdditiveData.overridePostProcessConfig;
@@ -137,7 +141,6 @@ namespace ArcToon
             
             RenderScale = CameraAdditiveData.GetRenderScale(BufferSettings.renderScale);
             AttachmentSize = RenderCamera.GetAttachmentSize(RenderScale);
-                        
             useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
 
 #if UNITY_EDITOR
@@ -201,6 +204,11 @@ namespace ArcToon
                 EnqueuePass(gizmosPass);
             }
 #endif
+            
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                activePassQueue[i].Initialize(Resources, this);
+            }
         }
 
         /// <summary>
@@ -212,15 +220,10 @@ namespace ArcToon
         private void ExecutePassQueue()
         {
             // ─── Configuration Phase ───
+            var setupCmd = CommandBufferPool.Get();
             for (int i = 0; i < activePassQueue.Count; i++)
             {
-                activePassQueue[i].Initialize(Resources, this);
-            }
-
-            var setupCmd = CommandBufferPool.Get("Setup Resources");
-            for (int i = 0; i < activePassQueue.Count; i++)
-            {
-                activePassQueue[i].SetupResource(setupCmd);
+                activePassQueue[i].SetupFrameData(setupCmd);
             }
             Context.ExecuteCommandBuffer(setupCmd);
             setupCmd.Clear();
@@ -242,10 +245,10 @@ namespace ArcToon
             }
 
             // ─── Cleanup Phase ───
-            var cleanupCmd = CommandBufferPool.Get("Cleanup Resources");
+            var cleanupCmd = CommandBufferPool.Get();
             for (int i = 0; i < activePassQueue.Count; i++)
             {
-                activePassQueue[i].CleanupResource(cleanupCmd);
+                activePassQueue[i].CleanupFrameData(cleanupCmd);
             }
             Context.ExecuteCommandBuffer(cleanupCmd);
             cleanupCmd.Clear();

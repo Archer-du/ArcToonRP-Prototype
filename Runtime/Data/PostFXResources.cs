@@ -7,8 +7,12 @@ using UnityEngine.Rendering;
 namespace ArcToon.Data
 {
     /// <summary>
-    /// Post-processing RTHandles: bloom chain, color grading, FXAA, and final output.
-    /// Used by: PostFXPass, BloomPass, ColorGradingPass, AntiAliasingPass, CopyFinalPass.
+    /// Shared post-processing resources.
+    /// - postFXResult: used by both PostProcessPass (new) and PostFXPass (legacy) as the
+    ///   final output pointer consumed by CopyFinalPass.
+    /// - All other RTHandles (bloom chain, color LUT, FXAA result) are only used by
+    ///   Legacy passes (BloomPass, ColorGradingPass, AntiAliasingPass).
+    ///   In the new framework, each Processor privately owns its intermediate RTHandles.
     /// </summary>
     public class PostFXResources : IDisposable
     {
