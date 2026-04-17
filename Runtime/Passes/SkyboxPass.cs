@@ -1,10 +1,13 @@
-﻿using UnityEngine.Rendering;
+﻿using ArcToon.Data;
+using UnityEngine.Rendering;
 
 namespace ArcToon.Passes
 {
     public class SkyboxPass : RenderPassBase
     {
         public override string Name => "Skybox";
+
+        public SkyboxPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
 
         RendererList list;
 

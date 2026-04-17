@@ -1,4 +1,5 @@
-﻿using ArcToon.Utils;
+﻿using ArcToon.Data;
+using ArcToon.Utils;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Passes
@@ -6,6 +7,8 @@ namespace ArcToon.Passes
     public class GizmosPass : RenderPassBase
     {
         public override string Name => "Gizmos";
+
+        public GizmosPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
 
         public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {

@@ -68,18 +68,18 @@ namespace ArcToon
             PipelineConfig = config;
             Resources = new RenderResources();
             
-            lightingPass = new LightingPass();
-            setupPass = new SetupPass();
-            depthStencilPrePass = new DepthStencilPrePass();
-            opaquePass = new OpaquePass();
-            skyboxPass = new SkyboxPass();
-            transparentPass = new TransparentPass();
-            unsupportedPass = new UnsupportedPass();
-            postProcessPass = new PostProcessPass();
-            debugPass = new DebugPass();
-            gizmosPass = new GizmosPass();
-            copyFinalPass = new CopyFinalPass();
-            postFXPass = new PostFXPass();
+            lightingPass = new LightingPass(Resources, this);
+            setupPass = new SetupPass(Resources, this);
+            depthStencilPrePass = new DepthStencilPrePass(Resources, this);
+            opaquePass = new OpaquePass(Resources, this);
+            skyboxPass = new SkyboxPass(Resources, this);
+            transparentPass = new TransparentPass(Resources, this);
+            unsupportedPass = new UnsupportedPass(Resources, this);
+            postProcessPass = new PostProcessPass(Resources, this);
+            debugPass = new DebugPass(Resources, this);
+            gizmosPass = new GizmosPass(Resources, this);
+            copyFinalPass = new CopyFinalPass(Resources, this);
+            postFXPass = new PostFXPass(Resources, this);
             
             CameraDebugger.Initialize();
         }
@@ -204,18 +204,13 @@ namespace ArcToon
                 EnqueuePass(gizmosPass);
             }
 #endif
-            
-            for (int i = 0; i < activePassQueue.Count; i++)
-            {
-                activePassQueue[i].Initialize(Resources, this);
-            }
         }
 
         /// <summary>
         /// Execute all enqueued passes following URP-aligned lifecycle:
-        /// Configuration Phase: Initialize → SetupResource → SetupRendererList (all passes)
+        /// Configuration Phase: SetupFrameData → SetupRendererList (all passes)
         /// Execution Phase: Execute (each pass in order)
-        /// Cleanup Phase: CleanupResource (all passes)
+        /// Cleanup Phase: CleanupFrameData (all passes)
         /// </summary>
         private void ExecutePassQueue()
         {

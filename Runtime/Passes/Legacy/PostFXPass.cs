@@ -1,4 +1,5 @@
-﻿using ArcToon.Utils;
+﻿using ArcToon.Data;
+using ArcToon.Utils;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Passes.Legacy
@@ -6,6 +7,8 @@ namespace ArcToon.Passes.Legacy
     public class PostFXPass : RenderPassBase
     {
         public override string Name => "Post FX";
+
+        public PostFXPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
 
         private readonly BloomPass bloomPass = new();
         private readonly ColorGradingPass colorGradingPass = new();

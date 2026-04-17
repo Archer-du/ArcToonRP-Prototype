@@ -12,6 +12,8 @@ namespace ArcToon.Passes
     {
         public override string Name => "Transparent";
 
+        public TransparentPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
+
         #region Ordered
         private RendererList frontFaceList;
         private RendererList backFaceList;

@@ -9,52 +9,56 @@ namespace ArcToon.Passes
     /// Lightweight pass base for direct CommandBuffer execution mode.
     /// Lifecycle mirrors URP's ScriptableRenderPass event model:
     ///
+    /// ┌─── Construction Phase (once, at pipeline creation) ──────────────────┐
+    /// │  ctor(resources, renderer)          — inject dependencies (readonly)
+    /// └──────────────────────────────────────────────────────────────────────┘
     /// ┌─── Configuration Phase (all passes complete before any execution) ───┐
-    /// │  ① Initialize(resources, renderer)  — inject dependencies, cache settings
-    /// │  ② SetupResource(cmd)               — allocate/configure RTs, set global properties
-    /// │  ③ SetupRendererList(context)        — create RendererLists
+    /// │  ① SetupFrameData(cmd)              — per-frame setup: cache camera /
+    /// │                                        culling state, allocate NativeArrays,
+    /// │                                        schedule jobs, configure render targets,
+    /// │                                        set global shader properties, etc.
+    /// │  ② SetupRendererList(context)       — create RendererLists
     /// └──────────────────────────────────────────────────────────────────────┘
     /// ┌─── Execution Phase (passes execute in order) ────────────────────────┐
-    /// │  ④ Execute(cmd, context)             — core rendering logic
+    /// │  ③ Execute(cmd, context)            — core rendering logic
     /// └──────────────────────────────────────────────────────────────────────┘
     /// ┌─── Cleanup Phase (after all passes have executed) ───────────────────┐
-    /// │  ⑤ CleanupResource(cmd)             — per-frame temp resource release, reset state
+    /// │  ④ CleanupFrameData(cmd)            — per-frame temp resource release, reset state
     /// └──────────────────────────────────────────────────────────────────────┘
     /// ┌─── Dispose Phase (pipeline destruction) ─────────────────────────────┐
-    /// │  ⑥ Dispose()                         — release persistent resources
+    /// │  ⑤ Dispose()                        — release persistent resources
     /// └──────────────────────────────────────────────────────────────────────┘
     /// </summary>
     public abstract class RenderPassBase : IDisposable
     {
         public abstract string Name { get; }
 
-        protected RenderResources resources;
+        protected readonly RenderResources resources;
 
-        protected CameraRenderer renderer;
+        protected readonly CameraRenderer renderer;
 
         protected Camera Camera => renderer.RenderCamera;
         protected Vector2Int AttachmentSize => renderer.AttachmentSize;
 
-        /// <summary>
-        /// Initialize pass state from external dependencies.
-        /// Called each frame before SetupResource.
-        /// </summary>
-        public virtual void Initialize(RenderResources resources, CameraRenderer renderer)
+        protected RenderPassBase(RenderResources resources, CameraRenderer renderer)
         {
             this.resources = resources;
             this.renderer = renderer;
         }
 
         /// <summary>
-        /// Allocate or configure render targets and set global shader properties.
-        /// Called after all passes have been initialized, before any Execute.
-        /// Analogous to URP's OnCameraSetup.
+        /// Per-frame setup. Analogous to URP's OnCameraSetup.
+        /// Use this hook for all per-frame preparation work: caching per-frame state
+        /// derived from camera / culling results, allocating NativeArrays, scheduling
+        /// jobs, allocating / configuring render targets, setting global shader
+        /// properties, etc.
+        /// Called before any Execute of this pass or later passes.
         /// </summary>
         public virtual void SetupFrameData(CommandBuffer cmd) { }
 
         /// <summary>
         /// Create RendererLists and other per-frame resources.
-        /// Called after SetupResource, before Execute.
+        /// Called after SetupFrameData, before Execute.
         /// </summary>
         public virtual void SetupRendererList(ScriptableRenderContext context) { }
 

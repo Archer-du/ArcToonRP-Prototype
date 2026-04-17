@@ -1,4 +1,5 @@
-﻿using ArcToon.Utils;
+﻿using ArcToon.Data;
+using ArcToon.Utils;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
@@ -7,6 +8,8 @@ namespace ArcToon.Passes
     public class OpaquePass : RenderPassBase
     {
         public override string Name => "Opaque";
+
+        public OpaquePass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
 
         private static ShaderTagId[] baseShaderTagIds =
         {

@@ -33,15 +33,11 @@ namespace ArcToon.Passes
         private const string TempRTAName = "_PostProcess_TempA";
         private const string TempRTBName = "_PostProcess_TempB";
 
-        public override void Initialize(RenderResources resources, CameraRenderer renderer)
-        {
-            base.Initialize(resources, renderer);
-            CollectActiveProcessors();
-        }
+        public PostProcessPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
 
         public override void SetupFrameData(CommandBuffer cmd)
         {
-            base.SetupFrameData(cmd);
+            CollectActiveProcessors();
             foreach (var activeProcessor in activeProcessors)
             {
                 activeProcessor.Setup(renderer);
