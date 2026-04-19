@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93577373e74a94edbbd7d43fc60d0f40, type: 3}
   m_Name: PC_UHD_ArcToonPostProcessConfig
   m_EditorClassIdentifier: 
-  settings:
+  volumeConfigs:
   - rid: 115054305801404566
   - rid: 115054305801404567
   - rid: 115054305801404568
@@ -30,7 +30,7 @@ MonoBehaviour:
         downscaleLimit: 10
         threshold: 1
         thresholdKnee: 1
-        intensity: 1
+        intensity: 0.5
         fadeFireflies: 1
         bicubicUpsampling: 1
     - rid: 115054305801404567
