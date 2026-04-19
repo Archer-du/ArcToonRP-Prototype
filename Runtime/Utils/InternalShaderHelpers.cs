@@ -27,7 +27,14 @@ namespace ArcToon.Utils
             public static readonly string InternalError = "Hidden/InternalErrorShader";
             public static readonly string Blitter = "Hidden/ArcToon/Blitter";
             public static readonly string CameraDebug = "Hidden/ArcToon/Camera Debug";
+
+            // Legacy uber post-process shader (kept for backward compatibility with Legacy passes).
             public static readonly string PostFXStack = "Hidden/ArcToon/Post FX Stack";
+
+            // Per-processor post-process shaders.
+            public static readonly string PostProcessBloom = "Hidden/ArcToon/PostProcess/Bloom";
+            public static readonly string PostProcessColorGrading = "Hidden/ArcToon/PostProcess/ColorGrading";
+            public static readonly string PostProcessFXAA = "Hidden/ArcToon/PostProcess/FXAA";
         }
         
         public static class PropertyID

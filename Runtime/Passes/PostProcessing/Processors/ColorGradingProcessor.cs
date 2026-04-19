@@ -9,16 +9,26 @@ namespace ArcToon.Passes.PostProcessing.Processors
     /// Color Grading post-processor.
     /// Ported from the old ColorGradingPass — rendering logic is identical.
     /// The color LUT is privately owned.
+    /// Uses its own dedicated shader: Hidden/ArcToon/PostProcess/ColorGrading.
     /// </summary>
     public class ColorGradingProcessor : VolumePostProcessor<ColorGradingVolumeConfig>
     {
         public ColorGradingProcessor(ColorGradingVolumeConfig config) : base(config) { }
 
+        // ---- Local pass indices (must match ColorGrading.shader pass order) ----
+        private enum Pass
+        {
+            ColorGradingOnly,
+            ColorGradingReinhard,
+            ColorGradingNeutral,
+            ColorGradingACES,
+            ColorGradingApply,
+        }
+
         // ---- Internal resources (self-owned) ----
         private RTHandle colorLUT;
 
         // ---- Cached state per frame ----
-        private Material material;
         private bool useHDR;
         private int colorLUTResolution;
 
@@ -49,11 +59,11 @@ namespace ArcToon.Passes.PostProcessing.Processors
             return volumeConfig.enabled;
         }
 
+        protected override string ShaderPath => InternalShader.Path.PostProcessColorGrading;
+
         public override void Setup(CameraRenderer renderer)
         {
-            // Use explicit Unity null check — ??= won't catch destroyed-but-not-null objects
-            if (material == null)
-                material = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
+            base.Setup(renderer);
             useHDR = renderer.useHDR;
             colorLUTResolution = (int)volumeConfig.colorLUTResolution;
 
@@ -82,21 +92,21 @@ namespace ArcToon.Passes.PostProcessing.Processors
             );
 
             // Determine tone mapping pass
-            // PostFXStack.Pass enum: ColorGradingOnly=8, Reinhard=9, Neutral=10, ACES=11
-            int toneMappingPass = (int)PostFXStack.Pass.ColorGradingOnly + (int)volumeConfig.toneMapping;
+            // Local Pass enum: ColorGradingOnly=0, Reinhard=1, Neutral=2, ACES=3, Apply=4
+            int toneMappingPass = (int)Pass.ColorGradingOnly + (int)volumeConfig.toneMapping;
             cmd.SetGlobalFloat(
                 colorGradingLUTInLogCID,
-                useHDR && toneMappingPass != (int)PostFXStack.Pass.ColorGradingOnly ? 1f : 0f
+                useHDR && toneMappingPass != (int)Pass.ColorGradingOnly ? 1f : 0f
             );
 
-            PostFXUtility.Draw(cmd, source, colorLUT, material, toneMappingPass);
+            BlitUtils.BlitTexture(cmd, source, colorLUT, material, toneMappingPass);
 
             // Apply LUT
             cmd.SetGlobalVector(colorGradingLUTParametersID,
                 new Vector4(1f / lutWidth, 1f / lutHeight, lutHeight - 1f)
             );
             cmd.SetGlobalTexture(colorGradingLUTID, colorLUT);
-            PostFXUtility.Draw(cmd, source, destination, material, (int)PostFXStack.Pass.ColorGradingApply);
+            BlitUtils.BlitTexture(cmd, source, destination, material, (int)Pass.ColorGradingApply);
         }
 
         private void ConfigureColorAdjustments(CommandBuffer cmd)

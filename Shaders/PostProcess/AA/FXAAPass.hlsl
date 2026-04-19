@@ -1,7 +1,7 @@
 ﻿#ifndef ARCTOON_FXAA_PASS_INCLUDED
 #define ARCTOON_FXAA_PASS_INCLUDED
 
-#include "PostFXStackInput.hlsl"
+#include "Packages/com.arctoon.render-pipeline/Shaders/PostProcess/PostProcessInput.hlsl"
 
 #if defined(FXAA_QUALITY_LOW)
     #define EXTRA_EDGE_STEPS 3

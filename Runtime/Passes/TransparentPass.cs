@@ -28,7 +28,7 @@ namespace ArcToon.Passes
         #endregion
 
         #region Depth Peeling
-        public const int DepthPeelingLayers = 4;
+        private const int DepthPeelingLayers = 4;
         
         private RendererList[] transparencyLists = new RendererList[DepthPeelingLayers];
         

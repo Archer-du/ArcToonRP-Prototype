@@ -7,13 +7,16 @@ namespace ArcToon.Passes.PostProcessing.Processors
     /// <summary>
     /// FXAA anti-aliasing post-processor.
     /// Ported from the old AntiAliasingPass — rendering logic is identical.
+    /// Uses its own dedicated shader: Hidden/ArcToon/PostProcess/FXAA.
     /// </summary>
     public class FXAAProcessor : VolumePostProcessor<FXAAVolumeConfig>
     {
         public FXAAProcessor(FXAAVolumeConfig config) : base(config) { }
 
+        // ---- Local pass indices (must match FXAA.shader pass order) ----
+        private const int FXAAPass = 0;
+
         // ---- Cached state per frame ----
-        private Material material;
         private bool keepAlpha;
 
         // ---- Shader property IDs & keywords ----
@@ -27,18 +30,18 @@ namespace ArcToon.Passes.PostProcessing.Processors
             return volumeConfig.enabled && renderer.CameraAdditiveData.allowFXAA;
         }
 
+        protected override string ShaderPath => InternalShader.Path.PostProcessFXAA;
+
         public override void Setup(CameraRenderer renderer)
         {
-            // Use explicit Unity null check — ??= won't catch destroyed-but-not-null objects
-            if (material == null)
-                material = ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.PostFXStack);
+            base.Setup(renderer);
             keepAlpha = renderer.CameraAdditiveData.keepAlpha;
         }
 
         public override void Render(CommandBuffer cmd, RTHandle source, RTHandle destination)
         {
             ConfigureFXAA(cmd);
-            PostFXUtility.Draw(cmd, source, destination, material, (int)PostFXStack.Pass.FXAA);
+            BlitUtils.BlitTexture(cmd, source, destination, material, FXAAPass);
         }
 
         private void ConfigureFXAA(CommandBuffer cmd)
