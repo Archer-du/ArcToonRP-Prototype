@@ -5,7 +5,6 @@ namespace ArcToon.Passes.PostProcessing.Processors
 {
     /// <summary>
     /// Volume config for the Bloom post-processing effect.
-    /// Mirrors the parameters from the old PostFXConfig.BloomSettings.
     /// </summary>
     [Serializable]
     public class BloomVolumeConfig : PostProcessVolumeConfig

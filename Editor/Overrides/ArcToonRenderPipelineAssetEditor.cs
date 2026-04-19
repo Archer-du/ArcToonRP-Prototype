@@ -1,5 +1,4 @@
 using System;
-using ArcToon.Passes.Legacy;
 using ArcToon.Settings;
 using UnityEditor;
 using UnityEngine;
@@ -20,12 +19,6 @@ namespace ArcToon.Editor.Overrides
         private SerializedProperty enableHDRProp;
         private SerializedProperty renderScaleProp;
         private SerializedProperty bicubicRescalingModeProp;
-        private SerializedProperty fxaaSettingsProp;
-        private SerializedProperty fxaaEnabledProp;
-        private SerializedProperty fxaaFixedThresholdProp;
-        private SerializedProperty fxaaRelativeThresholdProp;
-        private SerializedProperty fxaaSubpixelBlendingProp;
-        private SerializedProperty fxaaQualityProp;
 
         // Shadows
         private SerializedProperty shadowSettingsProp;
@@ -62,7 +55,6 @@ namespace ArcToon.Editor.Overrides
         private SerializedProperty maxLightsPerTileProp;
 
         // Post Processing
-        private SerializedProperty globalPostFXConfigProp;
         private SerializedProperty globalPostProcessConfigProp;
 
         // Foldout states - persisted via SessionState
@@ -86,12 +78,6 @@ namespace ArcToon.Editor.Overrides
             enableHDRProp = cameraBufferSettingsProp.FindPropertyRelative("enableHDR");
             renderScaleProp = cameraBufferSettingsProp.FindPropertyRelative("renderScale");
             bicubicRescalingModeProp = cameraBufferSettingsProp.FindPropertyRelative("bicubicRescalingMode");
-            fxaaSettingsProp = cameraBufferSettingsProp.FindPropertyRelative("fxaaSettings");
-            fxaaEnabledProp = fxaaSettingsProp.FindPropertyRelative("enabled");
-            fxaaFixedThresholdProp = fxaaSettingsProp.FindPropertyRelative("fixedThreshold");
-            fxaaRelativeThresholdProp = fxaaSettingsProp.FindPropertyRelative("relativeThreshold");
-            fxaaSubpixelBlendingProp = fxaaSettingsProp.FindPropertyRelative("subpixelBlending");
-            fxaaQualityProp = fxaaSettingsProp.FindPropertyRelative("quality");
 
             // Shadows
             shadowSettingsProp = configProp.FindPropertyRelative("shadowSettings");
@@ -124,7 +110,6 @@ namespace ArcToon.Editor.Overrides
             maxLightsPerTileProp = forwardPlusSettingsProp.FindPropertyRelative("maxLightsPerTile");
 
             // Post Processing
-            globalPostFXConfigProp = configProp.FindPropertyRelative("globalPostFXConfig");
             globalPostProcessConfigProp = configProp.FindPropertyRelative("globalPostProcessConfig");
 
             // Restore foldout states
@@ -203,30 +188,6 @@ namespace ArcToon.Editor.Overrides
                 EditorGUILayout.PropertyField(bicubicRescalingModeProp);
 
                 EditorGUILayoutUtils.EndGUIComponentIndent();
-                
-                // FXAA sub-section
-                EditorGUILayout.BeginVertical(EditorGUILayoutUtils.GUIComponentBoxStyle);
-                {
-                    bool fxaaEnabled = EditorGUILayoutUtils.BeginTogglePropertyGroup(
-                        new GUIContent("FXAA"),
-                        fxaaEnabledProp.boolValue,
-                        EditorStyles.boldLabel
-                    );
-                    if (fxaaEnabled != fxaaEnabledProp.boolValue)
-                    {
-                        fxaaEnabledProp.boolValue = fxaaEnabled;
-                    }
-                    EditorGUILayoutUtils.BeginGUIComponentIndent();
-
-                    EditorGUILayout.PropertyField(fxaaFixedThresholdProp);
-                    EditorGUILayout.PropertyField(fxaaRelativeThresholdProp);
-                    EditorGUILayout.PropertyField(fxaaSubpixelBlendingProp);
-                    EditorGUILayout.PropertyField(fxaaQualityProp);
-
-                    EditorGUILayoutUtils.EndGUIComponentIndent();
-                    EditorGUILayoutUtils.EndTogglePropertyGroup();
-                }
-                EditorGUILayout.EndVertical();
             }
             EditorGUILayout.EndVertical();
         }
@@ -354,14 +315,6 @@ namespace ArcToon.Editor.Overrides
             if (postProcessingFoldout)
             {
                 EditorGUILayoutUtils.BeginGUIComponentIndent();
-                EditorGUILayout.PropertyField(globalPostFXConfigProp);
-
-                if (globalPostFXConfigProp.objectReferenceValue == null)
-                {
-                    EditorGUILayout.HelpBox("No Post FX Config assigned.", MessageType.Warning);
-                }
-
-                EditorGUILayout.Space(4);
                 EditorGUILayout.PropertyField(globalPostProcessConfigProp);
 
                 if (globalPostProcessConfigProp.objectReferenceValue == null)

@@ -1,6 +1,5 @@
 ﻿using System;
 using ArcToon.Config;
-using ArcToon.Passes.Legacy;
 using ArcToon.Passes.PostProcessing;
 using UnityEngine.Serialization;
 
@@ -17,8 +16,6 @@ namespace ArcToon.Settings
         public ShadowSettings shadowSettings;
 
         public ForwardPlusSettings forwardPlusSettings;
-
-        public PostFXConfig globalPostFXConfig;
 
         public PostProcessConfig globalPostProcessConfig;
     }

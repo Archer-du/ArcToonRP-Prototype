@@ -28,9 +28,6 @@ namespace ArcToon.Utils
             public static readonly string Blitter = "Hidden/ArcToon/Blitter";
             public static readonly string CameraDebug = "Hidden/ArcToon/Camera Debug";
 
-            // Legacy uber post-process shader (kept for backward compatibility with Legacy passes).
-            public static readonly string PostFXStack = "Hidden/ArcToon/Post FX Stack";
-
             // Per-processor post-process shaders.
             public static readonly string PostProcessBloom = "Hidden/ArcToon/PostProcess/Bloom";
             public static readonly string PostProcessColorGrading = "Hidden/ArcToon/PostProcess/ColorGrading";
@@ -110,6 +107,35 @@ namespace ArcToon.Utils
             public static readonly int FinalDstBlend = ShaderPropertyID();
             public static readonly int CopyBicubic = ShaderPropertyID();
             #endregion
+
+            #region PostProcessing
+            // Bloom
+            public static readonly int BloomHighResTexture = ShaderPropertyID();
+            public static readonly int BloomThreshold = ShaderPropertyID();
+            public static readonly int BloomBicubicUpsampling = ShaderPropertyID();
+            public static readonly int BloomScale = ShaderPropertyID();
+            public static readonly int BloomScatter = ShaderPropertyID();
+
+            // Color Grading
+            public static readonly int ColorGradingLUT = ShaderPropertyID();
+            public static readonly int ColorGradingLUTParameters = ShaderPropertyID();
+            public static readonly int ColorGradingLUTInLogC = ShaderPropertyID();
+            public static readonly int ColorAdjustmentData = ShaderPropertyID();
+            public static readonly int ColorFilter = ShaderPropertyID();
+            public static readonly int WhiteBalance = ShaderPropertyID();
+            public static readonly int SplitToningShadows = ShaderPropertyID();
+            public static readonly int SplitToningHighlights = ShaderPropertyID();
+            public static readonly int ChannelMixerRed = ShaderPropertyID();
+            public static readonly int ChannelMixerGreen = ShaderPropertyID();
+            public static readonly int ChannelMixerBlue = ShaderPropertyID();
+            public static readonly int SMHShadows = ShaderPropertyID();
+            public static readonly int SMHMidtones = ShaderPropertyID();
+            public static readonly int SMHHighlights = ShaderPropertyID();
+            public static readonly int SMHRange = ShaderPropertyID();
+
+            // FXAA
+            public static readonly int FXAAParams = ShaderPropertyID();
+            #endregion
         }
         
         public static class TagId
@@ -144,6 +170,11 @@ namespace ArcToon.Utils
             public static readonly BuiltinGlobalKeyword PCF7X7 = ShaderGlobalKeyword();
             public static readonly BuiltinGlobalKeyword POISSON_DISK = ShaderGlobalKeyword();
             public static readonly BuiltinGlobalKeyword PCSS = ShaderGlobalKeyword();
+
+            // PostProcessing - FXAA
+            public static readonly BuiltinGlobalKeyword FXAA_QUALITY_LOW = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword FXAA_QUALITY_MEDIUM = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword FXAA_ALPHA_CONTAINS_LUMA = ShaderGlobalKeyword();
         }
     }
 }

@@ -34,11 +34,6 @@ namespace ArcToon.Data
             Lighting.Allocate();
         }
 
-        public void AllocatePostFXResources(int width, int height, bool useHDR)
-        {
-            PostFX.Allocate(width, height, useHDR);
-        }
-
         public void Dispose()
         {
             if (disposed) return;

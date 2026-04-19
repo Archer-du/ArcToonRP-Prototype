@@ -5,7 +5,6 @@ namespace ArcToon.Passes.PostProcessing.Processors
 {
     /// <summary>
     /// Volume config for the FXAA anti-aliasing post-processing effect.
-    /// Mirrors the parameters from the old CameraBufferSettings.FXAASettings.
     /// </summary>
     [Serializable]
     public class FXAAVolumeConfig : PostProcessVolumeConfig

@@ -138,6 +138,7 @@ namespace ArcToon.Editor.Overrides
         /// <summary>
         /// Draw all serializable fields of a VolumeConfig instance using reflection.
         /// Skips the 'enabled' field (drawn in header) and abstract properties.
+        /// Fields decorated with [Header] emit a bold section title before the field.
         /// </summary>
         private void DrawVolumeConfigFields(PostProcessConfig config, PostProcessVolumeConfig item)
         {
@@ -146,8 +147,21 @@ namespace ArcToon.Editor.Overrides
                 .Where(f => f.DeclaringType != typeof(PostProcessVolumeConfig)) // skip base fields
                 .ToArray();
 
+            bool firstHeaderDrawn = false;
             foreach (var field in fields)
             {
+                // Emit a section title if the field carries [Header].
+                var headerAttr = field.GetCustomAttribute<HeaderAttribute>();
+                if (headerAttr != null)
+                {
+                    if (firstHeaderDrawn)
+                    {
+                        EditorGUILayout.Space(2);
+                    }
+                    EditorGUILayout.LabelField(headerAttr.header, EditorStyles.boldLabel);
+                    firstHeaderDrawn = true;
+                }
+
                 EditorGUI.BeginChangeCheck();
                 var value = field.GetValue(item);
                 var newValue = DrawField(field, value);

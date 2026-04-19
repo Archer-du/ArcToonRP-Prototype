@@ -32,28 +32,6 @@ namespace ArcToon.Passes.PostProcessing.Processors
         private bool useHDR;
         private int colorLUTResolution;
 
-        // ---- Shader property IDs ----
-        private static readonly int colorGradingLUTID = Shader.PropertyToID("_ColorGradingLUT");
-        private static readonly int colorGradingLUTParametersID = Shader.PropertyToID("_ColorGradingLUTParameters");
-        private static readonly int colorGradingLUTInLogCID = Shader.PropertyToID("_ColorGradingLUTInLogC");
-
-        private static readonly int colorAdjustmentDataID = Shader.PropertyToID("_ColorAdjustmentData");
-        private static readonly int colorFilterID = Shader.PropertyToID("_ColorFilter");
-
-        private static readonly int whiteBalanceID = Shader.PropertyToID("_WhiteBalance");
-
-        private static readonly int splitToningShadowsID = Shader.PropertyToID("_SplitToningShadows");
-        private static readonly int splitToningHighlightsID = Shader.PropertyToID("_SplitToningHighlights");
-
-        private static readonly int channelMixerRedID = Shader.PropertyToID("_ChannelMixerRed");
-        private static readonly int channelMixerGreenID = Shader.PropertyToID("_ChannelMixerGreen");
-        private static readonly int channelMixerBlueID = Shader.PropertyToID("_ChannelMixerBlue");
-
-        private static readonly int smhShadowsID = Shader.PropertyToID("_SMHShadows");
-        private static readonly int smhMidtonesID = Shader.PropertyToID("_SMHMidtones");
-        private static readonly int smhHighlightsID = Shader.PropertyToID("_SMHHighlights");
-        private static readonly int smhRangeID = Shader.PropertyToID("_SMHRange");
-
         public override bool IsActive(CameraRenderer renderer)
         {
             return volumeConfig.enabled;
@@ -87,7 +65,7 @@ namespace ArcToon.Passes.PostProcessing.Processors
             // Bake LUT
             int lutHeight = colorLUTResolution;
             int lutWidth = lutHeight * lutHeight;
-            cmd.SetGlobalVector(colorGradingLUTParametersID,
+            cmd.SetGlobalVector(InternalShader.PropertyID.ColorGradingLUTParameters,
                 new Vector4(lutHeight, 0.5f / lutWidth, 0.5f / lutHeight, lutHeight / (lutHeight - 1f))
             );
 
@@ -95,34 +73,34 @@ namespace ArcToon.Passes.PostProcessing.Processors
             // Local Pass enum: ColorGradingOnly=0, Reinhard=1, Neutral=2, ACES=3, Apply=4
             int toneMappingPass = (int)Pass.ColorGradingOnly + (int)volumeConfig.toneMapping;
             cmd.SetGlobalFloat(
-                colorGradingLUTInLogCID,
+                InternalShader.PropertyID.ColorGradingLUTInLogC,
                 useHDR && toneMappingPass != (int)Pass.ColorGradingOnly ? 1f : 0f
             );
 
             BlitUtils.BlitTexture(cmd, source, colorLUT, material, toneMappingPass);
 
             // Apply LUT
-            cmd.SetGlobalVector(colorGradingLUTParametersID,
+            cmd.SetGlobalVector(InternalShader.PropertyID.ColorGradingLUTParameters,
                 new Vector4(1f / lutWidth, 1f / lutHeight, lutHeight - 1f)
             );
-            cmd.SetGlobalTexture(colorGradingLUTID, colorLUT);
+            cmd.SetGlobalTexture(InternalShader.PropertyID.ColorGradingLUT, colorLUT);
             BlitUtils.BlitTexture(cmd, source, destination, material, (int)Pass.ColorGradingApply);
         }
 
         private void ConfigureColorAdjustments(CommandBuffer cmd)
         {
-            cmd.SetGlobalVector(colorAdjustmentDataID, new Vector4(
+            cmd.SetGlobalVector(InternalShader.PropertyID.ColorAdjustmentData, new Vector4(
                 Mathf.Pow(2f, volumeConfig.postExposure),
                 volumeConfig.contrast * 0.01f + 1f,
                 volumeConfig.hueShift * (1f / 360f),
                 volumeConfig.saturation * 0.01f + 1f
             ));
-            cmd.SetGlobalColor(colorFilterID, volumeConfig.colorFilter.linear);
+            cmd.SetGlobalColor(InternalShader.PropertyID.ColorFilter, volumeConfig.colorFilter.linear);
         }
 
         private void ConfigureWhiteBalance(CommandBuffer cmd)
         {
-            cmd.SetGlobalVector(whiteBalanceID, ColorUtils.ColorBalanceToLMSCoeffs(
+            cmd.SetGlobalVector(InternalShader.PropertyID.WhiteBalance, ColorUtils.ColorBalanceToLMSCoeffs(
                 volumeConfig.temperature, volumeConfig.tint
             ));
         }
@@ -131,23 +109,23 @@ namespace ArcToon.Passes.PostProcessing.Processors
         {
             Color splitColor = volumeConfig.splitToningShadows;
             splitColor.a = volumeConfig.splitToningBalance * 0.01f;
-            cmd.SetGlobalColor(splitToningShadowsID, splitColor);
-            cmd.SetGlobalColor(splitToningHighlightsID, volumeConfig.splitToningHighlights);
+            cmd.SetGlobalColor(InternalShader.PropertyID.SplitToningShadows, splitColor);
+            cmd.SetGlobalColor(InternalShader.PropertyID.SplitToningHighlights, volumeConfig.splitToningHighlights);
         }
 
         private void ConfigureChannelMixer(CommandBuffer cmd)
         {
-            cmd.SetGlobalVector(channelMixerRedID, volumeConfig.channelMixerRed);
-            cmd.SetGlobalVector(channelMixerGreenID, volumeConfig.channelMixerGreen);
-            cmd.SetGlobalVector(channelMixerBlueID, volumeConfig.channelMixerBlue);
+            cmd.SetGlobalVector(InternalShader.PropertyID.ChannelMixerRed, volumeConfig.channelMixerRed);
+            cmd.SetGlobalVector(InternalShader.PropertyID.ChannelMixerGreen, volumeConfig.channelMixerGreen);
+            cmd.SetGlobalVector(InternalShader.PropertyID.ChannelMixerBlue, volumeConfig.channelMixerBlue);
         }
 
         private void ConfigureShadowsMidtonesHighlights(CommandBuffer cmd)
         {
-            cmd.SetGlobalColor(smhShadowsID, volumeConfig.smhShadows.linear);
-            cmd.SetGlobalColor(smhMidtonesID, volumeConfig.smhMidtones.linear);
-            cmd.SetGlobalColor(smhHighlightsID, volumeConfig.smhHighlights.linear);
-            cmd.SetGlobalVector(smhRangeID, new Vector4(
+            cmd.SetGlobalColor(InternalShader.PropertyID.SMHShadows, volumeConfig.smhShadows.linear);
+            cmd.SetGlobalColor(InternalShader.PropertyID.SMHMidtones, volumeConfig.smhMidtones.linear);
+            cmd.SetGlobalColor(InternalShader.PropertyID.SMHHighlights, volumeConfig.smhHighlights.linear);
+            cmd.SetGlobalVector(InternalShader.PropertyID.SMHRange, new Vector4(
                 volumeConfig.smhShadowsStart, volumeConfig.smhShadowsEnd,
                 volumeConfig.smhHighlightsStart, volumeConfig.smhHighlightsEnd
             ));

@@ -19,12 +19,6 @@ namespace ArcToon.Passes.PostProcessing.Processors
         // ---- Cached state per frame ----
         private bool keepAlpha;
 
-        // ---- Shader property IDs & keywords ----
-        private static readonly int fxaaParamsID = Shader.PropertyToID("_FXAAParams");
-
-        private static readonly GlobalKeyword fxaaQualityLowKeyword = GlobalKeyword.Create("FXAA_QUALITY_LOW");
-        private static readonly GlobalKeyword fxaaQualityMediumKeyword = GlobalKeyword.Create("FXAA_QUALITY_MEDIUM");
-
         public override bool IsActive(CameraRenderer renderer)
         {
             return volumeConfig.enabled && renderer.CameraAdditiveData.allowFXAA;
@@ -49,32 +43,32 @@ namespace ArcToon.Passes.PostProcessing.Processors
             // Quality keywords
             if (volumeConfig.quality == FXAAVolumeConfig.Quality.Low)
             {
-                cmd.SetKeyword(fxaaQualityLowKeyword, true);
-                cmd.SetKeyword(fxaaQualityMediumKeyword, false);
+                cmd.SetKeyword(InternalShader.GlobalKeyword.FXAA_QUALITY_LOW, true);
+                cmd.SetKeyword(InternalShader.GlobalKeyword.FXAA_QUALITY_MEDIUM, false);
             }
             else if (volumeConfig.quality == FXAAVolumeConfig.Quality.Medium)
             {
-                cmd.SetKeyword(fxaaQualityLowKeyword, false);
-                cmd.SetKeyword(fxaaQualityMediumKeyword, true);
+                cmd.SetKeyword(InternalShader.GlobalKeyword.FXAA_QUALITY_LOW, false);
+                cmd.SetKeyword(InternalShader.GlobalKeyword.FXAA_QUALITY_MEDIUM, true);
             }
             else
             {
-                cmd.SetKeyword(fxaaQualityLowKeyword, false);
-                cmd.SetKeyword(fxaaQualityMediumKeyword, false);
+                cmd.SetKeyword(InternalShader.GlobalKeyword.FXAA_QUALITY_LOW, false);
+                cmd.SetKeyword(InternalShader.GlobalKeyword.FXAA_QUALITY_MEDIUM, false);
             }
 
             // Alpha handling
             if (keepAlpha)
             {
-                cmd.DisableShaderKeyword("FXAA_ALPHA_CONTAINS_LUMA");
+                cmd.DisableShaderKeyword(InternalShader.GlobalKeyword.FXAA_ALPHA_CONTAINS_LUMA.name);
             }
             else
             {
-                cmd.EnableShaderKeyword("FXAA_ALPHA_CONTAINS_LUMA");
+                cmd.EnableShaderKeyword(InternalShader.GlobalKeyword.FXAA_ALPHA_CONTAINS_LUMA.name);
             }
 
             // FXAA parameters
-            cmd.SetGlobalVector(fxaaParamsID, new Vector4(
+            cmd.SetGlobalVector(InternalShader.PropertyID.FXAAParams, new Vector4(
                 volumeConfig.fixedThreshold,
                 volumeConfig.relativeThreshold,
                 volumeConfig.subpixelBlending

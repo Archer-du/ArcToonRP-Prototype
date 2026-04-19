@@ -3,7 +3,6 @@ using ArcToon.Behavior;
 using ArcToon.Config;
 using ArcToon.Data;
 using ArcToon.Passes;
-using ArcToon.Passes.Legacy;
 using ArcToon.Passes.Lighting;
 using ArcToon.Passes.PostProcessing;
 using ArcToon.Settings;
@@ -55,14 +54,7 @@ namespace ArcToon
         internal CameraBufferSettings BufferSettings => PipelineConfig.cameraBufferSettings;
         internal ShadowSettings ShadowSettings => PipelineConfig.shadowSettings;
         internal ForwardPlusSettings ForwardPlusSettings => PipelineConfig.forwardPlusSettings;
-        
-        #region Legacy
-        
-        internal PostFXConfig PostFXConfig { private set; get; }
-        private readonly PostFXPass postFXPass;
-        
-        #endregion
-        
+
         public CameraRenderer(RenderPipelineConfig config)
         {
             PipelineConfig = config;
@@ -79,7 +71,6 @@ namespace ArcToon
             debugPass = new DebugPass(Resources, this);
             gizmosPass = new GizmosPass(Resources, this);
             copyFinalPass = new CopyFinalPass(Resources, this);
-            postFXPass = new PostFXPass(Resources, this);
             
             CameraDebugger.Initialize();
         }
@@ -100,7 +91,6 @@ namespace ArcToon
             debugPass.Dispose();
             gizmosPass.Dispose();
             copyFinalPass.Dispose();
-            postFXPass.Dispose();
             
             CameraDebugger.Cleanup();
         }
@@ -126,13 +116,7 @@ namespace ArcToon
 
             var cameraRenderController = camera.GetComponent<CameraRenderController>();
             CameraAdditiveData = !cameraRenderController ? CameraAdditiveData.DefaultAdditiveData : cameraRenderController.AdditiveData;
-            
-            PostFXConfig = PipelineConfig.globalPostFXConfig;
-            if (CameraAdditiveData.overridePostFXConfig != null)
-            {
-                PostFXConfig = CameraAdditiveData.overridePostFXConfig;
-            }
-            
+
             PostProcessConfig = PipelineConfig.globalPostProcessConfig;
             if (CameraAdditiveData.overridePostProcessConfig != null)
             {
@@ -160,7 +144,6 @@ namespace ArcToon
             Resources.AllocateCameraResources(AttachmentSize.x, AttachmentSize.y, useHDR);
             Resources.AllocateShadowResources(ShadowSettings);
             Resources.AllocateLightingResources();
-            Resources.AllocatePostFXResources(AttachmentSize.x, AttachmentSize.y, useHDR);
 
             return true;
         }
@@ -188,7 +171,6 @@ namespace ArcToon
 
             // Post Processing
             EnqueuePass(postProcessPass);
-            // EnqueuePass(postFXPass);
 
             // Back Buffer
             EnqueuePass(copyFinalPass);

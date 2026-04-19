@@ -5,14 +5,16 @@ namespace ArcToon.Passes.PostProcessing.Processors
 {
     /// <summary>
     /// Volume config for the Color Grading post-processing effect.
-    /// Consolidates all color grading sub-settings from the old PostFXConfig.
+    /// Fields are kept flat for serialization and Inspector compatibility
+    /// (see ChatLogs/Bugfix/PostProcessConfigEditor_NestedStruct_Limitation_2026-04-19.md);
+    /// [Header] attributes are used purely for visual grouping.
     /// </summary>
     [Serializable]
     public class ColorGradingVolumeConfig : PostProcessVolumeConfig
     {
         public override int Order => 200;
 
-        // ---- Color Adjustments ----
+        [Header("Color Adjustments")]
         public float postExposure;
 
         [Range(-100f, 100f)] public float contrast = 5f;
@@ -23,21 +25,21 @@ namespace ArcToon.Passes.PostProcessing.Processors
 
         [Range(-100f, 100f)] public float saturation = 20f;
 
-        // ---- White Balance ----
+        [Header("White Balance")]
         [Range(-100f, 100f)] public float temperature = -5f;
         [Range(-100f, 100f)] public float tint;
 
-        // ---- Split Toning ----
+        [Header("Split Toning")]
         [ColorUsage(false)] public Color splitToningShadows = Color.gray;
         [ColorUsage(false)] public Color splitToningHighlights = Color.gray;
         [Range(-100f, 100f)] public float splitToningBalance;
 
-        // ---- Channel Mixer ----
+        [Header("Channel Mixer")]
         public Vector3 channelMixerRed = Vector3.right;
         public Vector3 channelMixerGreen = Vector3.up;
         public Vector3 channelMixerBlue = Vector3.forward;
 
-        // ---- Shadows Midtones Highlights ----
+        [Header("Shadows Midtones Highlights")]
         [ColorUsage(false, true)] public Color smhShadows = Color.white;
         [ColorUsage(false, true)] public Color smhMidtones = Color.white;
         [ColorUsage(false, true)] public Color smhHighlights = Color.white;
@@ -46,7 +48,6 @@ namespace ArcToon.Passes.PostProcessing.Processors
         [Range(0f, 2f)] public float smhHighlightsStart = 0.55f;
         [Range(0f, 2f)] public float smhHighlightsEnd = 1f;
 
-        // ---- Tone Mapping ----
         public enum ToneMappingMode
         {
             None,
@@ -55,14 +56,15 @@ namespace ArcToon.Passes.PostProcessing.Processors
             ACES,
         }
 
-        public ToneMappingMode toneMapping = ToneMappingMode.Neutral;
-
         public enum ColorLUTResolution
         {
             _16 = 16,
             _32 = 32,
             _64 = 64
         }
+
+        [Header("Tone Mapping")]
+        public ToneMappingMode toneMapping = ToneMappingMode.Neutral;
 
         public ColorLUTResolution colorLUTResolution = ColorLUTResolution._64;
 

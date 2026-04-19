@@ -37,13 +37,6 @@ namespace ArcToon.Passes.PostProcessing.Processors
         private int stepCount;
         private bool useHDR;
 
-        // ---- Shader property IDs ----
-        private static readonly int bloomHighResTextureID = Shader.PropertyToID("_BloomHighResTexture");
-        private static readonly int bloomThresholdID = Shader.PropertyToID("_BloomThreshold");
-        private static readonly int bloomBicubicUpsamplingID = Shader.PropertyToID("_BloomBicubicUpsampling");
-        private static readonly int bloomScaleID = Shader.PropertyToID("_BloomScale");
-        private static readonly int bloomScatterID = Shader.PropertyToID("_BloomScatter");
-
         public override bool IsActive(CameraRenderer renderer)
         {
             if (!volumeConfig.enabled) return false;
@@ -101,7 +94,7 @@ namespace ArcToon.Passes.PostProcessing.Processors
         public override void Render(CommandBuffer cmd, RTHandle source, RTHandle destination)
         {
             // ---- Prefilter ----
-            cmd.SetGlobalVector(bloomThresholdID, GetKneeCurveData());
+            cmd.SetGlobalVector(InternalShader.PropertyID.BloomThreshold, GetKneeCurveData());
 
             BlitUtils.BlitTexture(cmd, source, prefilter, material,
                 volumeConfig.fadeFireflies
@@ -125,32 +118,32 @@ namespace ArcToon.Passes.PostProcessing.Processors
             }
 
             // ---- Upsample ----
-            cmd.SetGlobalFloat(bloomBicubicUpsamplingID, volumeConfig.bicubicUpsampling ? 1f : 0f);
+            cmd.SetGlobalFloat(InternalShader.PropertyID.BloomBicubicUpsampling, volumeConfig.bicubicUpsampling ? 1f : 0f);
             int combinePass, finalPass;
             if (volumeConfig.mode == BloomVolumeConfig.Mode.Additive)
             {
                 combinePass = (int)Pass.AdditiveCombine;
                 finalPass = (int)Pass.AdditiveCombineFinal;
-                cmd.SetGlobalFloat(bloomScaleID, volumeConfig.intensity);
+                cmd.SetGlobalFloat(InternalShader.PropertyID.BloomScale, volumeConfig.intensity);
             }
             else
             {
                 combinePass = (int)Pass.ScatterCombine;
                 finalPass = (int)Pass.ScatterCombineFinal;
-                cmd.SetGlobalFloat(bloomScatterID, volumeConfig.scatter);
+                cmd.SetGlobalFloat(InternalShader.PropertyID.BloomScatter, volumeConfig.scatter);
             }
 
             dstPyramidIndex -= 5;
             for (i -= 1; i > 0; i--)
             {
-                cmd.SetGlobalTexture(bloomHighResTextureID, pyramid[dstPyramidIndex + 1]);
+                cmd.SetGlobalTexture(InternalShader.PropertyID.BloomHighResTexture, pyramid[dstPyramidIndex + 1]);
                 BlitUtils.BlitTexture(cmd, pyramid[srcPyramidIndex], pyramid[dstPyramidIndex], material, combinePass);
                 srcPyramidIndex = dstPyramidIndex;
                 dstPyramidIndex -= 2;
             }
 
             // Final combine: blend bloom result with original source → destination
-            cmd.SetGlobalTexture(bloomHighResTextureID, source);
+            cmd.SetGlobalTexture(InternalShader.PropertyID.BloomHighResTexture, source);
             BlitUtils.BlitTexture(cmd, pyramid[srcPyramidIndex], destination, material, finalPass);
         }
 
