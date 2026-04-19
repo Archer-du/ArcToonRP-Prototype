@@ -1,111 +1,131 @@
-﻿using ArcToon.Behavior;
+﻿using System.Collections.Generic;
+using ArcToon.Behavior;
+using ArcToon.Config;
 using ArcToon.Data;
 using ArcToon.Passes;
 using ArcToon.Passes.Lighting;
+using ArcToon.Passes.PostProcessing;
 using ArcToon.Settings;
+using ArcToon.System;
+using ArcToon.Utils;
+using ArcToon.Utils.Extensions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace ArcToon
 {
-    public enum RenderPhase
-    {
-        Lighting,
-        Setup,
-        Opaque,
-        Skybox,
-        Transparent,
-        Unsupported,
-        PostProcessing,
-        BackBuffer,
-    }
-    
     public class CameraRenderer
     {
+        internal RenderPipelineConfig PipelineConfig { private set; get; }
+        internal RenderResources Resources { get; private set; }
+        
         internal ScriptableRenderContext Context { private set; get; }
         internal Camera RenderCamera { private set; get; }
-        internal CameraAdditiveData CameraAdditiveData { private set; get; }
         internal float RenderScale { private set; get; }
         internal Vector2Int AttachmentSize { private set; get; }
         internal CullingResults CullingResults { private set; get; }
         internal bool useHDR { private set; get; }
-        internal RenderPhase RenderPhase { private set; get; }
         
-        internal CameraBufferSettings BufferSettings { private set; get; }
-        internal ShadowSettings ShadowSettings { private set; get; }
-        internal ForwardPlusSettings ForwardPlusSettings { private set; get; }
-        internal PostFXConfig PostFXConfig { private set; get; }
+        internal CameraAdditiveData CameraAdditiveData { private set; get; }
         
-        // TODO: Singleton
-        internal PerObjectShadowCasterManager PerObjectShadowCasterManager = new();
+        internal PostProcessConfig PostProcessConfig { private set; get; }
+        
+        #region Built-in Pass Instances
 
-        internal RenderResources Resources { get; private set; }
-
-        #region Pass Instances
-
-        private readonly LightingPass lightingPass = new();
-        private readonly SetupPass setupPass = new();
-        private readonly DepthStencilPrePass depthStencilPrePass = new();
-        private readonly OpaquePass opaquePass = new();
-        private readonly GeometryOutlinePass opaqueOutlinePass = new();
-        private readonly SkyboxPass skyboxPass = new();
-        private readonly TransparentPass transparentPass = new();
-        private readonly GeometryOutlinePass transparentOutlinePass = new();
-        private readonly UnsupportedPass unsupportedPass = new();
-        private readonly PostFXPass postFXPass = new();
-        private readonly DebugPass debugPass = new();
-        private readonly GizmosPass gizmosPass = new();
-        private readonly CopyFinalPass copyFinalPass = new();
+        private readonly LightingPass lightingPass;
+        private readonly SetupPass setupPass;
+        private readonly DepthStencilPrePass depthStencilPrePass;
+        
+        private readonly OpaquePass opaquePass;
+        private readonly SkyboxPass skyboxPass;
+        private readonly TransparentPass transparentPass;
+        
+        private readonly UnsupportedPass unsupportedPass;
+        private readonly PostProcessPass postProcessPass;
+        private readonly DebugPass debugPass;
+        private readonly GizmosPass gizmosPass;
+        private readonly CopyFinalPass copyFinalPass;
 
         #endregion
 
-        public CameraRenderer()
+        private readonly List<RenderPassBase> activePassQueue = new();
+
+        internal CameraBufferSettings BufferSettings => PipelineConfig.cameraBufferSettings;
+        internal ShadowSettings ShadowSettings => PipelineConfig.shadowSettings;
+        internal ForwardPlusSettings ForwardPlusSettings => PipelineConfig.forwardPlusSettings;
+
+        public CameraRenderer(RenderPipelineConfig config)
         {
+            PipelineConfig = config;
             Resources = new RenderResources();
+            
+            lightingPass = new LightingPass(Resources, this);
+            setupPass = new SetupPass(Resources, this);
+            depthStencilPrePass = new DepthStencilPrePass(Resources, this);
+            opaquePass = new OpaquePass(Resources, this);
+            skyboxPass = new SkyboxPass(Resources, this);
+            transparentPass = new TransparentPass(Resources, this);
+            unsupportedPass = new UnsupportedPass(Resources, this);
+            postProcessPass = new PostProcessPass(Resources, this);
+            debugPass = new DebugPass(Resources, this);
+            gizmosPass = new GizmosPass(Resources, this);
+            copyFinalPass = new CopyFinalPass(Resources, this);
+            
             CameraDebugger.Initialize();
         }
 
         public void Dispose()
         {
             Resources.Dispose();
+            
+            // Dispose all pass instances
+            lightingPass.Dispose();
+            setupPass.Dispose();
+            depthStencilPrePass.Dispose();
+            opaquePass.Dispose();
+            skyboxPass.Dispose();
+            transparentPass.Dispose();
+            unsupportedPass.Dispose();
+            postProcessPass.Dispose();
+            debugPass.Dispose();
+            gizmosPass.Dispose();
+            copyFinalPass.Dispose();
+            
             CameraDebugger.Cleanup();
         }
 
-        public void Render(ScriptableRenderContext context, Camera camera,
-            RenderPipelineConfig config)
+        private void EnqueuePass(RenderPassBase pass)
         {
-            if (SetupRenderData(context, camera, config))
+            activePassQueue.Add(pass);
+        }
+
+        public void Render(ScriptableRenderContext context, Camera camera)
+        {
+            if (SetupRenderData(context, camera))
             {
-                ExecuteRenderPass();
+                EnqueuePasses();
+                ExecutePassQueue();
             }
         }
 
-        private bool SetupRenderData(ScriptableRenderContext context, Camera camera,
-            RenderPipelineConfig config)
+        private bool SetupRenderData(ScriptableRenderContext context, Camera camera)
         {
             RenderCamera = camera;
             Context = context;
 
             var cameraRenderController = camera.GetComponent<CameraRenderController>();
-            if (!cameraRenderController)
+            CameraAdditiveData = !cameraRenderController ? CameraAdditiveData.DefaultAdditiveData : cameraRenderController.AdditiveData;
+
+            PostProcessConfig = PipelineConfig.globalPostProcessConfig;
+            if (CameraAdditiveData.overridePostProcessConfig != null)
             {
-                CameraAdditiveData = CameraAdditiveData.DefaultAdditiveData;
-            }
-            else
-            {
-                CameraAdditiveData = cameraRenderController.AdditiveData;
+                PostProcessConfig = CameraAdditiveData.overridePostProcessConfig;
             }
             
-            BufferSettings = config.cameraBufferSettings;
-            ShadowSettings = config.globalShadowSettings;
-            ForwardPlusSettings = config.forwardPlusSettings;
-            
-            PostFXConfig = config.globalPostFXConfig;
-            if (CameraAdditiveData.overridePostFXConfig != null)
-            {
-                PostFXConfig = CameraAdditiveData.overridePostFXConfig;
-            }
+            RenderScale = CameraAdditiveData.GetRenderScale(BufferSettings.renderScale);
+            AttachmentSize = RenderCamera.GetAttachmentSize(RenderScale);
+            useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
 
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
@@ -118,111 +138,100 @@ namespace ArcToon
             {
                 return false;
             }
-            
-            RenderScale = CameraAdditiveData.GetRenderScale(BufferSettings.renderScale);
-            AttachmentSize = GetCameraBufferSize(RenderCamera, RenderScale);
-                        
-            useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
 
+            // TODO: refactor
             // Allocate / resize persistent resources
             Resources.AllocateCameraResources(AttachmentSize.x, AttachmentSize.y, useHDR);
             Resources.AllocateShadowResources(ShadowSettings);
             Resources.AllocateLightingResources();
-            Resources.AllocateTransparencyResources(AttachmentSize.x, AttachmentSize.y, useHDR);
-            Resources.AllocatePostFXResources(AttachmentSize.x, AttachmentSize.y, useHDR);
 
             return true;
         }
 
-        private void ExecuteRenderPass()
+        /// <summary>
+        /// Build the active pass queue for this frame.
+        /// Passes are enqueued in execution order.
+        /// </summary>
+        private void EnqueuePasses()
         {
-            // Phase: Lighting
-            RenderPhase = RenderPhase.Lighting;
-            ExecutePass(lightingPass);
+            activePassQueue.Clear();
 
-            // Phase: Setup
-            RenderPhase = RenderPhase.Setup;
-            ExecutePass(setupPass);
-            ExecutePass(depthStencilPrePass);
+            // Lighting
+            EnqueuePass(lightingPass);
 
-            // Phase: Opaque
-            RenderPhase = RenderPhase.Opaque;
-            ExecutePass(opaquePass);
-            ExecutePass(opaqueOutlinePass);
+            // Setup
+            EnqueuePass(setupPass);
+            EnqueuePass(depthStencilPrePass);
 
-            // Phase: Skybox
-            RenderPhase = RenderPhase.Skybox;
-            ExecutePass(skyboxPass);
+            // Geometry
+            EnqueuePass(opaquePass);
+            EnqueuePass(skyboxPass);
+            EnqueuePass(transparentPass);
+            EnqueuePass(unsupportedPass);
 
-            // Phase: Transparent
-            RenderPhase = RenderPhase.Transparent;
-            ExecutePass(transparentPass);
+            // Post Processing
+            EnqueuePass(postProcessPass);
 
-            // Phase: Unsupported
-            RenderPhase = RenderPhase.Unsupported;
-            ExecutePass(unsupportedPass);
+            // Back Buffer
+            EnqueuePass(copyFinalPass);
 
-            // Phase: PostProcessing
-            RenderPhase = RenderPhase.PostProcessing;
-            ExecutePass(postFXPass);
-
-            // Phase: BackBuffer
-            RenderPhase = RenderPhase.BackBuffer;
-            ExecutePass(copyFinalPass);
-
+            // Editor
             if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
             {
-                ExecutePass(debugPass);
+                EnqueuePass(debugPass);
             }
 #if UNITY_EDITOR
             if (Handles.ShouldRenderGizmos())
             {
-                ExecutePass(gizmosPass);
+                EnqueuePass(gizmosPass);
             }
 #endif
+        }
+
+        /// <summary>
+        /// Execute all enqueued passes following URP-aligned lifecycle:
+        /// Configuration Phase: SetupFrameData → SetupRendererList (all passes)
+        /// Execution Phase: Execute (each pass in order)
+        /// Cleanup Phase: CleanupFrameData (all passes)
+        /// </summary>
+        private void ExecutePassQueue()
+        {
+            // ─── Configuration Phase ───
+            var setupCmd = CommandBufferPool.Get();
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                activePassQueue[i].SetupFrameData(setupCmd);
+            }
+            Context.ExecuteCommandBuffer(setupCmd);
+            setupCmd.Clear();
+            CommandBufferPool.Release(setupCmd);
+
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                activePassQueue[i].SetupRendererList(Context);
+            }
+
+            // ─── Execution Phase ───
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                var cmd = CommandBufferPool.Get(activePassQueue[i].Name);
+                activePassQueue[i].Execute(cmd, Context);
+                Context.ExecuteCommandBuffer(cmd);
+                cmd.Clear();
+                CommandBufferPool.Release(cmd);
+            }
+
+            // ─── Cleanup Phase ───
+            var cleanupCmd = CommandBufferPool.Get();
+            for (int i = 0; i < activePassQueue.Count; i++)
+            {
+                activePassQueue[i].CleanupFrameData(cleanupCmd);
+            }
+            Context.ExecuteCommandBuffer(cleanupCmd);
+            cleanupCmd.Clear();
+            CommandBufferPool.Release(cleanupCmd);
 
             Context.Submit();
-        }
-
-        private void ExecutePass(RenderPassBase pass)
-        {
-            pass.Setup(Resources, this);
-            pass.PrepareRendererLists(Context);
-
-            // Each pass gets its own named CommandBuffer from the pool.
-            // The cmd name automatically creates profiling events on
-            // ExecuteCommandBuffer, avoiding BeginSample/EndSample mismatch
-            // when passes flush the buffer internally.
-            var cmd = CommandBufferPool.Get(pass.Name);
-            pass.Execute(cmd, Context);
-            Context.ExecuteCommandBuffer(cmd);
-            cmd.Clear();
-            CommandBufferPool.Release(cmd);
-        }
-
-        private Vector2Int GetCameraBufferSize(Camera camera, float renderScale)
-        {
-            renderScale = Mathf.Clamp(renderScale, CameraAdditiveData.renderScaleMin, CameraAdditiveData.renderScaleMax);
-            bool useScaledRendering = renderScale < 0.99f || renderScale > 1.01f;
-#if UNITY_EDITOR
-            if (camera.cameraType == CameraType.SceneView)
-            {
-                useScaledRendering = false;
-            }
-#endif
-            Vector2Int bufferSize = default;
-            if (useScaledRendering)
-            {
-                bufferSize.x = (int)(camera.pixelWidth * renderScale);
-                bufferSize.y = (int)(camera.pixelHeight * renderScale);
-            }
-            else
-            {
-                bufferSize.x = camera.pixelWidth;
-                bufferSize.y = camera.pixelHeight;
-            }
-
-            return bufferSize;
         }
 
         private bool GetCullingResults(ScriptableRenderContext context, float maxShadowDistance)
@@ -234,7 +243,8 @@ namespace ArcToon
 
             scriptableCullingParameters.shadowDistance = Mathf.Min(maxShadowDistance, RenderCamera.farClipPlane);
             CullingResults = context.Cull(ref scriptableCullingParameters);
-            PerObjectShadowCasterManager.Cull(RenderCamera);
+            // TODO: move？
+            PerObjectShadowCasterManager.Instance.Cull(RenderCamera);
             
             return true;
         }

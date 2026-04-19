@@ -3,6 +3,7 @@ using ArcToon.Data;
 using ArcToon.Jobs;
 using ArcToon.Passes.Lighting;
 using ArcToon.Settings;
+using ArcToon.System;
 using ArcToon.Utils;
 using Unity.Collections;
 using Unity.Jobs;
@@ -65,10 +66,10 @@ namespace ArcToon.Passes
         int TileCount => tileCount.x * tileCount.y;
         #endregion
 
-        public override void Setup(RenderResources resources, CameraRenderer renderer)
-        {
-            base.Setup(resources, renderer);
+        public LightingPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
 
+        public override void SetupFrameData(CommandBuffer cmd)
+        {
             maxLightCountPerTile = renderer.ForwardPlusSettings.maxLightsPerTile;
             tileDataSize = maxLightCountPerTile + 2;
 
@@ -78,25 +79,24 @@ namespace ArcToon.Passes
             pointLightBounds = new NativeArray<float4>(RenderPipelineInfo.MaxPointLightCount,
                 Allocator.TempJob,
                 NativeArrayOptions.UninitializedMemory);
-            
+
             float tileScreenPixelSize = renderer.ForwardPlusSettings.tileSize <= 0 ? 64f : (float)renderer.ForwardPlusSettings.tileSize;
             screenUVToTileCoordinates.x = renderer.AttachmentSize.x / tileScreenPixelSize;
             screenUVToTileCoordinates.y = renderer.AttachmentSize.y / tileScreenPixelSize;
             tileCount.x = Mathf.CeilToInt(screenUVToTileCoordinates.x);
             tileCount.y = Mathf.CeilToInt(screenUVToTileCoordinates.y);
 
-            // Allocate forward+ tile buffer based on current tile count
-            resources.Lighting.AllocateForwardPlusTileBuffer(TileCount, tileDataSize);
-
             perLightDataCollector.Setup(renderer.CullingResults, renderer.ShadowSettings);
             CollectPerLightData();
 
-            shadowMapRenderer.Initialize(renderer.CullingResults, Camera, renderer.ShadowSettings, perLightDataCollector,
-                renderer.PerObjectShadowCasterManager);
+            shadowMapRenderer.Initialize(renderer.CullingResults, Camera, renderer.ShadowSettings, perLightDataCollector);
             shadowMapRenderer.SetupResources(resources.Shadows);
+
+            // Allocate forward+ tile GraphicsBuffer based on current tile count
+            resources.Lighting.AllocateForwardPlusTileBuffer(TileCount, tileDataSize);
         }
 
-        public override void PrepareRendererLists(ScriptableRenderContext context)
+        public override void SetupRendererList(ScriptableRenderContext context)
         {
             shadowMapRenderer.BuildRendererLists(context);
         }
@@ -137,6 +137,10 @@ namespace ArcToon.Passes
                 )
             );
 
+        }
+
+        public override void CleanupFrameData(CommandBuffer cmd)
+        {
             spotLightBounds.Dispose();
             pointLightBounds.Dispose();
             forwardPlusTileData.Dispose();
@@ -174,7 +178,7 @@ namespace ArcToon.Passes
                 }
             }
 
-            var visiblePerObjectShadowCasters = renderer.PerObjectShadowCasterManager.visibleCasters;
+            var visiblePerObjectShadowCasters = PerObjectShadowCasterManager.Instance.visibleCasters;
             perObjectCasterCount = 0;
             for (int i = 0; i < visiblePerObjectShadowCasters.Count; i++)
             {

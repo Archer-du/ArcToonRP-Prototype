@@ -1,6 +1,7 @@
 ﻿using ArcToon.Behavior;
 using ArcToon.Data;
 using ArcToon.Settings;
+using ArcToon.System;
 using ArcToon.Utils;
 using ArcToon.Utils.Extensions;
 using UnityEngine.Rendering;
@@ -15,9 +16,10 @@ namespace ArcToon.Passes
 
         bool bicubicSampling;
 
-        public override void Setup(RenderResources resources, CameraRenderer renderer)
+        public CopyFinalPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
+
+        public override void SetupFrameData(CommandBuffer cmd)
         {
-            base.Setup(resources, renderer);
             var bicubicRescalingMode = renderer.BufferSettings.bicubicRescalingMode;
             bicubicSampling =
                 bicubicRescalingMode == CameraBufferSettings.BicubicRescalingMode.UpAndDown ||

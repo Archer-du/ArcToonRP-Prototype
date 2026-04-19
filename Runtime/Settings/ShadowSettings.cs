@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace ArcToon.Settings
 {
-    [System.Serializable]
+    [Serializable]
     public class ShadowSettings
     {
         public enum MapSize
@@ -30,7 +31,7 @@ namespace ArcToon.Settings
             Soft,
         }
 
-        [System.Serializable]
+        [Serializable]
         public struct DirectionalCascadeShadow
         {
             public MapSize atlasSize;
@@ -58,7 +59,7 @@ namespace ArcToon.Settings
             blendMode = CascadeBlendMode.Dither
         };
 
-        [System.Serializable]
+        [Serializable]
         public struct PerObjectShadow
         {
             public MapSize atlasSize;
@@ -68,7 +69,7 @@ namespace ArcToon.Settings
             atlasSize = MapSize._4096
         };
 
-        [System.Serializable]
+        [Serializable]
         public struct SpotShadow
         {
             public MapSize atlasSize;
@@ -79,7 +80,7 @@ namespace ArcToon.Settings
             atlasSize = MapSize._4096,
         };
 
-        [System.Serializable]
+        [Serializable]
         public struct PointShadow
         {
             public MapSize atlasSize;

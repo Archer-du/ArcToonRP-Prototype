@@ -1,4 +1,5 @@
-﻿using ArcToon.Utils;
+﻿using ArcToon.Data;
+using ArcToon.Utils;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
 
@@ -7,6 +8,8 @@ namespace ArcToon.Passes
     public class UnsupportedPass : RenderPassBase
     {
         public override string Name => "Unsupported";
+
+        public UnsupportedPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
 
         private static ShaderTagId[] invalidShaderTagIds =
         {
@@ -20,7 +23,7 @@ namespace ArcToon.Passes
 
         RendererList list;
 
-        public override void PrepareRendererLists(ScriptableRenderContext context)
+        public override void SetupRendererList(ScriptableRenderContext context)
         {
 #if UNITY_EDITOR
             list = context.CreateRendererList(new RendererListDesc(invalidShaderTagIds, renderer.CullingResults, Camera)

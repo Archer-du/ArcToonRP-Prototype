@@ -1,13 +1,13 @@
 ﻿#ifndef ARCTOON_FXAA_PASS_INCLUDED
 #define ARCTOON_FXAA_PASS_INCLUDED
 
-#include "PostFXStackInput.hlsl"
+#include "Packages/com.arctoon.render-pipeline/Shaders/PostProcess/PostProcessInput.hlsl"
 
-#if defined(FXAA_QUALITY_LOW)
+#if defined(_FXAA_QUALITY_LOW)
     #define EXTRA_EDGE_STEPS 3
     #define EDGE_STEP_SIZES 1.5, 2.0, 2.0
     #define LAST_EDGE_STEP_GUESS 8.0
-#elif defined(FXAA_QUALITY_MEDIUM)
+#elif defined(_FXAA_QUALITY_MEDIUM)
     #define EXTRA_EDGE_STEPS 8
     #define EDGE_STEP_SIZES 1.5, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 4.0
     #define LAST_EDGE_STEP_GUESS 8.0
@@ -38,7 +38,7 @@ struct FXAAEdge
 float SampleSourceLuminance(float2 screenUV, float uOffset = 0.0, float vOffset = 0.0)
 {
     screenUV += float2(uOffset, vOffset) * GetSourceTexelSize().xy;
-    #if defined(FXAA_ALPHA_CONTAINS_LUMA)
+    #if defined(_FXAA_ALPHA_CONTAINS_LUMA)
     return SampleSource(screenUV).a;
     #else
     return SampleSource(screenUV).g;

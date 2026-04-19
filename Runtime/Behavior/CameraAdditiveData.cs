@@ -1,5 +1,6 @@
 ﻿using System;
-using ArcToon.Settings;
+using ArcToon.Config;
+using ArcToon.Passes.PostProcessing;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -27,7 +28,7 @@ namespace ArcToon.Behavior
         
         [Range(0.1f, 2f)] public float renderScale = 1f;
 
-        public PostFXConfig overridePostFXConfig;
+        public PostProcessConfig overridePostProcessConfig;
 
         [Serializable]
         public struct FinalBlendMode

@@ -12,6 +12,7 @@ namespace ArcToon
         
         protected override RenderPipeline CreatePipeline()
         {
+            Debug.Log("ArcToonRP Instance Created");
             return new ArcToonRenderPipelineInstance(config);
         }
     }

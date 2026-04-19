@@ -1,4 +1,5 @@
-﻿using UnityEngine.Rendering;
+﻿using ArcToon.Data;
+using UnityEngine.Rendering;
 
 namespace ArcToon.Passes
 {
@@ -6,9 +7,11 @@ namespace ArcToon.Passes
     {
         public override string Name => "Skybox";
 
+        public SkyboxPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
+
         RendererList list;
 
-        public override void PrepareRendererLists(ScriptableRenderContext context)
+        public override void SetupRendererList(ScriptableRenderContext context)
         {
             list = context.CreateSkyboxRendererList(Camera);
         }

@@ -1,4 +1,5 @@
-﻿using ArcToon.Utils;
+﻿using ArcToon.Data;
+using ArcToon.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RendererUtils;
@@ -8,6 +9,8 @@ namespace ArcToon.Passes
     public class DepthStencilPrePass : RenderPassBase
     {
         public override string Name => "Prepass";
+
+        public DepthStencilPrePass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
 
         private static ShaderTagId[] DepthPrePassShaderTagIds =
         {
@@ -25,7 +28,7 @@ namespace ArcToon.Passes
         private RendererList transparentDepthPrepassList;
         private RendererList stencilMaskList;
 
-        public override void PrepareRendererLists(ScriptableRenderContext context)
+        public override void SetupRendererList(ScriptableRenderContext context)
         {
             opaqueDepthPrepassList = context.CreateRendererList(new RendererListDesc(DepthPrePassShaderTagIds, renderer.CullingResults, Camera)
             {

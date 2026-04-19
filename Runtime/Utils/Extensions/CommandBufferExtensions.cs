@@ -22,9 +22,9 @@ namespace ArcToon.Utils.Extensions
             }
         }
 
-        public static void DrawPerObjectShadowRenderer(this CommandBuffer commandBuffer, PerObjectShadowCasterManager manager, int visiblePerObjectShadowCasterIndex)
+        public static void DrawPerObjectShadowRenderer(this CommandBuffer commandBuffer, int visiblePerObjectShadowCasterIndex)
         {
-            PerObjectShadowCaster caster = manager.visibleCasters[visiblePerObjectShadowCasterIndex];
+            PerObjectShadowCaster caster = PerObjectShadowCasterManager.Instance.visibleCasters[visiblePerObjectShadowCasterIndex];
             foreach (var renderer in caster.perObjectCasterRenderers)
             {
                 foreach (var drawCall in renderer.drawCallList)

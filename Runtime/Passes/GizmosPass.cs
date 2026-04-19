@@ -1,4 +1,5 @@
-﻿using ArcToon.Utils;
+﻿using ArcToon.Data;
+using ArcToon.Utils;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Passes
@@ -7,14 +8,16 @@ namespace ArcToon.Passes
     {
         public override string Name => "Gizmos";
 
+        public GizmosPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
+
         public override void Execute(CommandBuffer commandBuffer, ScriptableRenderContext context)
         {
 #if UNITY_EDITOR
-            RenderTextureHelpers.BlitTexture(commandBuffer, 
+            BlitUtils.BlitTexture(commandBuffer, 
                 resources.Camera.depthAttachment, 
                 BuiltinRenderTextureType.CameraTarget,
                 ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 
-                (int)RenderTextureHelpers.BlitMode.Depth);
+                (int)BlitUtils.BlitMode.Depth);
 
             context.ExecuteCommandBuffer(commandBuffer);
             commandBuffer.Clear();

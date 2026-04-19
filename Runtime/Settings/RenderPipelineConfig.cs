@@ -1,16 +1,22 @@
-﻿namespace ArcToon.Settings
+﻿using System;
+using ArcToon.Config;
+using ArcToon.Passes.PostProcessing;
+using UnityEngine.Serialization;
+
+namespace ArcToon.Settings
 {
-    [System.Serializable]
+    [Serializable]
     public class RenderPipelineConfig
     {
         public bool useSRPBatcher = true;
         
         public CameraBufferSettings cameraBufferSettings;
 
-        public ShadowSettings globalShadowSettings;
+        [FormerlySerializedAs("globalShadowSettings")] 
+        public ShadowSettings shadowSettings;
 
         public ForwardPlusSettings forwardPlusSettings;
 
-        public PostFXConfig globalPostFXConfig;
+        public PostProcessConfig globalPostProcessConfig;
     }
 }

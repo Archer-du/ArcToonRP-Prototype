@@ -4,9 +4,10 @@ using ArcToon.Settings;
 namespace ArcToon.Data
 {
     /// <summary>
-    /// Composite container for all persistent render resources.
+    /// Composite container for shared render resources (cross-pass).
     /// Each functional domain is managed by a dedicated sub-class.
-    /// Passes access resources through the appropriate sub-container
+    /// Pass-exclusive resources are owned by the pass itself (e.g. TransparentPass).
+    /// Passes access shared resources through the appropriate sub-container
     /// (e.g. resources.Camera.colorAttachment, resources.Shadows.directionalShadowAtlas).
     /// </summary>
     public class RenderResources : IDisposable
@@ -15,7 +16,6 @@ namespace ArcToon.Data
         public ShadowResources Shadows { get; } = new();
         public LightingResources Lighting { get; } = new();
         public PostFXResources PostFX { get; } = new();
-        public TransparencyResources Transparency { get; } = new();
 
         private bool disposed;
 
@@ -34,16 +34,6 @@ namespace ArcToon.Data
             Lighting.Allocate();
         }
 
-        public void AllocateTransparencyResources(int width, int height, bool useHDR)
-        {
-            Transparency.Allocate(width, height, useHDR);
-        }
-
-        public void AllocatePostFXResources(int width, int height, bool useHDR)
-        {
-            PostFX.Allocate(width, height, useHDR);
-        }
-
         public void Dispose()
         {
             if (disposed) return;
@@ -53,7 +43,6 @@ namespace ArcToon.Data
             Shadows.Dispose();
             Lighting.Dispose();
             PostFX.Dispose();
-            Transparency.Dispose();
         }
     }
 }
