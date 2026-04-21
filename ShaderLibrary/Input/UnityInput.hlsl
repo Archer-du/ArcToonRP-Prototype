@@ -43,6 +43,14 @@ float4x4 unity_prev_MatrixM;
 float4x4 unity_prev_MatrixIM;
 float4x4 glstate_matrix_projection;
 
+// Built-in projection parameters populated by Unity per camera / setup:
+//   .x = +1, or -1 when the projection matrix is Y-flipped (Unity flips Y when
+//        rendering to a RenderTexture on APIs with top-left UV origin so the
+//        framebuffer orientation stays consistent across APIs; shaders that
+//        produce their own UVs use this as the runtime flip condition).
+//   .y = camera near plane distance.
+//   .z = camera far plane distance.
+//   .w = 1 / camera far plane distance.
 float4 _ProjectionParams;
 float4 unity_OrthoParams;
 float4 _ScreenParams;

@@ -32,6 +32,7 @@ namespace ArcToon.Utils
             public static readonly string PostProcessBloom = "Hidden/ArcToon/PostProcess/Bloom";
             public static readonly string PostProcessColorGrading = "Hidden/ArcToon/PostProcess/ColorGrading";
             public static readonly string PostProcessFXAA = "Hidden/ArcToon/PostProcess/FXAA";
+            public static readonly string PostProcessSMAA = "Hidden/ArcToon/PostProcess/SMAA";
         }
         
         public static class PropertyID
@@ -135,6 +136,12 @@ namespace ArcToon.Utils
 
             // FXAA
             public static readonly int FXAAParams = ShaderPropertyID();
+
+            // SMAA
+            public static readonly int SMAAMetrics = ShaderPropertyID();
+            public static readonly int SMAAAreaTexture = ShaderPropertyID();
+            public static readonly int SMAASearchTexture = ShaderPropertyID();
+            public static readonly int SMAABlendTexture = ShaderPropertyID();
             #endregion
         }
         
@@ -175,6 +182,11 @@ namespace ArcToon.Utils
             public static readonly BuiltinGlobalKeyword FXAA_QUALITY_LOW = ShaderGlobalKeyword();
             public static readonly BuiltinGlobalKeyword FXAA_QUALITY_MEDIUM = ShaderGlobalKeyword();
             public static readonly BuiltinGlobalKeyword FXAA_ALPHA_CONTAINS_LUMA = ShaderGlobalKeyword();
+
+            // PostProcessing - SMAA
+            public static readonly BuiltinGlobalKeyword SMAA_PRESET_LOW = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword SMAA_PRESET_MEDIUM = ShaderGlobalKeyword();
+            public static readonly BuiltinGlobalKeyword SMAA_PRESET_HIGH = ShaderGlobalKeyword();
         }
     }
 }

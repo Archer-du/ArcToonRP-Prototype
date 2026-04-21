@@ -44,6 +44,33 @@ SAMPLER_CMP(sampler_linear_clamp_compare);
 #define COLOR_BLEND_DIFFERENCE 11
 #define COLOR_BLEND_EXCLUSION 12
 
+// -----------------------------------------------------------------------------
+// Fullscreen-triangle VS shared by every post-process / blit shader.
+//
+// Emits a single oversized triangle that conservatively covers the [-1, 1]^2
+// clip-space viewport. DrawProcedural is expected to be called with
+// MeshTopology.Triangles and a vertexCount of 3.
+//
+// Vertex layout (clip-space, before the Y-flip branch):
+//
+//     vertexID = 0 : positionCS = (-1, -1)   screenUV = (0, 0)   bottom-left
+//     vertexID = 1 : positionCS = (-1,  3)   screenUV = (0, 2)   top-left   (overshoots)
+//     vertexID = 2 : positionCS = ( 3, -1)   screenUV = (2, 0)   bottom-right (overshoots)
+//
+// Triangle edges: v0->v1 runs along x=-1 (screen's left edge), v0->v2 along
+// y=-1 (screen's bottom edge); the hypotenuse v1->v2 sits fully outside the
+// [-1, 1]^2 viewport. Only the portion inside [-1, 1]^2 (UV [0, 1]^2) reaches
+// the framebuffer; pixels past the viewport are discarded by the rasterizer.
+// This "oversized triangle" trick saves one vertex and one interior edge
+// versus a two-triangle quad, and avoids the diagonal seam where both
+// sub-triangles would otherwise touch the same pixels.
+//
+// The final `if (_ProjectionParams.x < 0.0)` branch is the project-wide
+// runtime Y-flip used when Unity renders with a Y-flipped projection matrix
+// (i.e. rendering to a RenderTexture on D3D / Metal / Vulkan). See
+// ChatLogs/Document/FullscreenBlit_UVConvention.md for the full rationale and
+// why we do NOT combine this with SRP core's GetFullScreenTriangle* helpers.
+// -----------------------------------------------------------------------------
 struct Varyings_Default
 {
     float4 positionCS_SS : SV_POSITION;
@@ -62,6 +89,9 @@ Varyings_Default DefaultPassVertex(uint vertexID : SV_VertexID)
         vertexID <= 1 ? 0.0 : 2.0,
         vertexID == 1 ? 2.0 : 0.0
     );
+    // Runtime Y-flip: Unity sets _ProjectionParams.x to -1 when it flips the
+    // projection matrix's Y axis (render-to-RT on APIs with top-left UV
+    // origin). Without this flip the blit output would appear upside-down.
     if (_ProjectionParams.x < 0.0)
     {
         output.screenUV.y = 1.0 - output.screenUV.y;
