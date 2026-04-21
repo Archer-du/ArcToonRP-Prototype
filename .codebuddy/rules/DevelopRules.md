@@ -7,4 +7,8 @@ type: always
 在进行任何形式的代码改动时，如果用户要求：“严格参考”，则：
 
 - 尽可能的查阅Unity官方文档，找出关键文档作为佐证。
-- 在编写代码时，尽可能找到URP/HDRP中的代码参考（源码的位置放在/Users/archerdu/UnityProject/Reference/Graphics目录下）。
+- 在编写代码时，尽可能找到URP/HDRP中的代码参考
+  - 符合当前项目版本的源码位置在：/Users/archerdu/UnityProject/ArcToonRP/Library/PackageCache/com.unity.render-pipelines.universal 
+  - 最新的源码位置在：/Users/archerdu/UnityProject/Reference/Graphics
+
+When referencing URP/HDRP source code from /Users/archerdu/UnityProject/Reference/Graphics (master branch), always treat it as design reference only. Before using any API, type, field, or method from the reference code, must first verify it exists in the project's actual SRP dependency at /Users/archerdu/UnityProject/ArcToonRP/Library/PackageCache/com.unity.render-pipelines.core/ (and other relevant packages). The master branch may contain newer APIs not available in the project's Unity/SRP version. The project's PackageCache is the source of truth for available APIs.

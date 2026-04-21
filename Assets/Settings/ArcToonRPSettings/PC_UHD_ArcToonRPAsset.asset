@@ -16,14 +16,8 @@ MonoBehaviour:
     useSRPBatcher: 1
     cameraBufferSettings:
       enableHDR: 1
-      renderScale: 1.5
+      renderScale: 1.25
       bicubicRescalingMode: 1
-      fxaaSettings:
-        enabled: 1
-        fixedThreshold: 0.0338
-        relativeThreshold: 0.084
-        subpixelBlending: 1
-        quality: 2
     shadowSettings:
       directionalCascadeShadow:
         atlasSize: 4096
@@ -46,5 +40,4 @@ MonoBehaviour:
     forwardPlusSettings:
       tileSize: 64
       maxLightsPerTile: 14
-    globalPostFXConfig: {fileID: 11400000, guid: 2be5a1f8460ec174d8075f46c88cd3d4, type: 2}
     globalPostProcessConfig: {fileID: 11400000, guid: d751fe8ac71714d38b9c6a206862ceb9, type: 2}
