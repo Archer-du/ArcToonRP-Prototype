@@ -3,13 +3,14 @@
   <component name="CopilotChatTabs">
     <option name="completionTestTabDelete" value="false" />
     <option name="crTabDelete" value="true" />
-    <option name="selectedChatTabId" value="019dab73e0b77c06a517889211d57469" />
+    <option name="selectedChatTabId" value="019ebfb2316e7328b414305c0e9a980b" />
     <option name="tabConversationMap">
       <map>
         <entry key="019d6e1249e77d008f4da23a011301f6" value="019d6e1249e77e748654e6311d6eb85c" />
         <entry key="019d826e394c71ef8a767de7e26622c7" value="019d8143d3147791992171452bb8d918" />
         <entry key="019dab7284c07698a3709d25d6e2af1b" value="019dab7284c07c478d1a08e5c60d8a3e" />
         <entry key="019dab73e0b77c06a517889211d57469" value="019dab73e0b77366ba296a0698f954cb" />
+        <entry key="019ebfb2316e7328b414305c0e9a980b" value="019ebfb2316f7873bea409cc7a916a78" />
       </map>
     </option>
   </component>

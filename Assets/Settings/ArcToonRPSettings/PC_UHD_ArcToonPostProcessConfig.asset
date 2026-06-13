@@ -16,7 +16,6 @@ MonoBehaviour:
   - rid: 115054305801404566
   - rid: 115054305801404567
   - rid: 115054305801404621
-  - rid: 115054305801404568
   references:
     version: 2
     RefIds:
@@ -60,14 +59,6 @@ MonoBehaviour:
         smhHighlightsEnd: 1
         toneMapping: 2
         colorLUTResolution: 64
-    - rid: 115054305801404568
-      type: {class: FXAAVolumeConfig, ns: ArcToon.Passes.PostProcessing.Processors, asm: ArcToon.Runtime}
-      data:
-        enabled: 1
-        fixedThreshold: 0.0338
-        relativeThreshold: 0.084
-        subpixelBlending: 1
-        quality: 2
     - rid: 115054305801404621
       type: {class: SMAAVolumeConfig, ns: ArcToon.Passes.PostProcessing.Processors, asm: ArcToon.Runtime}
       data:
