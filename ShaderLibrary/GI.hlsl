@@ -56,6 +56,7 @@ float3 SampleLightMap(float2 lightMapUV)
 
 float3 SampleLightProbe(Surface surface)
 {
+    float3 normalWS = surface.GetGISampleNormalWS();
     #if defined(LIGHTMAP_ON)
     return 0.0;
     #else
@@ -63,7 +64,7 @@ float3 SampleLightProbe(Surface surface)
     {
         return SampleProbeVolumeSH4(
             TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
-            surface.positionWS, surface.normalWS,
+            surface.positionWS, normalWS,
             unity_ProbeVolumeWorldToObject,
             unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
             unity_ProbeVolumeMin.xyz, unity_ProbeVolumeSizeInv.xyz
@@ -79,7 +80,7 @@ float3 SampleLightProbe(Surface surface)
         coefficients[4] = unity_SHBg;
         coefficients[5] = unity_SHBb;
         coefficients[6] = unity_SHC;
-        return max(0.0, SampleSH9(coefficients, surface.normalWS));
+        return max(0.0, SampleSH9(coefficients, normalWS));
     }
     #endif
 }
@@ -109,7 +110,7 @@ float4 SampleBakedShadows(float2 lightMapUV, Surface surface)
 
 float3 SampleEnvironment(Surface surface, BRDF brdf)
 {
-    float3 uvw = reflect(-surface.viewDirectionWS, surface.normalWS);
+    float3 uvw = reflect(-surface.viewDirectionWS, surface.GetGISampleNormalWS());
     float mipLevel = PerceptualRoughnessToMipmapLevel(brdf.perceptualRoughness);
     float4 environment = SAMPLE_TEXTURECUBE_LOD(
         unity_SpecCube0, samplerunity_SpecCube0, uvw, mipLevel

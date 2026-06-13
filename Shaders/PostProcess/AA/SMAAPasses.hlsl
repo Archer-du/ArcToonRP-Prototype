@@ -47,10 +47,6 @@
 #define SAMPLE_TEXTURE2D_X(tex, sampler, uv)      SAMPLE_TEXTURE2D(tex, sampler, uv)
 #define SAMPLE_TEXTURE2D_X_LOD(tex, sampler, uv, lod) SAMPLE_TEXTURE2D_LOD(tex, sampler, uv, lod)
 
-// Static clamp samplers required by SMAA's macros ( LinearSampler / PointSampler aliases below ).
-SAMPLER(sampler_LinearClamp);
-SAMPLER(sampler_PointClamp);
-
 // Map our project keywords to SMAA's own preset macros.
 #if defined(_SMAA_PRESET_LOW)
     #define SMAA_PRESET_LOW
@@ -69,8 +65,8 @@ SAMPLER(sampler_PointClamp);
 
 // SMAA.hlsl's ported HLSL4+ macros reference `LinearSampler` / `PointSampler`
 // directly. Bind them to the SRP built-in static samplers.
-#define LinearSampler sampler_LinearClamp
-#define PointSampler  sampler_PointClamp
+#define LinearSampler sampler_linear_clamp
+#define PointSampler  sampler_point_clamp
 
 // Color edge detection requires linear color.
 #if UNITY_COLORSPACE_GAMMA
@@ -109,11 +105,9 @@ struct VaryingsEdge
     float4 offsets[3] : TEXCOORD1;
 };
 
-VaryingsEdge VertEdge(Attributes input)
+VaryingsEdge SMAAEdgePassVertex(Attributes input)
 {
     VaryingsEdge output;
-    // Use the project's shared fullscreen-triangle VS for positionCS / uv
-    // (including the runtime Y-flip). See FullscreenBlit_UVConvention.md.
     Varyings_Default base = DefaultPassVertex(input.vertexID);
     output.positionCS = base.positionCS_SS;
     output.texcoord   = base.screenUV;
@@ -122,7 +116,7 @@ VaryingsEdge VertEdge(Attributes input)
     return output;
 }
 
-float4 FragEdge(VaryingsEdge input) : SV_Target
+float4 SMAAEdgePassFragment(VaryingsEdge input) : SV_Target
 {
     return float4(SMAAColorEdgeDetectionPS(input.texcoord, input.offsets, _SourceTexture), 0.0, 0.0);
 }
@@ -138,7 +132,7 @@ struct VaryingsBlend
     float4 offsets[3] : TEXCOORD2;
 };
 
-VaryingsBlend VertBlend(Attributes input)
+VaryingsBlend SMAABlendPassVertex(Attributes input)
 {
     VaryingsBlend output;
     Varyings_Default base = DefaultPassVertex(input.vertexID);
@@ -148,7 +142,7 @@ VaryingsBlend VertBlend(Attributes input)
     return output;
 }
 
-float4 FragBlend(VaryingsBlend input) : SV_Target
+float4 SMAABlendPassFragment(VaryingsBlend input) : SV_Target
 {
     // subsampleIndices = 0 for SMAA 1x (no temporal/spatial supersampling).
     return SMAABlendingWeightCalculationPS(
@@ -169,7 +163,7 @@ struct VaryingsNeighbor
     float4 offset     : TEXCOORD1;
 };
 
-VaryingsNeighbor VertNeighbor(Attributes input)
+VaryingsNeighbor SMAANeighborPassVertex(Attributes input)
 {
     VaryingsNeighbor output;
     Varyings_Default base = DefaultPassVertex(input.vertexID);
@@ -179,7 +173,7 @@ VaryingsNeighbor VertNeighbor(Attributes input)
     return output;
 }
 
-float4 FragNeighbor(VaryingsNeighbor input) : SV_Target
+float4 SMAANeighborPassFragment(VaryingsNeighbor input) : SV_Target
 {
     return SMAANeighborhoodBlendingPS(input.texcoord, input.offset, _SourceTexture, _SMAABlendTexture);
 }

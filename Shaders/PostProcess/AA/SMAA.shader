@@ -23,8 +23,8 @@ Shader "Hidden/ArcToon/PostProcess/SMAA"
 
             #include "SMAAPasses.hlsl"
 
-            #pragma vertex VertEdge
-            #pragma fragment FragEdge
+            #pragma vertex SMAAEdgePassVertex
+            #pragma fragment SMAAEdgePassFragment
             ENDHLSL
         }
 
@@ -42,8 +42,8 @@ Shader "Hidden/ArcToon/PostProcess/SMAA"
 
             #include "SMAAPasses.hlsl"
 
-            #pragma vertex VertBlend
-            #pragma fragment FragBlend
+            #pragma vertex SMAABlendPassVertex
+            #pragma fragment SMAABlendPassFragment
             ENDHLSL
         }
 
@@ -64,8 +64,8 @@ Shader "Hidden/ArcToon/PostProcess/SMAA"
 
             #include "SMAAPasses.hlsl"
 
-            #pragma vertex VertNeighbor
-            #pragma fragment FragNeighbor
+            #pragma vertex SMAANeighborPassVertex
+            #pragma fragment SMAANeighborPassFragment
             ENDHLSL
         }
     }
