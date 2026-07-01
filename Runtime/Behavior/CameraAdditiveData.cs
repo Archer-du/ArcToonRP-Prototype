@@ -42,8 +42,6 @@ namespace ArcToon.Behavior
             destination = BlendMode.Zero
         };
 
-        public bool allowFXAA = true;
-        
         public bool keepAlpha = false;
 
         public float GetRenderScale(float globalRenderScale)

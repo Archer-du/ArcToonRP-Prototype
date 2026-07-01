@@ -21,7 +21,7 @@ namespace ArcToon.Passes.PostProcessing.Processors
 
         public override bool IsActive(CameraRenderer renderer)
         {
-            return volumeConfig.enabled && renderer.CameraAdditiveData.allowFXAA;
+            return volumeConfig.enabled;
         }
 
         protected override string ShaderPath => InternalShader.Path.PostProcessFXAA;
