@@ -1,4 +1,5 @@
 using System;
+using ArcToon.Passes;
 using UnityEngine.Rendering;
 
 namespace ArcToon.Data
@@ -6,7 +7,7 @@ namespace ArcToon.Data
     /// <summary>
     /// Shared post-processing resources.
     /// Currently holds the <see cref="postFXResult"/> pointer that links
-    /// <see cref="ArcToon.Passes.PostProcessPass"/> and <see cref="ArcToon.Passes.CopyFinalPass"/>.
+    /// <see cref="ArcToon.Passes.PostProcessPass"/> and <see cref="BackBufferPass"/>.
     /// Intermediate RTHandles (bloom chain, color LUT, etc.) are now privately owned by
     /// each <see cref="ArcToon.Passes.PostProcessing.PostProcessor"/>.
     /// </summary>

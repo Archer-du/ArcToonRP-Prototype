@@ -45,7 +45,7 @@ namespace ArcToon
         private readonly PostProcessPass postProcessPass;
         private readonly DebugPass debugPass;
         private readonly GizmosPass gizmosPass;
-        private readonly CopyFinalPass copyFinalPass;
+        private readonly BackBufferPass backBufferPass;
 
         #endregion
 
@@ -70,7 +70,7 @@ namespace ArcToon
             postProcessPass = new PostProcessPass(Resources, this);
             debugPass = new DebugPass(Resources, this);
             gizmosPass = new GizmosPass(Resources, this);
-            copyFinalPass = new CopyFinalPass(Resources, this);
+            backBufferPass = new BackBufferPass(Resources, this);
             
             CameraDebugger.Initialize();
         }
@@ -90,7 +90,7 @@ namespace ArcToon
             postProcessPass.Dispose();
             debugPass.Dispose();
             gizmosPass.Dispose();
-            copyFinalPass.Dispose();
+            backBufferPass.Dispose();
             
             CameraDebugger.Cleanup();
         }
@@ -173,7 +173,7 @@ namespace ArcToon
             EnqueuePass(postProcessPass);
 
             // Back Buffer
-            EnqueuePass(copyFinalPass);
+            EnqueuePass(backBufferPass);
 
             // Editor
             if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)

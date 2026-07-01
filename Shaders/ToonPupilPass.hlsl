@@ -90,7 +90,7 @@ float4 ToonPupilPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) 
     surface.color = albedo.rgb;
     surface.alpha = albedo.a;
     surface.metallic = GetMetallic(config);
-    surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
+    surface.roughness = GetRoughness(config);
     surface.occlusion = GetOcclusion(config);
     surface.fresnelStrength = GetFresnel(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);

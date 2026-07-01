@@ -83,7 +83,7 @@ float4 SimpleLitPassFragment(Varyings input) : SV_TARGET
     surface.linearDepth = -TransformWorldToView(input.positionWS).z;
     surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.metallic = GetMetallic(config);
-    surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
+    surface.roughness = GetRoughness(config);
     surface.fresnelStrength = GetFresnel(config);
     surface.occlusion = GetOcclusion(config);
     surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);

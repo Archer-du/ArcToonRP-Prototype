@@ -31,14 +31,11 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                     if (material == null) continue;
                     bool hasLightMap = material.GetTexture(ShaderPropertyID.LightMapSDF) != null;
                     MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Keyword: {ShaderKeywords.SDF_LIGHT_MAP} - {hasLightMap}");
-                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} SDF Source UV: {lightMapSDFSourceUVProperty.intValue}");
-                    
+
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    
+
                     material.SetKeyword(ShaderKeywords.SDF_LIGHT_MAP, hasLightMap);
-                    material.SetKeyword(ShaderKeywords.SDF_UV0, lightMapSDFSourceUVProperty.intValue == 0);
-                    material.SetKeyword(ShaderKeywords.SDF_UV1, lightMapSDFSourceUVProperty.intValue == 1);
-                    
+
                     EditorUtility.SetDirty(material);
                 }
             }
@@ -73,13 +70,6 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             {
                 bool hasLightMap = material.GetTexture(ShaderPropertyID.LightMapSDF) != null;
                 material.SetKeyword(ShaderKeywords.SDF_LIGHT_MAP, hasLightMap);
-            }
-
-            if (material.HasProperty(ShaderPropertyID.LightMapSDFSourceUV))
-            {
-                int value = material.GetInteger(ShaderPropertyID.LightMapSDFSourceUV);
-                material.SetKeyword(ShaderKeywords.SDF_UV0, value == 0);
-                material.SetKeyword(ShaderKeywords.SDF_UV1, value == 1);
             }
         }
     }

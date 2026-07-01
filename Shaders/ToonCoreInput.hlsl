@@ -9,7 +9,9 @@ TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
 TEXTURE2D(_NormalMap);
 TEXTURE2D(_EmissionMap);
 
-TEXTURE2D(_RMOMaskMap); SAMPLER(sampler_RMOMaskMap);
+TEXTURE2D(_MetallicMap);
+TEXTURE2D(_RoughnessMap);
+TEXTURE2D(_OcclusionMap);
 TEXTURE2D(_LightMapSDF); SAMPLER(sampler_LightMapSDF);
 TEXTURE2D(_RampSet); SAMPLER(sampler_RampSet);
 TEXTURE2D(_TangentShiftMap); SAMPLER(sampler_TangentShiftMap);
@@ -26,13 +28,18 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxSensitivity)
     UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxOffset)
+    UNITY_DEFINE_INSTANCED_PROP(int, _SpecularMaskUV)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
 
-    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Roughness)
     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
     UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
+
+    UNITY_DEFINE_INSTANCED_PROP(int, _MetallicMapChannel)
+    UNITY_DEFINE_INSTANCED_PROP(int, _RoughnessMapChannel)
+    UNITY_DEFINE_INSTANCED_PROP(int, _OcclusionMapChannel)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 
@@ -51,6 +58,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _RimDepthBias)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _LightMapSDF_ST)
+    UNITY_DEFINE_INSTANCED_PROP(int, _LightMapSDFSourceUV)
     UNITY_DEFINE_INSTANCED_PROP(float, _ShadowOffsetSDF)
     UNITY_DEFINE_INSTANCED_PROP(float4, _FaceVector)
 
@@ -61,6 +69,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _SpecScale)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _TangentShiftMap_ST)
+    UNITY_DEFINE_INSTANCED_PROP(int, _TangentShiftMapUV)
     UNITY_DEFINE_INSTANCED_PROP(float, _TangentShiftOffset)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _FringeShadowBiasScaleX)
@@ -145,36 +154,34 @@ float GetPerObjectShadowCasterID()
 }
 
 // PBR ---------------------------------------------------------------------------
-float4 GetRMOMask(InputConfig input)
-{
-    #if defined(_RMO_MASK_MAP)
-    return SAMPLE_TEXTURE2D(_RMOMaskMap, sampler_RMOMaskMap, input.baseUV);
-    #endif
-    return 1.0;
-}
-
 float GetMetallic(InputConfig input)
 {
     float metallic = INPUT_PROP(_Metallic);
-    metallic *= GetRMOMask(input).g;
+    #if defined(_METALLIC_MAP)
+    float4 map = SAMPLE_TEXTURE2D(_MetallicMap, sampler_BaseMap, input.baseUV);
+    metallic *= SelectChannel(map, INPUT_PROP(_MetallicMapChannel));
+    #endif
     return metallic;
 }
 
-float GetSmoothness(InputConfig input)
+float GetRoughness(InputConfig input)
 {
-    #if defined(_RMO_MASK_MAP)
-    float smoothness = PerceptualRoughnessToPerceptualSmoothness(GetRMOMask(input).r);
-    smoothness *= INPUT_PROP(_Smoothness);
-    #else
-    float smoothness = INPUT_PROP(_Smoothness);
+    float perceptualRoughness = INPUT_PROP(_Roughness);
+    #if defined(_ROUGHNESS_MAP)
+    float4 map = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_BaseMap, input.baseUV);
+    perceptualRoughness *= SelectChannel(map, INPUT_PROP(_RoughnessMapChannel));
     #endif
-    return smoothness;
+    return PerceptualRoughnessToRoughness(perceptualRoughness);
 }
 
 float GetOcclusion(InputConfig input)
 {
     float strength = INPUT_PROP(_Occlusion);
-    float occlusion = GetRMOMask(input).b;
+    float occlusion = 1.0;
+    #if defined(_OCCLUSION_MAP)
+    float4 map = SAMPLE_TEXTURE2D(_OcclusionMap, sampler_BaseMap, input.baseUV);
+    occlusion = SelectChannel(map, INPUT_PROP(_OcclusionMapChannel));
+    #endif
     occlusion = lerp(1.0, occlusion, strength);
     return occlusion;
 }

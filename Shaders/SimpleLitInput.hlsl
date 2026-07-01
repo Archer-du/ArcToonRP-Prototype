@@ -110,6 +110,11 @@ float GetSmoothness(InputConfig input)
     return smoothness;
 }
 
+float GetRoughness(InputConfig input)
+{
+    return PerceptualSmoothnessToRoughness(GetSmoothness(input));
+}
+
 float GetFresnel(InputConfig input)
 {
     return INPUT_PROP(_Fresnel);

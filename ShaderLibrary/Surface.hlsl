@@ -27,6 +27,11 @@ struct Surface
         return sphereNormalWS;
     }
 
+    float2 GetUV(int uvSet)
+    {
+        return uvSet == 0 ? UV.xy : UV.zw;
+    }
+
     float3 GetGISampleNormalWS()
     {
         float3 SampleGINormalWS = normalWS;

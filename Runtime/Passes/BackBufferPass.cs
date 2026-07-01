@@ -8,7 +8,7 @@ using UnityEngine.Rendering;
 
 namespace ArcToon.Passes
 {
-    public class CopyFinalPass : RenderPassBase
+    public class BackBufferPass : RenderPassBase
     {
         public override string Name => "Copy Final";
 
@@ -16,7 +16,7 @@ namespace ArcToon.Passes
 
         bool bicubicSampling;
 
-        public CopyFinalPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
+        public BackBufferPass(RenderResources resources, CameraRenderer renderer) : base(resources, renderer) { }
 
         public override void SetupFrameData(CommandBuffer cmd)
         {

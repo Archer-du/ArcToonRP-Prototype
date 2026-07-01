@@ -81,6 +81,7 @@ namespace ArcToon.Editor.ShaderEditor
             
             pbrFoldoutPanel ??= new BaseFoldoutShaderPanel("PBR", new List<ShaderGUISectionBase>()
             {
+                new PBRSection(),
                 new ColorTextureSection("Emission Map", ShaderPropertyID.EmissionMap, ShaderPropertyID.EmissionColor, true),
             });
 
