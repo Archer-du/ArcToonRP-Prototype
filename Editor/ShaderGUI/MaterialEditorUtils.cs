@@ -117,7 +117,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string OcclusionMapChannel = Auto();
 
         public static readonly string Metallic = Auto();
-        public static readonly string Smoothness = Auto();
+        public static readonly string Roughness = Auto();
         public static readonly string Occlusion = Auto();
         public static readonly string Fresnel = Auto();
 

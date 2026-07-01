@@ -13,7 +13,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
         private MaterialProperty occlusionMapChannelProperty;
 
         private MaterialProperty metallicProperty;
-        private MaterialProperty smoothnessProperty;
+        private MaterialProperty roughnessProperty;
         private MaterialProperty occlusionProperty;
         private MaterialProperty fresnelProperty;
 
@@ -27,7 +27,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             occlusionMapChannelProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.OcclusionMapChannel, props, false);
 
             metallicProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Metallic, props, false);
-            smoothnessProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Smoothness, props, false);
+            roughnessProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Roughness, props, false);
             occlusionProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Occlusion, props, false);
             fresnelProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Fresnel, props, false);
         }
@@ -42,7 +42,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                 occlusionMapProperty, occlusionMapChannelProperty, ShaderKeywords.OCCLUSION_MAP);
 
             materialEditor.BuiltinShaderPropertyDrawer(metallicProperty, true, "Metallic");
-            materialEditor.BuiltinShaderPropertyDrawer(smoothnessProperty, true, "Smoothness");
+            materialEditor.BuiltinShaderPropertyDrawer(roughnessProperty, true, "Roughness");
             materialEditor.BuiltinShaderPropertyDrawer(occlusionProperty, true, "Occlusion");
             materialEditor.BuiltinShaderPropertyDrawer(fresnelProperty, true, "Fresnel");
         }

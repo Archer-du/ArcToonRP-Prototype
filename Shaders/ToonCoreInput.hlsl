@@ -32,7 +32,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
 
-    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Roughness)
     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
     UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
     UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
@@ -164,15 +164,14 @@ float GetMetallic(InputConfig input)
     return metallic;
 }
 
-float GetSmoothness(InputConfig input)
+float GetRoughness(InputConfig input)
 {
-    float smoothness = INPUT_PROP(_Smoothness);
+    float perceptualRoughness = INPUT_PROP(_Roughness);
     #if defined(_ROUGHNESS_MAP)
     float4 map = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_BaseMap, input.baseUV);
-    float roughness = SelectChannel(map, INPUT_PROP(_RoughnessMapChannel));
-    smoothness *= PerceptualRoughnessToPerceptualSmoothness(roughness);
+    perceptualRoughness *= SelectChannel(map, INPUT_PROP(_RoughnessMapChannel));
     #endif
-    return smoothness;
+    return PerceptualRoughnessToRoughness(perceptualRoughness);
 }
 
 float GetOcclusion(InputConfig input)

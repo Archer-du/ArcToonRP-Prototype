@@ -36,7 +36,7 @@ float4 MetaPassFragment(VaryingsMT input) : SV_TARGET
     ZERO_INITIALIZE(Surface, surface);
     surface.color = base.rgb;
     surface.metallic = GetMetallic(config);
-    surface.roughness = PerceptualSmoothnessToRoughness(GetSmoothness(config));
+    surface.roughness = GetRoughness(config);
     BRDF brdf = GetBRDF(surface);
     float4 meta = 0.0;
     if (unity_MetaFragmentControl.x)

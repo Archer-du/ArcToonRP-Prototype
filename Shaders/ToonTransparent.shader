@@ -42,7 +42,7 @@
         [NoScaleOffset] _OcclusionMap ("Occlusion Map", 2D) = "white" {}
         [Enum(R, 0, G, 1, B, 2, A, 3)] _OcclusionMapChannel ("Occlusion Channel", Integer) = 2
 
-        _Smoothness ("Smoothness", Range(0, 1)) = 0.5
+        _Roughness ("Roughness", Range(0, 1)) = 1
         _Metallic ("Metallic", Range(0, 1)) = 0.8
         _Occlusion ("Occlusion", Range(0, 1)) = 1
         _Fresnel ("Fresnel", Range(0, 1)) = 1
@@ -223,7 +223,7 @@
             #pragma target 4.5
 
             #pragma multi_compile_instancing
-#pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
             #pragma multi_compile _ _CASCADE_BLEND_SOFT
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
@@ -276,7 +276,7 @@
             #pragma target 4.5
 
             #pragma multi_compile_instancing
-#pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
             #pragma multi_compile _ _CASCADE_BLEND_SOFT
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE

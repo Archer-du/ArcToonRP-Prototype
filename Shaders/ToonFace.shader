@@ -40,7 +40,7 @@
         [NoScaleOffset] _OcclusionMap ("Occlusion Map", 2D) = "white" {}
         [Enum(R, 0, G, 1, B, 2, A, 3)] _OcclusionMapChannel ("Occlusion Channel", Integer) = 2
         
-        _Smoothness ("Smoothness", Range(0, 1)) = 0.5
+        _Roughness ("Roughness", Range(0, 1)) = 1
         _Metallic ("Metallic", Range(0, 1)) = 0.8
         _Occlusion ("Occlusion", Range(0, 1)) = 1
         _Fresnel ("Fresnel", Range(0, 1)) = 1
