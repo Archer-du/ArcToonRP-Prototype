@@ -121,6 +121,11 @@ float SigmoidSharp(float x, float center, float sharp)
     return s;
 };
 
+float SelectChannel(float4 value, int channel)
+{
+    return channel == 0 ? value.r : channel == 1 ? value.g : channel == 2 ? value.b : value.a;
+}
+
 // decoder helpers -------------------------------
 float3 DecodeOctahedral(float2 uv)
 {

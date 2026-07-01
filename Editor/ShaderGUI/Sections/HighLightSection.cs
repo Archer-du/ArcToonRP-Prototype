@@ -76,22 +76,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                 case OverrideHighlightType.BlinnPhong:
                     break;
                 case OverrideHighlightType.KajiyaKay:
-                    EditorGUI.BeginChangeCheck();
                     materialEditor.TexturePropertySingleLine(new GUIContent("Tangent Shift Map"), tangentShiftMapProperty, tangentShiftMapUVProperty);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        foreach (var material in materials)
-                        {
-                            if (material == null) continue;
-                            MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Highlight Kajiya UV: {tangentShiftMapUVProperty.intValue}");
-                            Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    
-                            material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP_UV0, tangentShiftMapUVProperty.intValue == 0);
-                            material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP_UV1, tangentShiftMapUVProperty.intValue == 1);
-                    
-                            EditorUtility.SetDirty(material);
-                        }
-                    }
                     materialEditor.BuiltinShaderPropertyDrawer(tangentShiftOffsetProperty, true, "Shift Offset");
                     break;
             }
@@ -111,14 +96,8 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             if (material.HasProperty(ShaderPropertyID.HighlightType))
             {
                 material.SetInteger(ShaderPropertyID.HighlightType, 0);
-                material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP, 
+                material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP,
                     (OverrideHighlightType)material.GetInteger(ShaderPropertyID.HighlightType) == OverrideHighlightType.KajiyaKay);
-            }
-
-            if (material.HasProperty(ShaderPropertyID.TangentShiftMapUV))
-            {
-                material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP_UV0, material.GetInteger(ShaderPropertyID.TangentShiftMapUV) == 0);
-                material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP_UV1, material.GetInteger(ShaderPropertyID.TangentShiftMapUV) == 1);
             }
         }
     }

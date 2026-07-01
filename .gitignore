@@ -42,3 +42,7 @@ Thumbs.db
 # Documentation (auto-generated)
 ChatLogs/
 ChatLogs.meta
+
+# Agent instructions
+CLAUDE.md
+CLAUDE.md.meta

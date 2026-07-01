@@ -33,8 +33,12 @@
         _StencilReadMask("Stencil Read Mask", Float) = 3
 
         // ------------------------ PBR
-        [Toggle(_RMO_MASK_MAP)] _MaskMapToggle ("Use Mask Map (RMO)", Float) = 0
-        [NoScaleOffset] _RMOMaskMap ("Mask (RMO)", 2D) = "white" {}
+        [NoScaleOffset] _MetallicMap ("Metallic Map", 2D) = "white" {}
+        [Enum(R, 0, G, 1, B, 2, A, 3)] _MetallicMapChannel ("Metallic Channel", Integer) = 1
+        [NoScaleOffset] _RoughnessMap ("Roughness Map", 2D) = "white" {}
+        [Enum(R, 0, G, 1, B, 2, A, 3)] _RoughnessMapChannel ("Roughness Channel", Integer) = 0
+        [NoScaleOffset] _OcclusionMap ("Occlusion Map", 2D) = "white" {}
+        [Enum(R, 0, G, 1, B, 2, A, 3)] _OcclusionMapChannel ("Occlusion Channel", Integer) = 2
 
         _Smoothness ("Smoothness", Range(0, 1)) = 0.5
         _Metallic ("Metallic", Range(0, 1)) = 0.8
@@ -127,21 +131,21 @@
             #pragma shader_feature _NORMAL_MAP
 
             #pragma shader_feature_local _SPEC_MASK
-            #pragma shader_feature_local _ _SPEC_MASK_UV0 _SPEC_MASK_UV1
             #pragma shader_feature_local _SPEC_PARALLAX
             
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS
             #pragma shader_feature _RECEIVE_FRINGE_SHADOWS
             
-            #pragma shader_feature _RMO_MASK_MAP
+            #pragma shader_feature _METALLIC_MAP
+            #pragma shader_feature _ROUGHNESS_MAP
+            #pragma shader_feature _OCCLUSION_MAP
             
             #pragma shader_feature _RAMP_SET
             
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
-            #pragma shader_feature_local _ _TANGENT_SHIFT_MAP_UV0 _TANGENT_SHIFT_MAP_UV1
-            
+
             #pragma shader_feature _DEBUG_INCOMING_LIGHT
             #pragma shader_feature _DEBUG_DIRECT_BRDF
             #pragma shader_feature _DEBUG_SPECULAR

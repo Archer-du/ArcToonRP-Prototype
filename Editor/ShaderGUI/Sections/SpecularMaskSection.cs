@@ -34,9 +34,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                         Undo.RecordObject(material, Undo.GetCurrentGroupName());
                         
                         material.SetKeyword(ShaderKeywords.SPEC_MASK, hasSpecMask);
-                        material.SetKeyword(ShaderKeywords.SPEC_MASK_UV0, specularMaskUVProperty.intValue == 0);
-                        material.SetKeyword(ShaderKeywords.SPEC_MASK_UV1, specularMaskUVProperty.intValue == 1);
-                        
+
                         EditorUtility.SetDirty(material);
                     }
                 }
@@ -85,8 +83,6 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             if(material == null) return;
             bool hasSpecMask = material.GetTexture(ShaderPropertyID.SpecularMask) != null;
             material.SetKeyword(ShaderKeywords.SPEC_MASK, hasSpecMask);
-            material.SetKeyword(ShaderKeywords.SPEC_MASK_UV0, material.GetInteger(ShaderPropertyID.SpecularMaskUV) == 0);
-            material.SetKeyword(ShaderKeywords.SPEC_MASK_UV1, material.GetInteger(ShaderPropertyID.SpecularMaskUV) == 1);
         }
     }
 }

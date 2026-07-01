@@ -71,14 +71,7 @@ float3 GF2FaceSpecularStrength(Surface surface, Light light)
     float HdotN = dot(halfVecHWS, faceDirHWS);
     float clipCenter = clamp(-1.7071 * 1.5 * (HdotN - 1.0), 0.001, 0.999);
     float flipSign = cross(halfVecHWS, faceDirHWS).y;
-    float2 faceUV =
-        #if defined(_SDF_UV0)
-        surface.UV.xy;
-        #elif defined(_SDF_UV1)
-        surface.UV.zw;
-        #else
-        surface.UV.xy;
-        #endif
+    float2 faceUV = surface.GetUV(INPUT_PROP(_LightMapSDFSourceUV));
     if (flipSign > 0.0f)
     {
         faceUV.x = 1 - faceUV.x;
@@ -105,14 +98,7 @@ float3 ToonSpecularStrength(Surface surface, BRDF brdf, Light light)
     #if defined(_OVERRIDE_HIGHLIGHT)
     float3 h = SafeNormalize(light.directionWS + surface.viewDirectionWS);
         #if defined(_TANGENT_SHIFT_MAP)
-        float2 hairUV =
-            #if defined(_TANGENT_SHIFT_MAP_UV0)
-            surface.UV.xy;
-            #elif defined(_TANGENT_SHIFT_MAP_UV1)
-            surface.UV.zw;
-            #else
-            surface.UV.xy;
-            #endif
+        float2 hairUV = surface.GetUV(INPUT_PROP(_TangentShiftMapUV));
         float shiftScale = SampleTangentShiftNoise(hairUV) + GetTangentShiftOffset();
         float3 bitangentWS = SafeNormalize(surface.bitangentWS + shiftScale * surface.normalWS);
         float dotTH = dot(bitangentWS, h);
@@ -130,14 +116,7 @@ float3 ToonSpecularStrength(Surface surface, BRDF brdf, Light light)
     #endif
     
     #if defined(_SPEC_MASK)
-    float2 specUV =
-        #if defined(_SPEC_MASK_UV0)
-        surface.UV.xy;
-        #elif defined(_SPEC_MASK_UV1)
-        surface.UV.zw;
-        #else
-        surface.UV.xy;
-        #endif
+    float2 specUV = surface.GetUV(INPUT_PROP(_SpecularMaskUV));
     float slide = GetParallaxSensitivity();
     float offset = GetParallaxOffset();
         #if defined(_SPEC_PARALLAX)
@@ -175,14 +154,7 @@ float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLigh
     float FdotL = dot(faceDirHWS, lightDirHWS);
     float clipCenter = - FdotL * 0.5 + 0.5 + GetSDFShadowOffset();
     float flipSign = cross(faceDirHWS, lightDirHWS).y;
-    float2 faceUV =
-        #if defined(_SDF_UV0)
-        surface.UV.xy;
-        #elif defined(_SDF_UV1)
-        surface.UV.zw;
-        #else
-        surface.UV.xy;
-        #endif
+    float2 faceUV = surface.GetUV(INPUT_PROP(_LightMapSDFSourceUV));
     if (flipSign > 0.0f)
     {
         faceUV.x = 1 - faceUV.x;

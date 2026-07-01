@@ -109,6 +109,18 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string DirectLightSpecOffset = "_DirectLightSpecOffset";
         public static readonly string DirectLightSpecSmooth = "_DirectLightSpecSmooth";
         
+        public static readonly string MetallicMap = Auto();
+        public static readonly string MetallicMapChannel = Auto();
+        public static readonly string RoughnessMap = Auto();
+        public static readonly string RoughnessMapChannel = Auto();
+        public static readonly string OcclusionMap = Auto();
+        public static readonly string OcclusionMapChannel = Auto();
+
+        public static readonly string Metallic = Auto();
+        public static readonly string Smoothness = Auto();
+        public static readonly string Occlusion = Auto();
+        public static readonly string Fresnel = Auto();
+
         public static readonly string EmissionMap = "_EmissionMap";
         public static readonly string EmissionColor = "_EmissionColor";
         
@@ -163,9 +175,11 @@ namespace ArcToon.Editor.ShaderEditor
         
         public static readonly string SPEC_MASK = Auto();
         public static readonly string OVERRIDE_HIGHLIGHT = Auto();
-        public static readonly string SPEC_MASK_UV0 = Auto();
-        public static readonly string SPEC_MASK_UV1 = Auto();
         public static readonly string SPEC_PARALLAX = Auto();
+
+        public static readonly string METALLIC_MAP = Auto();
+        public static readonly string ROUGHNESS_MAP = Auto();
+        public static readonly string OCCLUSION_MAP = Auto();
         
         public static readonly string SHADOWS_DITHER = "_SHADOWS_DITHER";
         
@@ -180,12 +194,8 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string WIDTH_VERTCOLORA = "_WIDTH_VERTCOLORA";
         
         public static readonly string SDF_LIGHT_MAP = "_SDF_LIGHT_MAP";
-        public static readonly string SDF_UV0 = "_SDF_UV0";
-        public static readonly string SDF_UV1 = "_SDF_UV1";
-        
+
         public static readonly string TANGENT_SHIFT_MAP = "_TANGENT_SHIFT_MAP";
-        public static readonly string TANGENT_SHIFT_MAP_UV0 = "_TANGENT_SHIFT_MAP_UV0";
-        public static readonly string TANGENT_SHIFT_MAP_UV1 = "_TANGENT_SHIFT_MAP_UV1";
         
         public static readonly string EYE_REFRACTION = Auto();
         
