@@ -220,15 +220,6 @@ float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light, RimL
 float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light,
                    DirectLightAttenData attenData, RimLightData rimLightData)
 {
-    #if defined(_DEBUG_INCOMING_LIGHT)
-    return IncomingLight(surface, fragment, light, attenData);
-    #endif
-    #if defined(_DEBUG_DIRECT_BRDF)
-    return (ToonDirectBRDF(surface, brdf, light) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
-    #endif
-    #if defined(_DEBUG_SPECULAR)
-    return ToonSpecularStrength(surface, brdf, light) * brdf.specular;
-    #endif
     return IncomingLight(surface, fragment, light, attenData) *
         (ToonDirectBRDF(surface, brdf, light) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
 }

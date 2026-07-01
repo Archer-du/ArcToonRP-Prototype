@@ -103,7 +103,7 @@ namespace ArcToon.Passes
         {
             activeProcessors.Clear();
 
-            if (PostProcessConfig == null || !PostProcessConfig.AreApplicableTo(Camera))
+            if (PostProcessConfig == null || !PostProcessConfig.AreApplicableTo(Camera) || DebuggerSingleton.IsGeometryDebugActive)
             {
                 return;
             }

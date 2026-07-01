@@ -80,10 +80,6 @@
         [Enum(UV0, 0, UV1, 1)]
         _TangentShiftMapUV ("Tangent Shift Map UV", Integer) = 1
         _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
-        
-        // ------------------------ Debug
-        [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
-        _LightingDebugMode ("Lighting Debug Mode", Float) = 0
 
         // ------------------------ Internal
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
@@ -144,11 +140,6 @@
             
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
-            
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
 
             #include "ToonTransparentPass.hlsl"
 
@@ -195,11 +186,6 @@
             
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
-            
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
 
             #include "ToonBasePass.hlsl"
 
@@ -247,11 +233,6 @@
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
             #include "ToonBasePass.hlsl"
 
             #pragma vertex ToonBasePassVertex
@@ -298,11 +279,6 @@
             
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
-            
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
 
             #include "ToonTransparentPass.hlsl"
 
@@ -333,6 +309,8 @@
             #pragma fragment DefaultDepthStencilPassFragment
             ENDHLSL
         }
+
+        UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
 
         UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
 

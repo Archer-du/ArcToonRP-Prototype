@@ -83,10 +83,6 @@
         _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
         _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
 
-        // ------------------------ Debug
-        [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
-        _LightingDebugMode ("Lighting Debug Mode", Float) = 0
-        
         // ------------------------ Internal
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
 
@@ -146,17 +142,14 @@
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
             #include "ToonFringePass.hlsl"
 
             #pragma vertex ToonFringePassVertex
             #pragma fragment ToonFringePassFragment
             ENDHLSL
         }
+
+        UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
 
         Pass
         {

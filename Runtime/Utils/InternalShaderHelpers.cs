@@ -26,7 +26,7 @@ namespace ArcToon.Utils
         {
             public static readonly string InternalError = "Hidden/InternalErrorShader";
             public static readonly string Blitter = "Hidden/ArcToon/Blitter";
-            public static readonly string CameraDebug = "Hidden/ArcToon/Camera Debug";
+            public static readonly string ScreenDebug = "Hidden/ArcToon/Screen Debug";
 
             // Per-processor post-process shaders.
             public static readonly string PostProcessBloom = "Hidden/ArcToon/PostProcess/Bloom";
@@ -143,6 +143,11 @@ namespace ArcToon.Utils
             public static readonly int SMAASearchTexture = ShaderPropertyID();
             public static readonly int SMAABlendTexture = ShaderPropertyID();
             #endregion
+
+            #region Debug
+            public static readonly int GeometryDebugMode = ShaderPropertyID();
+            public static readonly int DebugOpacity = ShaderPropertyID();
+            #endregion
         }
         
         public static class TagId
@@ -151,6 +156,7 @@ namespace ArcToon.Utils
 
             public static readonly ShaderTagId ShadowCaster = ShaderTagId();
             public static readonly ShaderTagId GeometryOutline = ShaderTagId();
+            public static readonly ShaderTagId GeometryDebug = ShaderTagId();
             
             public static readonly ShaderTagId ToonForward = ShaderTagId();
             public static readonly ShaderTagId ToonForwardDepthPeeling = ShaderTagId();

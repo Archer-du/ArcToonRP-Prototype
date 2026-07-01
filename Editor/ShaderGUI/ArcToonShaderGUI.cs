@@ -19,15 +19,6 @@ namespace ArcToon.Editor.ShaderEditor
         private BaseFoldoutShaderPanel toonFoldoutPanel = null;
         private BaseFoldoutShaderPanel engineFoldoutPanel = null;
 
-        enum LightingDebugMode
-        {
-            None,
-            IncomingLight,
-            DirectBRDF,
-            Specular,
-            Diffuse,
-        }
-
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] materialProperties)
         {
             EditorGUI.BeginChangeCheck();

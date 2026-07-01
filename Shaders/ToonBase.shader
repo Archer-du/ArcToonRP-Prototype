@@ -79,10 +79,6 @@
         _TangentShiftMapUV ("Tangent Shift Map UV", Integer) = 1
         _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
 
-        // ------------------------ Debug
-        [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
-        _LightingDebugMode ("Lighting Debug Mode", Float) = 0
-
         // ------------------------ Internal
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
         
@@ -169,15 +165,39 @@
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
             #include "ToonBasePass.hlsl"
 
             #pragma vertex ToonBasePassVertex
             #pragma fragment ToonBasePassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "Toon Geometry Debug"
+            Tags
+            {
+                "LightMode" = "GeometryDebug"
+            }
+            Blend One Zero
+            ZWrite On
+            ZTest LEqual
+            Cull [_Cull]
+
+            HLSLPROGRAM
+            #pragma target 4.5
+
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT
+
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+
+            #include "Debug/GeometryDebugPass.hlsl"
+
+            #pragma vertex GeometryDebugPassVertex
+            #pragma fragment GeometryDebugPassFragment
             ENDHLSL
         }
 

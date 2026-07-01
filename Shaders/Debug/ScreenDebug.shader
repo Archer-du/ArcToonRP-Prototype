@@ -1,4 +1,4 @@
-﻿Shader "Hidden/ArcToon/Camera Debug"
+﻿Shader "Hidden/ArcToon/Screen Debug"
 {
 
     SubShader
@@ -9,7 +9,7 @@
 
         HLSLINCLUDE
         #include "../../ShaderLibrary/Common.hlsl"
-        #include "CameraDebugPass.hlsl"
+        #include "ScreenDebugPass.hlsl"
         ENDHLSL
 
         Pass

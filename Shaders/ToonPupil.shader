@@ -90,11 +90,7 @@
         _MatCap ("MatCap", 2D) = "white" {}
         _MatCapStrength ("MatCap Strength", Range(0, 1)) = 0.2
         _MatCapBlendMode ("MatCap Blend Mode", Integer) = 1
-        
-        // ------------------------ Debug
-        [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
-        _LightingDebugMode ("Lighting Debug Mode", Float) = 0
-        
+
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
 
         // for hard-coded unity capacity
@@ -162,17 +158,14 @@
             
             #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
             #include "ToonPupilPass.hlsl"
 
             #pragma vertex ToonPupilPassVertex
             #pragma fragment ToonPupilPassFragment
             ENDHLSL
         }
+
+        UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
         
         Pass
         {

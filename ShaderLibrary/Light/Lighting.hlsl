@@ -56,15 +56,6 @@ float3 IncomingLight(Surface surface, Light light)
 
 float3 GetLighting(Surface surface, BRDF brdf, Light light)
 {
-    #if defined(_DEBUG_INCOMING_LIGHT)
-    return IncomingLight(surface, light);
-    #endif
-    #if defined(_DEBUG_DIRECT_BRDF)
-    return ToonDirectBRDF(surface, brdf, light);
-    #endif
-    #if defined(_DEBUG_SPECULAR)
-    return MinimalCookTorranceSpecularTerm(surface, brdf, light) * brdf.specular;
-    #endif
     return IncomingLight(surface, light) * ToonDirectBRDF(surface, brdf, light);
 }
 
