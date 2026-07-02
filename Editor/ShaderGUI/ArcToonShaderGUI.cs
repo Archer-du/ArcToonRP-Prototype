@@ -34,7 +34,6 @@ namespace ArcToon.Editor.ShaderEditor
             toonFoldoutPanel.OnGUI(materialEditor, materialProperties);
             engineFoldoutPanel.OnGUI(materialEditor, materialProperties);
             
-            base.OnGUI(materialEditor, materialProperties);
             if (EditorGUI.EndChangeCheck())
             {
                 CopyLightMappingProperties();
@@ -96,10 +95,11 @@ namespace ArcToon.Editor.ShaderEditor
             engineFoldoutPanel ??= new BaseFoldoutShaderPanel("Engine", new List<ShaderGUISectionBase>()
             {
                 new DefaultPropertySection(ShaderPropertyID.Cull),
-                new HeaderPropertySection("Blend Factor",  
-                    new[] { "Source", "Destination" }, 
+                new HeaderPropertySection("Blend Factor",
+                    new[] { "Source", "Destination" },
                     new [] { ShaderPropertyID.SrcBlend, ShaderPropertyID.DstBlend }),
                 new DefaultPropertySection(ShaderPropertyID.ZWrite),
+                new StencilSection(),
                 new EngineSection(),
             });
         }

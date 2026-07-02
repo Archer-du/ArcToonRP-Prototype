@@ -12,6 +12,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
         private MaterialProperty smoothNormalSourceProperty;
         private MaterialProperty smoothNormalDecoderProperty;
         private MaterialProperty widthControlModeProperty;
+        private MaterialProperty widthMaskChannelProperty;
 
         public override void FindProperties(MaterialProperty[] props)
         {
@@ -20,6 +21,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             smoothNormalSourceProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SmoothNormalSource, props, false);
             smoothNormalDecoderProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SmoothNormalDecoder, props, false);
             widthControlModeProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.WidthControlMode, props, false);
+            widthMaskChannelProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.WidthMaskChannel, props, false);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
@@ -96,12 +98,17 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                 {
                     if (material == null) continue;
                     MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Width Control Mode: {(WidthControlMode)widthControlModeProperty.intValue}");
-                    
+
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetKeyword(ShaderKeywords.WIDTH_VERTCOLORA, 
-                        (WidthControlMode)widthControlModeProperty.intValue == WidthControlMode.VertexColorAlpha);
+                    material.SetKeyword(ShaderKeywords.WIDTH_VERTEX_COLOR,
+                        (WidthControlMode)widthControlModeProperty.intValue == WidthControlMode.VertexColor);
                     EditorUtility.SetDirty(material);
                 }
+            }
+
+            if ((WidthControlMode)widthControlModeProperty.intValue == WidthControlMode.VertexColor)
+            {
+                materialEditor.BuiltinShaderPropertyDrawer(widthMaskChannelProperty, true, "Width Control Channel");
             }
             
             EditorGUILayoutUtils.EndGUIComponentIndent();
@@ -131,8 +138,8 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                 (SmoothNormalDecoder)smoothNormalDecoderValue == SmoothNormalDecoder.OCT);
 
             int widthControlModeValue = material.GetInteger(ShaderPropertyID.WidthControlMode);
-            material.SetKeyword(ShaderKeywords.WIDTH_VERTCOLORA, 
-                (WidthControlMode)widthControlModeValue == WidthControlMode.VertexColorAlpha);
+            material.SetKeyword(ShaderKeywords.WIDTH_VERTEX_COLOR,
+                (WidthControlMode)widthControlModeValue == WidthControlMode.VertexColor);
         }
     }
 }

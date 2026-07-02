@@ -45,8 +45,7 @@ namespace ArcToon.Editor.ShaderEditor
     public enum WidthControlMode
     {
         None,
-        VertexColorAlpha,
-        NiloOffset,
+        VertexColor,
     }
 
     public enum OverrideHighlightType
@@ -129,6 +128,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string SmoothNormalSource = "_SmoothNormalSource";
         public static readonly string SmoothNormalDecoder = "_SmoothNormalDecoder";
         public static readonly string WidthControlMode = "_WidthControlMode";
+        public static readonly string WidthMaskChannel = "_WidthMaskChannel";
 
         public static readonly string LightMapSDF = "_LightMapSDF";
         public static readonly string LightMapSDFSourceUV = "_LightMapSDFSourceUV";
@@ -162,6 +162,10 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string MatCap = Auto();
         public static readonly string MatCapStrength = Auto();
         public static readonly string MatCapBlendMode = Auto();
+
+        public static readonly string Stencil = Auto();
+        public static readonly string StencilWriteMask = Auto();
+        public static readonly string StencilReadMask = Auto();
     }
     
     public static class ShaderKeywords
@@ -191,7 +195,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string SN_DECODE_RGAG = "_SN_DECODE_RGAG";
         public static readonly string SN_DECODE_OCT = "_SN_DECODE_OCT";
         
-        public static readonly string WIDTH_VERTCOLORA = "_WIDTH_VERTCOLORA";
+        public static readonly string WIDTH_VERTEX_COLOR = "_WIDTH_VERTEX_COLOR";
         
         public static readonly string SDF_LIGHT_MAP = "_SDF_LIGHT_MAP";
 

@@ -67,6 +67,8 @@
         _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
         [Enum(ArcToon.Editor.ShaderEditor.WidthControlMode)]
         _WidthControlMode ("Width Control Mode", Integer) = 1
+        [Enum(R, 0, G, 1, B, 2, A, 3)]
+        _WidthMaskChannel ("Width Mask Channel", Integer) = 3
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
