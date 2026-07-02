@@ -66,6 +66,8 @@
         _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
         [Enum(ArcToon.Editor.ShaderEditor.WidthControlMode)]
         _WidthControlMode ("Width Control Mode", Integer) = 1
+        [Enum(R, 0, G, 1, B, 2, A, 3)]
+        _WidthMaskChannel ("Width Mask Channel", Integer) = 3
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
@@ -89,11 +91,7 @@
         [Toggle(_SDF_LIGHT_MAP_SPEC)] _LightMapSpecularSDFToggle ("Use SDF Light Map Specular", Float) = 0
         _NoseSpecularStrengthSDF ("SDF Light Map Nose Specular Strength", Range(0, 1)) = 0.5
         _NoseSpecularSmoothSDF ("SDF Light Map Nose Specular Smooth", Range(0, 1)) = 0.1
-        
-        // ------------------------ Debug
-        [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
-        _LightingDebugMode ("Lighting Debug Mode", Float) = 0
-        
+
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
 
         // for hard-coded unity capacity
@@ -156,17 +154,14 @@
 
             #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
             #include "ToonFacePass.hlsl"
 
             #pragma vertex ToonFacePassVertex
             #pragma fragment ToonFacePassFragment
             ENDHLSL
         }
+
+        UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
         
         Pass
         {

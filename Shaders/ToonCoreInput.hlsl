@@ -52,6 +52,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 
     UNITY_DEFINE_INSTANCED_PROP(float4, _OutlineColor)
     UNITY_DEFINE_INSTANCED_PROP(float, _OutlineScale)
+    UNITY_DEFINE_INSTANCED_PROP(int, _WidthMaskChannel)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _RimScale)
     UNITY_DEFINE_INSTANCED_PROP(float, _RimWidth)

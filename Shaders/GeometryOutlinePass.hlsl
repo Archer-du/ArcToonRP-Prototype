@@ -12,14 +12,8 @@ struct AttributesGO
     float3 normalOS : NORMAL;
     float4 tangentOS : TANGENT;
     float2 baseUV : TEXCOORD0;
-    // smooth normal
-    #if defined(_SN_SRC_COLOR)
-    float4 smoothNormal : COLOR;
-    #elif defined(_SN_SRC_UV1)
-    float4 smoothNormal : TEXCOORD1;
-    #else
-    float4 smoothNormal : COLOR;
-    #endif
+    float4 UV1 : TEXCOORD1;
+    float4 vertexColor : COLOR;
     
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -54,13 +48,19 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
     float3 positionVS = TransformWorldToView(TransformObjectToWorld(input.positionOS));
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS, true);
     float4 tangentWS = TransformObjectToWorldTangent(input.tangentOS);
-    float3 smoothNormalWS = NormalTangentToWorld(normalize(DecodeSmoothNormal(input.smoothNormal)),
+    float4 smoothNormalSource = 
+    #if defined(_SN_SRC_UV1)
+        input.UV1;
+    #else
+        input.vertexColor;
+    #endif
+    float3 smoothNormalWS = NormalTangentToWorld(normalize(DecodeSmoothNormal(smoothNormalSource)),
         normalWS, tangentWS, true);
     float3 smoothNormalVS = TransformWorldToViewNormal(smoothNormalWS, true);
     float linearDepth = - positionVS.z;
     float outlineScale = GetOutlineScale();
-    #if defined(_WIDTH_VERTCOLORA)
-    outlineScale *= input.smoothNormal.a;
+    #if defined(_WIDTH_VERTEX_COLOR)
+    outlineScale *= SelectChannel(input.vertexColor, INPUT_PROP(_WidthMaskChannel));
     #endif
     float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * GetOutlineWidthResolutionAdapter();
     outlineFactor = clamp(outlineFactor,

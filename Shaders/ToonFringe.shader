@@ -65,6 +65,8 @@
         _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
         [Enum(ArcToon.Editor.ShaderEditor.WidthControlMode)]
         _WidthControlMode ("Width Control Mode", Integer) = 1
+        [Enum(R, 0, G, 1, B, 2, A, 3)]
+        _WidthMaskChannel ("Width Mask Channel", Integer) = 3
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
@@ -83,10 +85,6 @@
         _FringeShadowBiasScaleX ("Fringe Shadow Bias Scale X", Range(0, 1)) = 0.5
         _FringeShadowBiasScaleY ("Fringe Shadow Bias Scale Y", Range(0, 1)) = 0.5
 
-        // ------------------------ Debug
-        [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
-        _LightingDebugMode ("Lighting Debug Mode", Float) = 0
-        
         // ------------------------ Internal
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
 
@@ -146,17 +144,14 @@
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
             #include "ToonFringePass.hlsl"
 
             #pragma vertex ToonFringePassVertex
             #pragma fragment ToonFringePassFragment
             ENDHLSL
         }
+
+        UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
 
         Pass
         {

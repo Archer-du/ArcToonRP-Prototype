@@ -1,5 +1,5 @@
-﻿#ifndef ARCTOON_CAMERA_DEBUG_INCLUDED
-#define ARCTOON_CAMERA_DEBUG_INCLUDED
+﻿#ifndef ARCTOON_SCREEN_DEBUG_INCLUDED
+#define ARCTOON_SCREEN_DEBUG_INCLUDED
 
 #include "../../ShaderLibrary/Input/UnityInput.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Debug.hlsl"

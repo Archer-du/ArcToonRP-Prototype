@@ -95,7 +95,6 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             if (material == null) return;
             if (material.HasProperty(ShaderPropertyID.HighlightType))
             {
-                material.SetInteger(ShaderPropertyID.HighlightType, 0);
                 material.SetKeyword(ShaderKeywords.TANGENT_SHIFT_MAP,
                     (OverrideHighlightType)material.GetInteger(ShaderPropertyID.HighlightType) == OverrideHighlightType.KajiyaKay);
             }

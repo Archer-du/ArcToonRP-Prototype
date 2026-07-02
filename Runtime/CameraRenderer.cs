@@ -43,8 +43,11 @@ namespace ArcToon
         
         private readonly UnsupportedPass unsupportedPass;
         private readonly PostProcessPass postProcessPass;
-        private readonly DebugPass debugPass;
+        
+        private readonly GeometryDebugPass geometryDebugPass;
+        private readonly ScreenDebugPass screenDebugPass;
         private readonly GizmosPass gizmosPass;
+        
         private readonly BackBufferPass backBufferPass;
 
         #endregion
@@ -68,11 +71,12 @@ namespace ArcToon
             transparentPass = new TransparentPass(Resources, this);
             unsupportedPass = new UnsupportedPass(Resources, this);
             postProcessPass = new PostProcessPass(Resources, this);
-            debugPass = new DebugPass(Resources, this);
+            geometryDebugPass = new GeometryDebugPass(Resources, this);
+            screenDebugPass = new ScreenDebugPass(Resources, this);
             gizmosPass = new GizmosPass(Resources, this);
             backBufferPass = new BackBufferPass(Resources, this);
             
-            CameraDebugger.Initialize();
+            DebuggerSingleton.Initialize();
         }
 
         public void Dispose()
@@ -88,11 +92,12 @@ namespace ArcToon
             transparentPass.Dispose();
             unsupportedPass.Dispose();
             postProcessPass.Dispose();
-            debugPass.Dispose();
+            geometryDebugPass.Dispose();
+            screenDebugPass.Dispose();
             gizmosPass.Dispose();
             backBufferPass.Dispose();
             
-            CameraDebugger.Cleanup();
+            DebuggerSingleton.Cleanup();
         }
 
         private void EnqueuePass(RenderPassBase pass)
@@ -163,22 +168,30 @@ namespace ArcToon
             EnqueuePass(setupPass);
             EnqueuePass(depthStencilPrePass);
 
-            // Geometry
-            EnqueuePass(opaquePass);
-            EnqueuePass(skyboxPass);
-            EnqueuePass(transparentPass);
-            EnqueuePass(unsupportedPass);
+            if (DebuggerSingleton.IsGeometryDebugActive)
+            {
+                // Geometry debug replaces the geometry + post-process chain.
+                // Lighting / Setup / Prepass are kept: lighting-term modes read shadow and depth data.
+                EnqueuePass(geometryDebugPass);
+            }
+            else
+            {
+                // Geometry
+                EnqueuePass(opaquePass);
+                EnqueuePass(skyboxPass);
+                EnqueuePass(transparentPass);
+                EnqueuePass(unsupportedPass);
+            }
 
             // Post Processing
             EnqueuePass(postProcessPass);
-
             // Back Buffer
             EnqueuePass(backBufferPass);
 
             // Editor
-            if (CameraDebugger.IsActive && RenderCamera.cameraType <= CameraType.SceneView)
+            if (DebuggerSingleton.IsScreenDebugActive && RenderCamera.cameraType <= CameraType.SceneView)
             {
-                EnqueuePass(debugPass);
+                EnqueuePass(screenDebugPass);
             }
 #if UNITY_EDITOR
             if (Handles.ShouldRenderGizmos())

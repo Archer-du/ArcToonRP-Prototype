@@ -65,6 +65,8 @@
         _SmoothNormalDecoder ("Smooth Normal Decoder", Integer) = 1
         [Enum(ArcToon.Editor.ShaderEditor.WidthControlMode)]
         _WidthControlMode ("Width Control Mode", Integer) = 1
+        [Enum(R, 0, G, 1, B, 2, A, 3)]
+        _WidthMaskChannel ("Width Mask Channel", Integer) = 3
         
         _RimScale ("Screen Space Rim Light Scale", Range(0, 1)) = 0.5
         _RimWidth ("Screen Space Rim Light Width", Range(0, 1)) = 0.5
@@ -78,10 +80,6 @@
         [Enum(UV0, 0, UV1, 1)]
         _TangentShiftMapUV ("Tangent Shift Map UV", Integer) = 1
         _TangentShiftOffset ("Tangent Shift Offset", Range(-1, 1)) = 0
-
-        // ------------------------ Debug
-        [KeywordEnum(None, IncomingLight, DirectBRDF, Specular, Diffuse)]
-        _LightingDebugMode ("Lighting Debug Mode", Float) = 0
 
         // ------------------------ Internal
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
@@ -121,7 +119,7 @@
             
             #pragma shader_feature_local _ _SN_SRC_UV1 _SN_SRC_COLOR
             #pragma shader_feature_local _ _SN_DECODE_RGAG _SN_DECODE_OCT
-            #pragma shader_feature_local _ _WIDTH_VERTCOLORA _WIDTH_NILOOFFSET
+            #pragma shader_feature_local _ _WIDTH_VERTEX_COLOR
 
             #include "GeometryOutlinePass.hlsl"
 
@@ -169,15 +167,39 @@
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
-            #pragma shader_feature _DEBUG_INCOMING_LIGHT
-            #pragma shader_feature _DEBUG_DIRECT_BRDF
-            #pragma shader_feature _DEBUG_SPECULAR
-            #pragma shader_feature _DEBUG_DIFFUSE
-
             #include "ToonBasePass.hlsl"
 
             #pragma vertex ToonBasePassVertex
             #pragma fragment ToonBasePassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "Toon Geometry Debug"
+            Tags
+            {
+                "LightMode" = "GeometryDebug"
+            }
+            Blend One Zero
+            ZWrite On
+            ZTest LEqual
+            Cull [_Cull]
+
+            HLSLPROGRAM
+            #pragma target 4.5
+
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT
+
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+
+            #include "Debug/GeometryDebugPass.hlsl"
+
+            #pragma vertex GeometryDebugPassVertex
+            #pragma fragment GeometryDebugPassFragment
             ENDHLSL
         }
 
