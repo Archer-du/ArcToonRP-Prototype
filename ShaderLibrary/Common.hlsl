@@ -126,6 +126,12 @@ float SelectChannel(float4 value, int channel)
     return channel == 0 ? value.r : channel == 1 ? value.g : channel == 2 ? value.b : value.a;
 }
 
+float3 SelectChannelRGB(float4 value, int channel)
+{
+    if (channel == 0) return value.rgb;
+    return channel == 1 ? value.r : channel == 2 ? value.g : channel == 3 ? value.b : value.a;
+}
+
 // decoder helpers -------------------------------
 float3 DecodeOctahedral(float2 uv)
 {

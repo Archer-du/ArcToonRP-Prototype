@@ -29,6 +29,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxSensitivity)
     UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxOffset)
     UNITY_DEFINE_INSTANCED_PROP(int, _SpecularMaskUV)
+    UNITY_DEFINE_INSTANCED_PROP(int, _SpecularMaskChannel)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
 
@@ -202,7 +203,7 @@ float3 GetEmission(InputConfig input)
 // Toon ---------------------------------------------------------------------------
 float GetOutlineScale()
 {
-    return INPUT_PROP(_OutlineScale) * 12.5;
+    return INPUT_PROP(_OutlineScale) * 15;
 }
 
 float3 GetOutlineColor()
@@ -327,8 +328,8 @@ float GetParallaxOffset()
 
 float3 SampleParallaxSpecularMask(float2 hairUV)
 {
-    // TODO: channel
-    return SAMPLE_TEXTURE2D(_SpecularMask, sampler_linear_clamp, hairUV).rgb;
+    float4 sample = SAMPLE_TEXTURE2D(_SpecularMask, sampler_linear_clamp, hairUV);
+    return SelectChannelRGB(sample, INPUT_PROP(_SpecularMaskChannel));
 }
 
 float2 GetFringeShadowBiasScale()

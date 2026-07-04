@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using ArcToon.Utils;
+using UnityEditor;
 using UnityEngine;
 
 namespace ArcToon.Editor.ShaderEditor.Sections
@@ -35,7 +36,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                     MaterialEditorUtils.ArcToonGUILog($"Set {material.name} Shadow Caster Option to: {casterOptionProperty.floatValue}");
                     
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetShaderPassEnabled("ShadowCaster", enabled);
+                    material.SetShaderPassEnabled(InternalShader.TagId.ShadowCaster.name, enabled);
                     if (enabled)
                     {
                         material.SetKeyword(ShaderKeywords.SHADOWS_DITHER, (ShadowCasterOption)casterOptionProperty.floatValue == ShadowCasterOption.Dither);

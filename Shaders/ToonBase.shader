@@ -12,6 +12,8 @@
         _SpecularMask ("Parallax Specular Map", 2D) = "white" {}
         [Enum(UV0, 0, UV1, 1)]
         _SpecularMaskUV ("Parallax Specular Map UV", Integer) = 1
+        [Enum(RGB, 0, R, 1, G, 2, B, 3, A, 4)]
+        _SpecularMaskChannel ("Specular Mask Channel", Integer) = 0
         
         _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
         _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
@@ -28,6 +30,7 @@
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Destination Blend Factor", Float) = 0
         [Enum(Off, 0, On, 1)] _ZWrite ("Z Write Mode", Float) = 1
                 
+        _StencilEnabled("Stencil Enabled", Float) = 0
         _Stencil("Stencil Ref ID", Float) = 1
         _StencilWriteMask("Stencil Write Mask", Float) = 3
         _StencilReadMask("Stencil Read Mask", Float) = 3
@@ -176,35 +179,7 @@
 
         Pass
         {
-            Name "Toon Geometry Debug"
-            Tags
-            {
-                "LightMode" = "GeometryDebug"
-            }
-            Blend One Zero
-            ZWrite On
-            ZTest LEqual
-            Cull [_Cull]
-
-            HLSLPROGRAM
-            #pragma target 4.5
-
-            #pragma multi_compile_instancing
-            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
-            #pragma multi_compile _ _CASCADE_BLEND_SOFT
-
-            #pragma shader_feature _CLIPPING
-            #pragma shader_feature _RECEIVE_SHADOWS
-
-            #include "Debug/GeometryDebugPass.hlsl"
-
-            #pragma vertex GeometryDebugPassVertex
-            #pragma fragment GeometryDebugPassFragment
-            ENDHLSL
-        }
-
-        Pass
-        {
+            Name "Toon Depth Only"
             Tags
             {
                 "LightMode" = "DepthOnly"
@@ -227,37 +202,38 @@
             ENDHLSL
         }
 
-//        Pass
-//        {
-//            Tags
-//            {
-//                "LightMode" = "DepthStencil"
-//            }
-//            Blend One Zero
-//            ZTest LEqual
-//            ZWrite On
-//            Cull [_Cull]
-//            Stencil
-//            {
-//                Ref [_Stencil]
-//                Comp Always
-//                Pass Replace
-//                ReadMask [_StencilReadMask]
-//                WriteMask [_StencilWriteMask]
-//            }
-//            ColorMask R
-//
-//            HLSLPROGRAM
-//            #pragma target 3.5
-//
-//            #pragma multi_compile_instancing
-//
-//            #include "ToonDepthStencilPass.hlsl"
-//
-//            #pragma vertex DefaultDepthStencilPassVertex
-//            #pragma fragment DefaultDepthStencilPassFragment
-//            ENDHLSL
-//        }
+        Pass
+        {
+            Name "Toon Depth Stencil"
+            Tags
+            {
+                "LightMode" = "DepthStencil"
+            }
+            Blend One Zero
+            ZTest LEqual
+            ZWrite On
+            Cull [_Cull]
+            Stencil
+            {
+                Ref [_Stencil]
+                Comp Always
+                Pass Replace
+                ReadMask [_StencilReadMask]
+                WriteMask [_StencilWriteMask]
+            }
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma target 3.5
+
+            #pragma multi_compile_instancing
+
+            #include "ToonDepthStencilPass.hlsl"
+
+            #pragma vertex DefaultDepthStencilPassVertex
+            #pragma fragment DefaultDepthStencilPassFragment
+            ENDHLSL
+        }
 
         Pass
         {
@@ -300,6 +276,35 @@
 
             #pragma vertex MetaPassVertex
             #pragma fragment MetaPassFragment
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "Toon Geometry Debug"
+            Tags
+            {
+                "LightMode" = "GeometryDebug"
+            }
+            Blend One Zero
+            ZWrite On
+            ZTest LEqual
+            Cull [_Cull]
+
+            HLSLPROGRAM
+            #pragma target 4.5
+
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT
+
+            #pragma shader_feature _CLIPPING
+            #pragma shader_feature _RECEIVE_SHADOWS
+
+            #include "Debug/GeometryDebugPass.hlsl"
+
+            #pragma vertex GeometryDebugPassVertex
+            #pragma fragment GeometryDebugPassFragment
             ENDHLSL
         }
     }

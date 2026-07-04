@@ -48,14 +48,17 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
     float3 positionVS = TransformWorldToView(TransformObjectToWorld(input.positionOS));
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS, true);
     float4 tangentWS = TransformObjectToWorldTangent(input.tangentOS);
-    float4 smoothNormalSource = 
     #if defined(_SN_SRC_UV1)
-        input.UV1;
-    #else
-        input.vertexColor;
-    #endif
+    float4 smoothNormalSource = input.UV1;
     float3 smoothNormalWS = NormalTangentToWorld(normalize(DecodeSmoothNormal(smoothNormalSource)),
         normalWS, tangentWS, true);
+    #elif defined(_SN_SRC_COLOR)
+    float4 smoothNormalSource = input.vertexColor;
+    float3 smoothNormalWS = NormalTangentToWorld(normalize(DecodeSmoothNormal(smoothNormalSource)),
+        normalWS, tangentWS, true);
+    #else
+    float3 smoothNormalWS = normalWS;
+    #endif
     float3 smoothNormalVS = TransformWorldToViewNormal(smoothNormalWS, true);
     float linearDepth = - positionVS.z;
     float outlineScale = GetOutlineScale();

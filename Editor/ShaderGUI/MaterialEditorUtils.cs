@@ -32,8 +32,9 @@ namespace ArcToon.Editor.ShaderEditor
 
     public enum SmoothNormalSource
     {
-        UV1,
+        None,
         VertexColor,
+        UV1,
     }
     
     public enum SmoothNormalDecoder
@@ -88,6 +89,7 @@ namespace ArcToon.Editor.ShaderEditor
                 
         public static readonly string SpecularMask = Auto();
         public static readonly string SpecularMaskUV = Auto();
+        public static readonly string SpecularMaskChannel = Auto();
         public static readonly string ParallaxSensitivity = Auto();
         public static readonly string ParallaxOffset = Auto();
         
@@ -163,6 +165,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string MatCapStrength = Auto();
         public static readonly string MatCapBlendMode = Auto();
 
+        public static readonly string StencilEnabled = Auto();
         public static readonly string Stencil = Auto();
         public static readonly string StencilWriteMask = Auto();
         public static readonly string StencilReadMask = Auto();

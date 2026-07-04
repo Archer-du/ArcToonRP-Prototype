@@ -1,3 +1,4 @@
+using ArcToon.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,7 +23,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
 
             // TODO: link to global stencil settings
             {
-                ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.GetShaderPassEnabled("EyeLashesReceiver"), 
+                ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.GetShaderPassEnabled(InternalShader.TagId.EyeLashesReceiver.name), 
                     out bool hasMixedValue, out bool shouldToggleGroup);
                 
                 EditorGUI.showMixedValue = hasMixedValue;
@@ -37,7 +38,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                         MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Eyelashes Receiver: {newValue}");
                     
                         Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                        material.SetShaderPassEnabled("EyeLashesReceiver", newValue);
+                        material.SetShaderPassEnabled(InternalShader.TagId.EyeLashesReceiver.name, newValue);
                         EditorUtility.SetDirty(material);
                     }
                 }
@@ -50,7 +51,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             }
             
             {
-                ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.GetShaderPassEnabled("FringeShadowReceiver"), 
+                ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.GetShaderPassEnabled(InternalShader.TagId.FringeShadowReceiver.name), 
                     out bool hasMixedValue, out bool shouldToggleGroup);
                 
                 EditorGUI.showMixedValue = hasMixedValue;
@@ -65,7 +66,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                         MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Fringe Shadow Receiver: {newValue}");
                     
                         Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                        material.SetShaderPassEnabled("FringeShadowReceiver", newValue);
+                        material.SetShaderPassEnabled(InternalShader.TagId.FringeShadowReceiver.name, newValue);
                         EditorUtility.SetDirty(material);
                     }
                 }

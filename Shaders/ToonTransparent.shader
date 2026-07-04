@@ -12,6 +12,8 @@
         _SpecularMask ("Parallax Specular Map", 2D) = "white" {}
         [Enum(UV0, 0, UV1, 1)]
         _SpecularMaskUV ("Parallax Specular Map UV", Integer) = 1
+        [Enum(RGB, 0, R, 1, G, 2, B, 3, A, 4)]
+        _SpecularMaskChannel ("Specular Mask Channel", Integer) = 0
         
         _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
         _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
@@ -27,6 +29,7 @@
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Destination Blend Factor", Float) = 0
                 
+        _StencilEnabled("Stencil Enabled", Float) = 0
         _Stencil("Stencil Ref ID", Float) = 1
         _StencilWriteMask("Stencil Write Mask", Float) = 3
         _StencilReadMask("Stencil Read Mask", Float) = 3
@@ -165,7 +168,7 @@
             #pragma target 4.5
 
             #pragma multi_compile_instancing
-#pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
             #pragma multi_compile _ _CASCADE_BLEND_SOFT
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
@@ -289,34 +292,15 @@
             ENDHLSL
         }
 
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "DepthOnly"
-            }
-            ZWrite On
-            // TODO: set cull through c#
-            Cull Off
-            ColorMask R
+        UsePass "ArcToon/ToonBase/TOON DEPTH ONLY"
 
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #include "ToonDepthStencilPass.hlsl"
-
-            #pragma vertex DefaultDepthStencilPassVertex
-            #pragma fragment DefaultDepthStencilPassFragment
-            ENDHLSL
-        }
-
-        UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
+        UsePass "ArcToon/ToonBase/TOON DEPTH STENCIL"
 
         UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
 
         UsePass "ArcToon/ToonBase/TOON META"
+        
+        UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
     }
 
     CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"

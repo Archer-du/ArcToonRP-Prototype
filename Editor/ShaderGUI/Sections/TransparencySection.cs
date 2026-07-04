@@ -1,4 +1,5 @@
 using System;
+using ArcToon.Utils;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -37,10 +38,10 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                     MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Transparency Mode: {(TransparencyMode)transparencyModeProperty.intValue}");
 
                     Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                    material.SetShaderPassEnabled("ToonForwardTransparentBackFace", currentMode == TransparencyMode.OrderedDualFace);
-                    material.SetShaderPassEnabled("ToonForwardTransparentFrontFace", currentMode == TransparencyMode.OrderedDualFace);
-                    material.SetShaderPassEnabled("ToonForwardWeightedAverage", currentMode == TransparencyMode.WeightedAverage);
-                    material.SetShaderPassEnabled("ToonForwardDepthPeeling", currentMode == TransparencyMode.DepthPeeling);
+                    material.SetShaderPassEnabled(InternalShader.TagId.ToonForwardTransparentBackFace.name, currentMode == TransparencyMode.OrderedDualFace);
+                    material.SetShaderPassEnabled(InternalShader.TagId.ToonForwardTransparentFrontFace.name, currentMode == TransparencyMode.OrderedDualFace);
+                    material.SetShaderPassEnabled(InternalShader.TagId.ToonForwardWeightedAverage.name, currentMode == TransparencyMode.WeightedAverage);
+                    material.SetShaderPassEnabled(InternalShader.TagId.ToonForwardDepthPeeling.name, currentMode == TransparencyMode.DepthPeeling);
                     EditorUtility.SetDirty(material);
                 }
             }
