@@ -45,9 +45,9 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
     VaryingsGO output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
-    float3 positionVS = TransformWorldToView(TransformObjectToWorld(input.positionOS));
     float3 normalWS = TransformObjectToWorldNormal(input.normalOS, true);
     float4 tangentWS = TransformObjectToWorldTangent(input.tangentOS);
+    
     #if defined(_SN_SRC_UV1)
     float4 smoothNormalSource = input.UV1;
     float3 smoothNormalWS = NormalTangentToWorld(normalize(DecodeSmoothNormal(smoothNormalSource)),
@@ -60,17 +60,29 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
     float3 smoothNormalWS = normalWS;
     #endif
     float3 smoothNormalVS = TransformWorldToViewNormal(smoothNormalWS, true);
-    float linearDepth = - positionVS.z;
+    
     float outlineScale = GetOutlineScale();
     #if defined(_WIDTH_VERTEX_COLOR)
     outlineScale *= SelectChannel(input.vertexColor, INPUT_PROP(_WidthMaskChannel));
     #endif
-    float outlineFactor = outlineScale * GetTexelSizeWorldSpace(linearDepth) * GetOutlineWidthResolutionAdapter();
-    outlineFactor = clamp(outlineFactor,
-        outlineScale * OUTLINE_WIDTH_MIN_COEF,
-        outlineScale * OUTLINE_WIDTH_MAX_COEF);
-    float3 scaledPositionVS = positionVS + smoothNormalVS * outlineFactor;
-    output.positionCS_SS = TransformWViewToHClip(scaledPositionVS);
+    
+    // fixed texel size outline: cannot handle different aspect
+    // float3 positionVS = TransformWorldToView(TransformObjectToWorld(input.positionOS));
+    // float linearDepth = - positionVS.z;
+    // float outlineFactor = outlineScale * 15 * GetTexelSizeWorldSpace(linearDepth) * GetOutlineWidthResolutionAdapter();
+    // outlineFactor = clamp(outlineFactor,
+    //     outlineScale * 15 * OUTLINE_WIDTH_MIN_COEF,
+    //     outlineScale * 15 * OUTLINE_WIDTH_MAX_COEF);
+    // float3 scaledPositionVS = positionVS + smoothNormalVS * outlineFactor;
+    // output.positionCS_SS = TransformWViewToHClip(scaledPositionVS);
+    
+    float4 positionCS = TransformObjectToHClip(input.positionOS);
+    float zVS = positionCS.w;
+    float3 smoothNormalCS = normalize(TransformWViewToHClip(smoothNormalVS));
+    smoothNormalCS.x /= GetCameraAspect();
+    positionCS.xy += smoothNormalCS.xy * outlineScale * 0.01 * zVS;
+    
+    output.positionCS_SS = positionCS;
     return output;
 }
 

@@ -203,7 +203,7 @@ float3 GetEmission(InputConfig input)
 // Toon ---------------------------------------------------------------------------
 float GetOutlineScale()
 {
-    return INPUT_PROP(_OutlineScale) * 15;
+    return INPUT_PROP(_OutlineScale);
 }
 
 float3 GetOutlineColor()
