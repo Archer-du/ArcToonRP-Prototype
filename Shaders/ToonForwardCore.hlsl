@@ -1,5 +1,11 @@
-﻿#ifndef ARCTOON_TOON_PUPIL_PASS_INCLUDED
-#define ARCTOON_TOON_PUPIL_PASS_INCLUDED
+#ifndef ARCTOON_TOON_FORWARD_CORE_INCLUDED
+#define ARCTOON_TOON_FORWARD_CORE_INCLUDED
+
+// Shared vertex/fragment skeleton for the forward-lit pass of the core Toon shaders.
+// The skeleton is fixed. Per-shader-type variations that map to a shader keyword
+// (_NORMAL_MAP / _TANGENT_SHIFT_MAP / _EYE_REFRACTION / _MATCAP / _FRINGE_TRANSPARENT) are
+// compiled in place via #if guards rather than indirected through hooks. This file includes no
+// lighting Impl on purpose, so the Impl stays selectable by include order.
 
 struct Attributes
 {
@@ -26,7 +32,7 @@ struct Varyings
     GI_VARYINGS_DATA
 };
 
-Varyings ToonPupilPassVertex(Attributes input)
+Varyings ToonForwardCoreVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -42,69 +48,13 @@ Varyings ToonPupilPassVertex(Attributes input)
     return output;
 }
 
-float4 ToonPupilPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
+float3 ToonComputeLighting(Surface surface, InputConfig config, BRDF brdf, GI gi)
 {
-    UNITY_SETUP_INSTANCE_ID(input);
-    // float2 baseUV = input.baseUV;
-    // #if defined(_SPEC_MASK)
-    // float3 viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
-    // float parallaxOffsetV = - viewDirectionWS.y * 0.07 + 0;
-    // baseUV.y += parallaxOffsetV;
-    // float parallaxOffsetU = - viewDirectionWS.x * 0.07 + 0;
-    // baseUV.x += parallaxOffsetU;
-    // #endif
-    
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.UV1.xy);
-    ClipLOD(config.fragment, unity_LODFade.x);
-
-    Surface surface;
-    ZERO_INITIALIZE(Surface, surface)
-    surface.positionWS = input.positionWS;
-    surface.UV = float4(input.baseUV.xy, input.UV1.xy);
-    
-    float faceSign = isFrontFace ? 1.0 : -1.0;
-    float3x3 tangentToWorld = CreateTangentToWorld(input.normalWS, input.tangentWS.xyz, input.tangentWS.w);
-    #if defined(_NORMAL_MAP)
-    surface.normalWS = normalize(mul(GetNormalTS(config), tangentToWorld)) * faceSign;
-    surface.interpolatedNormalWS = normalize(input.normalWS) * faceSign;
-    #else
-    surface.normalWS = normalize(input.normalWS) * faceSign;
-    surface.interpolatedNormalWS = surface.normalWS * faceSign;
-    #endif
-    
-    surface.normalVS = normalize(input.normalVS) * faceSign;
-    surface.linearDepth = -TransformWorldToView(input.positionWS).z;
-    surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
-
-    // TODO: UV post process
-    float2 refractedUV = config.baseUV;
-    #if defined(_EYE_REFRACTION)
-    refractedUV = GetParallaxRefractionUV(config.baseUV, surface.viewDirectionWS, tangentToWorld);
-    #endif
-    
-    float4 albedo = GetAlbedo(refractedUV);
-    #if defined(_CLIPPING)
-    clip(albedo.a - GetAlphaClip(config));
-    #endif
-    
-    surface.color = albedo.rgb;
-    surface.alpha = albedo.a;
-    surface.metallic = GetMetallic(config);
-    surface.roughness = GetRoughness(config);
-    surface.occlusion = GetOcclusion(config);
-    surface.fresnelStrength = GetFresnel(config);
-    surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
-    surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
-    surface.perObjectCasterID = GetPerObjectShadowCasterID();
-
-    BRDF brdf = GetBRDF(surface);
-    GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
     DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
-    CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
-    
+    CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
+
     float3 finalColor = IndirectBRDF(surface, brdf, gi.diffuse, gi.specular);
-    
     for (int i = 0; i < _DirectionalLightCount; i++)
     {
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
@@ -114,7 +64,70 @@ float4 ToonPupilPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) 
         }
     }
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);
-    
+    return finalColor;
+}
+
+float4 ToonForwardCoreFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
+{
+    UNITY_SETUP_INSTANCE_ID(input);
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.UV1.xy);
+    ClipLOD(config.fragment, unity_LODFade.x);
+
+    Surface surface;
+    ZERO_INITIALIZE(Surface, surface)
+    surface.positionWS = input.positionWS;
+    surface.UV = float4(input.baseUV.xy, input.UV1.xy);
+
+    float faceSign = isFrontFace ? 1.0 : -1.0;
+    #if defined(_NORMAL_MAP) || defined(_EYE_REFRACTION)
+    float3x3 tangentToWorld = CreateTangentToWorld(input.normalWS, input.tangentWS.xyz, input.tangentWS.w);
+    #endif
+    #if defined(_NORMAL_MAP)
+    surface.normalWS = normalize(mul(GetNormalTS(config), tangentToWorld)) * faceSign;
+    surface.interpolatedNormalWS = normalize(input.normalWS) * faceSign;
+    #else
+    surface.normalWS = normalize(input.normalWS) * faceSign;
+    surface.interpolatedNormalWS = surface.normalWS * faceSign;
+    #endif
+    #if defined(_TANGENT_SHIFT_MAP)
+        #if defined(_NORMAL_MAP)
+        surface.bitangentWS = tangentToWorld[2];
+        #else
+        float bitangentSign = input.tangentWS.w * GetOddNegativeScale();
+        surface.bitangentWS = cross(input.normalWS, input.tangentWS.xyz) * bitangentSign;
+        #endif
+    #endif
+    surface.normalVS = normalize(input.normalVS) * faceSign;
+    surface.linearDepth = -TransformWorldToView(input.positionWS).z;
+    surface.viewDirectionWS = normalize(_WorldSpaceCameraPos - input.positionWS);
+
+    surface.metallic = GetMetallic(config);
+    surface.roughness = GetRoughness(config);
+    surface.occlusion = GetOcclusion(config);
+    surface.fresnelStrength = GetFresnel(config);
+    surface.dither = InterleavedGradientNoise(config.fragment.positionSS, 0);
+    surface.renderingLayerMask = asuint(unity_RenderingLayer.x);
+    surface.perObjectCasterID = GetPerObjectShadowCasterID();
+
+    #if defined(_EYE_REFRACTION)
+    float4 albedo = GetAlbedo(GetParallaxRefractionUV(config.baseUV, surface.viewDirectionWS, tangentToWorld));
+    #else
+    float4 albedo = GetAlbedo(config);
+    #endif
+    #if defined(_CLIPPING)
+    clip(albedo.a - GetAlphaClip(config));
+    #endif
+    surface.color = albedo.rgb;
+    surface.alpha = albedo.a;
+
+    #if defined(_PREMULTIPLY_ALPHA)
+    BRDF brdf = GetBRDF(surface, true);
+    #else
+    BRDF brdf = GetBRDF(surface);
+    #endif
+    GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
+
+    float3 finalColor = ToonComputeLighting(surface, config, brdf, gi);
     finalColor += GetEmission(config);
 
     #if defined(_MATCAP)
@@ -122,8 +135,15 @@ float4 ToonPupilPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) 
     finalColor = BlendColor(finalColor, matCapColor, INPUT_PROP(_MatCapStrength), INPUT_PROP(_MatCapBlendMode));
     #endif
 
-    return float4(finalColor, surface.alpha);
+    float outputAlpha = surface.alpha;
+    #if defined(_FRINGE_TRANSPARENT)
+    // where eyelashes are stencil-masked, blend alpha toward the fringe transparent value so the
+    // fringe reads as translucent over the eyes.
+    outputAlpha = lerp(surface.alpha, GetFringeTransparentScale(),
+        config.fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
+    #endif
+
+    return float4(finalColor, outputAlpha);
 }
 
 #endif
-

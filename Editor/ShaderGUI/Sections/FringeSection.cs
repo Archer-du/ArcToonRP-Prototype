@@ -36,9 +36,10 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                     {
                         if (material == null) continue;
                         MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Eyelashes Receiver: {newValue}");
-                    
+
                         Undo.RecordObject(material, Undo.GetCurrentGroupName());
                         material.SetShaderPassEnabled(InternalShader.TagId.EyeLashesReceiver.name, newValue);
+                        material.SetKeyword(ShaderKeywords.FRINGE_TRANSPARENT, newValue);
                         EditorUtility.SetDirty(material);
                     }
                 }
@@ -89,6 +90,14 @@ namespace ArcToon.Editor.ShaderEditor.Sections
         public override bool IsValid()
         {
             return fringeTransparentScaleProperty != null && fringeShadowBiasScaleXProperty != null && fringeShadowBiasScaleYProperty != null;
+        }
+
+        public override void Refresh(Material material)
+        {
+            base.Refresh(material);
+            if (material == null) return;
+            material.SetKeyword(ShaderKeywords.FRINGE_TRANSPARENT,
+                material.GetShaderPassEnabled(InternalShader.TagId.EyeLashesReceiver.name));
         }
     }
 }

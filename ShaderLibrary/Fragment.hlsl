@@ -6,6 +6,8 @@
 TEXTURE2D(_CameraDepthTexture);
 TEXTURE2D(_StencilMaskTexture);
 
+// Render attachment size (post render-scale, not the display resolution).
+// .x = 1/width, .y = 1/height, .z = width, .w = height.
 float4 _CameraBufferSize;
 
 struct Fragment

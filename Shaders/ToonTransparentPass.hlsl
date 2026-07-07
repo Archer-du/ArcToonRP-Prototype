@@ -1,7 +1,7 @@
 #ifndef ARCTOON_TOON_TRANSPARENT_PASS_INCLUDED
 #define ARCTOON_TOON_TRANSPARENT_PASS_INCLUDED
 
-#include "ToonBasePass.hlsl"
+#include "ToonForwardCore.hlsl"
 
 TEXTURE2D(_OpaqueDepthBuffer);
 TEXTURE2D(_DualDepthBufferRef);
@@ -26,13 +26,13 @@ float WeightedBlendedAlphaDepthWeight(float alpha, float depth)
 
 Varyings ToonTransparentPassVertex(Attributes input)
 {
-    return ToonBasePassVertex(input);
+    return ToonForwardCoreVertex(input);
 }
 
 FragmentOutput ToonTransparentPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace)
 {
     FragmentOutput output;
-    float4 calculateColor = ToonBasePassFragment(input, isFrontFace);
+    float4 calculateColor = ToonForwardCoreFragment(input, isFrontFace);
     output.accumulateColor = float4(calculateColor.rgb * calculateColor.a, calculateColor.a) *
         WeightedBlendedAlphaDepthWeight(calculateColor.a, input.positionCS_SS.z);
     output.revealage = calculateColor.a;
@@ -41,7 +41,7 @@ FragmentOutput ToonTransparentPassFragment(Varyings input, bool isFrontFace : SV
 
 Varyings ToonDepthPeelingPassVertex(Attributes input)
 {
-    return ToonBasePassVertex(input);
+    return ToonForwardCoreVertex(input);
 }
 
 float4 ToonDepthPeelingPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
@@ -67,7 +67,7 @@ float4 ToonDepthPeelingPassFragment(Varyings input, bool isFrontFace : SV_IsFron
         }
         #endif
     }
-    return ToonBasePassFragment(input, isFrontFace);
+    return ToonForwardCoreFragment(input, isFrontFace);
 }
 
 #endif

@@ -52,8 +52,17 @@ float4x4 glstate_matrix_projection;
 //   .z = camera far plane distance.
 //   .w = 1 / camera far plane distance.
 float4 _ProjectionParams;
+
+// .x = orthographic camera width, .y = orthographic camera height,
+// .z = unused, .w = 1.0 when the camera is orthographic, 0.0 when perspective.
 float4 unity_OrthoParams;
+
+// .x = pixel width, .y = pixel height, .z = 1 + 1/width, .w = 1 + 1/height.
 float4 _ScreenParams;
+
+// Linearizes the raw Z buffer value. Layout depends on UNITY_REVERSED_Z:
+//   reversed : .x = far/near - 1, .y = 1,       .z = .x/far, .w = 1/far
+//   standard : .x = 1 - far/near, .y = far/near, .z = .x/far, .w = .y/far
 float4 _ZBufferParams;
 
 float3 _WorldSpaceCameraPos;

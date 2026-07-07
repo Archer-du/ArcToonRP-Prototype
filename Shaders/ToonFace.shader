@@ -18,7 +18,6 @@
         _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
         _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
 
-        _Clipping ("Alpha Clipping", Float) = 0
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
@@ -110,7 +109,7 @@
                 
         HLSLINCLUDE
         #include "ToonCoreInput.hlsl"
-        #include "ToonLightingImpl.hlsl"
+        #include "../ShaderLibrary/Light/ToonLighting.hlsl"
         ENDHLSL
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"
@@ -124,6 +123,7 @@
             }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite [_ZWrite]
+            ZTest LEqual
             Cull [_Cull]
 
             HLSLPROGRAM
@@ -157,10 +157,10 @@
 
             #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
-            #include "ToonFacePass.hlsl"
+            #include "ToonForwardCore.hlsl"
 
-            #pragma vertex ToonFacePassVertex
-            #pragma fragment ToonFacePassFragment
+            #pragma vertex ToonForwardCoreVertex
+            #pragma fragment ToonForwardCoreFragment
             ENDHLSL
         }
         

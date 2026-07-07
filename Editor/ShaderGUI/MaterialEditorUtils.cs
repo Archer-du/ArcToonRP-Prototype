@@ -92,8 +92,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string SpecularMaskChannel = Auto();
         public static readonly string ParallaxSensitivity = Auto();
         public static readonly string ParallaxOffset = Auto();
-        
-        public static readonly string Clipping = "_Clipping";
+
         public static readonly string Cutoff = "_Cutoff";
 
         public static readonly string TransparencyMode = Auto();
@@ -189,7 +188,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string OCCLUSION_MAP = Auto();
         
         public static readonly string SHADOWS_DITHER = "_SHADOWS_DITHER";
-        
+
         public static readonly string RAMP_SET = "_RAMP_SET";
         
         public static readonly string SN_SRC_UV1 = "_SN_SRC_UV1";
@@ -203,7 +202,9 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string SDF_LIGHT_MAP = "_SDF_LIGHT_MAP";
 
         public static readonly string TANGENT_SHIFT_MAP = "_TANGENT_SHIFT_MAP";
-        
+
+        public static readonly string FRINGE_TRANSPARENT = Auto();
+
         public static readonly string EYE_REFRACTION = Auto();
         
         public static readonly string MATCAP = Auto();
