@@ -19,6 +19,10 @@ MonoBehaviour:
       renderScale: 1.25
       bicubicRescalingMode: 1
     shadowSettings:
+      filterQuality: 8
+      maxDistance: 100
+      distanceFade: 0.1
+      poissonFilterRadius: 3
       directionalCascadeShadow:
         atlasSize: 4096
         blendMode: 0
@@ -33,10 +37,6 @@ MonoBehaviour:
         atlasSize: 4096
       pointShadow:
         atlasSize: 4096
-      filterQuality: 8
-      poissonFilterRadius: 3
-      maxDistance: 100
-      distanceFade: 0.1
     forwardPlusSettings:
       tileSize: 64
       maxLightsPerTile: 14
