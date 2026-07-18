@@ -1,10 +1,8 @@
 #ifndef ARCTOON_TOON_CORE_INPUT_INCLUDED
 #define ARCTOON_TOON_CORE_INPUT_INCLUDED
 
-#include "../ShaderLibrary/Common.hlsl"
-#include "../ShaderLibrary/Input/InputConfig.hlsl"
-
-TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
+#include "ToonSurfaceInput.hlsl"
+#include "../ShaderLibrary/RegionID.hlsl"
 
 TEXTURE2D(_NormalMap);
 TEXTURE2D(_EmissionMap);
@@ -45,13 +43,12 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
-    UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmooth)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmoothNew)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecOffset)
     UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightSpecSmooth)
 
-    UNITY_DEFINE_INSTANCED_PROP(float4, _OutlineColor)
+    REGION_PROP_DECLARE(float4, _OutlineColor)
     UNITY_DEFINE_INSTANCED_PROP(float, _OutlineScale)
     UNITY_DEFINE_INSTANCED_PROP(int, _WidthMaskChannel)
 
@@ -89,12 +86,12 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(int, _MatCapBlendMode)
 
     UNITY_DEFINE_INSTANCED_PROP(float, _PerObjectShadowCasterID)
+
+    UNITY_DEFINE_INSTANCED_PROP(int, _RegionCount)
+    UNITY_DEFINE_INSTANCED_PROP(int, _RegionIDChannel)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
-#define INPUT_PROPS_DIRECT_ATTEN_PARAMS \
-INPUT_PROP(_DirectLightAttenOffset), \
-INPUT_PROP(_DirectLightAttenSmooth), \
-INPUT_PROP(_DirectLightAttenSmoothNew)
+REGION_PROP_DEFINE_GETTER(float4, _OutlineColor)
 
 #define STENCIL_MASK_CHANNEL_FRINGE_SHADOW g
 #define STENCIL_MASK_CHANNEL_EYE_LASHES b
@@ -102,33 +99,22 @@ INPUT_PROP(_DirectLightAttenSmoothNew)
 // common ---------------------------------------------------------------------------
 float2 TransformBaseUV(float2 rawBaseUV)
 {
-    float4 baseST = INPUT_PROP(_BaseMap_ST);
-    return rawBaseUV * baseST.xy + baseST.zw;
+    return TransformUVWithST(rawBaseUV, INPUT_PROP(_BaseMap_ST));
 }
 
 float2 TransformFaceUV(float2 rawFaceUV)
 {
-    float4 faceST = INPUT_PROP(_LightMapSDF_ST);
-    return rawFaceUV * faceST.xy + faceST.zw;
-}
-
-float2 TransformUV1(float2 rawUV1)
-{
-    return rawUV1;
+    return TransformUVWithST(rawFaceUV, INPUT_PROP(_LightMapSDF_ST));
 }
 
 float4 GetAlbedo(InputConfig input)
 {
-    float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
-    float4 color = INPUT_PROP(_BaseColor);
-    return albedo * color;
+    return SampleAlbedo(input.baseUV, INPUT_PROP(_BaseColor));
 }
 
 float4 GetAlbedo(float2 baseUV)
 {
-    float4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
-    float4 color = INPUT_PROP(_BaseColor);
-    return albedo * color;
+    return SampleAlbedo(baseUV, INPUT_PROP(_BaseColor));
 }
 
 float4 GetMatCap(float2 UV)
@@ -206,9 +192,9 @@ float GetOutlineScale()
     return INPUT_PROP(_OutlineScale);
 }
 
-float3 GetOutlineColor()
+float3 GetOutlineColor(int regionIndex)
 {
-    return INPUT_PROP(_OutlineColor).rgb;
+    return REGION_PROP_GET(float4, _OutlineColor, regionIndex).rgb;
 }
 
 float GetRimLightScale()

@@ -12,9 +12,10 @@
 #define GEOMETRY_DEBUG_MODE_VERTEX_COLOR_G   3
 #define GEOMETRY_DEBUG_MODE_VERTEX_COLOR_B   4
 #define GEOMETRY_DEBUG_MODE_VERTEX_COLOR_A   5
-#define GEOMETRY_DEBUG_MODE_SPECULAR         6
-#define GEOMETRY_DEBUG_MODE_DIRECT_BRDF      7
-#define GEOMETRY_DEBUG_MODE_INCOMING_LIGHT   8
+#define GEOMETRY_DEBUG_MODE_REGION_ID        6
+#define GEOMETRY_DEBUG_MODE_SPECULAR         7
+#define GEOMETRY_DEBUG_MODE_DIRECT_BRDF      8
+#define GEOMETRY_DEBUG_MODE_INCOMING_LIGHT   9
 
 int _GeometryDebugMode;
 
@@ -53,7 +54,7 @@ Varyings GeometryDebugPassVertex(Attributes input)
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.normalVS = TransformWorldToViewNormal(output.normalWS);
     output.baseUV = TransformBaseUV(input.baseUV);
-    output.UV1 = TransformUV1(input.UV1);
+    output.UV1 = input.UV1;
     output.vertexColor = input.vertexColor;
     return output;
 }
@@ -61,7 +62,7 @@ Varyings GeometryDebugPassVertex(Attributes input)
 float4 GeometryDebugPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.UV1.xy);
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.vertexColor);
     ClipLOD(config.fragment, unity_LODFade.x);
 
     float4 albedo = GetAlbedo(config);
@@ -78,6 +79,11 @@ float4 GeometryDebugPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFa
         if (_GeometryDebugMode == GEOMETRY_DEBUG_MODE_VERTEX_COLOR_B) return float4(vertexColor.bbb, 1.0);
         if (_GeometryDebugMode == GEOMETRY_DEBUG_MODE_VERTEX_COLOR_A) return float4(vertexColor.aaa, 1.0);
         return float4(vertexColor.rgb, 1.0);
+    }
+
+    if (_GeometryDebugMode == GEOMETRY_DEBUG_MODE_REGION_ID)
+    {
+        return float4(GetRegionDebugColor(config.regionIndex), 1.0);
     }
 
     // Lighting-term modes: build a minimal surface and reuse the shipping lighting functions.
@@ -105,7 +111,7 @@ float4 GeometryDebugPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFa
 
     BRDF brdf = GetBRDF(surface);
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
-    DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
+    DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROP(_DirectLightAttenOffset), INPUT_PROP(_DirectLightAttenSmoothNew));
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
 

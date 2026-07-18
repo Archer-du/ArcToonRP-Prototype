@@ -124,7 +124,6 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string EmissionMap = "_EmissionMap";
         public static readonly string EmissionColor = "_EmissionColor";
         
-        public static readonly string OutlineColor = "_OutlineColor";
         public static readonly string OutlineScale = "_OutlineScale";
         public static readonly string SmoothNormalSource = "_SmoothNormalSource";
         public static readonly string SmoothNormalDecoder = "_SmoothNormalDecoder";
@@ -168,6 +167,10 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string Stencil = Auto();
         public static readonly string StencilWriteMask = Auto();
         public static readonly string StencilReadMask = Auto();
+
+        public static readonly string RegionCount = Auto();
+        public static readonly string RegionIDChannel = Auto();
+        public static readonly string RegionIDMap = Auto();
     }
     
     public static class ShaderKeywords
@@ -209,6 +212,9 @@ namespace ArcToon.Editor.ShaderEditor
         
         public static readonly string MATCAP = Auto();
         public static readonly string MATCAP_SPH_NORMAL = Auto();
+
+        public static readonly string REGION_ID_TEXTURE = Auto();
+        public static readonly string REGION_ID_VERTEX_COLOR = Auto();
     }
 
     public static class MaterialEditorUtils
@@ -224,7 +230,18 @@ namespace ArcToon.Editor.ShaderEditor
                 throw new ArgumentException("Could not find MaterialProperty: '" + propertyName + "', Num properties: " + properties.Length.ToString());
             return null;
         }
-                
+
+        public static string GetRegionPropertyName(string baseName, int regionIndex)
+        {
+            return $"{baseName}{regionIndex}";
+        }
+
+        public static MaterialProperty FindRegionProperty(string baseName, int regionIndex, MaterialProperty[] props)
+        {
+            string name = GetRegionPropertyName(baseName, regionIndex);
+            return FindProperty(name, props, false);
+        }
+
         public static Material[] GetTargetMaterials(MaterialEditor editor)
         {
             if (editor == null || editor.targets == null) return Array.Empty<Material>();

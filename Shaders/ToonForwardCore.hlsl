@@ -28,6 +28,7 @@ struct Varyings
     float4 tangentWS : VAR_TANGENT;
     float2 baseUV : VAR_BASE_UV;
     float2 UV1 : VAR_UV1;
+    float4 vertexColor : VAR_VERTEX_COLOR;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     GI_VARYINGS_DATA
 };
@@ -44,13 +45,14 @@ Varyings ToonForwardCoreVertex(Attributes input)
     output.normalVS = TransformWorldToViewNormal(output.normalWS);
     output.tangentWS = TransformObjectToWorldTangent(input.tangentOS);
     output.baseUV = TransformBaseUV(input.baseUV);
-    output.UV1 = TransformUV1(input.UV1);
+    output.UV1 = input.UV1;
+    output.vertexColor = input.vertexColor;
     return output;
 }
 
 float3 ToonComputeLighting(Surface surface, InputConfig config, BRDF brdf, GI gi)
 {
-    DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROPS_DIRECT_ATTEN_PARAMS);
+    DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROP(_DirectLightAttenOffset), INPUT_PROP(_DirectLightAttenSmoothNew));
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
 
@@ -70,7 +72,7 @@ float3 ToonComputeLighting(Surface surface, InputConfig config, BRDF brdf, GI gi
 float4 ToonForwardCoreFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.UV1.xy);
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.vertexColor);
     ClipLOD(config.fragment, unity_LODFade.x);
 
     Surface surface;

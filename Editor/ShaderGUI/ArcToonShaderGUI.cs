@@ -9,10 +9,17 @@ namespace ArcToon.Editor.ShaderEditor
 {
     public class ArcToonShaderGUI : ShaderGUI
     {
+        private const string ToonUnlitShaderName = "ArcToon/ToonUnlit";
+
         private MaterialEditor editor;
         private Object[] materials;
         private MaterialProperty[] properties;
 
+        // Shared per-OnGUI context injected into every section.
+        // RegionIDSection is drawn first and writes SelectedRegion; downstream sections consume it.
+        private readonly SectionContext sectionContext = new SectionContext();
+
+        private RegionIDSection regionIDSection = null;
         private BaseFoldoutShaderPanel generalFoldoutPanel = null;
         private BaseFoldoutShaderPanel shadowFoldoutPanel = null;
         private BaseFoldoutShaderPanel pbrFoldoutPanel = null;
@@ -27,12 +34,26 @@ namespace ArcToon.Editor.ShaderEditor
             properties = materialProperties;
             
             TryInitGUIPanels();
-            
-            generalFoldoutPanel.OnGUI(materialEditor, materialProperties);
-            shadowFoldoutPanel.OnGUI(materialEditor, materialProperties);
-            pbrFoldoutPanel.OnGUI(materialEditor, materialProperties);
-            toonFoldoutPanel.OnGUI(materialEditor, materialProperties);
-            engineFoldoutPanel.OnGUI(materialEditor, materialProperties);
+
+            sectionContext.Reset();
+
+            var targetMaterials = MaterialEditorUtils.GetTargetMaterials(materialEditor);
+            bool isUnlit = IsToonUnlit(targetMaterials);
+            regionIDSection.SetContext(sectionContext);
+            regionIDSection.FindProperties(materialProperties);
+            if (regionIDSection.IsValid())
+            {
+                regionIDSection.OnGUI(materialEditor, targetMaterials);
+            }
+
+            generalFoldoutPanel.OnGUI(materialEditor, materialProperties, sectionContext);
+            shadowFoldoutPanel.OnGUI(materialEditor, materialProperties, sectionContext);
+            if (!isUnlit)
+            {
+                pbrFoldoutPanel.OnGUI(materialEditor, materialProperties, sectionContext);
+                toonFoldoutPanel.OnGUI(materialEditor, materialProperties, sectionContext);
+            }
+            engineFoldoutPanel.OnGUI(materialEditor, materialProperties, sectionContext);
             
             if (EditorGUI.EndChangeCheck())
             {
@@ -45,16 +66,38 @@ namespace ArcToon.Editor.ShaderEditor
             base.ValidateMaterial(material);
             
             TryInitGUIPanels();
-            
+
+            bool isUnlit = IsToonUnlit(material);
+            regionIDSection.Refresh(material);
             generalFoldoutPanel.Refresh(material);
             shadowFoldoutPanel.Refresh(material);
-            pbrFoldoutPanel.Refresh(material);
-            toonFoldoutPanel.Refresh(material);
+            if (!isUnlit)
+            {
+                pbrFoldoutPanel.Refresh(material);
+                toonFoldoutPanel.Refresh(material);
+            }
             engineFoldoutPanel.Refresh(material);
+        }
+
+        private static bool IsToonUnlit(Material material)
+        {
+            return material != null && material.shader != null && material.shader.name == ToonUnlitShaderName;
+        }
+
+        private static bool IsToonUnlit(Material[] materials)
+        {
+            if (materials == null || materials.Length == 0) return false;
+            foreach (var material in materials)
+            {
+                if (!IsToonUnlit(material)) return false;
+            }
+            return true;
         }
 
         private void TryInitGUIPanels()
         {
+            regionIDSection ??= new RegionIDSection();
+
             generalFoldoutPanel ??= new BaseFoldoutShaderPanel("General", new List<ShaderGUISectionBase>()
             {
                 new ColorTextureSection("Base Map", ShaderPropertyID.BaseMap, ShaderPropertyID.BaseColor, true),

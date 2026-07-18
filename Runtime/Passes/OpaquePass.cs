@@ -15,7 +15,6 @@ namespace ArcToon.Passes
         {
             new("ToonForward"),
             new("SRPDefaultUnlit"),
-            new("SimpleLit"),
         };
 
         private RendererList outlineList;

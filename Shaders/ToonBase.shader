@@ -59,7 +59,14 @@
         _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
         _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
 
-        _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
+        _OutlineColor0 ("Outline Color 0", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor1 ("Outline Color 1", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor2 ("Outline Color 2", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor3 ("Outline Color 3", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor4 ("Outline Color 4", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor5 ("Outline Color 5", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor6 ("Outline Color 6", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor7 ("Outline Color 7", Color) = (0.1, 0.1, 0.1, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
         [Enum(ArcToon.Editor.ShaderEditor.SmoothNormalSource)]
         _SmoothNormalSource ("Smooth Normal Source", Integer) = 1
@@ -85,7 +92,13 @@
 
         // ------------------------ Internal
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
-        
+
+        // ------------------------ Region ID
+        _RegionCount ("Region Count", Integer) = 1
+        [Enum(R, 0, G, 1, B, 2, A, 3)]
+        _RegionIDChannel ("Region ID Channel", Integer) = 0
+        [NoScaleOffset] _RegionIDMap ("Region ID Map", 2D) = "black" {}
+
         // for hard-coded unity capacity
         [HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
         [HideInInspector] _Color("Color for Lightmap", Color) = (0.5, 0.5, 0.5, 1.0)
@@ -122,6 +135,8 @@
             #pragma shader_feature_local _ _SN_SRC_UV1 _SN_SRC_COLOR
             #pragma shader_feature_local _ _SN_DECODE_RGAG _SN_DECODE_OCT
             #pragma shader_feature_local _ _WIDTH_VERTEX_COLOR
+
+            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
             #include "GeometryOutlinePass.hlsl"
 
@@ -168,6 +183,8 @@
             
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
+
+            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
             #include "ToonForwardCore.hlsl"
 
@@ -252,6 +269,8 @@
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _SHADOWS_DITHER
 
+            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
+
             #include "ShadowCasterPass.hlsl"
 
             #pragma vertex ShadowCasterPassVertex
@@ -270,6 +289,8 @@
 
             HLSLPROGRAM
             #pragma target 3.5
+
+            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
             #include "MetaPass.hlsl"
 
@@ -299,6 +320,8 @@
 
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS
+
+            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
             #include "Debug/GeometryDebugPass.hlsl"
 

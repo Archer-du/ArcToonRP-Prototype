@@ -144,6 +144,12 @@ namespace ArcToon.Utils
             public static readonly int SMAABlendTexture = ShaderPropertyID();
             #endregion
 
+            #region Region ID
+            public static readonly int RegionCount = ShaderPropertyID();
+            public static readonly int RegionIDChannel = ShaderPropertyID();
+            public static readonly int RegionIDMap = ShaderPropertyID();
+            #endregion
+
             #region Debug
             public static readonly int GeometryDebugMode = ShaderPropertyID();
             public static readonly int DebugOpacity = ShaderPropertyID();

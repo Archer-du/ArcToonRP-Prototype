@@ -7,6 +7,7 @@ struct Attributes
 {
     float3 positionOS : POSITION;
     float2 baseUV : TEXCOORD0;
+    float4 color : COLOR;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -14,6 +15,7 @@ struct Varyings
 {
     float4 positionCS_SS : SV_POSITION;
     float2 baseUV : VAR_BASE_UV;
+    float4 vertexColor : VAR_COLOR;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -25,6 +27,7 @@ Varyings UnlitPassVertex(Attributes input)
     float3 positionWS = TransformObjectToWorld(input.positionOS);
     output.positionCS_SS = TransformWorldToHClip(positionWS);
     output.baseUV = TransformBaseUV(input.baseUV);
+    output.vertexColor = input.color;
     return output;
 }
 
@@ -32,7 +35,7 @@ float4 UnlitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV, input.vertexColor);
     float4 color = GetAlbedo(config);
     
     #if defined(_CLIPPING)

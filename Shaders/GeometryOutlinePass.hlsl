@@ -21,6 +21,8 @@ struct AttributesGO
 struct VaryingsGO
 {
     float4 positionCS_SS : SV_POSITION;
+    float2 baseUV : VAR_BASE_UV;
+    float4 vertexColor : VAR_VERTEX_COLOR;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -83,6 +85,8 @@ VaryingsGO GeometryOutlinePassVertex(AttributesGO input)
     positionCS.xy += smoothNormalCS.xy * outlineScale * 0.01 * zVS;
     
     output.positionCS_SS = positionCS;
+    output.baseUV = TransformBaseUV(input.baseUV);
+    output.vertexColor = input.vertexColor;
     return output;
 }
 
@@ -91,7 +95,8 @@ float4 GeometryOutlinePassFragment(VaryingsGO input) : SV_TARGET
     UNITY_SETUP_INSTANCE_ID(input);
     Fragment fragment = GetFragment(input.positionCS_SS);
     ClipFragmentDepthTest(fragment.depth, fragment.bufferDepth);
-    return float4(GetOutlineColor(), 1.0);
+    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV, input.vertexColor);
+    return float4(GetOutlineColor(config.regionIndex), 1.0);
 }
 
 #endif
