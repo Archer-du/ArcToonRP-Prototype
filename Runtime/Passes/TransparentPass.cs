@@ -172,7 +172,6 @@ namespace ArcToon.Passes
                     RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
                 );
                 commandBuffer.ClearRenderTarget(false, true, Color.clear);
-                // TODO: config
                 commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), BlitPassCompositeWeightedAverage);
             }
 
@@ -196,7 +195,6 @@ namespace ArcToon.Passes
                     resources.Camera.depthAttachment,
                     RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
                 );
-                // TODO: config
                 commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), BlitPassCompositeDepthPeeling);
             }
 

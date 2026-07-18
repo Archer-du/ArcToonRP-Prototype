@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using ArcToon.Settings.Attributes;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -31,66 +32,6 @@ namespace ArcToon.Settings
             Soft,
         }
 
-        [Serializable]
-        public struct DirectionalCascadeShadow
-        {
-            public MapSize atlasSize;
-
-            public CascadeBlendMode blendMode;
-
-            [Range(1, 4)] public int cascadeCount;
-
-            [Range(0f, 1f)] public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
-
-            [Range(0.001f, 1f)] public float edgeFade;
-
-            public Vector3 CascadeRatios =>
-                new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
-        }
-
-        [FormerlySerializedAs("directionalCascade")] public DirectionalCascadeShadow directionalCascadeShadow = new()
-        {
-            atlasSize = MapSize._4096,
-            cascadeCount = 4,
-            cascadeRatio1 = 0.4f,
-            cascadeRatio2 = 0.55f,
-            cascadeRatio3 = 0.8f,
-            edgeFade = 0.1f,
-            blendMode = CascadeBlendMode.Dither
-        };
-
-        [Serializable]
-        public struct PerObjectShadow
-        {
-            public MapSize atlasSize;
-        }
-        public PerObjectShadow perObjectShadow = new()
-        {
-            atlasSize = MapSize._4096
-        };
-
-        [Serializable]
-        public struct SpotShadow
-        {
-            public MapSize atlasSize;
-        }
-
-        public SpotShadow spotShadow = new()
-        {
-            atlasSize = MapSize._4096,
-        };
-
-        [Serializable]
-        public struct PointShadow
-        {
-            public MapSize atlasSize;
-        }
-
-        public PointShadow pointShadow = new()
-        {
-            atlasSize = MapSize._4096,
-        };
-
         public enum FilterQuality
         {
             PCF2x2 = 2,
@@ -101,14 +42,84 @@ namespace ArcToon.Settings
             PCSS
         }
 
-        public FilterQuality filterQuality = FilterQuality.PCF7x7;
+        [Serializable]
+        public struct DirectionalCascadeShadow
+        {
+            public MapSize atlasSize;
 
-        [Range(0.01f, 10f)] public float poissonFilterRadius = 4f;
+            public CascadeBlendMode blendMode;
+
+            [Range(1, 4)] public int cascadeCount;
+
+            [Range(0f, 1f)] [ShowIf(nameof(cascadeCount), 2, CompareOp.GreaterEqual)] public float cascadeRatio1;
+            [Range(0f, 1f)] [ShowIf(nameof(cascadeCount), 3, CompareOp.GreaterEqual)] public float cascadeRatio2;
+            [Range(0f, 1f)] [ShowIf(nameof(cascadeCount), 4, CompareOp.GreaterEqual)] public float cascadeRatio3;
+
+            [Range(0.001f, 1f)] public float edgeFade;
+
+            public Vector3 CascadeRatios =>
+                new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
+        }
+
+        [Serializable]
+        public struct PerObjectShadow
+        {
+            public MapSize atlasSize;
+        }
+
+        [Serializable]
+        public struct SpotShadow
+        {
+            public MapSize atlasSize;
+        }
+
+        [Serializable]
+        public struct PointShadow
+        {
+            public MapSize atlasSize;
+        }
+
+        // Base parameters first (matches Inspector display order).
+        public FilterQuality filterQuality = FilterQuality.PCF7x7;
 
         [Min(0.001f)] public float maxDistance = 100f;
 
         [Range(0.001f, 1f)] public float distanceFade = 0.1f;
-        
+
+        [ShowIfEnum(nameof(filterQuality), FilterQuality.PoissonDisk, FilterQuality.PCSS)]
+        [Range(0.01f, 10f)] public float poissonFilterRadius = 4f;
+
+        // Sub-section boxes after.
+        [BoxGroup("Directional Cascade Shadow")]
+        public DirectionalCascadeShadow directionalCascadeShadow = new()
+        {
+            atlasSize = MapSize._4096,
+            cascadeCount = 4,
+            cascadeRatio1 = 0.4f,
+            cascadeRatio2 = 0.55f,
+            cascadeRatio3 = 0.8f,
+            edgeFade = 0.1f,
+            blendMode = CascadeBlendMode.Dither
+        };
+
+        [BoxGroup("Per Object Shadow")]
+        public PerObjectShadow perObjectShadow = new()
+        {
+            atlasSize = MapSize._4096
+        };
+
+        [BoxGroup("Spot Shadow")]
+        public SpotShadow spotShadow = new()
+        {
+            atlasSize = MapSize._4096,
+        };
+
+        [BoxGroup("Point Shadow")]
+        public PointShadow pointShadow = new()
+        {
+            atlasSize = MapSize._4096,
+        };
+
         /// <summary>
         /// Maximum sampling footprint diameter in texels for the current filter mode.
         /// Used for two purposes:
