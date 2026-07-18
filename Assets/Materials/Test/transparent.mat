@@ -15,18 +15,21 @@ Material:
   - _RECEIVE_SHADOWS
   - _SN_DECODE_OCT
   - _SN_SRC_COLOR
+  - _WIDTH_VERTEX_COLOR
+  m_InvalidKeywords:
+  - _FRINGE_TRANSPARENT
+  - _LIGHTINGDEBUGMODE_NONE
+  - _SHADOWS_ON
   - _SPEC_MASK_UV1
   - _TANGENT_SHIFT_MAP_UV1
   - _WIDTH_VERTCOLORA
-  m_InvalidKeywords:
-  - _LIGHTINGDEBUGMODE_NONE
-  - _SHADOWS_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 3000
   stringTagMap: {}
-  disabledShaderPasses: []
+  disabledShaderPasses:
+  - DepthStencil
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -63,6 +66,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MetallicMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -83,6 +90,14 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _RegionIDMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RoughnessMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _SpecularMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -93,11 +108,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints:
     - _HighlightType: 0
+    - _MetallicMapChannel: 1
+    - _OcclusionMapChannel: 2
+    - _RegionCount: 1
+    - _RegionIDChannel: 0
+    - _RoughnessMapChannel: 0
     - _SmoothNormalDecoder: 1
     - _SmoothNormalSource: 1
+    - _SpecularMaskChannel: 0
     - _SpecularMaskUV: 1
     - _TangentShiftMapUV: 1
     - _WidthControlMode: 1
+    - _WidthMaskChannel: 3
     m_Floats:
     - _AlphaControlOutlineWidth: 0
     - _BumpScale: 1
@@ -133,6 +155,7 @@ Material:
     - _RimDepthBias: 3
     - _RimScale: 0.5
     - _RimWidth: 0.5
+    - _Roughness: 1
     - _Shadows: 0
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
@@ -141,6 +164,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 5
     - _Stencil: 1
+    - _StencilEnabled: 0
     - _StencilReadMask: 3
     - _StencilWriteMask: 3
     - _TangentShiftOffset: 0
@@ -150,6 +174,13 @@ Material:
     - _BaseColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.7647059}
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 0.7647059}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor0: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+    - _OutlineColor1: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+    - _OutlineColor2: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+    - _OutlineColor3: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+    - _OutlineColor4: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+    - _OutlineColor5: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+    - _OutlineColor6: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+    - _OutlineColor7: {r: 0.1, g: 0.1, b: 0.1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
