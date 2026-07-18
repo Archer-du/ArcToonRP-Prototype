@@ -56,7 +56,6 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float, _RimWidth)
     UNITY_DEFINE_INSTANCED_PROP(float, _RimDepthBias)
 
-    UNITY_DEFINE_INSTANCED_PROP(float4, _LightMapSDF_ST)
     UNITY_DEFINE_INSTANCED_PROP(int, _LightMapSDFSourceUV)
     UNITY_DEFINE_INSTANCED_PROP(float, _ShadowOffsetSDF)
     UNITY_DEFINE_INSTANCED_PROP(float4, _FaceVector)
@@ -100,11 +99,6 @@ REGION_PROP_DEFINE_GETTER(float4, _OutlineColor)
 float2 TransformBaseUV(float2 rawBaseUV)
 {
     return TransformUVWithST(rawBaseUV, INPUT_PROP(_BaseMap_ST));
-}
-
-float2 TransformFaceUV(float2 rawFaceUV)
-{
-    return TransformUVWithST(rawFaceUV, INPUT_PROP(_LightMapSDF_ST));
 }
 
 float4 GetAlbedo(InputConfig input)

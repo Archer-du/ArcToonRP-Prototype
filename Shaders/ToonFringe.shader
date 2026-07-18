@@ -245,5 +245,5 @@
         UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
     }
 
-    CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"
+    CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonBaseShaderGUI"
 }
