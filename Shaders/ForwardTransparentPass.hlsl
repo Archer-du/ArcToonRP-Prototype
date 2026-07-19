@@ -1,7 +1,7 @@
 #ifndef ARCTOON_FORWARD_TRANSPARENT_PASS_INCLUDED
 #define ARCTOON_FORWARD_TRANSPARENT_PASS_INCLUDED
 
-#include "ForwardCorePass.hlsl"
+#include "Packages/com.arctoon.render-pipeline/Shaders/ForwardCorePass.hlsl"
 
 TEXTURE2D(_OpaqueDepthBuffer);
 TEXTURE2D(_DualDepthBufferRef);

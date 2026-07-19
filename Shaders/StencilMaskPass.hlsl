@@ -1,7 +1,7 @@
 ﻿#ifndef ARCTOON_STENCIL_MASK_PASS_INCLUDED
 #define ARCTOON_STENCIL_MASK_PASS_INCLUDED
 
-#include "../ShaderLibrary/Common.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
 
 struct AttributesSM
 {

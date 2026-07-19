@@ -21,7 +21,7 @@ Shader "Hidden/ArcToon/PostProcess/SMAA"
             // coexist peacefully with the global variant space.
             #pragma multi_compile _ _SMAA_PRESET_LOW _SMAA_PRESET_MEDIUM _SMAA_PRESET_HIGH
 
-            #include "SMAAPasses.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/PostProcess/AA/SMAAPasses.hlsl"
 
             #pragma vertex SMAAEdgePassVertex
             #pragma fragment SMAAEdgePassFragment
@@ -40,7 +40,7 @@ Shader "Hidden/ArcToon/PostProcess/SMAA"
 
             #pragma multi_compile _ _SMAA_PRESET_LOW _SMAA_PRESET_MEDIUM _SMAA_PRESET_HIGH
 
-            #include "SMAAPasses.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/PostProcess/AA/SMAAPasses.hlsl"
 
             #pragma vertex SMAABlendPassVertex
             #pragma fragment SMAABlendPassFragment
@@ -62,7 +62,7 @@ Shader "Hidden/ArcToon/PostProcess/SMAA"
             // keyword state doesn't cause a recompile mid-frame.
             #pragma multi_compile _ _SMAA_PRESET_LOW _SMAA_PRESET_MEDIUM _SMAA_PRESET_HIGH
 
-            #include "SMAAPasses.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/PostProcess/AA/SMAAPasses.hlsl"
 
             #pragma vertex SMAANeighborPassVertex
             #pragma fragment SMAANeighborPassFragment

@@ -1,7 +1,7 @@
 ﻿#ifndef ARCTOON_FORWARD_UNLIT_PASS_INCLUDED
 #define ARCTOON_FORWARD_UNLIT_PASS_INCLUDED
 
-#include "../ShaderLibrary/Common.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
 
 struct Attributes
 {

@@ -112,9 +112,9 @@
         
         HLSLINCLUDE
         // --- pre-CBUFFER Library (dependency-free) ---
-        #include "../ShaderLibrary/Input/SurfaceSampling.hlsl"
-        #include "../ShaderLibrary/RegionID.hlsl"
-        #include "../ShaderLibrary/Light/ToonLighting.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Input/SurfaceSampling.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/RegionID.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/ToonLighting.hlsl"
 
         // --- per-material CBUFFER (this shader's own subset) ---
         UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
@@ -159,10 +159,10 @@
         UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
         // --- post-CBUFFER Interface (dependency-bearing) ---
-        #include "Interface/SurfaceInterface.hlsl"
-        #include "Interface/OutlineInterface.hlsl"
-        #include "Interface/HairSpecInterface.hlsl"
-        #include "Interface/ToonLightingInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/SurfaceInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/OutlineInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/HairSpecInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/ToonLightingInterface.hlsl"
         ENDHLSL
 
         Pass
@@ -188,7 +188,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "GeometryOutlinePass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/GeometryOutlinePass.hlsl"
 
             #pragma vertex GeometryOutlinePassVertex
             #pragma fragment GeometryOutlinePassFragment
@@ -236,7 +236,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ForwardCorePass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardCorePass.hlsl"
 
             #pragma vertex ForwardCoreVertex
             #pragma fragment ForwardCoreFragment
@@ -261,7 +261,7 @@
 
             #pragma multi_compile_instancing
 
-            #include "DepthStencilPass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/DepthStencilPass.hlsl"
 
             #pragma vertex DefaultDepthStencilPassVertex
             #pragma fragment DefaultDepthStencilPassFragment
@@ -294,7 +294,7 @@
 
             #pragma multi_compile_instancing
 
-            #include "DepthStencilPass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/DepthStencilPass.hlsl"
 
             #pragma vertex DefaultDepthStencilPassVertex
             #pragma fragment DefaultDepthStencilPassFragment
@@ -321,7 +321,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ShadowCasterPass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ShadowCasterPass.hlsl"
 
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment
@@ -342,7 +342,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "MetaPass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/MetaPass.hlsl"
 
             #pragma vertex MetaPassVertex
             #pragma fragment MetaPassFragment
@@ -373,7 +373,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "Debug/GeometryDebugPass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/Debug/GeometryDebugPass.hlsl"
 
             #pragma vertex GeometryDebugPassVertex
             #pragma fragment GeometryDebugPassFragment

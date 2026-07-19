@@ -1,7 +1,7 @@
 ﻿#ifndef ARCTOON_FRAGMENT_INCLUDED
 #define ARCTOON_FRAGMENT_INCLUDED
 
-#include "Input/UnityInput.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Input/UnityInput.hlsl"
 
 TEXTURE2D(_CameraDepthTexture);
 TEXTURE2D(_StencilMaskTexture);

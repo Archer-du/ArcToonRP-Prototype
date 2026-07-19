@@ -1,7 +1,7 @@
 ﻿#ifndef ARCTOON_DEPTH_STENCIL_PASS_INCLUDED
 #define ARCTOON_DEPTH_STENCIL_PASS_INCLUDED
 
-#include "../ShaderLibrary/Common.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
 
 struct AttributesDS
 {

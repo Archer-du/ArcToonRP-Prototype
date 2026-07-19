@@ -1,9 +1,9 @@
 ﻿#ifndef ARCTOON_META_PASS_INCLUDED
 #define ARCTOON_META_PASS_INCLUDED
 
-#include "../ShaderLibrary/Surface.hlsl"
-#include "../ShaderLibrary/Shadow.hlsl"
-#include "../ShaderLibrary/BRDF.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Surface.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Shadow.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/BRDF.hlsl"
 
 struct AttributesMT
 {

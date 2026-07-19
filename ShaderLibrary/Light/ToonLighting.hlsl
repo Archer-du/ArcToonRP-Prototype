@@ -7,12 +7,12 @@
 // Global constant buffers (light data, camera textures) are not per-material CBUFFER and
 // are allowed here.
 
-#include "../Ramp.hlsl"
-#include "../BRDF.hlsl"
-#include "DirectionalLight.hlsl"
-#include "SpotLight.hlsl"
-#include "PointLight.hlsl"
-#include "../GI.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Ramp.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/BRDF.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/DirectionalLight.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/SpotLight.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/PointLight.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/GI.hlsl"
 
 float3 GetMainLightDirection()
 {

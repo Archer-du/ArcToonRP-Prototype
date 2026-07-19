@@ -1,7 +1,7 @@
 ﻿#ifndef ARCTOON_SHADOW_CASTER_PASS_INCLUDED
 #define ARCTOON_SHADOW_CASTER_PASS_INCLUDED
 
-#include "../ShaderLibrary/Common.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
 
 bool _ShadowPancaking;
 

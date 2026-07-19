@@ -14,7 +14,7 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
 
-#include "Input/UnityInput.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Input/UnityInput.hlsl"
 
 #if defined(_SHADOW_MASK_ALWAYS) || defined(_SHADOW_MASK_DISTANCE)
     #define SHADOWS_SHADOWMASK
@@ -27,8 +27,8 @@ SAMPLER(sampler_linear_clamp);
 SAMPLER(sampler_point_clamp);
 SAMPLER_CMP(sampler_linear_clamp_compare);
 
-#include "Fragment.hlsl"
-#include "ForwardPlus.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Fragment.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/ForwardPlus.hlsl"
 
 #define COLOR_BLEND_LERP 0
 #define COLOR_BLEND_MULTIPLY 1

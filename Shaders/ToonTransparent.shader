@@ -114,9 +114,9 @@
         
         HLSLINCLUDE
         // --- pre-CBUFFER Library (dependency-free) ---
-        #include "../ShaderLibrary/Input/SurfaceSampling.hlsl"
-        #include "../ShaderLibrary/RegionID.hlsl"
-        #include "../ShaderLibrary/Light/ToonLighting.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Input/SurfaceSampling.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/RegionID.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/ToonLighting.hlsl"
 
         // --- per-material CBUFFER (this shader's own subset) ---
         UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
@@ -157,9 +157,9 @@
         UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
         // --- post-CBUFFER Interface (dependency-bearing) ---
-        #include "Interface/SurfaceInterface.hlsl"
-        #include "Interface/HairSpecInterface.hlsl"
-        #include "Interface/ToonLightingInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/SurfaceInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/HairSpecInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/ToonLightingInterface.hlsl"
         ENDHLSL
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"
@@ -205,7 +205,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ForwardTransparentPass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardTransparentPass.hlsl"
 
             #pragma vertex ForwardTransparentDepthPeelingPassVertex
             #pragma fragment ForwardTransparentDepthPeelingPassFragment
@@ -253,7 +253,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ForwardCorePass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardCorePass.hlsl"
 
             #pragma vertex ForwardCoreVertex
             #pragma fragment ForwardCoreFragment
@@ -301,7 +301,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ForwardCorePass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardCorePass.hlsl"
 
             #pragma vertex ForwardCoreVertex
             #pragma fragment ForwardCoreFragment
@@ -350,7 +350,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ForwardTransparentPass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardTransparentPass.hlsl"
 
             #pragma vertex ForwardTransparentPassVertex
             #pragma fragment ForwardTransparentPassFragment

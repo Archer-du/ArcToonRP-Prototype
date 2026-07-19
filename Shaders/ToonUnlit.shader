@@ -37,8 +37,8 @@
     {
         HLSLINCLUDE
         // --- pre-CBUFFER Library (dependency-free) ---
-        #include "../ShaderLibrary/Input/SurfaceSampling.hlsl"
-        #include "../ShaderLibrary/RegionID.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Input/SurfaceSampling.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/RegionID.hlsl"
 
         // --- per-material CBUFFER (this shader's own subset) ---
         UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
@@ -52,7 +52,7 @@
         UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
         // --- post-CBUFFER Interface (dependency-bearing) ---
-        #include "Interface/UnlitInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/UnlitInterface.hlsl"
         ENDHLSL
 
         Pass
@@ -75,7 +75,7 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ForwardUnlitPass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardUnlitPass.hlsl"
 
             #pragma vertex ForwardUnlitPassVertex
             #pragma fragment ForwardUnlitPassFragment

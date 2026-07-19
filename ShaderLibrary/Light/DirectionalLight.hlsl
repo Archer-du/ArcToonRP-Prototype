@@ -1,9 +1,9 @@
 ﻿#ifndef ARCTOON_DIRECTIONAL_LIGHT_INCLUDED
 #define ARCTOON_DIRECTIONAL_LIGHT_INCLUDED
 
-#include "../Shadow.hlsl"
-#include "../GI.hlsl"
-#include "LightType.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Shadow.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/GI.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/LightType.hlsl"
 
 CBUFFER_START(_CustomDirectionalLight)
     int _DirectionalLightCount;

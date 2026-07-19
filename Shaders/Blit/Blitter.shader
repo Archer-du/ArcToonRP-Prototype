@@ -8,8 +8,8 @@
         ZWrite Off
 
         HLSLINCLUDE
-        #include "../../ShaderLibrary/Common.hlsl"
-        #include "CameraCopyPass.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Blit/CameraCopyPass.hlsl"
         ENDHLSL
 
         Pass
@@ -60,7 +60,7 @@
             HLSLPROGRAM
             #pragma target 3.5
 
-            #include "CompositePass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/Blit/CompositePass.hlsl"
             
             #pragma vertex DefaultPassVertex
             #pragma fragment WeightedAverageCompositePassFragment
@@ -74,7 +74,7 @@
             HLSLPROGRAM
             #pragma target 3.5
 
-            #include "CompositePass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/Blit/CompositePass.hlsl"
             
             #pragma vertex DefaultPassVertex
             #pragma fragment DepthPeelingCompositePassFragment

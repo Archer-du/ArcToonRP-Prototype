@@ -4,8 +4,8 @@
 
 #define MIN_REFLECTIVITY 0.04
 
-#include "Surface.hlsl"
-#include "Light/LightType.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Surface.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/LightType.hlsl"
 
 struct BRDF
 {

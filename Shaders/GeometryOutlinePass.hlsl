@@ -1,7 +1,7 @@
 #ifndef ARCTOON_GEOMETRY_OUTLINE_PASS_INCLUDED
 #define ARCTOON_GEOMETRY_OUTLINE_PASS_INCLUDED
 
-#include "../ShaderLibrary/Common.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
 
 #define OUTLINE_WIDTH_MIN_COEF 0.001
 #define OUTLINE_WIDTH_MAX_COEF 0.006

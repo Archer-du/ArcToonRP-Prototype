@@ -36,7 +36,7 @@
 // Project Common.hlsl transitively pulls in SRP core Common.hlsl and project
 // UnityInput.hlsl (which declares _ProjectionParams), so we do not need to
 // include them separately here.
-#include "../../../ShaderLibrary/Common.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
 
 // ArcToonRP does not support XR / stereo rendering. The vendored SMAA.hlsl
 // algorithm library (kept pristine for easy upstream sync with URP) internally
@@ -88,7 +88,7 @@ float4 _SMAAMetrics;
 
 // NOTE: SMAA.hlsl must be included AFTER all SMAA_* defines and sampler aliases
 // are in place. Do not move this include.
-#include "SubpixelMorphologicalAntialiasing.hlsl"
+#include "Packages/com.arctoon.render-pipeline/Shaders/PostProcess/AA/SubpixelMorphologicalAntialiasing.hlsl"
 
 // -----------------------------------------------------------------------------
 // Pass 1: Edge Detection

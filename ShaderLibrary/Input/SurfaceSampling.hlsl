@@ -1,7 +1,7 @@
 #ifndef ARCTOON_SURFACE_SAMPLING_INCLUDED
 #define ARCTOON_SURFACE_SAMPLING_INCLUDED
 
-#include "../Common.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
 
 // Per-material instanced property accessor. CBUFFER-free at definition; it expands to a
 // UnityPerMaterial read only where invoked, which is always the Interface tier (after the
