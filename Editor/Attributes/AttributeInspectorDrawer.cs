@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ArcToon.Settings.Attributes;
 using UnityEditor;
 
-namespace ArcToon.Editor.AttributeDrawing
+namespace ArcToon.Editor.Attributes
 {
     /// <summary>
     /// Recursively draws a SerializedProperty tree using layout attributes read from the backing

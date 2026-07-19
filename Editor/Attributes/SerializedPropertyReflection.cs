@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 
-namespace ArcToon.Editor.AttributeDrawing
+namespace ArcToon.Editor.Attributes
 {
     /// <summary>
     /// Maps a SerializedProperty to the backing FieldInfo so layout attributes can be read.

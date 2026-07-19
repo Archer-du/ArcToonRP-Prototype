@@ -5,7 +5,7 @@ using ArcToon.Settings.Attributes;
 using UnityEditor;
 using UnityEngine;
 
-namespace ArcToon.Editor.AttributeDrawing
+namespace ArcToon.Editor.Attributes
 {
     /// <summary>
     /// Evaluates [ShowIf] / [ShowIfEnum] conditions for a field against its sibling properties.

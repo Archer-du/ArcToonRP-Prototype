@@ -41,7 +41,11 @@
 
         Pass
         {
-            Name "ToonUnlit Forward"
+            Name "Toon Unlit"
+            Tags
+            {
+                "LightMode" = "ToonForward"
+            }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite [_ZWrite]
             Cull [_Cull]
@@ -62,33 +66,7 @@
             ENDHLSL
         }
 
-        Pass
-        {
-            Name "ToonUnlit Shadow Caster"
-            Tags
-            {
-                "LightMode" = "ShadowCaster"
-            }
-
-            ColorMask 0
-            Cull [_Cull]
-
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #pragma shader_feature _CLIPPING
-            #pragma shader_feature _SHADOWS_DITHER
-
-            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
-
-            #include "ShadowCasterPass.hlsl"
-
-            #pragma vertex ShadowCasterPassVertex
-            #pragma fragment ShadowCasterPassFragment
-            ENDHLSL
-        }
+        UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
     }
 
     CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonUnlitShaderGUI"
