@@ -113,8 +113,55 @@
         }
         
         HLSLINCLUDE
-        #include "ForwardCoreInput.hlsl"
+        // --- pre-CBUFFER Library (dependency-free) ---
+        #include "../ShaderLibrary/Input/SurfaceSampling.hlsl"
+        #include "../ShaderLibrary/Input/InputConfig.hlsl"
+        #include "../ShaderLibrary/RegionID.hlsl"
         #include "../ShaderLibrary/Light/ToonLighting.hlsl"
+
+        // --- per-material CBUFFER (this shader's own subset) ---
+        UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+            UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+            UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
+            UNITY_DEFINE_INSTANCED_PROP(float, _Roughness)
+            UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
+            UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
+            UNITY_DEFINE_INSTANCED_PROP(int, _MetallicMapChannel)
+            UNITY_DEFINE_INSTANCED_PROP(int, _RoughnessMapChannel)
+            UNITY_DEFINE_INSTANCED_PROP(int, _OcclusionMapChannel)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
+            UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmoothNew)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _RimScale)
+            UNITY_DEFINE_INSTANCED_PROP(float, _RimWidth)
+            UNITY_DEFINE_INSTANCED_PROP(float, _RimDepthBias)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _SpecGloss)
+            UNITY_DEFINE_INSTANCED_PROP(float, _SpecScale)
+            UNITY_DEFINE_INSTANCED_PROP(int, _SpecularMaskUV)
+            UNITY_DEFINE_INSTANCED_PROP(int, _SpecularMaskChannel)
+            UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxSensitivity)
+            UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxOffset)
+            UNITY_DEFINE_INSTANCED_PROP(int, _TangentShiftMapUV)
+            UNITY_DEFINE_INSTANCED_PROP(float, _TangentShiftOffset)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _PerObjectShadowCasterID)
+
+            UNITY_DEFINE_INSTANCED_PROP(int, _RegionCount)
+            UNITY_DEFINE_INSTANCED_PROP(int, _RegionIDChannel)
+        UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
+        // --- post-CBUFFER Interface (dependency-bearing) ---
+        #include "Interface/SurfaceInterface.hlsl"
+        #include "Interface/RegionInterface.hlsl"
+        #include "Interface/HairSpecInterface.hlsl"
+        #include "Interface/ToonLightingInterface.hlsl"
         ENDHLSL
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"

@@ -1,12 +1,15 @@
-#ifndef ARCTOON_TOON_SURFACE_INPUT_INCLUDED
-#define ARCTOON_TOON_SURFACE_INPUT_INCLUDED
+#ifndef ARCTOON_SURFACE_SAMPLING_INCLUDED
+#define ARCTOON_SURFACE_SAMPLING_INCLUDED
 
-#include "../ShaderLibrary/Common.hlsl"
-#include "../ShaderLibrary/Input/InputConfig.hlsl"
+#include "../Common.hlsl"
 
-// Shared surface texture used by every ArcToon shader family.
-// Each family's private *Input.hlsl declares its own _BaseMap_ST / _BaseColor / _Cutoff
-// inside its own UnityPerMaterial CBUFFER and calls the parameterized helpers below.
+// Per-material instanced property accessor. CBUFFER-free at definition; it expands to a
+// UnityPerMaterial read only where invoked, which is always the Interface tier (after the
+// shader's own CBUFFER). Library code must never invoke it.
+#define INPUT_PROP(name) UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, name)
+
+// Shared surface texture used by every ArcToon shader family. Each family declares its own
+// _BaseMap_ST / _BaseColor / _Cutoff inside its own CBUFFER and passes them to the helpers below.
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
 
@@ -29,5 +32,8 @@ float ResolveFinalAlpha(float alpha, float zwrite)
 {
     return zwrite ? 1.0 : alpha;
 }
+
+#define STENCIL_MASK_CHANNEL_FRINGE_SHADOW g
+#define STENCIL_MASK_CHANNEL_EYE_LASHES b
 
 #endif

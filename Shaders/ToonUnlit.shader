@@ -36,7 +36,25 @@
     SubShader
     {
         HLSLINCLUDE
-        #include "ToonUnlitInput.hlsl"
+        // --- pre-CBUFFER Library (dependency-free) ---
+        #include "../ShaderLibrary/Input/SurfaceSampling.hlsl"
+        #include "../ShaderLibrary/Input/InputConfig.hlsl"
+        #include "../ShaderLibrary/RegionID.hlsl"
+
+        // --- per-material CBUFFER (this shader's own subset) ---
+        UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+            UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+            UNITY_DEFINE_INSTANCED_PROP(float, _ZWrite)
+
+            UNITY_DEFINE_INSTANCED_PROP(int, _RegionCount)
+            UNITY_DEFINE_INSTANCED_PROP(int, _RegionIDChannel)
+        UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
+        // --- post-CBUFFER Interface (dependency-bearing) ---
+        #include "Interface/UnlitInterface.hlsl"
+        #include "Interface/RegionInterface.hlsl"
         ENDHLSL
 
         Pass
