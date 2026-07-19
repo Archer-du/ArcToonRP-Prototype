@@ -1,5 +1,5 @@
-#ifndef ARCTOON_TOON_CORE_INPUT_INCLUDED
-#define ARCTOON_TOON_CORE_INPUT_INCLUDED
+#ifndef ARCTOON_FORWARD_CORE_INPUT_INCLUDED
+#define ARCTOON_FORWARD_CORE_INPUT_INCLUDED
 
 #include "ToonSurfaceInput.hlsl"
 #include "../ShaderLibrary/RegionID.hlsl"

@@ -13,7 +13,8 @@ namespace ArcToon.Passes
 
         private static ShaderTagId[] baseShaderTagIds =
         {
-            new("ToonForward"),
+            new("ForwardCore"),
+            new("ForwardUnlit"),
             new("SRPDefaultUnlit"),
         };
 

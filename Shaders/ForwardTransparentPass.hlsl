@@ -1,7 +1,7 @@
-#ifndef ARCTOON_TOON_TRANSPARENT_PASS_INCLUDED
-#define ARCTOON_TOON_TRANSPARENT_PASS_INCLUDED
+#ifndef ARCTOON_FORWARD_TRANSPARENT_PASS_INCLUDED
+#define ARCTOON_FORWARD_TRANSPARENT_PASS_INCLUDED
 
-#include "ToonForwardCore.hlsl"
+#include "ForwardCorePass.hlsl"
 
 TEXTURE2D(_OpaqueDepthBuffer);
 TEXTURE2D(_DualDepthBufferRef);
@@ -24,27 +24,27 @@ float WeightedBlendedAlphaDepthWeight(float alpha, float depth)
     return weight;
 }
 
-Varyings ToonTransparentPassVertex(Attributes input)
+Varyings ForwardTransparentPassVertex(Attributes input)
 {
-    return ToonForwardCoreVertex(input);
+    return ForwardCoreVertex(input);
 }
 
-FragmentOutput ToonTransparentPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace)
+FragmentOutput ForwardTransparentPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace)
 {
     FragmentOutput output;
-    float4 calculateColor = ToonForwardCoreFragment(input, isFrontFace);
+    float4 calculateColor = ForwardCoreFragment(input, isFrontFace);
     output.accumulateColor = float4(calculateColor.rgb * calculateColor.a, calculateColor.a) *
         WeightedBlendedAlphaDepthWeight(calculateColor.a, input.positionCS_SS.z);
     output.revealage = calculateColor.a;
     return output;
 }
 
-Varyings ToonDepthPeelingPassVertex(Attributes input)
+Varyings ForwardTransparentDepthPeelingPassVertex(Attributes input)
 {
-    return ToonForwardCoreVertex(input);
+    return ForwardCoreVertex(input);
 }
 
-float4 ToonDepthPeelingPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
+float4 ForwardTransparentDepthPeelingPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     float2 screenUV = GetScreenUV(input.positionCS_SS);
     float depth = input.positionCS_SS.z;
@@ -67,7 +67,7 @@ float4 ToonDepthPeelingPassFragment(Varyings input, bool isFrontFace : SV_IsFron
         }
         #endif
     }
-    return ToonForwardCoreFragment(input, isFrontFace);
+    return ForwardCoreFragment(input, isFrontFace);
 }
 
 #endif

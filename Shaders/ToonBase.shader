@@ -111,7 +111,7 @@
         }
         
         HLSLINCLUDE
-        #include "ToonCoreInput.hlsl"
+        #include "ForwardCoreInput.hlsl"
         #include "../ShaderLibrary/Light/ToonLighting.hlsl"
         ENDHLSL
 
@@ -150,7 +150,7 @@
             Name "Toon Base"
             Tags
             {
-                "LightMode" = "ToonForward"
+                "LightMode" = "ForwardCore"
             }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite [_ZWrite]
@@ -186,10 +186,10 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ToonForwardCore.hlsl"
+            #include "ForwardCorePass.hlsl"
 
-            #pragma vertex ToonForwardCoreVertex
-            #pragma fragment ToonForwardCoreFragment
+            #pragma vertex ForwardCoreVertex
+            #pragma fragment ForwardCoreFragment
             ENDHLSL
         }
 
@@ -211,7 +211,7 @@
 
             #pragma multi_compile_instancing
 
-            #include "ToonDepthStencilPass.hlsl"
+            #include "DepthStencilPass.hlsl"
 
             #pragma vertex DefaultDepthStencilPassVertex
             #pragma fragment DefaultDepthStencilPassFragment
@@ -244,7 +244,7 @@
 
             #pragma multi_compile_instancing
 
-            #include "ToonDepthStencilPass.hlsl"
+            #include "DepthStencilPass.hlsl"
 
             #pragma vertex DefaultDepthStencilPassVertex
             #pragma fragment DefaultDepthStencilPassFragment

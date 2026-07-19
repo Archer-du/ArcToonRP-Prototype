@@ -113,7 +113,7 @@
         }
         
         HLSLINCLUDE
-        #include "ToonCoreInput.hlsl"
+        #include "ForwardCoreInput.hlsl"
         #include "../ShaderLibrary/Light/ToonLighting.hlsl"
         ENDHLSL
 
@@ -124,7 +124,7 @@
             Name "Toon Depth Peeling"
             Tags
             {
-                "LightMode" = "ToonForwardDepthPeeling"
+                "LightMode" = "ForwardTransparentDepthPeeling"
             }
             Blend One Zero, One Zero
             ZWrite On
@@ -160,10 +160,10 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ToonTransparentPass.hlsl"
+            #include "ForwardTransparentPass.hlsl"
 
-            #pragma vertex ToonDepthPeelingPassVertex
-            #pragma fragment ToonDepthPeelingPassFragment
+            #pragma vertex ForwardTransparentDepthPeelingPassVertex
+            #pragma fragment ForwardTransparentDepthPeelingPassFragment
             ENDHLSL
         }
 
@@ -172,7 +172,7 @@
             Name "Toon Transparent Back Face"
             Tags
             {
-                "LightMode" = "ToonForwardTransparentBackFace"
+                "LightMode" = "ForwardTransparentBackFace"
             }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite Off
@@ -208,10 +208,10 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ToonForwardCore.hlsl"
+            #include "ForwardCorePass.hlsl"
 
-            #pragma vertex ToonForwardCoreVertex
-            #pragma fragment ToonForwardCoreFragment
+            #pragma vertex ForwardCoreVertex
+            #pragma fragment ForwardCoreFragment
             ENDHLSL
         }
 
@@ -220,7 +220,7 @@
             Name "Toon Transparent Front Face"
             Tags
             {
-                "LightMode" = "ToonForwardTransparentFrontFace"
+                "LightMode" = "ForwardTransparentFrontFace"
             }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite Off
@@ -256,10 +256,10 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ToonForwardCore.hlsl"
+            #include "ForwardCorePass.hlsl"
 
-            #pragma vertex ToonForwardCoreVertex
-            #pragma fragment ToonForwardCoreFragment
+            #pragma vertex ForwardCoreVertex
+            #pragma fragment ForwardCoreFragment
             ENDHLSL
         }
 
@@ -268,7 +268,7 @@
             Name "Toon Weighted Average"
             Tags
             {
-                "LightMode" = "ToonForwardWeightedAverage"
+                "LightMode" = "ForwardTransparentWeightedAverage"
             }
             Blend 0 One One, One One
             Blend 1 Zero OneMinusSrcColor
@@ -305,10 +305,10 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "ToonTransparentPass.hlsl"
+            #include "ForwardTransparentPass.hlsl"
 
-            #pragma vertex ToonTransparentPassVertex
-            #pragma fragment ToonTransparentPassFragment
+            #pragma vertex ForwardTransparentPassVertex
+            #pragma fragment ForwardTransparentPassFragment
             ENDHLSL
         }
 

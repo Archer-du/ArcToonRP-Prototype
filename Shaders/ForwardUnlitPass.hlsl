@@ -1,5 +1,5 @@
-﻿#ifndef ARCTOON_UNLIT_PASS_INCLUDED
-#define ARCTOON_UNLIT_PASS_INCLUDED
+﻿#ifndef ARCTOON_FORWARD_UNLIT_PASS_INCLUDED
+#define ARCTOON_FORWARD_UNLIT_PASS_INCLUDED
 
 #include "../ShaderLibrary/Common.hlsl"
 
@@ -19,7 +19,7 @@ struct Varyings
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-Varyings UnlitPassVertex(Attributes input)
+Varyings ForwardUnlitPassVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -31,7 +31,7 @@ Varyings UnlitPassVertex(Attributes input)
     return output;
 }
 
-float4 UnlitPassFragment(Varyings input) : SV_TARGET
+float4 ForwardUnlitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     

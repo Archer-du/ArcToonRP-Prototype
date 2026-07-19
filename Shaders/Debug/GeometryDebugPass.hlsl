@@ -2,7 +2,7 @@
 #define ARCTOON_GEOMETRY_DEBUG_PASS_INCLUDED
 
 // Shared geometry-debug pass for all Toon shaders.
-// Relies on ToonCoreInput.hlsl + ToonLighting.hlsl being included by the shader's HLSLINCLUDE block.
+// Relies on ForwardCoreInput.hlsl + ToonLighting.hlsl being included by the shader's HLSLINCLUDE block.
 // Selected by the global _GeometryDebugMode uniform (see ArcToon.Utils.CameraDebugger).
 // Surface is built at minimal fidelity: material-detail features (normal map, SDF, anisotropic
 // hair highlight, refraction, matcap) are intentionally not reconstructed here.

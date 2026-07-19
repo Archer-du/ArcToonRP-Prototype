@@ -44,7 +44,7 @@
             Name "Toon Unlit"
             Tags
             {
-                "LightMode" = "ToonForward"
+                "LightMode" = "ForwardUnlit"
             }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite [_ZWrite]
@@ -59,10 +59,10 @@
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #include "UnlitPass.hlsl"
+            #include "ForwardUnlitPass.hlsl"
 
-            #pragma vertex UnlitPassVertex
-            #pragma fragment UnlitPassFragment
+            #pragma vertex ForwardUnlitPassVertex
+            #pragma fragment ForwardUnlitPassFragment
             ENDHLSL
         }
 

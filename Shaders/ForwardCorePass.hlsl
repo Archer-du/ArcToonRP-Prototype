@@ -1,5 +1,5 @@
-#ifndef ARCTOON_TOON_FORWARD_CORE_INCLUDED
-#define ARCTOON_TOON_FORWARD_CORE_INCLUDED
+#ifndef ARCTOON_FORWARD_CORE_PASS_INCLUDED
+#define ARCTOON_FORWARD_CORE_PASS_INCLUDED
 
 // Shared vertex/fragment skeleton for the forward-lit pass of the core Toon shaders.
 // The skeleton is fixed. Per-shader-type variations that map to a shader keyword
@@ -33,7 +33,7 @@ struct Varyings
     GI_VARYINGS_DATA
 };
 
-Varyings ToonForwardCoreVertex(Attributes input)
+Varyings ForwardCoreVertex(Attributes input)
 {
     Varyings output;
     UNITY_SETUP_INSTANCE_ID(input);
@@ -69,7 +69,7 @@ float3 ToonComputeLighting(Surface surface, InputConfig config, BRDF brdf, GI gi
     return finalColor;
 }
 
-float4 ToonForwardCoreFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
+float4 ForwardCoreFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.vertexColor);

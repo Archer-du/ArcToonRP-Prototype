@@ -1,45 +1,47 @@
-﻿#ifndef ARCTOON_TOON_STENCIL_MASK_PASS_INCLUDED
-#define ARCTOON_TOON_STENCIL_MASK_PASS_INCLUDED
+﻿#ifndef ARCTOON_DEPTH_STENCIL_PASS_INCLUDED
+#define ARCTOON_DEPTH_STENCIL_PASS_INCLUDED
 
 #include "../ShaderLibrary/Common.hlsl"
 
-struct AttributesSM
+struct AttributesDS
 {
     float3 positionOS : POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct VaryingsSM
+struct VaryingsDS
 {
     float4 positionCS_SS : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
+    UNITY_VERTEX_OUTPUT_STEREO
 };
 
-VaryingsSM EyeLashesReceiverPassVertex(AttributesSM input)
+VaryingsDS DefaultDepthStencilPassVertex(AttributesDS input)
 {
-    VaryingsSM output;
+    VaryingsDS output = (VaryingsDS)0;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
-    output.positionCS_SS = TransformObjectToHClip(input.positionOS);
+    output.positionCS_SS = TransformObjectToHClip(input.positionOS.xyz);
     return output;
 }
 
-float4 EyeLashesReceiverPassFragment(VaryingsSM input) : SV_TARGET
+half DefaultDepthStencilPassFragment(VaryingsDS input) : SV_TARGET
 {
-    float4 stencilMask = 0;
-    stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES = 1.0;
-    return stencilMask;
+    UNITY_SETUP_INSTANCE_ID(input);
+    #if defined(LOD_FADE_CROSSFADE)
+    LODFadeCrossFade(input.positionCS_SS);
+    #endif
+    return input.positionCS_SS.z;
 }
 
-VaryingsSM FringeReceiverPassVertex(AttributesSM input)
+VaryingsDS FringeStencilPassVertex(AttributesDS input)
 {
-    VaryingsSM output;
+    VaryingsDS output;
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
 
     float3 mainLightDirectionWS = normalize(GetMainLightDirection());
     float3 mainLightDirectionVS = normalize(TransformWorldToViewDir(mainLightDirectionWS));
-    // TODO:
     float3 cameraDirectionOS = normalize(TransformWorldToObject(_WorldSpaceCameraPos));
     // float camDirFactor = 1 - smoothstep(0.1, 0.9, cameraDirectionOS.y);
         
@@ -50,13 +52,6 @@ VaryingsSM FringeReceiverPassVertex(AttributesSM input)
     output.positionCS_SS = TransformWViewToHClip(positionVS);
     
     return output;
-}
-
-float4 FringeReceiverPassFragment(VaryingsSM input) : SV_TARGET
-{
-    float4 stencilMask = 0;
-    stencilMask.STENCIL_MASK_CHANNEL_FRINGE_SHADOW = 1.0;
-    return stencilMask;
 }
 
 #endif
