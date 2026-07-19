@@ -2,3 +2,7 @@
 	path = Packages/com.arctoon.render-pipeline
 	url = https://github.com/Archer-du/ArcToonRP-Prototype.git
 	branch = arctoon/0.1.0
+[submodule "Assets/ArcToonSampleAssets"]
+	path = Assets/ArcToonSampleAssets
+	url = https://github.com/Archer-du/ArcToonSampleAssets-Unity.git
+	branch = main

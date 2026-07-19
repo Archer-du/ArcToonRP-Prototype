@@ -79,10 +79,6 @@ crashlytics-build.properties
 **/Animations/*
 **/Animations.meta
 
-# ArcToon Sample Assets
-/[Aa]ssets/ArcToonSampleAssets/
-/[Aa]ssets/ArcToonSampleAssets.meta
-
 # CodeBuddy Code guidance file
 CODEBUDDY.md
 nul
