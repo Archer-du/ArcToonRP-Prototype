@@ -11,13 +11,18 @@ namespace ArcToon.Editor.ShaderEditor.Sections
         private MaterialProperty lightMapSDFSourceUVProperty;
         private MaterialProperty lightMapSDFOffsetProperty;
         private MaterialProperty faceVectorProperty;
-        
+        private MaterialProperty regionCountProperty;
+        private MaterialProperty sdfRegionEnabledProperty;
+
         public override void FindProperties(MaterialProperty[] props)
         {
             lightMapSDFProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.LightMapSDF, props, false);
             lightMapSDFSourceUVProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.LightMapSDFSourceUV, props, false);
             lightMapSDFOffsetProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ShadowOffsetSDF, props, false);
             faceVectorProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.FaceVector, props, false);
+            regionCountProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.RegionCount, props, false);
+            sdfRegionEnabledProperty = MaterialEditorUtils.FindRegionProperty(
+                RegionPropertyHelper.BaseName.SDFLightMapRegionEnabled, SelectedRegion, props);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
@@ -53,7 +58,15 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                 faceVectorProperty.vectorValue = new Vector4(newFaceVectorValue.x, newFaceVectorValue.y, newFaceVectorValue.z, 0);
             }
             EditorGUI.EndDisabledGroup();
-            
+
+            if (lightMapSDFProperty.textureValue != null
+                && regionCountProperty != null && regionCountProperty.intValue > 1
+                && sdfRegionEnabledProperty != null)
+            {
+                materialEditor.BuiltinShaderPropertyDrawer(sdfRegionEnabledProperty, true,
+                    $"Accept SDF Light Map (Region {SelectedRegion})");
+            }
+
             EditorGUILayoutUtils.EndGUIComponentIndent();
         }
 

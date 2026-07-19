@@ -18,12 +18,13 @@ namespace ArcToon.Editor.ShaderEditor.Panels
             this.components = components;
         }
         
-        public void OnGUI(MaterialEditor materialEditor, MaterialProperty[] props)
+        public void OnGUI(MaterialEditor materialEditor, MaterialProperty[] props, SectionContext context)
         {
             var materials = MaterialEditorUtils.GetTargetMaterials(materialEditor);
             
             foreach (var component in components)
             {
+                component.SetContext(context);
                 component.FindProperties(props);
             }
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -46,7 +47,10 @@ namespace ArcToon.Editor.ShaderEditor.Panels
         {
             foreach (var component in components)
             {
-                component.Refresh(material);
+                if (component.IsValid())
+                {
+                    component.Refresh(material);
+                }
             }
         }
     }

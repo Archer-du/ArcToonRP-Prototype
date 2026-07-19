@@ -20,6 +20,9 @@ namespace ArcToon.Passes
         #endregion
 
         #region Weighted Average
+        // Blitter.shader pass index for "Composite Weighted Average".
+        private const int BlitPassCompositeWeightedAverage = 3;
+
         private RendererList geometryList;
         
         private RTHandle accumulateRGBA;
@@ -28,6 +31,9 @@ namespace ArcToon.Passes
         #endregion
 
         #region Depth Peeling
+        // Blitter.shader pass index for "Composite Depth Peeling".
+        private const int BlitPassCompositeDepthPeeling = 4;
+
         private const int DepthPeelingLayers = 4;
         
         private RendererList[] transparencyLists = new RendererList[DepthPeelingLayers];
@@ -91,7 +97,7 @@ namespace ArcToon.Passes
                 renderQueueRange = RenderQueueRange.transparent,
             });
             
-            backFaceList = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardTransparentBackFace, renderer.CullingResults, Camera)
+            backFaceList = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ForwardTransparentBackFace, renderer.CullingResults, Camera)
             {
                 sortingCriteria = SortingCriteria.CommonTransparent,
                 renderQueueRange = RenderQueueRange.transparent,
@@ -101,7 +107,7 @@ namespace ArcToon.Passes
                                         PerObjectData.OcclusionProbeProxyVolume |
                                         PerObjectData.ReflectionProbes,
             });
-            frontFaceList = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardTransparentFrontFace, renderer.CullingResults, Camera)
+            frontFaceList = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ForwardTransparentFrontFace, renderer.CullingResults, Camera)
             {
                 sortingCriteria = SortingCriteria.CommonTransparent,
                 renderQueueRange = RenderQueueRange.transparent,
@@ -111,7 +117,7 @@ namespace ArcToon.Passes
                                         PerObjectData.OcclusionProbeProxyVolume |
                                         PerObjectData.ReflectionProbes,
             });
-            geometryList = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardWeightedAverage, renderer.CullingResults, Camera)
+            geometryList = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ForwardTransparentWeightedAverage, renderer.CullingResults, Camera)
             {
                 sortingCriteria = SortingCriteria.CommonOpaque,
                 renderQueueRange = RenderQueueRange.transparent,
@@ -124,7 +130,7 @@ namespace ArcToon.Passes
             
             for (int i = 0; i < DepthPeelingLayers; i++)
             {
-                transparencyLists[i] = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ToonForwardDepthPeeling, renderer.CullingResults, Camera)
+                transparencyLists[i] = context.CreateRendererList(new RendererListDesc(InternalShader.TagId.ForwardTransparentDepthPeeling, renderer.CullingResults, Camera)
                 {
                     sortingCriteria = SortingCriteria.CommonOpaque,
                     renderQueueRange = RenderQueueRange.transparent,
@@ -166,8 +172,7 @@ namespace ArcToon.Passes
                     RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
                 );
                 commandBuffer.ClearRenderTarget(false, true, Color.clear);
-                // TODO: config
-                commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 3);
+                commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), BlitPassCompositeWeightedAverage);
             }
 
             // Depth peeling
@@ -190,8 +195,7 @@ namespace ArcToon.Passes
                     resources.Camera.depthAttachment,
                     RenderBufferLoadAction.Load, RenderBufferStoreAction.Store
                 );
-                // TODO: config
-                commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), 4);
+                commandBuffer.DrawScreenFilledTriangle(ShaderResourceManager.AcquireTransientMaterial(InternalShader.Path.Blitter), BlitPassCompositeDepthPeeling);
             }
 
             commandBuffer.EndSample("Toon Transparent");

@@ -1,7 +1,7 @@
 ﻿#ifndef ARCTOON_SHADOW_CASTER_PASS_INCLUDED
 #define ARCTOON_SHADOW_CASTER_PASS_INCLUDED
 
-#include "../ShaderLibrary/Common.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
 
 bool _ShadowPancaking;
 
@@ -9,6 +9,7 @@ struct AttributesSC
 {
     float3 positionOS : POSITION;
     float2 baseUV : TEXCOORD0;
+    float4 color : COLOR;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -16,6 +17,7 @@ struct VaryingsSC
 {
     float4 positionCS_SS : SV_POSITION;
     float2 baseUV : VAR_BASE_UV;
+    float4 vertexColor : VAR_COLOR;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -27,6 +29,7 @@ VaryingsSC ShadowCasterPassVertex(AttributesSC input)
     float3 positionWS = TransformObjectToWorld(input.positionOS);
     output.positionCS_SS = TransformWorldToHClip(positionWS);
     output.baseUV = TransformBaseUV(input.baseUV);
+    output.vertexColor = input.color;
 
     if (_ShadowPancaking)
     {
@@ -45,7 +48,7 @@ VaryingsSC ShadowCasterPassVertex(AttributesSC input)
 void ShadowCasterPassFragment(VaryingsSC input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
+    InputConfig config = GET_INPUT_CONFIG_WITH_REGION(input.positionCS_SS, input.baseUV, input.vertexColor);
     float4 base = GetAlbedo(config);
     #if defined(_CLIPPING)
     clip(base.a - GetAlphaClip(config));

@@ -12,11 +12,12 @@
         _SpecularMask ("Parallax Specular Map", 2D) = "white" {}
         [Enum(UV0, 0, UV1, 1)]
         _SpecularMaskUV ("Parallax Specular Map UV", Integer) = 1
+        [Enum(RGB, 0, R, 1, G, 2, B, 3, A, 4)]
+        _SpecularMaskChannel ("Specular Mask Channel", Integer) = 0
         
         _ParallaxSensitivity ("Parallax Sensitivity", Range(0, 1)) = 0.1
         _ParallaxOffset ("Parallax Offset", Range(0, 1)) = 0
         
-        _Clipping ("Alpha Clipping", Float) = 0
         _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
         
         [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows ("Receive Shadows", Float) = 1
@@ -27,6 +28,7 @@
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Source Blend Factor", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Destination Blend Factor", Float) = 0
                 
+        _StencilEnabled("Stencil Enabled", Float) = 0
         _Stencil("Stencil Ref ID", Float) = 1
         _StencilWriteMask("Stencil Write Mask", Float) = 3
         _StencilReadMask("Stencil Read Mask", Float) = 3
@@ -39,6 +41,7 @@
         [Enum(R, 0, G, 1, B, 2, A, 3)] _MetallicMapChannel ("Metallic Channel", Integer) = 1
         [NoScaleOffset] _RoughnessMap ("Roughness Map", 2D) = "white" {}
         [Enum(R, 0, G, 1, B, 2, A, 3)] _RoughnessMapChannel ("Roughness Channel", Integer) = 0
+        [Enum(Roughness, 0, Smoothness, 1)] _RoughnessSource ("Roughness Source", Integer) = 0
         [NoScaleOffset] _OcclusionMap ("Occlusion Map", 2D) = "white" {}
         [Enum(R, 0, G, 1, B, 2, A, 3)] _OcclusionMapChannel ("Occlusion Channel", Integer) = 2
 
@@ -59,7 +62,14 @@
         _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
         _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
 
-        _OutlineColor ("Outline Color", Color) = (0.5, 0.5, 0.5, 1.0)
+        _OutlineColor0 ("Outline Color 0", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor1 ("Outline Color 1", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor2 ("Outline Color 2", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor3 ("Outline Color 3", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor4 ("Outline Color 4", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor5 ("Outline Color 5", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor6 ("Outline Color 6", Color) = (0.1, 0.1, 0.1, 1.0)
+        _OutlineColor7 ("Outline Color 7", Color) = (0.1, 0.1, 0.1, 1.0)
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
         [Enum(ArcToon.Editor.ShaderEditor.SmoothNormalSource)]
         _SmoothNormalSource ("Smooth Normal Source", Integer) = 1
@@ -85,7 +95,13 @@
 
         // ------------------------ Internal
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
-        
+
+        // ------------------------ Region ID
+        _RegionCount ("Region Count", Integer) = 1
+        [Enum(R, 0, G, 1, B, 2, A, 3)]
+        _RegionIDChannel ("Region ID Channel", Integer) = 0
+        [NoScaleOffset] _RegionIDMap ("Region ID Map", 2D) = "black" {}
+
         // for hard-coded unity capacity
         [HideInInspector] _MainTex("Texture for Lightmap", 2D) = "white" {}
         [HideInInspector] _Color("Color for Lightmap", Color) = (0.5, 0.5, 0.5, 1.0)
@@ -98,8 +114,54 @@
         }
         
         HLSLINCLUDE
-        #include "ToonCoreInput.hlsl"
-        #include "ToonLightingImpl.hlsl"
+        // --- pre-CBUFFER Library (dependency-free) ---
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Input/SurfaceSampling.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/RegionID.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/ToonLighting.hlsl"
+
+        // --- per-material CBUFFER (this shader's own subset) ---
+        UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+            UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+            UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
+            UNITY_DEFINE_INSTANCED_PROP(float, _Roughness)
+            UNITY_DEFINE_INSTANCED_PROP(float, _Occlusion)
+            UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
+            UNITY_DEFINE_INSTANCED_PROP(int, _MetallicMapChannel)
+            UNITY_DEFINE_INSTANCED_PROP(int, _RoughnessMapChannel)
+            UNITY_DEFINE_INSTANCED_PROP(int, _RoughnessSource)
+            UNITY_DEFINE_INSTANCED_PROP(int, _OcclusionMapChannel)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
+            UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmoothNew)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _RimScale)
+            UNITY_DEFINE_INSTANCED_PROP(float, _RimWidth)
+            UNITY_DEFINE_INSTANCED_PROP(float, _RimDepthBias)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _SpecGloss)
+            UNITY_DEFINE_INSTANCED_PROP(float, _SpecScale)
+            UNITY_DEFINE_INSTANCED_PROP(int, _SpecularMaskUV)
+            UNITY_DEFINE_INSTANCED_PROP(int, _SpecularMaskChannel)
+            UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxSensitivity)
+            UNITY_DEFINE_INSTANCED_PROP(float, _ParallaxOffset)
+            UNITY_DEFINE_INSTANCED_PROP(int, _TangentShiftMapUV)
+            UNITY_DEFINE_INSTANCED_PROP(float, _TangentShiftOffset)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _PerObjectShadowCasterID)
+
+            UNITY_DEFINE_INSTANCED_PROP(int, _RegionCount)
+            UNITY_DEFINE_INSTANCED_PROP(int, _RegionIDChannel)
+        UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
+        // --- post-CBUFFER Interface (dependency-bearing) ---
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/SurfaceInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/HairSpecInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/ToonLightingInterface.hlsl"
         ENDHLSL
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"
@@ -109,7 +171,7 @@
             Name "Toon Depth Peeling"
             Tags
             {
-                "LightMode" = "ToonForwardDepthPeeling"
+                "LightMode" = "ForwardTransparentDepthPeeling"
             }
             Blend One Zero, One Zero
             ZWrite On
@@ -143,10 +205,12 @@
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
-            #include "ToonTransparentPass.hlsl"
+            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #pragma vertex ToonDepthPeelingPassVertex
-            #pragma fragment ToonDepthPeelingPassFragment
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardTransparentPass.hlsl"
+
+            #pragma vertex ForwardTransparentDepthPeelingPassVertex
+            #pragma fragment ForwardTransparentDepthPeelingPassFragment
             ENDHLSL
         }
 
@@ -155,7 +219,7 @@
             Name "Toon Transparent Back Face"
             Tags
             {
-                "LightMode" = "ToonForwardTransparentBackFace"
+                "LightMode" = "ForwardTransparentBackFace"
             }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite Off
@@ -165,7 +229,7 @@
             #pragma target 4.5
 
             #pragma multi_compile_instancing
-#pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
+            #pragma multi_compile _ _PCF3X3 _PCF5X5 _PCF7X7 _POISSON_DISK _PCSS
             #pragma multi_compile _ _CASCADE_BLEND_SOFT
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ LOD_FADE_CROSSFADE
@@ -189,10 +253,12 @@
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
-            #include "ToonBasePass.hlsl"
+            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #pragma vertex ToonBasePassVertex
-            #pragma fragment ToonBasePassFragment
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardCorePass.hlsl"
+
+            #pragma vertex ForwardCoreVertex
+            #pragma fragment ForwardCoreFragment
             ENDHLSL
         }
 
@@ -201,7 +267,7 @@
             Name "Toon Transparent Front Face"
             Tags
             {
-                "LightMode" = "ToonForwardTransparentFrontFace"
+                "LightMode" = "ForwardTransparentFrontFace"
             }
             Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
             ZWrite Off
@@ -235,10 +301,12 @@
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
-            #include "ToonBasePass.hlsl"
+            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #pragma vertex ToonBasePassVertex
-            #pragma fragment ToonBasePassFragment
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardCorePass.hlsl"
+
+            #pragma vertex ForwardCoreVertex
+            #pragma fragment ForwardCoreFragment
             ENDHLSL
         }
 
@@ -247,7 +315,7 @@
             Name "Toon Weighted Average"
             Tags
             {
-                "LightMode" = "ToonForwardWeightedAverage"
+                "LightMode" = "ForwardTransparentWeightedAverage"
             }
             Blend 0 One One, One One
             Blend 1 Zero OneMinusSrcColor
@@ -282,42 +350,25 @@
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
-            #include "ToonTransparentPass.hlsl"
+            #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 
-            #pragma vertex ToonTransparentPassVertex
-            #pragma fragment ToonTransparentPassFragment
+            #include "Packages/com.arctoon.render-pipeline/Shaders/ForwardTransparentPass.hlsl"
+
+            #pragma vertex ForwardTransparentPassVertex
+            #pragma fragment ForwardTransparentPassFragment
             ENDHLSL
         }
 
-        Pass
-        {
-            Tags
-            {
-                "LightMode" = "DepthOnly"
-            }
-            ZWrite On
-            // TODO: set cull through c#
-            Cull Off
-            ColorMask R
+        UsePass "ArcToon/ToonBase/TOON DEPTH ONLY"
 
-            HLSLPROGRAM
-            #pragma target 3.5
-
-            #pragma multi_compile_instancing
-
-            #include "ToonDepthStencilPass.hlsl"
-
-            #pragma vertex DefaultDepthStencilPassVertex
-            #pragma fragment DefaultDepthStencilPassFragment
-            ENDHLSL
-        }
-
-        UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
+        UsePass "ArcToon/ToonBase/TOON DEPTH STENCIL"
 
         UsePass "ArcToon/ToonBase/TOON SHADOW CASTER"
 
         UsePass "ArcToon/ToonBase/TOON META"
+        
+        UsePass "ArcToon/ToonBase/TOON GEOMETRY DEBUG"
     }
 
-    CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonShaderGUI"
+    CustomEditor "ArcToon.Editor.ShaderEditor.ArcToonBaseShaderGUI"
 }

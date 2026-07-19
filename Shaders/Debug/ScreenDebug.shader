@@ -8,8 +8,8 @@
         ZWrite Off
 
         HLSLINCLUDE
-        #include "../../ShaderLibrary/Common.hlsl"
-        #include "ScreenDebugPass.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Debug/ScreenDebugPass.hlsl"
         ENDHLSL
 
         Pass

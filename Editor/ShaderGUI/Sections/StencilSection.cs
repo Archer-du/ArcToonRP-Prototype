@@ -1,4 +1,4 @@
-using System;
+using ArcToon.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,16 +6,19 @@ namespace ArcToon.Editor.ShaderEditor.Sections
 {
     public class StencilSection : ShaderGUISectionBase
     {
+        private static readonly GUIContent toggleLabel = new("Stencil");
         private static readonly GUIContent stencilRefLabel = new("Ref Value");
         private static readonly GUIContent writeMaskLabel = new("Write Mask");
         private static readonly GUIContent readMaskLabel = new("Read Mask");
 
+        private MaterialProperty stencilEnabledProperty;
         private MaterialProperty stencilProperty;
         private MaterialProperty stencilWriteMaskProperty;
         private MaterialProperty stencilReadMaskProperty;
 
         public override void FindProperties(MaterialProperty[] props)
         {
+            stencilEnabledProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.StencilEnabled, props, false);
             stencilProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.Stencil, props, false);
             stencilWriteMaskProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.StencilWriteMask, props, false);
             stencilReadMaskProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.StencilReadMask, props, false);
@@ -23,7 +26,28 @@ namespace ArcToon.Editor.ShaderEditor.Sections
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
-            EditorGUILayout.LabelField("Stencil", EditorStyles.label);
+            bool shouldToggleGroup = !stencilEnabledProperty.hasMixedValue && Mathf.Approximately(stencilEnabledProperty.floatValue, 1);
+            EditorGUI.showMixedValue = stencilEnabledProperty.hasMixedValue;
+
+            EditorGUI.BeginChangeCheck();
+            bool newValue = EditorGUILayoutUtils.BeginTogglePropertyGroup(toggleLabel, shouldToggleGroup, EditorStyles.label);
+            EditorGUI.showMixedValue = false;
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                stencilEnabledProperty.floatValue = newValue ? 1f : 0f;
+                foreach (var material in materials)
+                {
+                    if (material == null) continue;
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Stencil: {newValue}");
+
+                    Undo.RecordObject(material, Undo.GetCurrentGroupName());
+                    material.SetShaderPassEnabled(InternalShader.TagId.DepthStencil.name, newValue);
+                    material.SetShaderPassEnabled(InternalShader.TagId.DepthOnly.name, !newValue);
+                    EditorUtility.SetDirty(material);
+                }
+            }
+
             EditorGUILayoutUtils.BeginGUIComponentIndent();
 
             DrawBitToggleRow(stencilRefLabel, stencilProperty);
@@ -31,6 +55,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             DrawBitToggleRow(readMaskLabel, stencilReadMaskProperty);
 
             EditorGUILayoutUtils.EndGUIComponentIndent();
+            EditorGUILayoutUtils.EndTogglePropertyGroup();
         }
 
         private static readonly float bitButtonWidth = 15f;
@@ -97,7 +122,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             }
 
             float valueX = startX + 8 * bitGroupWidth + 8f;
-            Rect valueRect = new Rect(valueX, lineRect.y, 120f, lineRect.height);
+            Rect valueRect = new Rect(valueX, lineRect.y, 50f, lineRect.height);
             EditorGUI.LabelField(valueRect, $"= {newValue}");
 
             if (EditorGUI.EndChangeCheck())
@@ -108,7 +133,17 @@ namespace ArcToon.Editor.ShaderEditor.Sections
 
         public override bool IsValid()
         {
-            return stencilProperty != null;
+            return stencilEnabledProperty != null && stencilProperty != null;
+        }
+
+        public override void Refresh(Material material)
+        {
+            base.Refresh(material);
+            if (material == null) return;
+
+            bool stencilEnabled = material.GetFloat(ShaderPropertyID.StencilEnabled) > 0.5f;
+            material.SetShaderPassEnabled(InternalShader.TagId.DepthStencil.name, stencilEnabled);
+            material.SetShaderPassEnabled(InternalShader.TagId.DepthOnly.name, !stencilEnabled);
         }
     }
 }

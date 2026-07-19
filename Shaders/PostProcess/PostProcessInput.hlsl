@@ -3,7 +3,7 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Filtering.hlsl"
 
-#include "../../ShaderLibrary/Input/UnityInput.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Input/UnityInput.hlsl"
 
 // Primary source texture bound by BlitUtils.BlitTexture (matches InternalShader.PropertyID.SourceTexture on the C# side).
 TEXTURE2D(_SourceTexture);

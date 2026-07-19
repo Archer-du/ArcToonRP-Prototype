@@ -7,13 +7,15 @@ namespace ArcToon.Editor.ShaderEditor.Sections
     {
         private MaterialProperty SpecularMaskProperty;
         private MaterialProperty specularMaskUVProperty;
+        private MaterialProperty specularMaskChannelProperty;
         private MaterialProperty parallaxSensitivityProperty;
         private MaterialProperty parallaxOffsetProperty;
-        
+
         public override void FindProperties(MaterialProperty[] props)
         {
             SpecularMaskProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SpecularMask, props, false);
             specularMaskUVProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SpecularMaskUV, props, false);
+            specularMaskChannelProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SpecularMaskChannel, props, false);
             parallaxSensitivityProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ParallaxSensitivity, props, false);
             parallaxOffsetProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ParallaxOffset, props, false);
         }
@@ -32,12 +34,16 @@ namespace ArcToon.Editor.ShaderEditor.Sections
                         bool hasSpecMask = material.GetTexture(SpecularMaskProperty.name) != null;
                         MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Specular Mask UV: {specularMaskUVProperty.intValue}");
                         Undo.RecordObject(material, Undo.GetCurrentGroupName());
-                        
+
                         material.SetKeyword(ShaderKeywords.SPEC_MASK, hasSpecMask);
 
                         EditorUtility.SetDirty(material);
                     }
                 }
+
+                EditorGUILayoutUtils.BeginGUIComponentIndent();
+                materialEditor.BuiltinShaderPropertyDrawer(specularMaskChannelProperty, true, "Channel");
+                EditorGUILayoutUtils.EndGUIComponentIndent();
                 
                 ShaderGUILayout.PredicateMaterialArrayBoolProperty(materials, material => material.IsKeywordEnabled(ShaderKeywords.SPEC_PARALLAX), 
                     out var hasMixedValue, out var keywordEnabled);

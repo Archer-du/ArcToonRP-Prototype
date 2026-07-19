@@ -7,8 +7,8 @@ Shader "Hidden/ArcToon/PostProcess/Bloom"
         ZWrite Off
 
         HLSLINCLUDE
-        #include "../../../ShaderLibrary/Common.hlsl"
-        #include "BloomPasses.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/PostProcess/Bloom/BloomPasses.hlsl"
         ENDHLSL
 
         Pass

@@ -7,8 +7,8 @@ Shader "Hidden/ArcToon/PostProcess/ColorGrading"
         ZWrite Off
 
         HLSLINCLUDE
-        #include "../../../ShaderLibrary/Common.hlsl"
-        #include "ColorGradingPasses.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/PostProcess/ColorGrading/ColorGradingPasses.hlsl"
         ENDHLSL
 
         Pass

@@ -1,11 +1,13 @@
 ﻿#ifndef ARCTOON_FRAGMENT_INCLUDED
 #define ARCTOON_FRAGMENT_INCLUDED
 
-#include "Input/UnityInput.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Input/UnityInput.hlsl"
 
 TEXTURE2D(_CameraDepthTexture);
 TEXTURE2D(_StencilMaskTexture);
 
+// Render attachment size (post render-scale, not the display resolution).
+// .x = 1/width, .y = 1/height, .z = width, .w = height.
 float4 _CameraBufferSize;
 
 struct Fragment
@@ -17,6 +19,16 @@ struct Fragment
     float bufferDepth;
     float bufferLinearDepth;
     float4 stencilMask;
+};
+
+// Per-fragment shared context aggregating the screen-space Fragment, the base UV, and the
+// region index used for per-region parameter selection. The region index is resolved by the
+// Region ID system (RegionID.hlsl); all consumers read it back as a plain int.
+struct InputConfig
+{
+    Fragment fragment;
+    float2 baseUV;
+    int regionIndex;
 };
 
 bool IsOrthographicCamera()

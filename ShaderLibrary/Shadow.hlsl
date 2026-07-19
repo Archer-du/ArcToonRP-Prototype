@@ -13,12 +13,12 @@
     #define SHADOW_FILTER_SAMPLES 16
     #define SHADOW_FILTER_SETUP SampleShadow_ComputeSamples_Tent_7x7
 #elif defined(_POISSON_DISK) || defined(_PCSS)
-    #include "PoissonDisk.hlsl"
+    #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/PoissonDisk.hlsl"
 #endif
 
-#include "Surface.hlsl"
-#include "Common.hlsl"
-#include "BitPacking.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Surface.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/BitPacking.hlsl"
 
 TEXTURE2D_SHADOW(_DirectionalShadowAtlas);
 TEXTURE2D_SHADOW(_SpotShadowAtlas);

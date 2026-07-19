@@ -14,7 +14,7 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
 
-#include "Input/UnityInput.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Input/UnityInput.hlsl"
 
 #if defined(_SHADOW_MASK_ALWAYS) || defined(_SHADOW_MASK_DISTANCE)
     #define SHADOWS_SHADOWMASK
@@ -27,8 +27,8 @@ SAMPLER(sampler_linear_clamp);
 SAMPLER(sampler_point_clamp);
 SAMPLER_CMP(sampler_linear_clamp_compare);
 
-#include "Fragment.hlsl"
-#include "ForwardPlus.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Fragment.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/ForwardPlus.hlsl"
 
 #define COLOR_BLEND_LERP 0
 #define COLOR_BLEND_MULTIPLY 1
@@ -126,6 +126,12 @@ float SelectChannel(float4 value, int channel)
     return channel == 0 ? value.r : channel == 1 ? value.g : channel == 2 ? value.b : value.a;
 }
 
+float3 SelectChannelRGB(float4 value, int channel)
+{
+    if (channel == 0) return value.rgb;
+    return channel == 1 ? value.r : channel == 2 ? value.g : channel == 3 ? value.b : value.a;
+}
+
 // decoder helpers -------------------------------
 float3 DecodeOctahedral(float2 uv)
 {
@@ -164,6 +170,11 @@ float GetTexelSizeWorldSpace(float linearDepth)
 {
     float size = 2.0 * linearDepth / (_CameraBufferSize.z * GetViewToHClipMatrix()._m00);
     return size;
+}
+
+float GetCameraAspect()
+{
+    return _CameraBufferSize.z / _CameraBufferSize.w;
 }
 
 float3 GetObjectCenterWorldPosition()

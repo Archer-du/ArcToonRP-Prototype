@@ -16,8 +16,8 @@ Shader "Hidden/ArcToon/PostProcess/FXAA"
             #pragma multi_compile _ _FXAA_QUALITY_MEDIUM _FXAA_QUALITY_LOW
             #pragma multi_compile _ _FXAA_ALPHA_CONTAINS_LUMA
 
-            #include "../../../ShaderLibrary/Common.hlsl"
-            #include "FXAAPass.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Common.hlsl"
+            #include "Packages/com.arctoon.render-pipeline/Shaders/PostProcess/AA/FXAAPass.hlsl"
 
             #pragma vertex DefaultPassVertex
             #pragma fragment FXAAPassFragment

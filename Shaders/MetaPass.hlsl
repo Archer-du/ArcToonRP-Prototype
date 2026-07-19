@@ -1,21 +1,23 @@
 ﻿#ifndef ARCTOON_META_PASS_INCLUDED
 #define ARCTOON_META_PASS_INCLUDED
 
-#include "../ShaderLibrary/Surface.hlsl"
-#include "../ShaderLibrary/Shadow.hlsl"
-#include "../ShaderLibrary/BRDF.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Surface.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Shadow.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/BRDF.hlsl"
 
 struct AttributesMT
 {
     float3 positionOS : POSITION;
     float2 baseUV : TEXCOORD0;
     float2 lightMapUV : TEXCOORD1;
+    float4 color : COLOR;
 };
 
 struct VaryingsMT
 {
     float4 positionCS_SS : SV_POSITION;
     float2 baseUV : VAR_BASE_UV;
+    float4 vertexColor : VAR_COLOR;
 };
 
 VaryingsMT MetaPassVertex(AttributesMT input)
@@ -25,12 +27,13 @@ VaryingsMT MetaPassVertex(AttributesMT input)
     input.positionOS.z = input.positionOS.z > 0.0 ? FLT_MIN : 0.0;
     output.positionCS_SS = TransformWorldToHClip(input.positionOS);
     output.baseUV = TransformBaseUV(input.baseUV);
+    output.vertexColor = input.color;
     return output;
 }
 
 float4 MetaPassFragment(VaryingsMT input) : SV_TARGET
 {
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV);
+    InputConfig config = GET_INPUT_CONFIG_WITH_REGION(input.positionCS_SS, input.baseUV, input.vertexColor);
     float4 base = GetAlbedo(config);
     Surface surface;
     ZERO_INITIALIZE(Surface, surface);

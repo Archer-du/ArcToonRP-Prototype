@@ -3,7 +3,7 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/ImageBasedLighting.hlsl"
-#include "BRDF.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/BRDF.hlsl"
 
 #if defined(LIGHTMAP_ON)
     #define GI_ATTRIBUTES_DATA float2 lightMapUV : TEXCOORD1;

@@ -31,6 +31,7 @@ namespace ArcToon.Utils
             VertexColorG,
             VertexColorB,
             VertexColorA,
+            RegionID,
             Specular,
             DirectBRDF,
             IncomingLight,

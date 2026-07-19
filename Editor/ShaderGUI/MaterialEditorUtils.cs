@@ -32,8 +32,9 @@ namespace ArcToon.Editor.ShaderEditor
 
     public enum SmoothNormalSource
     {
-        UV1,
+        None,
         VertexColor,
+        UV1,
     }
     
     public enum SmoothNormalDecoder
@@ -66,6 +67,12 @@ namespace ArcToon.Editor.ShaderEditor
         SphericalUV,
     }
 
+    public enum RoughnessSource
+    {
+        Roughness,
+        Smoothness,
+    }
+
     public enum TransparencyMode
     {
         OrderedDualFace,
@@ -88,10 +95,10 @@ namespace ArcToon.Editor.ShaderEditor
                 
         public static readonly string SpecularMask = Auto();
         public static readonly string SpecularMaskUV = Auto();
+        public static readonly string SpecularMaskChannel = Auto();
         public static readonly string ParallaxSensitivity = Auto();
         public static readonly string ParallaxOffset = Auto();
-        
-        public static readonly string Clipping = "_Clipping";
+
         public static readonly string Cutoff = "_Cutoff";
 
         public static readonly string TransparencyMode = Auto();
@@ -112,6 +119,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string MetallicMapChannel = Auto();
         public static readonly string RoughnessMap = Auto();
         public static readonly string RoughnessMapChannel = Auto();
+        public static readonly string RoughnessSource = Auto();
         public static readonly string OcclusionMap = Auto();
         public static readonly string OcclusionMapChannel = Auto();
 
@@ -123,7 +131,6 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string EmissionMap = "_EmissionMap";
         public static readonly string EmissionColor = "_EmissionColor";
         
-        public static readonly string OutlineColor = "_OutlineColor";
         public static readonly string OutlineScale = "_OutlineScale";
         public static readonly string SmoothNormalSource = "_SmoothNormalSource";
         public static readonly string SmoothNormalDecoder = "_SmoothNormalDecoder";
@@ -163,9 +170,14 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string MatCapStrength = Auto();
         public static readonly string MatCapBlendMode = Auto();
 
+        public static readonly string StencilEnabled = Auto();
         public static readonly string Stencil = Auto();
         public static readonly string StencilWriteMask = Auto();
         public static readonly string StencilReadMask = Auto();
+
+        public static readonly string RegionCount = Auto();
+        public static readonly string RegionIDChannel = Auto();
+        public static readonly string RegionIDMap = Auto();
     }
     
     public static class ShaderKeywords
@@ -186,7 +198,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string OCCLUSION_MAP = Auto();
         
         public static readonly string SHADOWS_DITHER = "_SHADOWS_DITHER";
-        
+
         public static readonly string RAMP_SET = "_RAMP_SET";
         
         public static readonly string SN_SRC_UV1 = "_SN_SRC_UV1";
@@ -200,11 +212,16 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string SDF_LIGHT_MAP = "_SDF_LIGHT_MAP";
 
         public static readonly string TANGENT_SHIFT_MAP = "_TANGENT_SHIFT_MAP";
-        
+
+        public static readonly string FRINGE_TRANSPARENT = Auto();
+
         public static readonly string EYE_REFRACTION = Auto();
         
         public static readonly string MATCAP = Auto();
         public static readonly string MATCAP_SPH_NORMAL = Auto();
+
+        public static readonly string REGION_ID_TEXTURE = Auto();
+        public static readonly string REGION_ID_VERTEX_COLOR = Auto();
     }
 
     public static class MaterialEditorUtils
@@ -220,7 +237,18 @@ namespace ArcToon.Editor.ShaderEditor
                 throw new ArgumentException("Could not find MaterialProperty: '" + propertyName + "', Num properties: " + properties.Length.ToString());
             return null;
         }
-                
+
+        public static string GetRegionPropertyName(string baseName, int regionIndex)
+        {
+            return $"{baseName}{regionIndex}";
+        }
+
+        public static MaterialProperty FindRegionProperty(string baseName, int regionIndex, MaterialProperty[] props)
+        {
+            string name = GetRegionPropertyName(baseName, regionIndex);
+            return FindProperty(name, props, false);
+        }
+
         public static Material[] GetTargetMaterials(MaterialEditor editor)
         {
             if (editor == null || editor.targets == null) return Array.Empty<Material>();

@@ -144,6 +144,12 @@ namespace ArcToon.Utils
             public static readonly int SMAABlendTexture = ShaderPropertyID();
             #endregion
 
+            #region Region ID
+            public static readonly int RegionCount = ShaderPropertyID();
+            public static readonly int RegionIDChannel = ShaderPropertyID();
+            public static readonly int RegionIDMap = ShaderPropertyID();
+            #endregion
+
             #region Debug
             public static readonly int GeometryDebugMode = ShaderPropertyID();
             public static readonly int DebugOpacity = ShaderPropertyID();
@@ -158,11 +164,15 @@ namespace ArcToon.Utils
             public static readonly ShaderTagId GeometryOutline = ShaderTagId();
             public static readonly ShaderTagId GeometryDebug = ShaderTagId();
             
-            public static readonly ShaderTagId ToonForward = ShaderTagId();
-            public static readonly ShaderTagId ToonForwardDepthPeeling = ShaderTagId();
-            public static readonly ShaderTagId ToonForwardWeightedAverage = ShaderTagId();
-            public static readonly ShaderTagId ToonForwardTransparentBackFace = ShaderTagId();
-            public static readonly ShaderTagId ToonForwardTransparentFrontFace = ShaderTagId();
+            public static readonly ShaderTagId ForwardCore = ShaderTagId();
+
+            public const int ForwardAdditivePassCount = 8;
+            public static readonly ShaderTagId[] ForwardAdditivePasses = CreateForwardAdditivePasses();
+
+            public static readonly ShaderTagId ForwardTransparentDepthPeeling = ShaderTagId();
+            public static readonly ShaderTagId ForwardTransparentWeightedAverage = ShaderTagId();
+            public static readonly ShaderTagId ForwardTransparentBackFace = ShaderTagId();
+            public static readonly ShaderTagId ForwardTransparentFrontFace = ShaderTagId();
             
             public static readonly ShaderTagId DepthOnly = ShaderTagId();
             public static readonly ShaderTagId StencilOnly = ShaderTagId();
@@ -170,6 +180,16 @@ namespace ArcToon.Utils
             
             public static readonly ShaderTagId FringeShadowReceiver = ShaderTagId();
             public static readonly ShaderTagId EyeLashesReceiver = ShaderTagId();
+
+            private static ShaderTagId[] CreateForwardAdditivePasses()
+            {
+                var tags = new ShaderTagId[ForwardAdditivePassCount];
+                for (int i = 0; i < ForwardAdditivePassCount; i++)
+                {
+                    tags[i] = ShaderTagId("ForwardCoreAdditive" + (i + 1));
+                }
+                return tags;
+            }
         }
 
         public static class GlobalKeyword
