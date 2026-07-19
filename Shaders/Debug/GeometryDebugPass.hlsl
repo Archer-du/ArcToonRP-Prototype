@@ -2,8 +2,8 @@
 #define ARCTOON_GEOMETRY_DEBUG_PASS_INCLUDED
 
 // Shared geometry-debug pass for all Toon shaders.
-// Relies on the shader's HLSLINCLUDE providing the surface / region / toon-lighting interfaces
-// (SurfaceInterface, RegionInterface, ToonLightingInterface) plus the ToonLighting math library.
+// Relies on the shader's HLSLINCLUDE providing the surface / toon-lighting interfaces
+// (SurfaceInterface, ToonLightingInterface) plus the RegionID + ToonLighting math libraries.
 // Selected by the global _GeometryDebugMode uniform (see ArcToon.Utils.CameraDebugger).
 // Surface is built at minimal fidelity: material-detail features (normal map, SDF, anisotropic
 // hair highlight, refraction, matcap) are intentionally not reconstructed here.
@@ -63,7 +63,7 @@ Varyings GeometryDebugPassVertex(Attributes input)
 float4 GeometryDebugPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.vertexColor);
+    InputConfig config = GET_INPUT_CONFIG_WITH_REGION(input.positionCS_SS, input.baseUV.xy, input.vertexColor);
     ClipLOD(config.fragment, unity_LODFade.x);
 
     float4 albedo = GetAlbedo(config);

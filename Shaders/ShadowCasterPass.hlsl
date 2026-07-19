@@ -48,7 +48,7 @@ VaryingsSC ShadowCasterPassVertex(AttributesSC input)
 void ShadowCasterPassFragment(VaryingsSC input)
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV, input.vertexColor);
+    InputConfig config = GET_INPUT_CONFIG_WITH_REGION(input.positionCS_SS, input.baseUV, input.vertexColor);
     float4 base = GetAlbedo(config);
     #if defined(_CLIPPING)
     clip(base.a - GetAlphaClip(config));

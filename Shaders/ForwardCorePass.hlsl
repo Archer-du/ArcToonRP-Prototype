@@ -72,7 +72,7 @@ float3 ToonComputeLighting(Surface surface, InputConfig config, BRDF brdf, GI gi
 float4 ForwardCoreFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV.xy, input.vertexColor);
+    InputConfig config = GET_INPUT_CONFIG_WITH_REGION(input.positionCS_SS, input.baseUV.xy, input.vertexColor);
     ClipLOD(config.fragment, unity_LODFade.x);
 
     Surface surface;

@@ -35,7 +35,7 @@ float4 ForwardUnlitPassFragment(Varyings input) : SV_TARGET
 {
     UNITY_SETUP_INSTANCE_ID(input);
     
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV, input.vertexColor);
+    InputConfig config = GET_INPUT_CONFIG_WITH_REGION(input.positionCS_SS, input.baseUV, input.vertexColor);
     float4 color = GetAlbedo(config);
     
     #if defined(_CLIPPING)

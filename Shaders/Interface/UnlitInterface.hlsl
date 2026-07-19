@@ -3,7 +3,7 @@
 
 // Interface tier: minimal unlit getters. Reads the per-material CBUFFER.
 // Requires: SurfaceSampling.hlsl (INPUT_PROP, SampleAlbedo, TransformUVWithST, ResolveFinalAlpha),
-// InputConfig.hlsl.
+// Common.hlsl (Fragment.hlsl provides InputConfig).
 
 float2 TransformBaseUV(float2 rawBaseUV)
 {

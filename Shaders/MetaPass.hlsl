@@ -33,7 +33,7 @@ VaryingsMT MetaPassVertex(AttributesMT input)
 
 float4 MetaPassFragment(VaryingsMT input) : SV_TARGET
 {
-    InputConfig config = GetInputConfig(input.positionCS_SS, input.baseUV, input.vertexColor);
+    InputConfig config = GET_INPUT_CONFIG_WITH_REGION(input.positionCS_SS, input.baseUV, input.vertexColor);
     float4 base = GetAlbedo(config);
     Surface surface;
     ZERO_INITIALIZE(Surface, surface);

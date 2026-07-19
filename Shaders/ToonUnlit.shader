@@ -38,7 +38,6 @@
         HLSLINCLUDE
         // --- pre-CBUFFER Library (dependency-free) ---
         #include "../ShaderLibrary/Input/SurfaceSampling.hlsl"
-        #include "../ShaderLibrary/Input/InputConfig.hlsl"
         #include "../ShaderLibrary/RegionID.hlsl"
 
         // --- per-material CBUFFER (this shader's own subset) ---
@@ -54,7 +53,6 @@
 
         // --- post-CBUFFER Interface (dependency-bearing) ---
         #include "Interface/UnlitInterface.hlsl"
-        #include "Interface/RegionInterface.hlsl"
         ENDHLSL
 
         Pass

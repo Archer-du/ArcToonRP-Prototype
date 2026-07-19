@@ -3,7 +3,7 @@
 
 // Interface tier: base surface / PBR / emission getters. Reads the per-material CBUFFER,
 // so it MUST be included after the shader's UnityPerMaterial block.
-// Requires: SurfaceSampling.hlsl (INPUT_PROP, _BaseMap, SampleAlbedo), Common.hlsl, InputConfig.hlsl.
+// Requires: SurfaceSampling.hlsl (INPUT_PROP, _BaseMap, SampleAlbedo), Common.hlsl (Fragment.hlsl provides InputConfig).
 
 TEXTURE2D(_NormalMap);
 TEXTURE2D(_EmissionMap);

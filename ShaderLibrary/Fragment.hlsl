@@ -21,6 +21,16 @@ struct Fragment
     float4 stencilMask;
 };
 
+// Per-fragment shared context aggregating the screen-space Fragment, the base UV, and the
+// region index used for per-region parameter selection. The region index is resolved by the
+// Region ID system (RegionID.hlsl); all consumers read it back as a plain int.
+struct InputConfig
+{
+    Fragment fragment;
+    float2 baseUV;
+    int regionIndex;
+};
+
 bool IsOrthographicCamera()
 {
     return unity_OrthoParams.w;

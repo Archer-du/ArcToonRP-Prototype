@@ -113,7 +113,6 @@
         HLSLINCLUDE
         // --- pre-CBUFFER Library (dependency-free) ---
         #include "../ShaderLibrary/Input/SurfaceSampling.hlsl"
-        #include "../ShaderLibrary/Input/InputConfig.hlsl"
         #include "../ShaderLibrary/RegionID.hlsl"
         #include "../ShaderLibrary/Light/ToonLighting.hlsl"
 
@@ -162,7 +161,6 @@
         // --- post-CBUFFER Interface (dependency-bearing) ---
         #include "Interface/SurfaceInterface.hlsl"
         #include "Interface/OutlineInterface.hlsl"
-        #include "Interface/RegionInterface.hlsl"
         #include "Interface/HairSpecInterface.hlsl"
         #include "Interface/ToonLightingInterface.hlsl"
         ENDHLSL
