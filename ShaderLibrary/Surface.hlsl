@@ -20,6 +20,7 @@ struct Surface
     float dither;
     uint renderingLayerMask;
     float perObjectCasterID;
+    int regionIndex;
 
     float3 GetSphereNormalWS()
     {

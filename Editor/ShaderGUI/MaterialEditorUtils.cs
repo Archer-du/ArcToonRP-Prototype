@@ -67,6 +67,12 @@ namespace ArcToon.Editor.ShaderEditor
         SphericalUV,
     }
 
+    public enum RoughnessSource
+    {
+        Roughness,
+        Smoothness,
+    }
+
     public enum TransparencyMode
     {
         OrderedDualFace,
@@ -113,6 +119,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string MetallicMapChannel = Auto();
         public static readonly string RoughnessMap = Auto();
         public static readonly string RoughnessMapChannel = Auto();
+        public static readonly string RoughnessSource = Auto();
         public static readonly string OcclusionMap = Auto();
         public static readonly string OcclusionMapChannel = Auto();
 

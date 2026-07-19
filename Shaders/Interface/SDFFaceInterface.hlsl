@@ -64,4 +64,16 @@ float GetSDFShadowOffset()
     return INPUT_PROP(_ShadowOffsetSDF) * 0.25;
 }
 
+// Per-region gate for SDF light map influence. ToonFace exposes the toggle in its GUI;
+// ToonPupil declares the same slots (defaults to off, but its _SDF_LIGHT_MAP variant is never
+// enabled in practice) so the shared SDF path compiles uniformly.
+#if defined(_SDF_LIGHT_MAP)
+REGION_PROP_DEFINE_GETTER(float, _SDFLightMapRegionEnabled)
+
+bool GetSDFLightMapRegionEnabled(int regionIndex)
+{
+    return REGION_PROP_GET(float, _SDFLightMapRegionEnabled, regionIndex) > 0.5;
+}
+#endif
+
 #endif

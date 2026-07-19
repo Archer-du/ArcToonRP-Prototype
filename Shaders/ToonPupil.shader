@@ -39,6 +39,7 @@
         [Enum(R, 0, G, 1, B, 2, A, 3)] _MetallicMapChannel ("Metallic Channel", Integer) = 1
         [NoScaleOffset] _RoughnessMap ("Roughness Map", 2D) = "white" {}
         [Enum(R, 0, G, 1, B, 2, A, 3)] _RoughnessMapChannel ("Roughness Channel", Integer) = 0
+        [Enum(Roughness, 0, Smoothness, 1)] _RoughnessSource ("Roughness Source", Integer) = 0
         [NoScaleOffset] _OcclusionMap ("Occlusion Map", 2D) = "white" {}
         [Enum(R, 0, G, 1, B, 2, A, 3)] _OcclusionMapChannel ("Occlusion Channel", Integer) = 2
         
@@ -139,6 +140,7 @@
             UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
             UNITY_DEFINE_INSTANCED_PROP(int, _MetallicMapChannel)
             UNITY_DEFINE_INSTANCED_PROP(int, _RoughnessMapChannel)
+            UNITY_DEFINE_INSTANCED_PROP(int, _RoughnessSource)
             UNITY_DEFINE_INSTANCED_PROP(int, _OcclusionMapChannel)
             UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 
@@ -158,12 +160,6 @@
             UNITY_DEFINE_INSTANCED_PROP(int, _TangentShiftMapUV)
             UNITY_DEFINE_INSTANCED_PROP(float, _TangentShiftOffset)
 
-            UNITY_DEFINE_INSTANCED_PROP(float4, _FaceVector)
-            UNITY_DEFINE_INSTANCED_PROP(int, _LightMapSDFSourceUV)
-            UNITY_DEFINE_INSTANCED_PROP(float, _ShadowOffsetSDF)
-            UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularStrengthSDF)
-            UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularSmoothSDF)
-
             UNITY_DEFINE_INSTANCED_PROP(float, _AnteriorChamberHeight)
             UNITY_DEFINE_INSTANCED_PROP(float, _RefractionEdge)
             UNITY_DEFINE_INSTANCED_PROP(float, _RefractionSmooth)
@@ -181,7 +177,6 @@
         // --- post-CBUFFER Interface (dependency-bearing) ---
         #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/SurfaceInterface.hlsl"
         #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/HairSpecInterface.hlsl"
-        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/SDFFaceInterface.hlsl"
         #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/EyeInterface.hlsl"
         #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/ToonLightingInterface.hlsl"
         ENDHLSL
@@ -226,9 +221,6 @@
 
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
-
-            #pragma shader_feature_local _SDF_LIGHT_MAP
-            #pragma shader_feature_local _SDF_LIGHT_MAP_SPEC
 
             #pragma shader_feature_local _EYE_REFRACTION
 

@@ -9,6 +9,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static class BaseName
         {
             public const string OutlineColor = "_OutlineColor";
+            public const string SDFLightMapRegionEnabled = "_SDFLightMapRegionEnabled";
         }
 
         public static readonly string[] MigratedProperties =

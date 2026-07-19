@@ -67,7 +67,10 @@ float3 ToonSpecularStrength(Surface surface, BRDF brdf, Light light)
 {
     // TODO: config
     #if defined(_SDF_LIGHT_MAP)
-    return GF2FaceSpecularStrength(surface, light);
+    if (GetSDFLightMapRegionEnabled(surface.regionIndex))
+    {
+        return GF2FaceSpecularStrength(surface, light);
+    }
     #endif
 
     float3 specularStrength;
@@ -112,9 +115,18 @@ float3 ToonDirectBRDF(Surface surface, BRDF brdf, Light light)
     return ToonSpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
 }
 
-float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLightAttenData attenData)
+float HalfLambertAttenuationUV(Surface surface, Light light, DirectLightAttenData attenData)
 {
-    #if defined(_SDF_LIGHT_MAP)
+    float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
+    return min(
+        SigmoidSharp(halfLambertFactor, attenData.offset, attenData.smooth),
+        SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
+    );
+}
+
+#if defined(_SDF_LIGHT_MAP)
+float SDFAttenuationUV(Surface surface, Light light, DirectLightAttenData attenData)
+{
     float3 faceDirectionWS = mul((float3x3)GetObjectToWorldMatrix(), GetFaceDirectionOS());
     float3 faceDirHWS = SafeNormalize(float3(faceDirectionWS.x, 0.0, faceDirectionWS.z));
     float3 lightDirHWS = SafeNormalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
@@ -129,16 +141,27 @@ float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLigh
     float attenFactorSDF = SampleSDFLightMap(faceUV);
     // TODO: shadow mask channel
     float shadowMaskFactorSDF = SampleSDFLightMapShadowMask(faceUV);
-    float attenuationUV = min(
+    return min(
         SigmoidSharp(attenFactorSDF, clipCenter, attenData.smooth),
         SigmoidSharp(shadowMaskFactorSDF, attenData.offset, attenData.smooth)
     );
+}
+#endif
+
+float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLightAttenData attenData)
+{
+    float attenuationUV;
+    #if defined(_SDF_LIGHT_MAP)
+    if (GetSDFLightMapRegionEnabled(surface.regionIndex))
+    {
+        attenuationUV = SDFAttenuationUV(surface, light, attenData);
+    }
+    else
+    {
+        attenuationUV = HalfLambertAttenuationUV(surface, light, attenData);
+    }
     #else
-    float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
-    float attenuationUV = min(
-        SigmoidSharp(halfLambertFactor, attenData.offset, attenData.smooth),
-        SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
-    );
+    attenuationUV = HalfLambertAttenuationUV(surface, light, attenData);
     #endif
 
     #if defined(_RECEIVE_FRINGE_SHADOWS)

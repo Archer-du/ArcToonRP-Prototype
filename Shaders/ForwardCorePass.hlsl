@@ -77,6 +77,7 @@ float4 ForwardCoreFragment(Varyings input, bool isFrontFace : SV_IsFrontFace) : 
 
     Surface surface;
     ZERO_INITIALIZE(Surface, surface)
+    surface.regionIndex = config.regionIndex;
     surface.positionWS = input.positionWS;
     surface.UV = float4(input.baseUV.xy, input.UV1.xy);
 

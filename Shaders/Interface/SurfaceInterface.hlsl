@@ -60,6 +60,10 @@ float GetRoughness(InputConfig input)
     float4 map = SAMPLE_TEXTURE2D(_RoughnessMap, sampler_BaseMap, input.baseUV);
     perceptualRoughness *= SelectChannel(map, INPUT_PROP(_RoughnessMapChannel));
     #endif
+    // _RoughnessSource: 0 = treat combined value as perceptual roughness,
+    // 1 = treat as perceptual smoothness and invert.
+    if (INPUT_PROP(_RoughnessSource))
+        perceptualRoughness = 1.0 - perceptualRoughness;
     return PerceptualRoughnessToRoughness(perceptualRoughness);
 }
 

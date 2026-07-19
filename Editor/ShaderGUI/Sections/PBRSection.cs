@@ -9,6 +9,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
         private MaterialProperty metallicMapChannelProperty;
         private MaterialProperty roughnessMapProperty;
         private MaterialProperty roughnessMapChannelProperty;
+        private MaterialProperty roughnessSourceProperty;
         private MaterialProperty occlusionMapProperty;
         private MaterialProperty occlusionMapChannelProperty;
 
@@ -23,6 +24,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             metallicMapChannelProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.MetallicMapChannel, props, false);
             roughnessMapProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.RoughnessMap, props, false);
             roughnessMapChannelProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.RoughnessMapChannel, props, false);
+            roughnessSourceProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.RoughnessSource, props, false);
             occlusionMapProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.OcclusionMap, props, false);
             occlusionMapChannelProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.OcclusionMapChannel, props, false);
 
@@ -41,10 +43,43 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             DrawMapRow(materialEditor, materials, "Occlusion Map",
                 occlusionMapProperty, occlusionMapChannelProperty, ShaderKeywords.OCCLUSION_MAP);
 
+            DrawRoughnessSourceField(materials);
+
             materialEditor.BuiltinShaderPropertyDrawer(metallicProperty, true, "Metallic");
-            materialEditor.BuiltinShaderPropertyDrawer(roughnessProperty, true, "Roughness");
+            materialEditor.BuiltinShaderPropertyDrawer(roughnessProperty, true, GetRoughnessSliderLabel());
             materialEditor.BuiltinShaderPropertyDrawer(occlusionProperty, true, "Occlusion");
             materialEditor.BuiltinShaderPropertyDrawer(fresnelProperty, true, "Fresnel");
+        }
+
+        private void DrawRoughnessSourceField(Material[] materials)
+        {
+            if (roughnessSourceProperty == null) return;
+
+            EditorGUI.showMixedValue = roughnessSourceProperty.hasMixedValue;
+            EditorGUI.BeginChangeCheck();
+            var newValue = (RoughnessSource)EditorGUILayout.EnumPopup(
+                new GUIContent("Roughness Source",
+                    "Interpret the Roughness Map and Roughness value as roughness or smoothness."),
+                (RoughnessSource)roughnessSourceProperty.intValue);
+            if (EditorGUI.EndChangeCheck())
+            {
+                roughnessSourceProperty.intValue = (int)newValue;
+                foreach (var material in materials)
+                {
+                    if (material == null) continue;
+                    MaterialEditorUtils.ArcToonGUILog($"Update {material.name} Roughness Source: {newValue}");
+                    EditorUtility.SetDirty(material);
+                }
+            }
+            EditorGUI.showMixedValue = false;
+        }
+
+        private string GetRoughnessSliderLabel()
+        {
+            if (roughnessSourceProperty != null &&
+                (RoughnessSource)roughnessSourceProperty.intValue == RoughnessSource.Smoothness)
+                return "Smoothness";
+            return "Roughness";
         }
 
         private void DrawMapRow(MaterialEditor materialEditor, Material[] materials, string label,

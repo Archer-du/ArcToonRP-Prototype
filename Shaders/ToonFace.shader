@@ -39,6 +39,7 @@
         [Enum(R, 0, G, 1, B, 2, A, 3)] _MetallicMapChannel ("Metallic Channel", Integer) = 1
         [NoScaleOffset] _RoughnessMap ("Roughness Map", 2D) = "white" {}
         [Enum(R, 0, G, 1, B, 2, A, 3)] _RoughnessMapChannel ("Roughness Channel", Integer) = 0
+        [Enum(Roughness, 0, Smoothness, 1)] _RoughnessSource ("Roughness Source", Integer) = 0
         [NoScaleOffset] _OcclusionMap ("Occlusion Map", 2D) = "white" {}
         [Enum(R, 0, G, 1, B, 2, A, 3)] _OcclusionMapChannel ("Occlusion Channel", Integer) = 2
         
@@ -100,6 +101,15 @@
         _NoseSpecularStrengthSDF ("SDF Light Map Nose Specular Strength", Range(0, 1)) = 0.5
         _NoseSpecularSmoothSDF ("SDF Light Map Nose Specular Smooth", Range(0, 1)) = 0.1
 
+        [Toggle] _SDFLightMapRegionEnabled0 ("SDF Light Map Region 0", Float) = 1
+        [Toggle] _SDFLightMapRegionEnabled1 ("SDF Light Map Region 1", Float) = 1
+        [Toggle] _SDFLightMapRegionEnabled2 ("SDF Light Map Region 2", Float) = 1
+        [Toggle] _SDFLightMapRegionEnabled3 ("SDF Light Map Region 3", Float) = 1
+        [Toggle] _SDFLightMapRegionEnabled4 ("SDF Light Map Region 4", Float) = 1
+        [Toggle] _SDFLightMapRegionEnabled5 ("SDF Light Map Region 5", Float) = 1
+        [Toggle] _SDFLightMapRegionEnabled6 ("SDF Light Map Region 6", Float) = 1
+        [Toggle] _SDFLightMapRegionEnabled7 ("SDF Light Map Region 7", Float) = 1
+
         [HideInInspector] _PerObjectShadowCasterID("Per Object Shadow Caster ID", Float) = -1
 
         // ------------------------ Region ID
@@ -138,6 +148,7 @@
             UNITY_DEFINE_INSTANCED_PROP(float, _Fresnel)
             UNITY_DEFINE_INSTANCED_PROP(int, _MetallicMapChannel)
             UNITY_DEFINE_INSTANCED_PROP(int, _RoughnessMapChannel)
+            UNITY_DEFINE_INSTANCED_PROP(int, _RoughnessSource)
             UNITY_DEFINE_INSTANCED_PROP(int, _OcclusionMapChannel)
             UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 
@@ -162,6 +173,7 @@
             UNITY_DEFINE_INSTANCED_PROP(float, _ShadowOffsetSDF)
             UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularStrengthSDF)
             UNITY_DEFINE_INSTANCED_PROP(float, _NoseSpecularSmoothSDF)
+            REGION_PROP_DECLARE(float, _SDFLightMapRegionEnabled)
 
             UNITY_DEFINE_INSTANCED_PROP(float, _PerObjectShadowCasterID)
 
