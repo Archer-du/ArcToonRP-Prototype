@@ -17,7 +17,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
 
         public override void FindProperties(MaterialProperty[] props)
         {
-            outlineColorProperty = MaterialEditorUtils.FindRegionProperty(RegionPropertyHelper.BaseName.OutlineColor, SelectedRegion, props);
+            outlineColorProperty = MaterialEditorUtils.FindRegionProperty(ShaderPropertyID.OutlineColor, SelectedRegion, props);
             outlineScaleProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.OutlineScale, props, false);
             smoothNormalSourceProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SmoothNormalSource, props, false);
             smoothNormalDecoderProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.SmoothNormalDecoder, props, false);

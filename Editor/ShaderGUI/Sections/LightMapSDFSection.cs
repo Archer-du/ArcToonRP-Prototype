@@ -22,7 +22,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             faceVectorProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.FaceVector, props, false);
             regionCountProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.RegionCount, props, false);
             sdfRegionEnabledProperty = MaterialEditorUtils.FindRegionProperty(
-                RegionPropertyHelper.BaseName.SDFLightMapRegionEnabled, SelectedRegion, props);
+                ShaderPropertyID.SDFLightMapRegionEnabled, SelectedRegion, props);
         }
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)

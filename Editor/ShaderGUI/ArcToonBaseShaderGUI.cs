@@ -43,19 +43,13 @@ namespace ArcToon.Editor.ShaderEditor
         internal static BaseFoldoutShaderPanel BuildToonPanel() =>
             new BaseFoldoutShaderPanel("Toon", new List<ShaderGUISectionBase>
             {
-                new RampTextureSection("Ramp Set"),
+                new DiffuseAttenuationSection(),
                 new GeometryOutlineSection(),
                 new HighLightSection(),
                 new LightMapSDFSection(),
                 new FringeSection(),
                 new RefractionSection(),
                 new MatCapSection(),
-                new HeaderPropertySection("Sigmoid Attenuation",
-                    new[] { "Offset", "Smooth" },
-                    new[] { ShaderPropertyID.DirectLightAttenOffset, ShaderPropertyID.DirectLightAttenSmoothNew }),
-                new HeaderPropertySection("Sigmoid Specular",
-                    new[] { "Offset", "Smooth" },
-                    new[] { ShaderPropertyID.DirectLightSpecOffset, ShaderPropertyID.DirectLightSpecSmooth }),
             });
 
         internal static BaseFoldoutShaderPanel BuildEnginePanel() =>

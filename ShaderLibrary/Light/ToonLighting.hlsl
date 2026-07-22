@@ -8,6 +8,7 @@
 // are allowed here.
 
 #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Ramp.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/LinearPartition.hlsl"
 #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/BRDF.hlsl"
 #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/DirectionalLight.hlsl"
 #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/SpotLight.hlsl"

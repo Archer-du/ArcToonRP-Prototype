@@ -60,6 +60,34 @@
         _DirectLightSpecOffset ("Direct Specular Offset", Range(0, 1)) = 0.5
         _DirectLightSpecSmooth ("Direct Specular Smooth", Range(0, 1)) = 0.5
 
+        // Linear partition diffuse attenuation (alternative to Ramp/Sigmoid)
+        _AttenuationModel ("Attenuation Model", Integer) = 0
+        _AlbedoSmoothness ("Albedo Smoothness", Range(0, 1)) = 0.5
+        _ShadowFadeTint ("Shadow Fade Tint", Color) = (1, 1, 1, 1)
+        _ShadowTint ("Shadow Tint", Color) = (1, 1, 1, 1)
+        _ShallowFadeTint ("Shallow Fade Tint", Color) = (1, 1, 1, 1)
+        _ShallowTint ("Shallow Tint", Color) = (1, 1, 1, 1)
+        _SSSTint ("SSS Tint", Color) = (1, 1, 1, 1)
+        _FrontTint ("Front Tint", Color) = (1, 1, 1, 1)
+        
+        _ShadowColor0 ("Shadow Color 0", Color) = (0.5, 0.5, 0.55, 1)
+        _ShadowColor1 ("Shadow Color 1", Color) = (0.5, 0.5, 0.55, 1)
+        _ShadowColor2 ("Shadow Color 2", Color) = (0.5, 0.5, 0.55, 1)
+        _ShadowColor3 ("Shadow Color 3", Color) = (0.5, 0.5, 0.55, 1)
+        _ShadowColor4 ("Shadow Color 4", Color) = (0.5, 0.5, 0.55, 1)
+        _ShadowColor5 ("Shadow Color 5", Color) = (0.5, 0.5, 0.55, 1)
+        _ShadowColor6 ("Shadow Color 6", Color) = (0.5, 0.5, 0.55, 1)
+        _ShadowColor7 ("Shadow Color 7", Color) = (0.5, 0.5, 0.55, 1)
+        
+        _ShallowColor0 ("Shallow Color 0", Color) = (0.9, 0.9, 0.9, 1)
+        _ShallowColor1 ("Shallow Color 1", Color) = (0.9, 0.9, 0.9, 1)
+        _ShallowColor2 ("Shallow Color 2", Color) = (0.9, 0.9, 0.9, 1)
+        _ShallowColor3 ("Shallow Color 3", Color) = (0.9, 0.9, 0.9, 1)
+        _ShallowColor4 ("Shallow Color 4", Color) = (0.9, 0.9, 0.9, 1)
+        _ShallowColor5 ("Shallow Color 5", Color) = (0.9, 0.9, 0.9, 1)
+        _ShallowColor6 ("Shallow Color 6", Color) = (0.9, 0.9, 0.9, 1)
+        _ShallowColor7 ("Shallow Color 7", Color) = (0.9, 0.9, 0.9, 1)
+
         _OutlineColor0 ("Outline Color 0", Color) = (0.1, 0.1, 0.1, 1.0)
         _OutlineColor1 ("Outline Color 1", Color) = (0.1, 0.1, 0.1, 1.0)
         _OutlineColor2 ("Outline Color 2", Color) = (0.1, 0.1, 0.1, 1.0)
@@ -68,6 +96,7 @@
         _OutlineColor5 ("Outline Color 5", Color) = (0.1, 0.1, 0.1, 1.0)
         _OutlineColor6 ("Outline Color 6", Color) = (0.1, 0.1, 0.1, 1.0)
         _OutlineColor7 ("Outline Color 7", Color) = (0.1, 0.1, 0.1, 1.0)
+        
         _OutlineScale ("Outline Scale", Range(0, 1)) = 0.1
         [Enum(ArcToon.Editor.ShaderEditor.SmoothNormalSource)]
         _SmoothNormalSource ("Smooth Normal Source", Integer) = 1
@@ -136,6 +165,16 @@
 
             UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
             UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmoothNew)
+
+            UNITY_DEFINE_INSTANCED_PROP(float, _AlbedoSmoothness)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _ShadowFadeTint)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _ShadowTint)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _ShallowFadeTint)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _ShallowTint)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _SSSTint)
+            UNITY_DEFINE_INSTANCED_PROP(float4, _FrontTint)
+            REGION_PROP_DECLARE(float4, _ShadowColor)
+            REGION_PROP_DECLARE(float4, _ShallowColor)
 
             REGION_PROP_DECLARE(float4, _OutlineColor)
             UNITY_DEFINE_INSTANCED_PROP(float, _OutlineScale)
@@ -232,7 +271,8 @@
             #pragma shader_feature _OCCLUSION_MAP
             
             #pragma shader_feature _RAMP_SET
-            
+            #pragma shader_feature_local _ATTEN_LINEAR_PARTITION
+
             #pragma shader_feature_local _OVERRIDE_HIGHLIGHT
             #pragma shader_feature_local _TANGENT_SHIFT_MAP
 
@@ -372,6 +412,8 @@
 
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _RECEIVE_SHADOWS
+
+            #pragma shader_feature_local _ATTEN_LINEAR_PARTITION
 
             #pragma shader_feature_local _ _REGION_ID_TEXTURE _REGION_ID_VERTEX_COLOR
 

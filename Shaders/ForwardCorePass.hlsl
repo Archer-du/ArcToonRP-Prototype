@@ -52,7 +52,6 @@ Varyings ForwardCoreVertex(Attributes input)
 
 float3 ToonComputeLighting(Surface surface, InputConfig config, BRDF brdf, GI gi)
 {
-    DirectLightAttenData attenData = GetDirectLightAttenData(INPUT_PROP(_DirectLightAttenOffset), INPUT_PROP(_DirectLightAttenSmoothNew));
     RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
 
@@ -62,7 +61,7 @@ float3 ToonComputeLighting(Surface surface, InputConfig config, BRDF brdf, GI gi
         Light light = GetDirectionalLight(i, surface, cascadeShadowData, gi);
         if (RenderingLayersOverlap(surface, light))
         {
-            finalColor += GetLighting(surface, config.fragment, brdf, light, attenData, rimLightData);
+            finalColor += GetLighting(surface, config.fragment, brdf, light, rimLightData);
         }
     }
     AccumulatePunctualLighting(config.fragment, surface, brdf, gi, cascadeShadowData, finalColor);

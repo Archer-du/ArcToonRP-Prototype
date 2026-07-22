@@ -79,6 +79,12 @@ namespace ArcToon.Editor.ShaderEditor
         WeightedAverage,
         DepthPeeling,
     }
+
+    public enum AttenuationModel
+    {
+        RampSigmoid,
+        LinearPartition,
+    }
     
     public static class ShaderPropertyID
     {
@@ -114,6 +120,18 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string DirectLightAttenSmoothNew = "_DirectLightAttenSmoothNew";
         public static readonly string DirectLightSpecOffset = "_DirectLightSpecOffset";
         public static readonly string DirectLightSpecSmooth = "_DirectLightSpecSmooth";
+
+        public static readonly string AttenuationModel = Auto();
+        public static readonly string AlbedoSmoothness = Auto();
+        public static readonly string ShadowFadeTint = Auto();
+        public static readonly string ShadowTint = Auto();
+        public static readonly string ShallowFadeTint = Auto();
+        public static readonly string ShallowTint = Auto();
+        public static readonly string SSSTint = Auto();
+        public static readonly string FrontTint = Auto();
+
+        public static readonly string ShadowColor = Auto();
+        public static readonly string ShallowColor = Auto();
         
         public static readonly string MetallicMap = Auto();
         public static readonly string MetallicMapChannel = Auto();
@@ -131,6 +149,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string EmissionMap = "_EmissionMap";
         public static readonly string EmissionColor = "_EmissionColor";
         
+        public static readonly string OutlineColor = Auto();
         public static readonly string OutlineScale = "_OutlineScale";
         public static readonly string SmoothNormalSource = "_SmoothNormalSource";
         public static readonly string SmoothNormalDecoder = "_SmoothNormalDecoder";
@@ -138,6 +157,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string WidthMaskChannel = "_WidthMaskChannel";
 
         public static readonly string LightMapSDF = "_LightMapSDF";
+        public static readonly string SDFLightMapRegionEnabled = Auto();
         public static readonly string LightMapSDFSourceUV = "_LightMapSDFSourceUV";
         public static readonly string ShadowOffsetSDF = "_ShadowOffsetSDF";
         public static readonly string FaceVector = "_FaceVector";
@@ -200,6 +220,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string SHADOWS_DITHER = "_SHADOWS_DITHER";
 
         public static readonly string RAMP_SET = "_RAMP_SET";
+        public static readonly string ATTEN_LINEAR_PARTITION = "_ATTEN_LINEAR_PARTITION";
         
         public static readonly string SN_SRC_UV1 = "_SN_SRC_UV1";
         public static readonly string SN_SRC_COLOR = "_SN_SRC_COLOR";

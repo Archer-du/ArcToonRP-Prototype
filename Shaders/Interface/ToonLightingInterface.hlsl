@@ -11,10 +11,7 @@ TEXTURE2D(_RampSet); SAMPLER(sampler_RampSet);
 
 float3 SampleRampSetChannel(float rampUV, float channel)
 {
-    #if defined(_RAMP_SET)
     return SAMPLE_TEXTURE2D(_RampSet, sampler_RampSet, float2(rampUV, channel)).rgb;
-    #endif
-    return 1.0;
 }
 
 float GetRimLightScale()
@@ -115,81 +112,146 @@ float3 ToonDirectBRDF(Surface surface, BRDF brdf, Light light)
     return ToonSpecularStrength(surface, brdf, light) * brdf.specular + brdf.diffuse;
 }
 
-float HalfLambertAttenuationUV(Surface surface, Light light, DirectLightAttenData attenData)
-{
-    float halfLambertFactor = GetHalfLambertFactor(surface.normalWS, light.directionWS);
-    return min(
-        SigmoidSharp(halfLambertFactor, attenData.offset, attenData.smooth),
-        SigmoidSharp(light.shadowAttenuation, attenData.offset, attenData.smooth)
-    );
-}
-
+// --- Shared diffuse source: SDF face sample ---
+// The expensive face extraction (direction geometry, UV flip, SDF taps) that both models depend on,
+// computed once. Every field is consumed downstream, so this carries no model-specific data.
 #if defined(_SDF_LIGHT_MAP)
-float SDFAttenuationUV(Surface surface, Light light, DirectLightAttenData attenData)
+struct FaceSDFSample
+{
+    float attenuation;  // SDF light-map sample: the primary lit signal on the face
+    float clipCenter;   // view/light-dependent lit threshold for that sample
+    float shadowMask;   // SDF shadow-mask sample
+};
+
+FaceSDFSample SampleFaceSDF(Surface surface, Light light)
 {
     float3 faceDirectionWS = mul((float3x3)GetObjectToWorldMatrix(), GetFaceDirectionOS());
     float3 faceDirHWS = SafeNormalize(float3(faceDirectionWS.x, 0.0, faceDirectionWS.z));
     float3 lightDirHWS = SafeNormalize(float3(light.directionWS.x, 0.0, light.directionWS.z));
     float FdotL = dot(faceDirHWS, lightDirHWS);
-    float clipCenter = - FdotL * 0.5 + 0.5 + GetSDFShadowOffset();
     float flipSign = cross(faceDirHWS, lightDirHWS).y;
     float2 faceUV = surface.GetUV(INPUT_PROP(_LightMapSDFSourceUV));
     if (flipSign > 0.0f)
     {
         faceUV.x = 1 - faceUV.x;
     }
-    float attenFactorSDF = SampleSDFLightMap(faceUV);
-    // TODO: shadow mask channel
-    float shadowMaskFactorSDF = SampleSDFLightMapShadowMask(faceUV);
-    return min(
-        SigmoidSharp(attenFactorSDF, clipCenter, attenData.smooth),
-        SigmoidSharp(shadowMaskFactorSDF, attenData.offset, attenData.smooth)
-    );
+    FaceSDFSample faceSample;
+    faceSample.attenuation = SampleSDFLightMap(faceUV);
+    faceSample.clipCenter = - FdotL * 0.5 + 0.5 + GetSDFShadowOffset();
+    faceSample.shadowMask = SampleSDFLightMapShadowMask(faceUV);
+    return faceSample;
 }
 #endif
 
-float3 IncomingLight(Surface surface, Fragment fragment, Light light, DirectLightAttenData attenData)
+// --- Shared fringe-shadow handling (both models) ---
+float FoldFringeShadow(float shadow, Fragment fragment, Light light)
 {
-    float attenuationUV;
+    #if defined(_RECEIVE_FRINGE_SHADOWS)
+    // Fringe shadow, and eyelashes covered by fringe (whose shadows the fringe caster clips
+    // incorrectly), are both occluders folded into the shadow signal by min.
+    if (light.isMainLight)
+    {
+        shadow = min(shadow, 1 - fragment.stencilMask.STENCIL_MASK_CHANNEL_FRINGE_SHADOW);
+        shadow = min(shadow, 1 - fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
+    }
+    #endif
+    return shadow;
+}
+
+// --- Diffuse attenuation model ---
+// Exactly one model compiles (selected by _ATTEN_LINEAR_PARTITION). Each provides the same body/face
+// shading interface (ShadeDiffuseBody / ShadeDiffuseFace) that the shared dispatcher below calls, so
+// each model's data stays local to it and nothing leaks across the seam. `shadow` arrives already
+// fringe-folded, in 0..1.
+#if defined(_ATTEN_LINEAR_PARTITION)
+REGION_PROP_DEFINE_GETTER(float4, _ShadowColor)
+REGION_PROP_DEFINE_GETTER(float4, _ShallowColor)
+
+float3 LinearPartitionColor(float litFactor, int regionIndex)
+{
+    AttenuationData attenuation = CalculateAttenuation(
+        INPUT_PROP(_AlbedoSmoothness), litFactor, INPUT_PROP(_DirectLightAttenOffset));
+    return CalculateAlbedo(
+        REGION_PROP_GET(float4, _ShadowColor, regionIndex).rgb,
+        REGION_PROP_GET(float4, _ShallowColor, regionIndex).rgb,
+        INPUT_PROP(_ShadowFadeTint).rgb,
+        INPUT_PROP(_ShadowTint).rgb,
+        INPUT_PROP(_ShallowFadeTint).rgb,
+        INPUT_PROP(_ShallowTint).rgb,
+        INPUT_PROP(_SSSTint).rgb,
+        INPUT_PROP(_FrontTint).rgb,
+        attenuation);
+}
+
+float3 ShadeDiffuseBody(Surface surface, Light light, float shadow)
+{
+    float NoL = GetHalfLambertFactor(surface.normalWS, light.directionWS) * 2.0 - 1.0;
+    return LinearPartitionColor(min(NoL, shadow * 2.0 - 1.0), surface.regionIndex);
+}
+
+#if defined(_SDF_LIGHT_MAP)
+float3 ShadeDiffuseFace(Surface surface, FaceSDFSample face, float shadow)
+{
+    float litFactor = (face.attenuation - face.clipCenter) * 2.0;
+    return LinearPartitionColor(min(litFactor, shadow * 2.0 - 1.0), surface.regionIndex);
+}
+#endif
+
+#else // Sigmoid/Ramp
+
+float3 SigmoidRampColor(float attenuationUV)
+{
+    attenuationUV = clamp(attenuationUV, 0.001, 0.999);
+    #if defined(_RAMP_SET)
+    return SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
+    #else
+    return attenuationUV;
+    #endif
+}
+
+float3 ShadeDiffuseBody(Surface surface, Light light, float shadow)
+{
+    float halfLambert = GetHalfLambertFactor(surface.normalWS, light.directionWS);
+    float offset = INPUT_PROP(_DirectLightAttenOffset);
+    float smooth = RemapSigmoidSmooth(INPUT_PROP(_DirectLightAttenSmoothNew));
+    return SigmoidRampColor(SigmoidAttenuation(halfLambert, offset, shadow, offset, smooth));
+}
+
+#if defined(_SDF_LIGHT_MAP)
+float3 ShadeDiffuseFace(Surface surface, FaceSDFSample face, float shadow)
+{
+    float offset = INPUT_PROP(_DirectLightAttenOffset);
+    float smooth = RemapSigmoidSmooth(INPUT_PROP(_DirectLightAttenSmoothNew));
+    return SigmoidRampColor(SigmoidAttenuation(face.attenuation, face.clipCenter, shadow, offset, smooth));
+}
+#endif
+
+#endif // _ATTEN_LINEAR_PARTITION
+
+// --- Shared dispatch: resolve body/face once, delegate to the active model ---
+float3 IncomingLight(Surface surface, Fragment fragment, Light light)
+{
+    float3 attenuation;
     #if defined(_SDF_LIGHT_MAP)
     if (GetSDFLightMapRegionEnabled(surface.regionIndex))
     {
-        attenuationUV = SDFAttenuationUV(surface, light, attenData);
+        FaceSDFSample face = SampleFaceSDF(surface, light);
+        float shadow = FoldFringeShadow(face.shadowMask, fragment, light);
+        attenuation = ShadeDiffuseFace(surface, face, shadow);
     }
     else
+    #endif
     {
-        attenuationUV = HalfLambertAttenuationUV(surface, light, attenData);
+        float shadow = FoldFringeShadow(light.shadowAttenuation, fragment, light);
+        attenuation = ShadeDiffuseBody(surface, light, shadow);
     }
-    #else
-    attenuationUV = HalfLambertAttenuationUV(surface, light, attenData);
-    #endif
 
-    #if defined(_RECEIVE_FRINGE_SHADOWS)
-    if (light.isMainLight)
-    {
-        attenuationUV = min(
-            attenuationUV,
-            SigmoidSharp(1 - fragment.stencilMask.STENCIL_MASK_CHANNEL_FRINGE_SHADOW,
-                attenData.offset, attenData.smooth)
-        );
-        // attenuation compensation for transparent fringe —— eyelashes covered by fringe may show incorrect shadows due to the fringe shadow caster clipping.
-        attenuationUV = lerp(attenuationUV, 0, fragment.stencilMask.STENCIL_MASK_CHANNEL_EYE_LASHES);
-    }
-    #endif
-
-    #if defined(_RAMP_SET)
-    float3 lightAttenuation = SampleRampSetChannel(attenuationUV, RAMP_DIRECT_LIGHTING_SHADOW_CHANNEL);
-    #else
-    float lightAttenuation = attenuationUV;
-    #endif
-
-    return lightAttenuation * light.distanceAttenuation * light.color * surface.occlusion;
+    return attenuation * light.distanceAttenuation * light.color * surface.occlusion;
 }
 
-float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light,
-                   DirectLightAttenData attenData, RimLightData rimLightData)
+float3 GetLighting(Surface surface, Fragment fragment, BRDF brdf, Light light, RimLightData rimLightData)
 {
-    return IncomingLight(surface, fragment, light, attenData) *
+    return IncomingLight(surface, fragment, light) *
         (ToonDirectBRDF(surface, brdf, light) + ScreenSpaceRimLight(fragment, surface, light, rimLightData));
 }
 
