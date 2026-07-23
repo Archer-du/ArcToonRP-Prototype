@@ -5,7 +5,7 @@
 // The lit factor (NoL-space, -1..1) is split into 7 adjacent, linearly-blended bands whose
 // weights sum to ~1 (energy conserving). Each band is tinted and summed into a diffuse color.
 // The CBUFFER-reading assembly (reading per-material tints / per-region base colors and building
-// the lit factor from surface/light) lives in Shaders/Interface/ToonLightingInterface.hlsl.
+// the lit factor from surface/light) lives in Shaders/Assembly/ToonLightingAssembly.hlsl.
 
 // Per-band weights, dark -> lit:
 // shadowFade  : shadow edge (most affected by ambient / rim)
@@ -88,6 +88,7 @@ float3 CalculateAlbedo(
     float3 frontColor       = attenuation.front       * frontTint       * shallowColor;
     float3 forwardColor     = attenuation.forward;
 
+    return attenuation.shadowFade;
     return shadowFadeColor + shadowColorPart + shallowFadeColor + shallowColorPart
         + sssColor + frontColor + forwardColor;
 }

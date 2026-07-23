@@ -1,7 +1,7 @@
-#ifndef ARCTOON_HAIR_SPEC_INTERFACE_INCLUDED
-#define ARCTOON_HAIR_SPEC_INTERFACE_INCLUDED
+#ifndef ARCTOON_SPECULAR_INTERFACE_INCLUDED
+#define ARCTOON_SPECULAR_INTERFACE_INCLUDED
 
-// Interface tier: anisotropic hair highlight / parallax specular mask getters.
+// Interface tier: anisotropic specular highlight / parallax specular mask getters.
 // Reads the per-material CBUFFER; include after the shader's CBUFFER.
 // Requires: SurfaceSampling.hlsl (INPUT_PROP), Common.hlsl (SelectChannelRGB, sampler_linear_clamp).
 

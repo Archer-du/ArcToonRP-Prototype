@@ -176,9 +176,10 @@
 
         // --- post-CBUFFER Interface (dependency-bearing) ---
         #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/SurfaceInterface.hlsl"
-        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/HairSpecInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/SpecularInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/RimLightInterface.hlsl"
         #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/EyeInterface.hlsl"
-        #include "Packages/com.arctoon.render-pipeline/Shaders/Interface/ToonLightingInterface.hlsl"
+        #include "Packages/com.arctoon.render-pipeline/Shaders/Assembly/ToonLightingAssembly.hlsl"
         ENDHLSL
 
         UsePass "ArcToon/ToonBase/TOON OUTLINE"

@@ -1,8 +1,8 @@
-#ifndef ARCTOON_RAMP_INCLUDED
-#define ARCTOON_RAMP_INCLUDED
+#ifndef ARCTOON_SIGMOID_RAMP_INCLUDED
+#define ARCTOON_SIGMOID_RAMP_INCLUDED
 
 // Library tier: CBUFFER-free math for the Sigmoid/Ramp diffuse attenuation model, peer to
-// ShaderLibrary/Light/LinearPartition.hlsl. SigmoidSharp / GetHalfLambertFactor come from
+// ShaderLibrary/LinearPartition.hlsl. SigmoidSharp / GetHalfLambertFactor come from
 // Common.hlsl, which is transitively included before this file (via SurfaceSampling.hlsl).
 
 // Ramp texture V coordinate for the direct-lighting shadow channel.
@@ -25,22 +25,6 @@ float SigmoidAttenuation(float primary, float primaryCenter, float shadow, float
         SigmoidSharp(primary, primaryCenter, smooth),
         SigmoidSharp(shadow, offset, smooth)
     );
-}
-
-struct RimLightData
-{
-    float scale;
-    float width;
-    float depthBias;
-};
-
-RimLightData GetRimLightData(float scale, float width, float depthBias)
-{
-    RimLightData data;
-    data.scale = scale;
-    data.width = width;
-    data.depthBias = depthBias;
-    return data;
 }
 
 #endif

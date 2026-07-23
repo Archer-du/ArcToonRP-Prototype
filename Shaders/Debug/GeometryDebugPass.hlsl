@@ -82,7 +82,6 @@ float4 GeometryDebugPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFa
 
     BRDF brdf = GetBRDF(surface);
     GI gi = GetGI(GI_FRAGMENT_DATA(input), surface, brdf);
-    RimLightData rimLightData = GetRimLightData(GetRimLightScale(), GetRimLightWidth(), GetRimLightDepthBias());
     CascadeShadowData cascadeShadowData = GetCascadeShadowData(surface);
 
     // Only the main directional light drives the term visualization.
@@ -96,7 +95,7 @@ float4 GeometryDebugPassFragment(Varyings input, bool isFrontFace : SV_IsFrontFa
     else if (_GeometryDebugMode == GEOMETRY_DEBUG_MODE_DIRECT_BRDF)
     {
         color = ToonDirectBRDF(surface, brdf, light) +
-            ScreenSpaceRimLight(config.fragment, surface, light, rimLightData);
+            ScreenSpaceRimLight(config.fragment, surface, light);
     }
     else // GEOMETRY_DEBUG_MODE_INCOMING_LIGHT
     {

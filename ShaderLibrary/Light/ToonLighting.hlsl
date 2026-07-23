@@ -3,12 +3,12 @@
 
 // Library tier: CBUFFER-free lighting math. The CBUFFER-derived toon assembly
 // (ToonSpecularStrength / GF2FaceSpecularStrength / toon IncomingLight / ToonDirectBRDF /
-// GetLighting) lives in Shaders/Interface/ToonLightingInterface.hlsl.
+// GetLighting) lives in Shaders/Assembly/ToonLightingAssembly.hlsl.
 // Global constant buffers (light data, camera textures) are not per-material CBUFFER and
 // are allowed here.
 
-#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Ramp.hlsl"
-#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/LinearPartition.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/SigmoidRamp.hlsl"
+#include "Packages/com.arctoon.render-pipeline/ShaderLibrary/LinearPartition.hlsl"
 #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/BRDF.hlsl"
 #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/DirectionalLight.hlsl"
 #include "Packages/com.arctoon.render-pipeline/ShaderLibrary/Light/SpotLight.hlsl"
@@ -45,27 +45,6 @@ float3 IndirectBRDF(Surface surface, BRDF brdf, float3 diffuse, float3 specular)
     float3 reflection = specular * lerp(brdf.specular, brdf.fresnel, fresnelStrength);
     reflection /= brdf.roughness * brdf.roughness + 1.0;
     return (diffuse * brdf.diffuse + reflection) * surface.occlusion;
-}
-
-float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light, RimLightData rimData)
-{
-    float3 normalHVS = SafeNormalize(float3(surface.normalVS.x, surface.normalVS.y, 0.0));
-    float3 lightDirVS = SafeNormalize(TransformWorldToViewDir(light.directionWS));
-    float3 lightDirHVS = SafeNormalize(float3(lightDirVS.x, lightDirVS.y, 0.0));
-    float NdotLFactor = dot(normalHVS, lightDirHVS) * 0.5 + 0.5;
-    float texelNum = rimData.width / GetTexelSizeWorldSpace(fragment.linearDepth);
-    // TODO: config
-    texelNum = clamp(texelNum, rimData.width * 0.01, rimData.width * 200);
-    float2 offsetUV = float2(
-        fragment.screenUV.x + normalHVS.x * texelNum * _CameraBufferSize.x,
-        fragment.screenUV.y + normalHVS.y * texelNum * _CameraBufferSize.y);
-    float offsetBufferDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, sampler_point_clamp, offsetUV);
-    float offsetBufferLinearDepth = IsOrthographicCamera()
-                                        ? OrthographicDepthBufferToLinear(offsetBufferDepth)
-                                        : LinearEyeDepth(offsetBufferDepth, _ZBufferParams);
-    float bias = offsetBufferLinearDepth - fragment.linearDepth;
-    float rimFactor = step(rimData.depthBias, bias);
-    return rimData.scale * rimFactor * NdotLFactor * surface.color;
 }
 
 float3 PhysicDirectBRDF(Surface surface, BRDF brdf, Light light)
