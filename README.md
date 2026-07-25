@@ -34,7 +34,9 @@ https://github.com/Archer-du/ArcToonRP-Prototype.git#arctoon/0.1.0
 
 ## Branch Strategy
 
-- `arctoon/0.1.0` — Stable release branch
+- `arctoon/0.1.0` — Archived release
+- `arctoon/0.2.0` — Archived release
+- `arctoon/0.5.0` — Current release
 - `arctoon/develop` — Main development branch
 
 ## Usage
