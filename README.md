@@ -24,7 +24,7 @@ A custom toon render pipeline built on Unity's Scriptable Render Pipeline (SRP),
 Add this package via Unity Package Manager using the Git URL:
 
 ```
-https://github.com/Archer-du/ArcToonRP-Prototype.git#arctoon/develop
+https://github.com/Archer-du/ArcToonRP-Prototype.git#arctoon/0.5.0
 ```
 
 1. Open Unity and go to **Window > Package Manager**
@@ -34,7 +34,9 @@ https://github.com/Archer-du/ArcToonRP-Prototype.git#arctoon/develop
 
 ## Branch Strategy
 
-- `arctoon/0.1.0` — Stable release branch
+- `arctoon/0.1.0` — Archived release
+- `arctoon/0.2.0` — Archived release
+- `arctoon/0.5.0` — Current release
 - `arctoon/develop` — Main development branch
 
 ## Usage
