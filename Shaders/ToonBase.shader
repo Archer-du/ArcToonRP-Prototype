@@ -62,6 +62,7 @@
 
         // Linear partition diffuse attenuation (alternative to Ramp/Sigmoid)
         _AttenuationModel ("Attenuation Model", Integer) = 0
+        _DiffuseOffset ("Diffuse Offset", Range(-1, 1)) = 0
         _AlbedoSmoothness ("Albedo Smoothness", Range(0, 1)) = 0.5
         _ShadowFadeTint ("Shadow Fade Tint", Color) = (1, 1, 1, 1)
         _ShadowTint ("Shadow Tint", Color) = (1, 1, 1, 1)
@@ -166,6 +167,7 @@
             UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenOffset)
             UNITY_DEFINE_INSTANCED_PROP(float, _DirectLightAttenSmoothNew)
 
+            UNITY_DEFINE_INSTANCED_PROP(float, _DiffuseOffset)
             UNITY_DEFINE_INSTANCED_PROP(float, _AlbedoSmoothness)
             UNITY_DEFINE_INSTANCED_PROP(float4, _ShadowFadeTint)
             UNITY_DEFINE_INSTANCED_PROP(float4, _ShadowTint)

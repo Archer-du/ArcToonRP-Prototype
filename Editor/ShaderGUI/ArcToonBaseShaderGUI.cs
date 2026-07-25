@@ -46,6 +46,7 @@ namespace ArcToon.Editor.ShaderEditor
                 new DiffuseAttenuationSection(),
                 new GeometryOutlineSection(),
                 new HighLightSection(),
+                new RimLightSection(),
                 new LightMapSDFSection(),
                 new FringeSection(),
                 new RefractionSection(),

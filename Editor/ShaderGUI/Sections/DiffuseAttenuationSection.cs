@@ -20,6 +20,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
         private MaterialProperty specSmoothProperty;
 
         private MaterialProperty albedoSmoothnessProperty;
+        private MaterialProperty diffuseOffsetProperty;
         private MaterialProperty shadowFadeTintProperty;
         private MaterialProperty shadowTintProperty;
         private MaterialProperty shallowFadeTintProperty;
@@ -39,6 +40,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
             specSmoothProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.DirectLightSpecSmooth, props, false);
 
             albedoSmoothnessProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.AlbedoSmoothness, props, false);
+            diffuseOffsetProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.DiffuseOffset, props, false);
             shadowFadeTintProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ShadowFadeTint, props, false);
             shadowTintProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ShadowTint, props, false);
             shallowFadeTintProperty = MaterialEditorUtils.FindProperty(ShaderPropertyID.ShallowFadeTint, props, false);
@@ -118,7 +120,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
 
         private void DrawLinearPartition(MaterialEditor materialEditor)
         {
-            materialEditor.BuiltinShaderPropertyDrawer(attenOffsetProperty, true, "Diffuse Offset");
+            materialEditor.BuiltinShaderPropertyDrawer(diffuseOffsetProperty, true, "Diffuse Offset");
             materialEditor.BuiltinShaderPropertyDrawer(albedoSmoothnessProperty, true, "Albedo Smoothness");
 
             materialEditor.BuiltinShaderPropertyDrawer(shadowFadeTintProperty, true, "Shadow Fade Tint");

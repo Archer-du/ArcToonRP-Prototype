@@ -13,7 +13,7 @@ REGION_PROP_DEFINE_GETTER(float4, _ShallowColor)
 float3 LinearPartitionColor(float litFactor, int regionIndex)
 {
     AttenuationData attenuation = CalculateAttenuation(
-        INPUT_PROP(_AlbedoSmoothness), litFactor, INPUT_PROP(_DirectLightAttenOffset));
+        INPUT_PROP(_AlbedoSmoothness), litFactor, INPUT_PROP(_DiffuseOffset));
     return CalculateAlbedo(
         REGION_PROP_GET(float4, _ShadowColor, regionIndex).rgb,
         REGION_PROP_GET(float4, _ShallowColor, regionIndex).rgb,

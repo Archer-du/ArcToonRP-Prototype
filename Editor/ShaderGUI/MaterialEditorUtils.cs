@@ -122,6 +122,7 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string DirectLightSpecSmooth = "_DirectLightSpecSmooth";
 
         public static readonly string AttenuationModel = Auto();
+        public static readonly string DiffuseOffset = Auto();
         public static readonly string AlbedoSmoothness = Auto();
         public static readonly string ShadowFadeTint = Auto();
         public static readonly string ShadowTint = Auto();
@@ -170,7 +171,11 @@ namespace ArcToon.Editor.ShaderEditor
         public static readonly string HighlightType = "_HighlightType";
         public static readonly string SpecGloss = "_SpecGloss";
         public static readonly string SpecScale = "_SpecScale";
-        
+
+        public static readonly string RimScale = Auto();
+        public static readonly string RimWidth = Auto();
+        public static readonly string RimDepthBias = Auto();
+
         public static readonly string TangentShiftMap = "_TangentShiftMap";
         public static readonly string TangentShiftMapUV = "_TangentShiftMapUV";
         public static readonly string TangentShiftOffset = "_TangentShiftOffset";

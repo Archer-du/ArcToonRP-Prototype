@@ -26,41 +26,29 @@ struct AttenuationData
     float forward;
 };
 
-// One band boundary: a linear ramp of the lit factor, offset before the divide and after it.
-float CalculateAlbedoRampPart1(float baseAttenuation, float albedoSmoothness, float adder1, float adder2)
-{
-    return (baseAttenuation + adder1) / albedoSmoothness + adder2;
-}
-
-// A band weight is bounded above by the previous boundary and below by this boundary's complement.
-float CalculateAlbedoRampPart2(float attenuation, float lastAttenuation)
-{
-    return saturate(min(lastAttenuation, 1 - attenuation));
-}
-
 AttenuationData CalculateAttenuation(float albedoSmoothness, float litFactor, float diffuseOffset)
 {
     AttenuationData attenuationData;
     float baseAttenuation = (litFactor + diffuseOffset) * 1.5;
     albedoSmoothness = max(0.0001, albedoSmoothness) * 1.5;
 
-    float tempShadowFade = CalculateAlbedoRampPart1(baseAttenuation, 1 - albedoSmoothness, 1.5, 0.0);
-    attenuationData.shadowFade = CalculateAlbedoRampPart2(tempShadowFade, 1.0);
+    float tempShadowFade = (baseAttenuation + 1.5) / (1.0 - albedoSmoothness);
+    attenuationData.shadowFade = saturate(min(1.0, 1.0 - tempShadowFade));
 
-    float tempShadow = CalculateAlbedoRampPart1(baseAttenuation, albedoSmoothness, 0.5, 0.5);
-    attenuationData.shadow = CalculateAlbedoRampPart2(tempShadow, tempShadowFade);
+    float tempShadow = (baseAttenuation + 0.5) / albedoSmoothness + 0.5;
+    attenuationData.shadow = saturate(min(tempShadowFade, 1.0 - tempShadow));
 
-    float tempShallowFade = CalculateAlbedoRampPart1(baseAttenuation, albedoSmoothness, 0.0, 0.5);
-    attenuationData.shallowFade = CalculateAlbedoRampPart2(tempShallowFade, tempShadow);
+    float tempShallowFade = baseAttenuation / albedoSmoothness + 0.5;
+    attenuationData.shallowFade = saturate(min(tempShadow, 1.0 - tempShallowFade));
 
-    float tempShallow = CalculateAlbedoRampPart1(baseAttenuation, albedoSmoothness, -0.5, 0.5);
-    attenuationData.shallow = CalculateAlbedoRampPart2(tempShallow, tempShallowFade);
+    float tempShallow = (baseAttenuation - 0.5) / albedoSmoothness + 0.5;
+    attenuationData.shallow = saturate(min(tempShallowFade, 1.0 - tempShallow));
 
-    float tempSSS = CalculateAlbedoRampPart1(baseAttenuation, albedoSmoothness, -0.5, -0.5);
-    attenuationData.sss = CalculateAlbedoRampPart2(tempSSS, tempShallow);
+    float tempSSS = (baseAttenuation - 0.5) / albedoSmoothness - 0.5;
+    attenuationData.sss = saturate(min(tempShallow, 1.0 - tempSSS));
 
-    float tempFront = CalculateAlbedoRampPart1(baseAttenuation, albedoSmoothness, -2.0, 1.5);
-    attenuationData.front = CalculateAlbedoRampPart2(tempFront, tempSSS);
+    float tempFront = (baseAttenuation - 2.0) / albedoSmoothness + 1.5;
+    attenuationData.front = saturate(min(tempSSS, 1.0 - tempFront));
 
     attenuationData.forward = saturate(tempFront);
     return attenuationData;
@@ -88,7 +76,6 @@ float3 CalculateAlbedo(
     float3 frontColor       = attenuation.front       * frontTint       * shallowColor;
     float3 forwardColor     = attenuation.forward;
 
-    return attenuation.shadowFade;
     return shadowFadeColor + shadowColorPart + shallowFadeColor + shallowColorPart
         + sssColor + frontColor + forwardColor;
 }
