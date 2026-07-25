@@ -31,7 +31,7 @@ namespace ArcToon.Editor.ShaderEditor.Sections
 
         protected override void DrawProperties(MaterialEditor materialEditor, Material[] materials)
         {
-            EditorGUILayout.LabelField(HeaderLabel, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(HeaderLabel, EditorStyles.label);
 
             EditorGUILayoutUtils.BeginGUIComponentIndent();
             if (rimScaleProperty != null)
