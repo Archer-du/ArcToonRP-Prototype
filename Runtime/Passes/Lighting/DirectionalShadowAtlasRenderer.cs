@@ -120,6 +120,7 @@ namespace ArcToon.Passes.Lighting
                     directionalTileData.tileSize);
 
                 directionalShadowData[tileIndex] = new ShadowTileBufferData(
+                    offset, tileScale, 1f / GetAtlasSize(), 0f,
                     ConvertToAtlasMatrix(info.projection * info.view, offset, tileScale));
 
                 cmd.SetViewProjectionMatrices(info.view, info.projection);
