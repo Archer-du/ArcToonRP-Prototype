@@ -20,16 +20,16 @@ MonoBehaviour:
       bicubicRescalingMode: 1
     shadowSettings:
       filterQuality: 8
-      maxDistance: 100
+      maxDistance: 20
       distanceFade: 0.1
-      poissonFilterRadius: 3
+      poissonFilterRadius: 2
       directionalCascadeShadow:
         atlasSize: 4096
         blendMode: 0
         cascadeCount: 4
-        cascadeRatio1: 0.4
-        cascadeRatio2: 0.55
-        cascadeRatio3: 0.8
+        cascadeRatio1: 0.2
+        cascadeRatio2: 0.4
+        cascadeRatio3: 0.6
         edgeFade: 0.1
       perObjectShadow:
         atlasSize: 4096
