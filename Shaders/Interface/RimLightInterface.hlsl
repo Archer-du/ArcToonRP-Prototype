@@ -14,12 +14,12 @@ float GetRimLightScale()
 
 float GetRimLightWidth()
 {
-    return INPUT_PROP(_RimWidth) * 0.07;
+    return INPUT_PROP(_RimWidth) * 0.005;
 }
 
 float GetRimLightDepthBias()
 {
-    return INPUT_PROP(_RimDepthBias);
+    return INPUT_PROP(_RimDepthBias) * 0.1;
 }
 
 float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light)
@@ -31,7 +31,7 @@ float3 ScreenSpaceRimLight(Fragment fragment, Surface surface, Light light)
     float width = GetRimLightWidth();
     float texelNum = width / GetTexelSizeWorldSpace(fragment.linearDepth);
     // TODO: config
-    texelNum = clamp(texelNum, width * 0.01, width * 200);
+    // texelNum = clamp(texelNum, width * 0.01, width * 200);
     float2 offsetUV = float2(
         fragment.screenUV.x + normalHVS.x * texelNum * _CameraBufferSize.x,
         fragment.screenUV.y + normalHVS.y * texelNum * _CameraBufferSize.y);
