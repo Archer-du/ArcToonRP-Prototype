@@ -332,18 +332,18 @@ float FilterShadowPCSSClamped(
 // Light Type Filter Entry
 // =============================================
 
-float FilterDirectionalShadow(float3 positionSTS, float lightSize)
+float FilterDirectionalShadow(float3 positionSTS, float3 bounds, float lightSize)
 {
     #if defined(_PCSS)
-    return FilterShadowPCSS(
+    return FilterShadowPCSSClamped(
         TEXTURE2D_SHADOW_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp_compare),
         TEXTURE2D_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp),
-        positionSTS, _DirectionalShadowAtlasSize, lightSize, true
+        positionSTS, bounds, _DirectionalShadowAtlasSize, lightSize, true
     );
     #elif defined(_POISSON_DISK)
-    return FilterShadowPoisson(
+    return FilterShadowPoissonClamped(
         TEXTURE2D_SHADOW_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp_compare),
-        positionSTS, _DirectionalShadowAtlasSize, _PoissonFilterRadius
+        positionSTS, bounds, _DirectionalShadowAtlasSize, _PoissonFilterRadius
     );
     #elif defined(SHADOW_FILTER_SETUP)
     float weights[SHADOW_FILTER_SAMPLES];
@@ -353,16 +353,16 @@ float FilterDirectionalShadow(float3 positionSTS, float lightSize)
     float shadow = 0;
     for (int i = 0; i < SHADOW_FILTER_SAMPLES; i++)
     {
-        shadow += weights[i] * SampleShadowAtlas(
+        shadow += weights[i] * SampleShadowAtlasClamped(
             TEXTURE2D_SHADOW_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp_compare),
-            float3(positions[i].xy, positionSTS.z)
+            float3(positions[i].xy, positionSTS.z), bounds
         );
     }
     return shadow;
     #else
-    return SampleShadowAtlas(
+    return SampleShadowAtlasClamped(
         TEXTURE2D_SHADOW_ARGS(_DirectionalShadowAtlas, sampler_linear_clamp_compare),
-        positionSTS
+        positionSTS, bounds
     );
     #endif
 }
