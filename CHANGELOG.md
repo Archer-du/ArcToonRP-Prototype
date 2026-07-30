@@ -2,16 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.5.0] - 2026-07-25
-
-### Added
-
-- Linear partition shade model with 7-region architecture and extended parameters
-- Independent RimLight shader GUI section
-
-### Changed
-
-- Reorganized shader file structure for better modularity
+## [Unreleased]
 
 ## [0.2.0] - 2026-07-19
 
