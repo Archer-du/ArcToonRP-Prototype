@@ -143,6 +143,12 @@ namespace ArcToon.Utils
             public static readonly int SMAAAreaTexture = ShaderPropertyID();
             public static readonly int SMAASearchTexture = ShaderPropertyID();
             public static readonly int SMAABlendTexture = ShaderPropertyID();
+
+            // TAA
+            public static readonly int TAAInvViewProjCurr = ShaderPropertyID();
+            public static readonly int TAAViewProjPrev = ShaderPropertyID();
+            public static readonly int TAAFrameInfluence = ShaderPropertyID();
+            public static readonly int TAAHistoryTexture = ShaderPropertyID();
             #endregion
 
             #region Region ID

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace ArcToon.Passes.PostProcessing.Processors
 {
@@ -19,6 +20,14 @@ namespace ArcToon.Passes.PostProcessing.Processors
     {
         public override int Order => 50;
 
+        [Header("Accumulation")]
+        [Tooltip("Weight of the current frame in the exponential blend (alpha). History weight is " +
+                 "(1 - alpha). Lower values accumulate more history: smoother and steadier, but more " +
+                 "ghosting. Reference default ~0.1 (history weight ~0.9).")]
+        [Range(0.02f, 0.5f)]
+        public float frameInfluence = 0.1f;
+
         protected override PostProcessor CreateProcessor() => new TemporalAAProcessor(this);
     }
 }
+

@@ -31,7 +31,7 @@ namespace ArcToon.Passes
             // unchanged; only the projection carries the jitter. Left untouched when TAA is off.
             if (renderer.TemporalAAActive)
             {
-                commandBuffer.SetViewProjectionMatrices(Camera.worldToCameraMatrix, renderer.JitteredProjectionMatrix);
+                commandBuffer.SetViewProjectionMatrices(Camera.worldToCameraMatrix, renderer.TemporalAAData.JitteredProjectionMatrix);
             }
 
             commandBuffer.SetRenderTarget(

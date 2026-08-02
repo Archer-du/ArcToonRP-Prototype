@@ -36,7 +36,7 @@ namespace ArcToon
         // so the projection is left untouched when the effect is disabled.
         private readonly TemporalAAData temporalAAData = new();
         internal bool TemporalAAActive { private set; get; }
-        internal Matrix4x4 JitteredProjectionMatrix => temporalAAData.JitteredProjectionMatrix;
+        internal TemporalAAData TemporalAAData => temporalAAData;
         
         #region Built-in Pass Instances
 
