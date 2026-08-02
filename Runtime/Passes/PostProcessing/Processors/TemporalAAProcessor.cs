@@ -42,6 +42,7 @@ namespace ArcToon.Passes.PostProcessing.Processors
         private Matrix4x4 invViewProjCurrent;
         private Matrix4x4 viewProjPrevious;
         private float frameInfluence;
+        private float varianceClampScale;
 
         protected override string ShaderPath => InternalShader.Path.PostProcessTemporalAA;
 
@@ -76,6 +77,7 @@ namespace ArcToon.Passes.PostProcessing.Processors
             invViewProjCurrent = taa.InverseViewProjectionCurrent;
             viewProjPrevious = taa.ViewProjectionPrevious;
             frameInfluence = volumeConfig.frameInfluence;
+            varianceClampScale = volumeConfig.varianceClampScale;
         }
 
         public override void Render(CommandBuffer cmd, RTHandle source, RTHandle destination)
@@ -92,6 +94,7 @@ namespace ArcToon.Passes.PostProcessing.Processors
             cmd.SetGlobalMatrix(InternalShader.PropertyID.TAAInvViewProjCurr, invViewProjCurrent);
             cmd.SetGlobalMatrix(InternalShader.PropertyID.TAAViewProjPrev, viewProjPrevious);
             cmd.SetGlobalFloat(InternalShader.PropertyID.TAAFrameInfluence, frameInfluence);
+            cmd.SetGlobalFloat(InternalShader.PropertyID.TAAVarianceClampScale, varianceClampScale);
             cmd.SetGlobalTexture(InternalShader.PropertyID.TAAHistoryTexture, historyRT);
 
             BlitUtils.BlitTexture(cmd, source, destination, material, (int)Pass.Resolve);

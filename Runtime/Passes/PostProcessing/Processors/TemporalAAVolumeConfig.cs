@@ -27,6 +27,13 @@ namespace ArcToon.Passes.PostProcessing.Processors
         [Range(0.02f, 0.5f)]
         public float frameInfluence = 0.1f;
 
+        [Header("History Rectification")]
+        [Tooltip("Variance clipping tightness (gamma). The history is clipped to the neighborhood's " +
+                 "mean +- gamma * stdDev. Larger keeps more history (steadier, more ghosting); " +
+                 "smaller rejects more (crisper, more flicker). Reference ~1.0 (range 0.75~1.25).")]
+        [Range(0.5f, 2.0f)]
+        public float varianceClampScale = 1.0f;
+
         protected override PostProcessor CreateProcessor() => new TemporalAAProcessor(this);
     }
 }
