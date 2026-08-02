@@ -33,6 +33,7 @@ namespace ArcToon.Utils
             public static readonly string PostProcessColorGrading = "Hidden/ArcToon/PostProcess/ColorGrading";
             public static readonly string PostProcessFXAA = "Hidden/ArcToon/PostProcess/FXAA";
             public static readonly string PostProcessSMAA = "Hidden/ArcToon/PostProcess/SMAA";
+            public static readonly string PostProcessTemporalAA = "Hidden/ArcToon/PostProcess/TemporalAA";
         }
         
         public static class PropertyID
