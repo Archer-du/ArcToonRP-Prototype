@@ -19,6 +19,9 @@ float _TAAFrameInfluence;
 // Variance clipping tightness (gamma): the color box is mean +- gamma * stdDev. Larger keeps more
 // history (steadier, more ghosting); smaller rejects more (crisper, more flicker). Reference ~1.0.
 float _TAAVarianceClampScale;
+// Anti-flicker strength [0,1]: how much history trust is cut when its luma disagrees with the
+// current sample (Lottes, TAA_Guide 3.6). 0 disables it (fixed feedback).
+float _TAAFlickerReduction;
 
 TEXTURE2D(_TAAHistoryTexture);
 float4 _TAAHistoryTexture_TexelSize;
@@ -115,6 +118,18 @@ float3 ClipHistoryToBox(float3 history, float3 boxMin, float3 boxMax)
     return (maxUnit > 1.0) ? center + offset / maxUnit : history;
 }
 
+// Tonemap/luminance-weighted blend (Karis14, TAA_Guide 3.4). Blending in a luma-tonemapped space
+// (weight = 1/(1+Y)) down-weights bright samples so fireflies do not dominate the accumulation;
+// the inverse (1/(1-Y')) restores linear HDR. Y is the YCoCg luma (channel x, unbiased), so the
+// chroma bias is exactly preserved through the weighted blend. Inputs are YCoCg, output is YCoCg.
+float3 BlendPerceptual(float3 history, float3 current, float blend)
+{
+    float3 perceptualHistory = history * rcp(1.0 + history.x);
+    float3 perceptualCurrent = current * rcp(1.0 + current.x);
+    float3 perceptualResult = lerp(perceptualHistory, perceptualCurrent, blend);
+    return perceptualResult * rcp(1.0 - perceptualResult.x);
+}
+
 float4 TemporalAAResolvePassFragment(Varyings_Default input) : SV_TARGET
 {
     float2 uv = input.screenUV;
@@ -159,15 +174,22 @@ float4 TemporalAAResolvePassFragment(Varyings_Default input) : SV_TARGET
     float3 history = RGBToYCoCg(SampleHistoryBicubic(historyUV));
     history = ClipHistoryToBox(history, boxMin, boxMax);
 
+    // Anti-flicker (Lottes, TAA_Guide 3.6): where the history luma disagrees with the current
+    // sample (flicker / disocclusion edges), cut history trust so the pixel resolves faster.
+    // Luma is the YCoCg x channel; the 0.2 floor keeps darks from over-reacting.
+    float unbiasedDiff = abs(current.x - history.x) / max(max(current.x, history.x), 0.2);
+    float stability = (1.0 - unbiasedDiff) * (1.0 - unbiasedDiff);
+    float historyWeight = (1.0 - _TAAFrameInfluence) * lerp(1.0 - _TAAFlickerReduction, 1.0, stability);
+    float blend = 1.0 - historyWeight;
+
     // Off-screen history is invalid (no data reprojected in): fall back to the current sample.
-    float blend = _TAAFrameInfluence;
     if (historyUV.x < 0.0 || historyUV.x > 1.0 || historyUV.y < 0.0 || historyUV.y > 1.0)
     {
         blend = 1.0;
     }
 
-    // Exponential accumulation: out = alpha * current + (1 - alpha) * history (in YCoCg).
-    float3 result = lerp(history, current, blend);
+    // Exponential accumulation in the tonemap-weighted space (out = alpha*current + (1-alpha)*history).
+    float3 result = BlendPerceptual(history, current, blend);
 
     // Guard the history feedback loop: the sharpening cubic and YCoCg round-trip can produce small
     // negatives that would otherwise accumulate. Clamp to non-negative before it becomes history.

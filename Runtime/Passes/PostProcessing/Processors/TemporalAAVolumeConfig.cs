@@ -34,6 +34,13 @@ namespace ArcToon.Passes.PostProcessing.Processors
         [Range(0.5f, 2.0f)]
         public float varianceClampScale = 1.0f;
 
+        [Header("Anti-Flicker")]
+        [Tooltip("How strongly history trust is cut where its luma disagrees with the current sample " +
+                 "(Lottes luminance-diff feedback). Higher reduces flicker/fireflies on high-contrast " +
+                 "edges but slightly weakens accumulation. 0 disables it (fixed feedback).")]
+        [Range(0.0f, 1.0f)]
+        public float flickerReduction = 0.25f;
+
         protected override PostProcessor CreateProcessor() => new TemporalAAProcessor(this);
     }
 }

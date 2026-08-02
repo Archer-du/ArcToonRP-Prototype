@@ -149,6 +149,7 @@ namespace ArcToon.Utils
             public static readonly int TAAViewProjPrev = ShaderPropertyID();
             public static readonly int TAAFrameInfluence = ShaderPropertyID();
             public static readonly int TAAVarianceClampScale = ShaderPropertyID();
+            public static readonly int TAAFlickerReduction = ShaderPropertyID();
             public static readonly int TAAHistoryTexture = ShaderPropertyID();
             #endregion
 
