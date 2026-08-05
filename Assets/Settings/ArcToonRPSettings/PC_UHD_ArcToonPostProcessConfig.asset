@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: PC_UHD_ArcToonPostProcessConfig
   m_EditorClassIdentifier: 
   volumeConfigs:
+  - rid: 4422890025740402688
   - rid: 115054305801404566
   - rid: 115054305801404567
   - rid: 115054305801404621
@@ -62,7 +63,14 @@ MonoBehaviour:
     - rid: 115054305801404621
       type: {class: SMAAVolumeConfig, ns: ArcToon.Passes.PostProcessing.Processors, asm: ArcToon.Runtime}
       data:
-        enabled: 1
+        enabled: 0
         quality: 2
         areaTex: {fileID: 2800000, guid: a7ec2a8546384c61b95b02c81f0b4d1b, type: 3}
         searchTex: {fileID: 2800000, guid: c8cf3c564d1f4b8cb933e162d1e626fc, type: 3}
+    - rid: 4422890025740402688
+      type: {class: TemporalAAVolumeConfig, ns: ArcToon.Passes.PostProcessing.Processors, asm: ArcToon.Runtime}
+      data:
+        enabled: 1
+        frameInfluence: 0.1
+        varianceClampScale: 1
+        flickerReduction: 0.25

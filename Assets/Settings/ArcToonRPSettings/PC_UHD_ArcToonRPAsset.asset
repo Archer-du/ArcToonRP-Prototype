@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: PC_UHD_ArcToonRPAsset
   m_EditorClassIdentifier: 
   config:
-    useSRPBatcher: 1
+    useSRPBatcher: 0
     cameraBufferSettings:
       enableHDR: 1
-      renderScale: 1.25
+      renderScale: 1
       bicubicRescalingMode: 1
     shadowSettings:
       filterQuality: 8
