@@ -27,6 +27,7 @@ namespace ArcToon.Utils
             public static readonly string InternalError = "Hidden/InternalErrorShader";
             public static readonly string Blitter = "Hidden/ArcToon/Blitter";
             public static readonly string ScreenDebug = "Hidden/ArcToon/Screen Debug";
+            public static readonly string RegionIDLegend = "Hidden/ArcToon/RegionID Legend";
 
             // Per-processor post-process shaders.
             public static readonly string PostProcessBloom = "Hidden/ArcToon/PostProcess/Bloom";
@@ -162,6 +163,7 @@ namespace ArcToon.Utils
             #region Debug
             public static readonly int GeometryDebugMode = ShaderPropertyID();
             public static readonly int DebugOpacity = ShaderPropertyID();
+            public static readonly int RegionLegendBackdrop = ShaderPropertyID();
             #endregion
         }
         
