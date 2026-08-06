@@ -49,6 +49,8 @@
     }
 
 // --- Debug colors ---
+// Palette for the RegionID geometry-debug view and its on-screen legend (the legend
+// swatches read the same getter, so the two always match).
 static const float3 _RegionDebugColors[REGION_MAX_COUNT] =
 {
     float3(1.0, 0.2, 0.2),   // 0: red
@@ -60,6 +62,11 @@ static const float3 _RegionDebugColors[REGION_MAX_COUNT] =
     float3(1.0, 0.6, 0.2),   // 6: orange
     float3(0.6, 0.2, 1.0),   // 7: purple
 };
+
+float3 GetRegionDebugColor(int regionIndex)
+{
+    return _RegionDebugColors[clamp(regionIndex, 0, REGION_MAX_COUNT - 1)];
+}
 
 #if defined(_REGION_ID_TEXTURE)
 // Sampler comes from the shared static sampler declared in Common.hlsl (sampler_point_clamp).
@@ -101,10 +108,5 @@ InputConfig MakeInputConfigWithRegion(float4 positionSS, float2 baseUV, float4 v
 // CBUFFER), while the mechanism above stays CBUFFER-free in the Library tier.
 #define GET_INPUT_CONFIG_WITH_REGION(positionSS, baseUV, vertexColor) \
     MakeInputConfigWithRegion(positionSS, baseUV, vertexColor, INPUT_PROP(_RegionCount), INPUT_PROP(_RegionIDChannel))
-
-float3 GetRegionDebugColor(int regionIndex)
-{
-    return _RegionDebugColors[clamp(regionIndex, 0, REGION_MAX_COUNT - 1)];
-}
 
 #endif

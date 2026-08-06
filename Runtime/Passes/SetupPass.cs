@@ -26,6 +26,14 @@ namespace ArcToon.Passes
         {
             context.SetupCameraProperties(Camera);
 
+            // Install the sub-pixel jittered projection so every geometry pass this frame (depth
+            // prepass, opaque, transparent) renders with a matching offset. The view matrix is
+            // unchanged; only the projection carries the jitter. Left untouched when TAA is off.
+            if (renderer.TemporalAAActive)
+            {
+                commandBuffer.SetViewProjectionMatrices(Camera.worldToCameraMatrix, renderer.TemporalAAData.JitteredProjectionMatrix);
+            }
+
             commandBuffer.SetRenderTarget(
                 resources.Camera.colorAttachment,
                 RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,

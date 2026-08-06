@@ -5,6 +5,7 @@ using ArcToon.Data;
 using ArcToon.Passes;
 using ArcToon.Passes.Lighting;
 using ArcToon.Passes.PostProcessing;
+using ArcToon.Passes.PostProcessing.Processors;
 using ArcToon.Settings;
 using ArcToon.System;
 using ArcToon.Utils;
@@ -28,8 +29,14 @@ namespace ArcToon
         internal bool useHDR { private set; get; }
         
         internal CameraAdditiveData CameraAdditiveData { private set; get; }
-        
+
         internal PostProcessConfig PostProcessConfig { private set; get; }
+
+        // Sub-pixel camera jitter for TAA. Only advanced on frames where TAA is active,
+        // so the projection is left untouched when the effect is disabled.
+        private readonly TemporalAAData temporalAAData = new();
+        internal bool TemporalAAActive { private set; get; }
+        internal TemporalAAData TemporalAAData => temporalAAData;
         
         #region Built-in Pass Instances
 
@@ -131,6 +138,14 @@ namespace ArcToon
             RenderScale = CameraAdditiveData.GetRenderScale(BufferSettings.renderScale);
             AttachmentSize = RenderCamera.GetAttachmentSize(RenderScale);
             useHDR = BufferSettings.enableHDR && RenderCamera.allowHDR;
+
+            // Resolve TAA state and advance the sub-pixel jitter before culling, so the geometry
+            // passes render with the jittered projection SetupPass installs this frame.
+            TemporalAAActive = IsTemporalAAActive();
+            if (TemporalAAActive)
+            {
+                temporalAAData.Update(RenderCamera, AttachmentSize);
+            }
 
 #if UNITY_EDITOR
             if (camera.cameraType == CameraType.SceneView)
@@ -258,8 +273,26 @@ namespace ArcToon
             CullingResults = context.Cull(ref scriptableCullingParameters);
             // TODO: move？
             PerObjectShadowCasterManager.Instance.Cull(RenderCamera);
-            
+
             return true;
+        }
+
+        /// <summary>
+        /// Whether TAA should jitter and resolve this frame. Mirrors the post-process chain's
+        /// gating (config present, applicable to this camera, not overridden by geometry debug),
+        /// plus an enabled TemporalAAVolumeConfig entry.
+        /// </summary>
+        private bool IsTemporalAAActive()
+        {
+            if (PostProcessConfig == null ||
+                !PostProcessConfig.AreApplicableTo(RenderCamera) ||
+                DebuggerSingleton.IsGeometryDebugActive)
+            {
+                return false;
+            }
+
+            var config = PostProcessConfig.GetVolumeConfig<TemporalAAVolumeConfig>();
+            return config is { enabled: true };
         }
     }
 }

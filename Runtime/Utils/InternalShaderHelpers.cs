@@ -27,12 +27,14 @@ namespace ArcToon.Utils
             public static readonly string InternalError = "Hidden/InternalErrorShader";
             public static readonly string Blitter = "Hidden/ArcToon/Blitter";
             public static readonly string ScreenDebug = "Hidden/ArcToon/Screen Debug";
+            public static readonly string RegionIDLegend = "Hidden/ArcToon/RegionID Legend";
 
             // Per-processor post-process shaders.
             public static readonly string PostProcessBloom = "Hidden/ArcToon/PostProcess/Bloom";
             public static readonly string PostProcessColorGrading = "Hidden/ArcToon/PostProcess/ColorGrading";
             public static readonly string PostProcessFXAA = "Hidden/ArcToon/PostProcess/FXAA";
             public static readonly string PostProcessSMAA = "Hidden/ArcToon/PostProcess/SMAA";
+            public static readonly string PostProcessTemporalAA = "Hidden/ArcToon/PostProcess/TemporalAA";
         }
         
         public static class PropertyID
@@ -142,6 +144,14 @@ namespace ArcToon.Utils
             public static readonly int SMAAAreaTexture = ShaderPropertyID();
             public static readonly int SMAASearchTexture = ShaderPropertyID();
             public static readonly int SMAABlendTexture = ShaderPropertyID();
+
+            // TAA
+            public static readonly int TAAInvViewProjCurr = ShaderPropertyID();
+            public static readonly int TAAViewProjPrev = ShaderPropertyID();
+            public static readonly int TAAFrameInfluence = ShaderPropertyID();
+            public static readonly int TAAVarianceClampScale = ShaderPropertyID();
+            public static readonly int TAAFlickerReduction = ShaderPropertyID();
+            public static readonly int TAAHistoryTexture = ShaderPropertyID();
             #endregion
 
             #region Region ID
@@ -153,6 +163,7 @@ namespace ArcToon.Utils
             #region Debug
             public static readonly int GeometryDebugMode = ShaderPropertyID();
             public static readonly int DebugOpacity = ShaderPropertyID();
+            public static readonly int RegionLegendBackdrop = ShaderPropertyID();
             #endregion
         }
         
